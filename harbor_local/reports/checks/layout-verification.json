@@ -1,0 +1,31 @@
+{
+  "date": "2026-09-18",
+  "scope": "directory-reorganization-and-rollout-reports",
+  "unit_tests_passed": 35,
+  "modes_config_checked": [
+    "single",
+    "flat",
+    "hierarchical"
+  ],
+  "base_repositories_reverified": 3,
+  "legacy_print_config": "passed",
+  "real_business_rollout_repeated": false,
+  "historical_accepted_files_hash_verified": 9,
+  "existing_raw_jobs_and_prepared_inputs": "kept in place; no historical state or artifact edits",
+  "rollout_reports": 10,
+  "smoke": {
+    "job": "workflow-layout-smoke-20260918",
+    "status": "complete",
+    "model_called": false,
+    "state": "jobs/workflow-layout-smoke-20260918/task__vErjwwo/workflow/state.json",
+    "report": "jobs/workflow-layout-smoke-20260918/report.md",
+    "automatic_report_generation": "passed"
+  },
+  "current_entrypoint": "python -m harbor_local",
+  "old_module_paths": "migrated to harbor_local.runtime; historical recipes remain unchanged",
+  "local_document_links": {
+    "documents": 36,
+    "links": 166,
+    "broken": 0
+  }
+}

@@ -1,0 +1,6 @@
+.env
+.prepared/
+jobs/
+tasks/saleor-prd-tdd/environment/repos/
+__pycache__/
+*.pyc

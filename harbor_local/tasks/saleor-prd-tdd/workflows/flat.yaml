@@ -1,0 +1,14 @@
+schema_version: 1
+kind: workflow_run
+mode: flat
+task_root: ..
+contract: design-delivery.yaml
+agent: {adapter: codex, model_binding: CODEX_MODEL}
+execution:
+  scheduling: fixed_forward
+  principal_session: new_per_stage
+  role_activation: stage_start
+  handoff: declared_artifacts_only
+  subagents: {enabled: false}
+  on_failure: stop
+  accepted_artifacts: immutable

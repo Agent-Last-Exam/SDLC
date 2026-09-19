@@ -1,0 +1,100 @@
+{
+  "date": "2026-09-18",
+  "unit_tests_passed": 27,
+  "smoke_runs": [
+    {
+      "job": "workflow-smoke-20260918-a",
+      "mode": "single",
+      "status": "complete",
+      "synthetic": true,
+      "model_called": false,
+      "stages": 2,
+      "state": "jobs/workflow-smoke-20260918-a/task__H5fjc4w/workflow/state.json"
+    },
+    {
+      "job": "workflow-flat-smoke-20260918-a",
+      "mode": "flat",
+      "status": "complete",
+      "synthetic": true,
+      "model_called": false,
+      "stages": 2,
+      "state": "jobs/workflow-flat-smoke-20260918-a/task__RiD28oo/workflow/state.json"
+    }
+  ],
+  "real_run": {
+    "job": "workflow-single-20260918-b",
+    "status": "blocked",
+    "continued_from": "workflow-single-20260918-a",
+    "principal_session": "01a0b2e7-36b8-73d1-b4c4-1c57aa7e2b6a",
+    "model": "gpt-6-astra",
+    "auth": "explicitly authorized local Codex login",
+    "cursor": 2,
+    "state": "jobs/workflow-single-20260918-b/task__bVyhiV4/workflow/state.json",
+    "accepted_artifacts": "jobs/workflow-single-20260918-b/task__bVyhiV4/workflow/accepted",
+    "same_native_session": true,
+    "prd_input_output_hash_equal": true,
+    "prd_sha256": "bcd2f4c31d9a35df61a7d1b8ff471866818aa52387327f8bd36657f5a465b2ee",
+    "requirements": 16,
+    "frontend_design_units": 16,
+    "backend_design_units": 16,
+    "interface_groups": 17,
+    "review": "same-agent self-review: blocked",
+    "blockers": [
+      "Expired/disabled gift-card refund entitlement policy requires product decision",
+      "Legacy identity plugin and extension token provenance/TTL migration inventory missing"
+    ],
+    "latest_gate_recheck": "passed",
+    "native_evidence": {
+      "session_id": "01a0b2e7-36b8-73d1-b4c4-1c57aa7e2b6a",
+      "active_role": "architect",
+      "native_developer_message_verified": true,
+      "role_activations_recorded": 3
+    },
+    "outputs": {
+      "sprint1/prd": {
+        "prd.md": "bcd2f4c31d9a35df61a7d1b8ff471866818aa52387327f8bd36657f5a465b2ee"
+      },
+      "sprint1/tech-design": {
+        "backend-design.md": "5c2e8113dc9818937f70b129f837ae483202d969f7d16e600ed2c5bd20d93be6",
+        "frontend-design.md": "0d55743f75902e69c02d454ef70db77093a997131f3d6d4681c2e449b36d518f",
+        "interface-contract.md": "2189bee06bd207812a7945e757ce91da4e6a9b4ad41c4b0b98446a0e08fcb334",
+        "interfaces/app-manifest.schema.json": "4a6dbecfe66c474a6c50aa7a4325c0aa4bce2b33fd6f1f4e9ec3769b9c991142",
+        "interfaces/editorjs.schema.json": "fd1a7a93256a6d9ff3f68f19e838675563fd368836fce6489e4c67954a6fe32f",
+        "interfaces/extension-context.schema.json": "d5073980d16a94e23ca906c720f046ccbae354d6965cd2259c8512e20cd12398",
+        "review.md": "800488e981ae2fd361e7fd0a452dcc2e3d891db128f9950b21bb912ac64fb353",
+        "target-schema.graphql": "84bd40e7cef5c7bd1e5e9a0df489e40fe0f41f27f65fc7b670a03ce6ef8490c6"
+      }
+    }
+  },
+  "limits": [
+    "Public structural gates, not independent semantic evaluation",
+    "New workflow supports Codex; Claude Code stage backend not implemented",
+    "Hierarchical plan accepted by compiler but execution is rejected until Lead backend exists"
+  ],
+  "initial_real_run": {
+    "job": "workflow-single-20260918-a",
+    "status": "failed_after_accepted_prd",
+    "reason": "exec resume retained PM developer instructions",
+    "prd_preserved": true
+  },
+  "role_probe": {
+    "job": "workflow-role-probe-20260918-b",
+    "status": "complete",
+    "same_native_session": true,
+    "responses": [
+      "PM_READY",
+      "ARCHITECT_READY"
+    ],
+    "mechanism": "native app-server thread/inject_items developer message",
+    "failed_alternative": "workflow-role-probe-20260918-a: thread/resume developerInstructions retained PM; preserved"
+  },
+  "runtime_fixes": [
+    "Native app-server developer role injection on same thread",
+    "Multiline narrative field parsing",
+    "Markdown heading parser ignores fenced GraphQL comments"
+  ],
+  "feishu_writeback": {
+    "revision": 1182,
+    "runtime_status_and_pm_blueprint_verified": true
+  }
+}

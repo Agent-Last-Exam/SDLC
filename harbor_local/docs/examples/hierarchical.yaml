@@ -1,0 +1,31 @@
+schema_version: 1
+kind: workflow_run
+status: design_only
+name: saleor-hierarchical
+mode: hierarchical
+roles: roles.yaml
+agent: {adapter: codex, model_binding: CODEX_MODEL}
+lead:
+  role: lead
+  organization_skill: null # 待编写；实际执行必须提供 Skill 与对应团队工具
+execution:
+  orchestration: lead_managed
+  revisits: allowed
+  accepted_artifacts: immutable_revisions
+  team_tools: [spawn_member, send_task, inspect_member, submit_artifact, request_check, finish_delivery]
+required_inputs:
+  business_brief: {type: document}
+  base_repos: {type: repository_snapshot}
+  sprint2_request: {type: document}
+  deployment_target: {type: deployment_target}
+delivery_rounds:
+  - id: sprint1
+    request: input:business_brief
+    source: input:base_repos
+    required_artifacts: [prd, tdd, candidate, qa_tests, qa_results, qa_report, deployment_config, delivery, health]
+  - id: sprint2
+    request: input:sprint2_request
+    source: accepted_delivery:sprint1 # 引用第一轮最终 manifest 的固定候选
+    required_artifacts: [candidate, qa_tests, qa_results, qa_report, deployment_config, delivery, health]
+final_checks: [required_artifacts, reference_closure, candidate_binding, execution_passed, deployment_healthy]
+bindings: {}

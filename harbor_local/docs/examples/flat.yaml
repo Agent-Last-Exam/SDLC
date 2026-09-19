@@ -1,0 +1,13 @@
+schema_version: 1
+kind: workflow_run
+status: design_only
+name: saleor-flat
+mode: flat
+plan: fixed-plan.yaml
+agent: {adapter: codex, model_binding: CODEX_MODEL}
+execution:
+  principal_session: new_per_stage
+  role_activation: stage_start
+  handoff: declared_artifacts_only
+  subagents: {enabled: false} # 首版实验默认值，可在后续单独扩展
+bindings: {}

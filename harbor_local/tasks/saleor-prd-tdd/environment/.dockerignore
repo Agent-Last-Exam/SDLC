@@ -1,0 +1,7 @@
+**
+!Dockerfile
+!base-revisions.json
+!check_environment.py
+!repos/
+!repos/**
+repos/**/.DS_Store

@@ -1,0 +1,2 @@
+# Install into the same Python environment that runs Harbor.
+graphql-core==3.2.6

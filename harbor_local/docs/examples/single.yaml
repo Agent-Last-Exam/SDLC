@@ -1,0 +1,12 @@
+schema_version: 1
+kind: workflow_run
+status: design_only
+name: saleor-single
+mode: single
+plan: fixed-plan.yaml
+agent: {adapter: codex, model_binding: CODEX_MODEL}
+execution:
+  principal_session: continuous
+  role_activation: stage_boundary
+  subagents: {enabled: true, scope: current_stage, join_before_advance: true}
+bindings: {} # 实际执行前必须绑定 plan.required_inputs

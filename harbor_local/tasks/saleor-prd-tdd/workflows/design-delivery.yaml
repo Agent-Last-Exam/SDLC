@@ -1,0 +1,60 @@
+schema_version: 1
+kind: delivery_contract
+name: saleor-instruction-to-technical-review
+scope: documentation_only
+roles:
+  pm: ../roles/pm.system.md
+  architect: ../roles/architect.system.md
+inputs:
+  instruction: ../instruction.md
+  organization_delivery: ../organization-delivery.md
+  base_revisions: ../environment/base-revisions.json
+  repos: ../environment/repos
+templates:
+  prd: ../templates/prd.md
+  frontend_design: ../templates/frontend-design.md
+  backend_design: ../templates/backend-design.md
+  interface_contract: ../templates/interface-contract.md
+  target_interface: ../templates/target-interface.md
+  technical_review: ../templates/technical-review.md
+stages:
+  - id: sprint1/prd
+    role: pm
+    inputs: [input:instruction, input:organization_delivery, input:base_revisions, input:repos, template:prd]
+    outputs:
+      prd: artifacts/sprint1/prd/prd.md
+  - id: sprint1/tech-design
+    role: architect
+    inputs:
+      - input:instruction
+      - input:organization_delivery
+      - input:base_revisions
+      - input:repos
+      - artifact:sprint1/prd/prd
+      - template:frontend_design
+      - template:backend_design
+      - template:interface_contract
+      - template:target_interface
+      - template:technical_review
+    activities: [design, self_review]
+    outputs:
+      frontend_design: artifacts/sprint1/tech-design/frontend-design.md
+      backend_design: artifacts/sprint1/tech-design/backend-design.md
+      interface_contract: artifacts/sprint1/tech-design/interface-contract.md
+      target_schema: artifacts/sprint1/tech-design/target-schema.graphql
+      review: artifacts/sprint1/tech-design/review.md
+    additional_outputs:
+      directory: artifacts/sprint1/tech-design/interfaces
+      purpose: other_changed_protocol_boundaries
+    review_outcomes: [pass, blocked]
+delivery:
+  required:
+    - artifact:sprint1/prd/prd
+    - artifact:sprint1/tech-design/frontend_design
+    - artifact:sprint1/tech-design/backend_design
+    - artifact:sprint1/tech-design/interface_contract
+    - artifact:sprint1/tech-design/target_schema
+    - artifact:sprint1/tech-design/review
+  stop_after: sprint1/tech-design
+  on_blocked_review: save_outputs_and_stop_blocked
+  human_approval_claim: forbidden

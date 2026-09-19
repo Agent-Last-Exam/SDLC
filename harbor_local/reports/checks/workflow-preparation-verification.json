@@ -1,0 +1,41 @@
+{
+  "date": "2026-09-18",
+  "scope": "public-input-preparation-only",
+  "modes": {
+    "single": {
+      "config_valid": true,
+      "execution_ready": false,
+      "stage_contracts": 2
+    },
+    "flat": {
+      "config_valid": true,
+      "execution_ready": false,
+      "stage_contracts": 2
+    },
+    "hierarchical": {
+      "config_valid": true,
+      "execution_ready": false,
+      "stage_contracts": 2
+    }
+  },
+  "unit_tests_passed": 8,
+  "public_files_hash_verified": 8260,
+  "prepared_workspace": ".prepared/design-review-20260918/workspace",
+  "prd_output_equals_tech_input": true,
+  "reference_or_rubric_copied": false,
+  "source_git_metadata_copied": false,
+  "model_called": false,
+  "agent_executed": false,
+  "generated_delivery_files": 0,
+  "runtime_enforcement_verified": false,
+  "feishu_writeback": {
+    "url": "https://rcnmkynuc7as.feishu.cn/wiki/GsuKwp9JJiTLPckayTwctTjxnic",
+    "verified_revision": 1143,
+    "role_blueprints_match_local": [
+      "pm",
+      "architect"
+    ],
+    "embedded_sheets_preserved": 3,
+    "original_commented_prd_template_preserved": true
+  }
+}

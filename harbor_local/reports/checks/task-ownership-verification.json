@@ -1,0 +1,40 @@
+{
+  "date": "2026-09-18",
+  "scope": "task-owned-workflow-configuration",
+  "tests": {
+    "passed": 37
+  },
+  "modes_compiled": [
+    "single",
+    "flat",
+    "hierarchical"
+  ],
+  "all_public_source_paths_within_task": true,
+  "relocated_task_uses_own_inputs_and_runtime_config": true,
+  "optimized_role_sha256": {
+    "pm.system.md": "0f1fcd368abbaec22b45abf3bb75d6790995742cad3c11aa18f11d009b01f8ac",
+    "architect.system.md": "73001456787623d8ab3b1a01eb8c9cb5f52926de5a97f099c6bdfe1d948d4b4c"
+  },
+  "role_bytes_unchanged": true,
+  "frozen_roles_match": true,
+  "legacy_print_config": "passed",
+  "docs": {
+    "files": 26,
+    "local_links": 85,
+    "broken": 0
+  },
+  "smoke": {
+    "job": "jobs/workflow-task-owned-smoke-20260918",
+    "state": "jobs/workflow-task-owned-smoke-20260918/task__UygEq3c/workflow/state.json",
+    "status": "complete",
+    "model_called": false,
+    "synthetic": true,
+    "report": "jobs/workflow-task-owned-smoke-20260918/report.md"
+  },
+  "historical_runs_rewritten": false,
+  "limitations": [
+    "Only PRD and technical-design execution stages implemented",
+    "Hierarchical and staged Claude Code not implemented",
+    "No real model rollout repeated with optimized roles"
+  ]
+}
