@@ -3,7 +3,7 @@
 一个 job 是一次 Harbor 启动；本地默认一个 trial。一个逻辑 workflow 可跨失败续跑的多个 job，所以既保留 a 的失败，也保留 b 的续接，不能仅把最终 job 当作一次从头无错误运行。
 
 ```text
-harbor_local/
+software-last-exam/
   .prepared/<job>/
     job.json                     # 当时的 Harbor recipe
     resolved-workflow.json       # 当时解析后的模式与输入输出
@@ -50,10 +50,10 @@ harbor_local/
 
 ```bash
 # 无模型，补齐现有所有 job 的报告。
-/Users/zhihu/.local/share/uv/tools/harbor/bin/python -m harbor_local.runtime.reporting --all
+/Users/zhihu/.local/share/uv/tools/harbor/bin/python -m runtime.reporting --all
 
 # 无模型，只刷新一份报告。
-/Users/zhihu/.local/share/uv/tools/harbor/bin/python -m harbor_local.runtime.reporting   harbor_local/jobs/workflow-single-20260918-b
+/Users/zhihu/.local/share/uv/tools/harbor/bin/python -m runtime.reporting   jobs/workflow-single-20260918-b
 ```
 
 自动报告开头有生成标记；手写同名文件不会被覆盖。人工解读另存 notes.md。历史 jobs 与冻结 workspace 是证据，不通过重命名或编辑 JSON 来修正过去的失败。
@@ -61,7 +61,7 @@ harbor_local/
 ## 继续一个失败任务
 
 ```bash
-/Users/zhihu/.local/share/uv/tools/harbor/bin/python -m harbor_local   --use-local-codex-auth --continue-from harbor_local/jobs/<failed-job>/<trial>
+/Users/zhihu/.local/share/uv/tools/harbor/bin/python -m runtime   --use-local-codex-auth --continue-from jobs/<failed-job>/<trial>
 ```
 
 仅支持已经接受 PRD 后的失败/中断记录，并核对全部公开输入与接受文件哈希。业务自审 blocked 不能用此入口绕过；源输入变化时新建 run。旧历史 recipe 中的模块路径保留原样；新运行请用新入口生成 recipe。

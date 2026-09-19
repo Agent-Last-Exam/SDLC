@@ -12,4 +12,4 @@
 | [checks/layout-verification.json](checks/layout-verification.json) | 本次目录迁移、报告生成及无模型联调验证 |
 | [checks/task-ownership-verification.json](checks/task-ownership-verification.json) | 任务配置闭环、用户优化 SP 原样保留、37项测试和新无模型联调 |
 
-前三份 JSON 保留历史含义；其中 jobs/、.prepared/ 等相对路径均以 harbor_local 根目录为基准。它们记录当时的测试数量，不随后续新增测试改写成新的历史结论。
+前三份 JSON 保留历史含义；其中 jobs/、.prepared/ 等相对路径均以 仓库根目录为基准。它们记录当时的测试数量，不随后续新增测试改写成新的历史结论。

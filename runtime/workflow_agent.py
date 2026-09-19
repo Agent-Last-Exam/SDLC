@@ -4,8 +4,8 @@ from pathlib import Path
 import shlex
 
 from harbor.agents.base import BaseAgent
-from harbor_local.runtime.agents import PromptCodex
-from harbor_local.runtime.workflow_controller import Controller
+from runtime.agents import PromptCodex
+from runtime.workflow_controller import Controller
 
 
 def native_role_evidence(directory, session_id, role):
@@ -232,7 +232,7 @@ class WorkflowCodex(BaseAgent):
             (control_dir / "state.json").write_text(json.dumps({"status": "complete", "role_probe": True, "records": records}, indent=2))
             return
         if self.smoke:
-            from harbor_local.runtime.workflow_smoke import SmokeBackend
+            from runtime.workflow_smoke import SmokeBackend
             backend = SmokeBackend(backend)
         recovery = self.continue_from / "workflow" if self.continue_from else None
         controller = Controller(self.compiled, self.prepared / "workspace", control_dir, backend, recovery=recovery)

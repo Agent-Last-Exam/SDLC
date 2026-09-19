@@ -4,7 +4,7 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from harbor_local.runtime.reporting import write_report, write_index
+from runtime.reporting import LEGACY_MARKER, MARKER, write_report, write_index
 
 
 class ReportingTests(unittest.TestCase):
@@ -49,6 +49,13 @@ class ReportingTests(unittest.TestCase):
         (self.job / "report.md").write_text("Human notes")
         with self.assertRaisesRegex(ValueError, "manually authored"):
             write_report(self.job)
+
+    def test_legacy_generated_report_and_index_can_be_updated(self):
+        (self.job / "report.md").write_text(LEGACY_MARKER + "\nOld report")
+        (self.job.parent / "README.md").write_text(LEGACY_MARKER + "\nOld index")
+        self.assertTrue(write_report(self.job).read_text().startswith(MARKER))
+        write_index(self.job.parent)
+        self.assertTrue((self.job.parent / "README.md").read_text().startswith(MARKER))
 
     def test_missing_trial_is_incomplete(self):
         (self.trial / "workflow").rmdir()

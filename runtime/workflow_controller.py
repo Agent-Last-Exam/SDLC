@@ -6,7 +6,7 @@ from pathlib import Path
 import shutil
 import time
 
-from harbor_local.runtime.workflow_gates import GateError, digest, validate_stage
+from runtime.workflow_gates import GateError, digest, validate_stage
 
 
 def atomic_json(path, value):

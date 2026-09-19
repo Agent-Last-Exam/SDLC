@@ -43,13 +43,13 @@ Hierarchical 中 stages 表示可用工作类别及输入输出依赖，不能�
 
 ```bash
 # 使用已有 Harbor Python；依赖 PyYAML，不使用模型。
-/Users/zhihu/.local/share/uv/tools/harbor/bin/python -m harbor_local.runtime.prepare_workflow
+/Users/zhihu/.local/share/uv/tools/harbor/bin/python -m runtime.prepare_workflow
 
 # 创建全新准备包，目录存在时拒绝覆盖。
-/Users/zhihu/.local/share/uv/tools/harbor/bin/python -m harbor_local.runtime.prepare_workflow \
-  --output harbor_local/.prepared/my-design-review
+/Users/zhihu/.local/share/uv/tools/harbor/bin/python -m runtime.prepare_workflow \
+  --output .prepared/my-design-review
 
-/Users/zhihu/.local/share/uv/tools/harbor/bin/python -m unittest harbor_local.runtime.tests.test_workflow_preparation -v
+/Users/zhihu/.local/share/uv/tools/harbor/bin/python -m unittest runtime.tests.test_workflow_preparation -v
 ```
 
 本次已生成 `.prepared/design-review-20260918/workspace/`；这不是运行结果，artifacts 目录仍为空。
@@ -58,14 +58,14 @@ Hierarchical 中 stages 表示可用工作类别及输入输出依赖，不能�
 
 ```bash
 # 新 workflow：用本机 Codex 登录凭证与配置模型。
-/Users/zhihu/.local/share/uv/tools/harbor/bin/python -m harbor_local --use-local-codex-auth
+/Users/zhihu/.local/share/uv/tools/harbor/bin/python -m runtime --use-local-codex-auth
 
 # 明确的无模型合成联调，产物标有 SYNTHETIC，不是实际 PRD/TDD。
-/Users/zhihu/.local/share/uv/tools/harbor/bin/python -m harbor_local --smoke
+/Users/zhihu/.local/share/uv/tools/harbor/bin/python -m runtime --smoke
 
 # Flat 使用同一契约，每个 stage 新原生会话。
-/Users/zhihu/.local/share/uv/tools/harbor/bin/python -m harbor_local \
-  --task harbor_local/tasks/saleor-prd-tdd --mode flat --use-local-codex-auth
+/Users/zhihu/.local/share/uv/tools/harbor/bin/python -m runtime \
+  --task tasks/saleor-prd-tdd --mode flat --use-local-codex-auth
 ```
 
 运行依赖已有 Harbor，并在同一 Python 环境安装 requirements.txt 中的 graphql-core。首次接入已安装该依赖。也可以继续使用 `.env` 的 CODEX_MODEL 与 OPENAI_API_KEY / CODEX_AUTH_JSON_PATH；密钥不写入 recipe 或准备包。本机凭证只在显式选择上述 flag 时使用。

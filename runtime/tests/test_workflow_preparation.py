@@ -13,7 +13,7 @@ from unittest.mock import patch
 
 import yaml
 
-from harbor_local.runtime.prepare_workflow import HERE, DEFAULT_TASK, compile_workflow, read_yaml, safe_relative, resolve_config
+from runtime.prepare_workflow import HERE, DEFAULT_TASK, compile_workflow, read_yaml, safe_relative, resolve_config
 
 
 class WorkflowPreparationTests(unittest.TestCase):
@@ -95,7 +95,7 @@ class WorkflowPreparationTests(unittest.TestCase):
             resolve_config(self.root / "run.yaml", mode="single")
 
     def test_relocated_task_prepares_its_own_runtime_and_public_inputs(self):
-        from harbor_local.runtime import run_workflow
+        from runtime import run_workflow
 
         task = self.root / "custom-task"
         shutil.copytree(DEFAULT_TASK, task, ignore=shutil.ignore_patterns("repos"))

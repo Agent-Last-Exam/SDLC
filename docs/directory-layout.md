@@ -15,7 +15,7 @@
 | requirements-workflow.txt | requirements.txt |
 | .prepared/、jobs/、tasks/ | 保持原位 |
 
-新入口为 `python -m harbor_local`。内部模块使用 `harbor_local.runtime.*`；测试使用 `harbor_local.runtime.tests.*`；当时保留的旧单轮入口现已删除。
+当前入口为 `python -m runtime`。内部模块使用 `runtime.*`；测试使用 `runtime.tests.*`；当时保留的旧单轮入口现已删除。
 
 旧命令 `python -m harbor_local.run_workflow` 和旧 Python import 路径不再作为当前入口。历史 recipe / traceback / 冻结文档中的旧路径保留为历史事实，不批量重写。新入口生成的新 recipe 使用新的 import_path。
 
@@ -40,6 +40,10 @@
 
 ## 删除旧单轮入口
 
-已删除 harbor_local/legacy/ 和 tasks/saleor-prd-tdd/legacy/，包括旧启动器、配置、联合 prompt、旧 task.toml、Instruction、Dockerfile 和健康检查。当前唯一启动入口为 `python -m harbor_local`。上文迁移表及旧验收记录描述当时状态，不代表旧入口仍可使用。
+已删除 harbor_local/legacy/ 和 tasks/saleor-prd-tdd/legacy/，包括旧启动器、配置、联合 prompt、旧 task.toml、Instruction、Dockerfile 和健康检查。当前唯一启动入口为 `python -m runtime`。上文迁移表及旧验收记录描述当时状态，不代表旧入口仍可使用。
 
 历史 jobs/、.prepared/ 与 reports/checks/ 作为运行证据保留；当前工作流不依赖被删除的文件。
+
+## 仓库根目录布局
+
+`harbor_local/` 的内容已提升至仓库根目录，`runtime/`、`tasks/`、`docs/`、`reports/` 直接位于根目录。使用 `python -m runtime` 启动，模块导入与新 recipe 使用 `runtime.*`。历史验收 JSON 和运行记录保留原始路径。

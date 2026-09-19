@@ -12,9 +12,9 @@ import sys
 import tomllib
 import uuid
 
-from harbor_local.runtime.prepare_workflow import HERE, compile_workflow, prepare, resolve_config
-from harbor_local.runtime.environment import load_env
-from harbor_local.runtime.reporting import write_report, write_index
+from runtime.prepare_workflow import HERE, compile_workflow, prepare, resolve_config
+from runtime.environment import load_env
+from runtime.reporting import write_report, write_index
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -90,7 +90,7 @@ def main():
         "job_name": name, "jobs_dir": str(HERE / "jobs"), "n_attempts": 1, "n_concurrent_trials": 1,
         "retry": {"max_retries": 0}, "environment": {"type": "docker", "delete": True},
         "verifier": {"disable": True},
-        "agents": [{"import_path": "harbor_local.runtime.workflow_agent:WorkflowCodex", "model_name": model,
+        "agents": [{"import_path": "runtime.workflow_agent:WorkflowCodex", "model_name": model,
                     "override_setup_timeout_sec": 600,
                     "kwargs": {"prepared_path": str(prepared), "smoke": args.smoke, "role_probe": args.role_probe,
                                "continue_from": str(args.continue_from.resolve()) if args.continue_from else None}}],
@@ -100,10 +100,10 @@ def main():
     print(f"Recipe: {prepared / 'job.json'}", flush=True)
     if args.prepare_only:
         return 0
-    env["PYTHONPATH"] = str(HERE.parent) + (os.pathsep + env["PYTHONPATH"] if env.get("PYTHONPATH") else "")
+    env["PYTHONPATH"] = str(HERE) + (os.pathsep + env["PYTHONPATH"] if env.get("PYTHONPATH") else "")
     job = HERE / "jobs" / name
     try:
-        result = subprocess.run(["harbor", "run", "--config", str(prepared / "job.json")], env=env, cwd=HERE.parent)
+        result = subprocess.run(["harbor", "run", "--config", str(prepared / "job.json")], env=env, cwd=HERE)
     finally:
         job.mkdir(parents=True, exist_ok=True)
         print(f"Report: {write_report(job)}", flush=True)

@@ -6,8 +6,8 @@ import tempfile
 import tomllib
 import unittest
 
-from harbor_local.runtime.agents import PromptClaudeCode, PromptCodex
-from harbor_local.runtime.environment import load_env
+from runtime.agents import PromptClaudeCode, PromptCodex
+from runtime.environment import load_env
 
 
 class PromptTests(unittest.TestCase):

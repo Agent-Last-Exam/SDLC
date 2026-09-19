@@ -22,10 +22,10 @@
 
 ## 启动一次真实 Single rollout
 
-以下命令在 **SDLC-data 根目录**执行。使用已安装的 Harbor Python，Docker Desktop 和 `harbor` 需可用；本机已经准备好源码与依赖。
+以下命令在 **仓库根目录**执行。使用已安装的 Harbor Python，Docker Desktop 和 `harbor` 需可用；本机已经准备好源码与依赖。
 
 ```bash
-/Users/zhihu/.local/share/uv/tools/harbor/bin/python -m harbor_local --task harbor_local/tasks/saleor-prd-tdd --mode single --use-local-codex-auth
+/Users/zhihu/.local/share/uv/tools/harbor/bin/python -m runtime --task tasks/saleor-prd-tdd --mode single --use-local-codex-auth
 ```
 
 省略 `--task/--mode` 时默认 Saleor Single；切换模式用 `--mode flat`。具体任务文件见 [Saleor task README](tasks/saleor-prd-tdd/README.md)。
@@ -34,16 +34,16 @@
 
 ```bash
 # 无模型：只校验三仓版本和配置。
-/Users/zhihu/.local/share/uv/tools/harbor/bin/python -m harbor_local.runtime.prepare_workflow
+/Users/zhihu/.local/share/uv/tools/harbor/bin/python -m runtime.prepare_workflow
 
 # 无模型：实际启动容器，验证两个阶段、隔离、交接和报告生成。
-/Users/zhihu/.local/share/uv/tools/harbor/bin/python -m harbor_local --smoke
+/Users/zhihu/.local/share/uv/tools/harbor/bin/python -m runtime --smoke
 
 # 无模型：所有单元测试。
-/Users/zhihu/.local/share/uv/tools/harbor/bin/python -m unittest discover -s harbor_local/runtime/tests -t . -v
+/Users/zhihu/.local/share/uv/tools/harbor/bin/python -m unittest discover -s runtime/tests -t . -v
 ```
 
-首次在新机器准备时先执行 `python3 -m harbor_local.runtime.prepare_sources`，并在 Harbor Python 环境安装 `requirements.txt`。源码完整 SHA 见 [base-revisions.json](tasks/saleor-prd-tdd/environment/base-revisions.json)。
+首次在新机器准备时先执行 `python3 -m runtime.prepare_sources`，并在 Harbor Python 环境安装 `requirements.txt`。源码完整 SHA 见 [base-revisions.json](tasks/saleor-prd-tdd/environment/base-revisions.json)。
 
 ## 从哪里找产物
 

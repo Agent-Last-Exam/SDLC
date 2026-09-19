@@ -18,11 +18,11 @@
 
 ## 执行
 
-在 SDLC-data 根目录执行：
+在 仓库根目录执行：
 
 ```bash
-/Users/zhihu/.local/share/uv/tools/harbor/bin/python -m harbor_local \
-  --task harbor_local/tasks/saleor-prd-tdd --mode single --use-local-codex-auth
+/Users/zhihu/.local/share/uv/tools/harbor/bin/python -m runtime \
+  --task tasks/saleor-prd-tdd --mode single --use-local-codex-auth
 ```
 
 将 single 改为 flat 即每阶段新会话。hierarchical 的配置可校验，Lead 后端尚未实现。省略 --task/--mode 时默认本 task 的 single。也可用 --config 指向本 task 的模式 YAML，但不能同时传 --task/--mode。
@@ -30,8 +30,8 @@
 只生成可运行的 Harbor task、冻结输入与 job.json，不调用模型或启动容器：
 
 ```bash
-/Users/zhihu/.local/share/uv/tools/harbor/bin/python -m harbor_local \
-  --task harbor_local/tasks/saleor-prd-tdd --mode single --prepare-only
+/Users/zhihu/.local/share/uv/tools/harbor/bin/python -m runtime \
+  --task tasks/saleor-prd-tdd --mode single --prepare-only
 ```
 
 必须经过准备入口。environment/Dockerfile 的 COPY workspace/ 指向生成后的构建上下文，不能直接把源码目录作为已准备的 Harbor task 运行。

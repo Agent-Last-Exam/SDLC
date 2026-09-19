@@ -1,2 +1,8 @@
 .DS_Store
 /归档-非必要不读/
+.env
+.prepared/
+jobs/
+tasks/saleor-prd-tdd/environment/repos/
+__pycache__/
+*.pyc

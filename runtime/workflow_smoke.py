@@ -3,7 +3,7 @@ from pathlib import Path
 import shutil
 import tempfile
 
-from harbor_local.runtime.workflow_agent import HarborBackend
+from runtime.workflow_agent import HarborBackend
 
 
 def write_fixture(directory, role, workspace, outcome="pass"):

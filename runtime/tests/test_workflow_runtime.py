@@ -4,12 +4,12 @@ import shutil
 import tempfile
 import unittest
 
-from harbor_local.runtime.prepare_workflow import HERE, compile_workflow
-from harbor_local.runtime.workflow_controller import Controller
-from harbor_local.runtime.workflow_gates import GateError, validate_prd, validate_design, validate_stage, blocks, field
-from harbor_local.runtime.workflow_smoke import write_fixture
-from harbor_local.runtime.workflow_agent import native_role_evidence
-from harbor_local.runtime.codex_app_turn import app_server_command
+from runtime.prepare_workflow import HERE, compile_workflow
+from runtime.workflow_controller import Controller
+from runtime.workflow_gates import GateError, validate_prd, validate_design, validate_stage, blocks, field
+from runtime.workflow_smoke import write_fixture
+from runtime.workflow_agent import native_role_evidence
+from runtime.codex_app_turn import app_server_command
 
 
 class FakeBackend:

@@ -1,6 +1,6 @@
 # 执行代码
 
-面向使用者的入口是仓库根目录执行 `python -m harbor_local`。这里只放实现，不放业务 prompt、实验结果或历史报告。
+面向使用者的入口是仓库根目录执行 `python -m runtime`。这里只放实现，不放业务 prompt、实验结果或历史报告。
 
 | 文件 | 职责 |
 | --- | --- |
@@ -16,10 +16,10 @@
 | agents.py | Codex/Claude Code prompt 薄适配器；当前 workflow 使用 Codex |
 | environment.py | 按字面量读取本机 .env，不执行 shell |
 
-`prepare_workflow.HERE` 指向 harbor_local 根目录，不依赖 shell 当前目录推算资源位置；用户传入的相对路径仍相对调用目录。公开规范、角色、模板、workflow 和业务源码都位于 tasks/<task>/，执行记录位于 jobs/。
+`prepare_workflow.HERE` 指向 仓库根目录，不依赖 shell 当前目录推算资源位置；用户传入的相对路径仍相对调用目录。公开规范、角色、模板、workflow 和业务源码都位于 tasks/<task>/，执行记录位于 jobs/。
 
 Controller 数据在 trial/workflow 下，不挂载给 Agent。Agent 只拥有本阶段产物和 scratch 等目录的写权限；已接受文件与源码归 root 只读。详见 [当前设计](../docs/instruction-to-review.md)。
 
-运行器改动后执行 [tests/](tests/README.md)；涉及 Docker、包导入或上传路径时再跑 `python -m harbor_local --smoke`。升级 Codex 原生接口时，用 `--role-probe --use-local-codex-auth` 做两个真实模型回合验证。
+运行器改动后执行 [tests/](tests/README.md)；涉及 Docker、包导入或上传路径时再跑 `python -m runtime --smoke`。升级 Codex 原生接口时，用 `--role-probe --use-local-codex-auth` 做两个真实模型回合验证。
 
 `--task` 与 `--mode` 选择 task 下的 workflows/<mode>.yaml；`--config` 可显式指定 YAML。准备器按配置的 task_root 加载 task.toml 和 environment/Dockerfile，启动器不再内置 Saleor 容器定义或超时配置。具体交付门禁当前仍针对 PRD/技术设计，不代表任意 stage 已可执行。
