@@ -1,0 +1,82 @@
+{
+  "task_id": "saleor-3.23",
+  "status": "hunk_split_with_test_adapters",
+  "experiment": "trajectories/saleor/3.22.0__3.23.0/exp-20260918-helper-split",
+  "apply": "python3 tools/apply_patches.py {code|test} --workspace <parent of both base checkouts>; apply test before code for D; package.json is split into ordinary patch hunks.",
+  "repos": {
+    "saleor": {
+      "github": "saleor/saleor",
+      "git_base": "3.22.0",
+      "git_target": "3.23.0",
+      "sha_base": "6cfb77430ddbc53f48dfd3462fbefaad4e8c3d45",
+      "sha_target": "e11a5557eff29fbb2eed36e6ff3cd0af08ab9e10",
+      "classification": "trajectories/saleor/3.22.0__3.23.0/exp-20260918-helper-split/classification/saleor.json",
+      "test_patch": {
+        "path": "tests/saleor.test.patch",
+        "files": 486,
+        "bytes": 3801421,
+        "sha256": "f56b0ef21c912227aa33a8a9a559f08f79255e94b4da6d40c993b290533b6995"
+      },
+      "c_execution_adapter": {
+        "path": "tests/tools/apply_import_adaptation.py",
+        "bytes": 5746,
+        "sha256": "59ca2bb350c9ad0e91e70462cba39732a59909a4079d29710d005ae577480a54",
+        "phase": "C/pre only; prepare.py resets it before D/post"
+      },
+      "code_patch": {
+        "path": "solution/saleor.code.patch",
+        "files": 601,
+        "bytes": 2837796,
+        "sha256": "6a0e25be42e8fe52ae0084a964b4c85c0be2bb0f5e20063d0ff0756c3d227140"
+      },
+      "verification": {
+        "status": "passed_with_test_adapters",
+        "unique_paths": 1087,
+        "split_paths": 0,
+        "target_tree": "465532848e3956c34a559b0e0b95961a303a4c04",
+        "trees": {
+          "code": "61bd59e95596a37710423c2ec9f811145db05b9d",
+          "code+test": "4734658cb4d4b99af55d8fbb0b6958d54f59fb08",
+          "test": "757d71cadc00eb8583e2560e57b3666dd0eb2906",
+          "test+code": "4734658cb4d4b99af55d8fbb0b6958d54f59fb08"
+        },
+        "applied_tree_differs_from_target": true,
+        "tree_difference_reason": "test patch retains five base/target compatibility adapters, so the applied tree intentionally differs from the raw target tree"
+      }
+    },
+    "saleor-dashboard": {
+      "github": "saleor/saleor-dashboard",
+      "git_base": "3.22.9",
+      "git_target": "3.23.0",
+      "sha_base": "e934ff0abf5e643d2e8eab5cce609387fe0e37b6",
+      "sha_target": "61a3c045f7d7aba8dc343563757fdfdd249cd656",
+      "classification": "trajectories/saleor/3.22.0__3.23.0/exp-20260918-dual-split/classification/saleor-dashboard.json",
+      "test_patch": {
+        "path": "tests/saleor-dashboard.test.patch",
+        "files": 492,
+        "bytes": 1414547,
+        "sha256": "a373fa4d26284e77c430205e9b4682d65979af6096a47375520919472b49a78b"
+      },
+      "code_patch": {
+        "path": "solution/saleor-dashboard.code.patch",
+        "files": 3104,
+        "bytes": 19341876,
+        "sha256": "4a2f6fec1c03ca5e9824f0f50d1d4af9644928efd7a91a59019f5bcf4fff35be"
+      },
+      "verification": {
+        "status": "passed_with_test_adapters",
+        "unique_paths": 3596,
+        "split_paths": 1,
+        "target_tree": "73050d1c8a3f09fa94f18c37cb399a70de8e363a",
+        "trees": {
+          "code": "eb92d7787381c203e778fb32621d4e2eec507921",
+          "code+test": "4c03d2a75014b5a32147c2af07f6b76f749334d3",
+          "test": "434a7a043aa362ce1a8a3d6cfc9619e6eec2e2a3",
+          "test+code": "4c03d2a75014b5a32147c2af07f6b76f749334d3"
+        },
+        "applied_tree_differs_from_target": true,
+        "tree_difference_reason": "package.json key ordering differs after independent test/code hunk application; parsed package.json is semantically equal to target"
+      }
+    }
+  }
+}

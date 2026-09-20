@@ -1,0 +1,12 @@
+{
+  "release_id": "saleor-3.23-calibration-20260920",
+  "manifest": "builders/harbor/tasks/saleor-3.23/manifest.json",
+  "harbor_package": "build/artifacts/saleor-3.23/standard",
+  "selection": "trajectories/saleor/3.22.0__3.23.0/exp-20260918-seed-fix/artifacts/cd-selection-final-20260920",
+  "f2p": 6058,
+  "p2p": 7024,
+  "frozen": true,
+  "registry_publish": "optional output step; Dockerfiles use local base/test tags as inputs",
+  "build_mode": "self_contained_local_base_and_test",
+  "status": null
+}

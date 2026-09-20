@@ -1,0 +1,52 @@
+{
+  "schema": "sdlcbench-harbor-delivery-v1",
+  "task_id": "saleor-3.23",
+  "release_id": "saleor-3.23-calibration-20260920",
+  "build_mode": "self_contained_local_base_and_test",
+  "images": {
+    "base_build_tag": "sdlcbench/saleor-3.23-base:standard-a-20260920",
+    "test_build_tag": "sdlcbench/saleor-3.23-test:standard-a-20260920",
+    "acr_publish": "optional output only"
+  },
+  "source_inputs": {
+    "environment": "legacy/environment plus current frozen standard verifier and patches",
+    "release_manifest": "release.json",
+    "acr_from_references": false
+  },
+  "files": {
+    "README.md": "f0532d43a11eca9d6ff9ce5b3cd3065c744ddac4d62fc2d040648fa669675b3c",
+    "environment/Dockerfile": "1c21251994a4fe54902805884bf91fec99e01c3783dbd077bf69c000583d0221",
+    "environment/build_metadata.json": "192aa0340fc565672fd9268b3f4d180d120e2bdaf2858cd200ca1870a1a1d8da",
+    "environment/dependencies/SHA256SUMS": "3798d471fcab75a990a92ad603deeaaba432c0c106e09718b75cc9abc25b8c11",
+    "environment/dependencies/target/saleor/pyproject.toml": "82b9a72e6d8b542db2df3ac285a668823f1b151b90f1d9c0d84d74c6715c5d0b",
+    "environment/dependencies/target/saleor/uv.lock": "86a35ab0bf69629d04cc7f3d09f1c1fa205eb6afc6620b317754490b33f22907",
+    "environment/dependencies/target/saleor-dashboard/.npmrc": "4b84eb91234d80d48c16b50746106405c4cd6d97581f7464001a7dc84dd9d185",
+    "environment/dependencies/target/saleor-dashboard/package.json": "24d5218dd6e6116b0a2b6c623dbe359fbcf5cbc3eb7cbbc88ff4e73582988a04",
+    "environment/dependencies/target/saleor-dashboard/pnpm-lock.yaml": "94f62d10e4012ff8991fa27a9d844d4851f57ab9c391e1fc72564ace7d2eb952",
+    "environment/dependencies/target/saleor-dashboard/pnpm-workspace.yaml": "28d32b41bd516d83d9d23525b12533688a6d6dd428fbe938e3b48796761fe866",
+    "environment/runtime/merge_dependencies.py": "055d3d50df6bbe22593b5687598621e3d63775377d562b6ae5112485a4b21415",
+    "environment/runtime/nginx-dashboard.conf": "6e38f29b73d7a96e0b9653263af4de79840d29e759c48a7dc78a0d09b8a7a3f6",
+    "environment/runtime/run-suite.sh": "5f301ded483bb70645c5fdad8c20c920603fe14973a8403e59ce0e23d649108a",
+    "environment/runtime/seed_e2e_fixtures.py": "968ea57be8ded252832128315afcc7149789e6b8818bfb3238884ab5396ae573",
+    "environment/runtime/services.sh": "a7c964f9e3814b879f238468c91870c01babd9e0f766397e4105f3c4822bb14e",
+    "environment/runtime/start-services.sh": "22ea8c2f5ef67be99cee1b3737a57af2cde7adfe8f68978f00a7ed86f65cc8e1",
+    "instruction.md": "f0fb383564dad897cfddcf7fa5384bb2c7a83e8674758d7046812792285a873b",
+    "release.json": "eb6df5674ac8dbecd62e00f7b511d270a36dd8008c3a8fc59b8bde01008fd970",
+    "solution/apply_patches.py": "9016791e55112d68409142a245dc25263d7972daeb00bd319ca8c5e9e856e838",
+    "solution/saleor-dashboard.code.patch": "4a2f6fec1c03ca5e9824f0f50d1d4af9644928efd7a91a59019f5bcf4fff35be",
+    "solution/saleor.code.patch": "6a0e25be42e8fe52ae0084a964b4c85c0be2bb0f5e20063d0ff0756c3d227140",
+    "solution/solve.sh": "baa51117be169103a3e98708a16f86541e3f96ceb56d630b96190d0b1b36dc3c",
+    "task.toml": "af6af9450bc4d29e9edb3dd5ea8cb85ba2fc2dd6dbb907f4f01362bbd5530839",
+    "tests/Dockerfile": "f8c5baa368f931de5099bd78fcca6c3a7da8d173ab5f426396f3e144cccff767",
+    "tests/apply_patches.py": "9016791e55112d68409142a245dc25263d7972daeb00bd319ca8c5e9e856e838",
+    "tests/config.json": "5da6da4df91ceaae3706f05fda02dedf902a3816038e669edce3f0064707eb19",
+    "tests/grader.py": "de460d155f592ba2a4cbdb0018ac6cec7696c1df068f2305de3fa01cbcd54c98",
+    "tests/patch_manifest.json": "f07f1ca5b99cb8c8386c2b2b79eaa0f3b4e8a0aab1f26b8c7b8291a030fd78a3",
+    "tests/prepare.py": "78b5da9a0adf9d6e4f458dbc3d77bd499e11445053d913c477cfe173602cb277",
+    "tests/reports.py": "d67f87d7536a692c62bbb528a2b015c5a70cb9022dff0fe9edac638cb85c2efb",
+    "tests/saleor-dashboard.test.patch": "a373fa4d26284e77c430205e9b4682d65979af6096a47375520919472b49a78b",
+    "tests/saleor.test.patch": "f56b0ef21c912227aa33a8a9a559f08f79255e94b4da6d40c993b290533b6995",
+    "tests/seed_e2e_fixtures.py": "7940a9a6fbda081e0bb640cb0cbb3c0d361503c937c3ae256da7c0eabba0b3b4",
+    "tests/test.sh": "14bd0ce343d45f2789c5d0c4e0aa16d33623a20a0bbf529eae00efff8570313d"
+  }
+}

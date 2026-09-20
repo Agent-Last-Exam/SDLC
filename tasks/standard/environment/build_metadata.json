@@ -1,0 +1,79 @@
+{
+  "status": "self_contained_standard_build_pending_harbor_smoke",
+  "build_mode": "self_contained_local_base_and_test",
+  "runtime_ready": true,
+  "source_policy": {
+    "build_context": "environment/",
+    "base_source": "pinned shallow git fetch",
+    "target_source_allowed": false,
+    "target_dependency_manifest": "dependencies/manifest.json",
+    "final_stage": "scratch"
+  },
+  "images": {
+    "base_runtime": "sdlcbench/saleor-3.23-base:standard-a-20260920",
+    "test_runtime": "sdlcbench/saleor-3.23-test:standard-a-20260920",
+    "acr_from_references": false
+  },
+  "base_validation": {
+    "constraints": "16 GiB, 8 CPU, no network",
+    "runtime_readiness": "passed",
+    "core_smoke": "67 passed",
+    "core_unit": "16371 passed, 2 skipped, 2 offline DNS failures accepted without adaptation",
+    "core_e2e": "223 passed",
+    "dashboard_unit": "337 suites passed; 2157 tests passed; 1 suite and 8 tests skipped",
+    "dashboard_e2e": "231 collected; 15 setup passed; interrupted before completion",
+    "scope": "Historical base image 5deaa6ba; not rerun during latest test-only fixture fixes."
+  },
+  "experiment": "trajectories/saleor/3.22.0__3.23.0/exp-20260918-seed-fix",
+  "repos": {
+    "saleor": {
+      "github": "saleor/saleor",
+      "git_base": "3.22.0",
+      "git_target": "3.23.0",
+      "sha_base": "6cfb77430ddbc53f48dfd3462fbefaad4e8c3d45",
+      "sha_target": "e11a5557eff29fbb2eed36e6ff3cd0af08ab9e10"
+    },
+    "saleor-dashboard": {
+      "github": "saleor/saleor-dashboard",
+      "git_base": "3.22.9",
+      "git_target": "3.23.0",
+      "sha_base": "e934ff0abf5e643d2e8eab5cce609387fe0e37b6",
+      "sha_target": "61a3c045f7d7aba8dc343563757fdfdd249cd656"
+    }
+  },
+  "shim": false,
+  "limitations": [
+    "Full A Playwright calibration remains incomplete.",
+    "Current revised test patch and seeder have not completed full C/D reruns and repeat stability.",
+    "External app manifest access remains unavailable offline; DNS exclusions follow proposal D13.",
+    "Official test protection and empty/gold Harbor trials remain pending."
+  ],
+  "matrix": {
+    "A": "base image, base code and base tests; calibration only",
+    "C": "test image: base code + test patch + C-only import adapter",
+    "D": "same test image as C: reset base, test patch + reference code patch; no C adapter"
+  },
+  "runtime_ready_scope": "Legacy environment contents are packaged; local base/test image builds and Harbor smoke remain pending.",
+  "historical_images": {
+    "base_runtime": "sha256:5deaa6ba8cc825264a61bc3b56d0d9ce2ed5fd8b3a8ae7adaf7e1e3104d479ac",
+    "test_runtime": "sha256:7dec2226693b6e5de4722ee076bec31eb9b93eeba9590d2297f4c426ba97f126"
+  },
+  "image_provenance": "Recorded in proposal latest Playwright fix; these are built-image records, not proof that subsequent package edits are present in those images.",
+  "post_phase": "Candidate evaluation uses model patch + official test patch; it is reference D only when the candidate is the reference code patch.",
+  "latest_validation": {
+    "artifact": "trajectories/saleor/3.22.0__3.23.0/exp-20260918-seed-fix/artifacts/d-targeted-final-20260919",
+    "result": "21 passed (6 business cases, 15 login setup); runtime healthy; OOMKilled=false",
+    "constraints": "offline, 16 GiB, 8 CPU, one Playwright worker",
+    "scope": "Targeted D only; current-input full C/D rerun and repeat stability pending."
+  },
+  "seeders": {
+    "environment/runtime/seed_e2e_fixtures.py": {
+      "sha256": "968ea57be8ded252832128315afcc7149789e6b8818bfb3238884ab5396ae573",
+      "scope": "Base image seeder; unchanged by test-only Playwright fixes."
+    },
+    "tests/seed_e2e_fixtures.py": {
+      "sha256": "7940a9a6fbda081e0bb640cb0cbb3c0d361503c937c3ae256da7c0eabba0b3b4",
+      "scope": "Test image override: variant channel price/image/stock and distinct shipping-rate IDs."
+    }
+  }
+}

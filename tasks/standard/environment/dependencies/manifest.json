@@ -1,0 +1,21 @@
+{
+  "policy": "Only pinned Saleor 3.22 source is fetched. Target inputs are dependency manifests, never a target image or source checkout.",
+  "target": {
+    "saleor": {
+      "commit": "e11a5557eff29fbb2eed36e6ff3cd0af08ab9e10",
+      "files": {
+        "pyproject.toml": "82b9a72e6d8b542db2df3ac285a668823f1b151b90f1d9c0d84d74c6715c5d0b",
+        "uv.lock": "86a35ab0bf69629d04cc7f3d09f1c1fa205eb6afc6620b317754490b33f22907"
+      }
+    },
+    "saleor-dashboard": {
+      "commit": "61a3c045f7d7aba8dc343563757fdfdd249cd656",
+      "files": {
+        ".npmrc": "4b84eb91234d80d48c16b50746106405c4cd6d97581f7464001a7dc84dd9d185",
+        "package.json": "24d5218dd6e6116b0a2b6c623dbe359fbcf5cbc3eb7cbbc88ff4e73582988a04",
+        "pnpm-lock.yaml": "94f62d10e4012ff8991fa27a9d844d4851f57ab9c391e1fc72564ace7d2eb952",
+        "pnpm-workspace.yaml": "28d32b41bd516d83d9d23525b12533688a6d6dd428fbe938e3b48796761fe866"
+      }
+    }
+  }
+}
