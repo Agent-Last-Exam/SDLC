@@ -1,0 +1,13 @@
+schema_version: 1
+kind: workflow_run
+mode: single
+task_root: ../workflow-runtime
+contract: lifecycle.yaml
+agent: {adapter: codex, model_binding: CODEX_MODEL}
+execution:
+  scheduling: fixed_forward
+  principal_session: continuous
+  role_activation: stage_boundary
+  subagents: {enabled: true, scope: current_stage, join_before_advance: true}
+  on_failure: stop
+  accepted_artifacts: immutable

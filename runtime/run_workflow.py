@@ -27,6 +27,7 @@ def main():
     parser.add_argument("--smoke-scenario", choices=["pass", "repair", "repair-reuse", "fail"], default="repair")
     parser.add_argument("--role-probe", action="store_true", help="Two minimal real model turns verifying same-session role activation")
     parser.add_argument("--prepare-only", action="store_true")
+    parser.add_argument("--stop-after-stage", help="Stop successfully after this accepted lifecycle stage")
     parser.add_argument("--job-name")
     args = parser.parse_args()
     if args.smoke and args.role_probe:
@@ -41,6 +42,9 @@ def main():
         parser.error(f"{compiled['mode']} execution is not implemented for the lifecycle; use --mode single")
     if compiled["run"]["agent"]["adapter"] != "codex":
         parser.error("This execution backend currently supports Codex only")
+    stage_ids = {stage["stage_id"] for stage in compiled["stages"]}
+    if args.stop_after_stage and args.stop_after_stage not in stage_ids:
+        parser.error(f"Unknown stop stage: {args.stop_after_stage}")
     model = args.model or env.get("CODEX_MODEL")
     if args.use_local_codex_auth:
         codex_home = Path.home() / ".codex"
@@ -82,7 +86,9 @@ def main():
         "verifier": {"disable": True},
         "agents": [{"import_path": "runtime.workflow_agent:WorkflowCodex", "model_name": model,
                     "override_setup_timeout_sec": 600,
-                    "kwargs": {"prepared_path": str(prepared), "smoke": args.smoke, "smoke_scenario": args.smoke_scenario, "role_probe": args.role_probe}}],
+                    "kwargs": {"prepared_path": str(prepared), "smoke": args.smoke,
+                               "smoke_scenario": args.smoke_scenario, "role_probe": args.role_probe,
+                               "stop_after_stage": args.stop_after_stage}}],
         "tasks": [{"path": str(task)}],
     }
     (prepared / "job.json").write_text(json.dumps(recipe, indent=2) + "\n")
@@ -111,7 +117,11 @@ def main():
     print(f"Workflow {state['status']}: {state_file}", flush=True)
     if not args.role_probe:
         print(f"Accepted artifacts: {trial / 'workflow/accepted'}", flush=True)
-    return 0 if state["status"] == "complete" else 1
+    successful = state["status"] == "complete" or (
+        state["status"] == "stopped_at_boundary"
+        and state.get("stop_after_stage") == args.stop_after_stage
+    )
+    return 0 if successful else 1
 
 
 if __name__ == "__main__":

@@ -1,0 +1,41 @@
+{
+    "schema_version": 1,
+    "task": {
+        "name": "task",
+        "type": "local",
+        "digest": "sha256:49d2c83254183577da6a644bf8f1b8cc926f41849be6248f39d7a8a30ed06d5c",
+        "path": "/home/iriszeng18_gmail_com/software-last-exam/.prepared/standard-test-design-rollout-20260920/task"
+    },
+    "install_only": false,
+    "timeout_multiplier": 1.0,
+    "agent": {
+        "import_path": "runtime.workflow_agent:WorkflowCodex",
+        "model_name": "gpt-5.6-sol",
+        "skills": [],
+        "override_setup_timeout_sec": 600.0,
+        "resume_trajectory": false,
+        "extra_allowed_hosts": [],
+        "kwargs": {
+            "prepared_path": "/home/iriszeng18_gmail_com/software-last-exam/.prepared/standard-test-design-rollout-20260920",
+            "smoke": false,
+            "smoke_scenario": "repair",
+            "role_probe": false,
+            "stop_after_stage": "sprint1/test-design"
+        },
+        "mcp_servers": []
+    },
+    "skills": [],
+    "environment": {
+        "type": "docker",
+        "force_build": false,
+        "delete": true,
+        "cpu_enforcement_policy": "auto",
+        "memory_enforcement_policy": "auto",
+        "extra_docker_compose": [],
+        "kwargs": {},
+        "extra_allowed_hosts": []
+    },
+    "verifier": {
+        "disable": true
+    }
+}

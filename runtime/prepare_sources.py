@@ -9,7 +9,7 @@ import subprocess
 import tempfile
 
 HERE = Path(__file__).resolve().parents[1]
-ENV = HERE / "tasks/saleor-prd-tdd/environment"
+DEFAULT_TASK = HERE / "tasks/saleor-prd-tdd"
 
 
 def git(repo, *args):
@@ -18,10 +18,13 @@ def git(repo, *args):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--task", type=Path, default=DEFAULT_TASK,
+                        help="Task directory containing environment/base-revisions.json")
     parser.add_argument("--source-root", type=Path, help="Optional local Git repos, each under its repo name")
     args = parser.parse_args()
-    specs = json.loads((ENV / "base-revisions.json").read_text())
-    destination = ENV / "repos"
+    environment = args.task.resolve() / "environment"
+    specs = json.loads((environment / "base-revisions.json").read_text())
+    destination = environment / "repos"
     destination.mkdir(exist_ok=True)
     for name, spec in specs.items():
         target = destination / name

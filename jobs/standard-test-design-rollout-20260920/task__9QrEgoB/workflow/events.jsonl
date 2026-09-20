@@ -1,0 +1,11 @@
+{"time": 1789922802.9085414, "event": "run_started"}
+{"time": 1789922802.9095926, "event": "stage_started", "stage": "sprint1/prd", "resume_session": null, "role_sha256": "3fd0b2052c0df9224defedd309c6462754dd63a2160425517cc44c24fb82744a", "prd_input_sha256": null}
+{"time": 1789922834.6833756, "event": "stage_execution_started", "stage": "sprint1/prd"}
+{"time": 1789923345.8503242, "event": "stage_accepted", "stage": "sprint1/prd", "hashes": {"prd.md": "2d74416990715176b7d6b69a9b0fb2089873e77d4fa96263ad7af51b896e4a7b"}}
+{"time": 1789923346.1857443, "event": "stage_started", "stage": "sprint1/tech-design", "resume_session": "01a0bfb7-01f3-72c2-b872-82eade8ed25e", "role_sha256": "535023d1640b02c9c88a7fbe8c3c5278e1edfd9af34a210163b53ce69fed7981", "prd_input_sha256": "2d74416990715176b7d6b69a9b0fb2089873e77d4fa96263ad7af51b896e4a7b"}
+{"time": 1789923348.023224, "event": "stage_execution_started", "stage": "sprint1/tech-design"}
+{"time": 1789924443.1785183, "event": "stage_accepted", "stage": "sprint1/tech-design", "hashes": {"backend-design.md": "41fb6a273c391a477f0886b4bcfd9ecf79a50a89df415578922e1aa7133c5489", "frontend-design.md": "bad79df04e4086c5a0ebaa3f89870ec5f44919165e26022c01c4d8a4346a36bb", "interface-contract.md": "f145a6fb6483c9f99a7fe8ecc000b50b2e5cf83a73fb0cd705a5464def57535d", "target-schema.graphql": "b4617d722ea33c627947607146172dd0e910c4e55eb7b4f00e718da0b77e6ef4"}}
+{"time": 1789924443.5078192, "event": "stage_started", "stage": "sprint1/test-design", "resume_session": "01a0bfb7-01f3-72c2-b872-82eade8ed25e", "role_sha256": "28cf5255492b0e2d519a5f7ac8c276b37e94719c62497667fb6099226597f2a5", "prd_input_sha256": "2d74416990715176b7d6b69a9b0fb2089873e77d4fa96263ad7af51b896e4a7b"}
+{"time": 1789924445.3268597, "event": "stage_execution_started", "stage": "sprint1/test-design"}
+{"time": 1789925032.6176546, "event": "stage_accepted", "stage": "sprint1/test-design", "hashes": {"test-cases.v1.csv": "d9ac49b8cd47cab328a025f162d5e91859be94d0867c2d643e2fabc0643fd240"}}
+{"time": 1789925032.618259, "event": "run_stopped_at_boundary", "stage": "sprint1/test-design"}

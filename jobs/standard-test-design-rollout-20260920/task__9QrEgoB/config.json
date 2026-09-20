@@ -1,0 +1,23 @@
+{
+    "task": {
+        "path": "/home/iriszeng18_gmail_com/software-last-exam/.prepared/standard-test-design-rollout-20260920/task"
+    },
+    "trial_name": "task__9QrEgoB",
+    "trials_dir": "/home/iriszeng18_gmail_com/software-last-exam/jobs/standard-test-design-rollout-20260920",
+    "agent": {
+        "import_path": "runtime.workflow_agent:WorkflowCodex",
+        "model_name": "gpt-5.6-sol",
+        "override_setup_timeout_sec": 600.0,
+        "kwargs": {
+            "prepared_path": "/home/iriszeng18_gmail_com/software-last-exam/.prepared/standard-test-design-rollout-20260920",
+            "smoke": false,
+            "smoke_scenario": "repair",
+            "role_probe": false,
+            "stop_after_stage": "sprint1/test-design"
+        }
+    },
+    "verifier": {
+        "disable": true
+    },
+    "job_id": "0db248a3-5c8d-4c9d-b42d-5185e340eb4b"
+}

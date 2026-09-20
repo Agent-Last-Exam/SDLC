@@ -8,7 +8,15 @@
 | saleor-dashboard 3.22.2 | 59e600df5fa8bc9cc875bb7beaeca43a2549d2d5 |
 | saleor-platform | 8330f42e5673fe0c4fd4a445d6789bd257cc9265 |
 
-源码在 environment/repos/，由 `python3 -m runtime.prepare_sources` 精确获取。目录中的 Base Git 仓库保持干净，不放 Agent 输出。新 workflow 用 git archive 创建无历史的独立源码快照，放进每个 job 的冻结 workspace。
+源码在 environment/repos/，由 `python3 -m runtime.prepare_sources --task tasks/<task>` 精确获取。目录中的 Base Git 仓库保持干净，不放 Agent 输出。新 workflow 用 git archive 创建无历史的独立源码快照，放进每个 job 的冻结 workspace。
+
+已有 Harbor task 可以智能复制现有 Single workflow；业务 instruction、原 task.toml 和原 Dockerfile 不会被覆盖：
+
+```bash
+python3 -m runtime.scaffold_workflow tasks/<task> --update-manifest
+```
+
+复制器会复用角色、模板和两轮 lifecycle；若目标是带预构建镜像的冻结评测包，则在 task 内生成独立的 `workflow-runtime/`，避免改变原 empty/gold/verifier 入口。若目标没有 `base-revisions.json`，复制器会尝试从标准测试配置推导 Base 仓库和 SHA。
 
 [saleor-prd-tdd/](saleor-prd-tdd/README.md) 自包含业务 Instruction、阶段 Input/Output、sprint/stage 编排、三种运行模式、角色 SP、模板、共同交付规范、task.toml 与 Dockerfile。没有全局 Saleor spec。
 

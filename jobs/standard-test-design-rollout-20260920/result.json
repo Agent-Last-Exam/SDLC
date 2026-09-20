@@ -1,0 +1,33 @@
+{
+    "id": "0db248a3-5c8d-4c9d-b42d-5185e340eb4b",
+    "started_at": "2026-09-20T16:35:32.783625",
+    "updated_at": "2026-09-20T17:24:14.129747",
+    "finished_at": "2026-09-20T17:24:14.129747",
+    "n_total_trials": 1,
+    "stats": {
+        "n_completed_trials": 1,
+        "n_errored_trials": 0,
+        "n_running_trials": 0,
+        "n_pending_trials": 0,
+        "n_cancelled_trials": 0,
+        "n_retries": 0,
+        "evals": {
+            "sdlc-workflow-codex__gpt-5.6-sol__adhoc": {
+                "n_trials": 0,
+                "n_errors": 0,
+                "metrics": [
+                    {
+                        "mean": 0.0
+                    }
+                ],
+                "pass_at_k": {},
+                "reward_stats": {},
+                "exception_stats": {}
+            }
+        },
+        "n_input_tokens": 9837600,
+        "n_cache_tokens": 9418112,
+        "n_output_tokens": 99150,
+        "cost_usd": 7.4281968
+    }
+}

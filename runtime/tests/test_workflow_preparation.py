@@ -97,6 +97,63 @@ class WorkflowPreparationTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "either"):
             resolve_config(self.root / "run.yaml", mode="single")
 
+    def test_config_only_compile_does_not_require_prepared_repository_cache(self):
+        repos = Path(self.contract["inputs"]["repos"])
+        self.assertFalse(repos.exists())
+        result = self.compile()
+        self.assertEqual(result["sources"]["inputs"]["repos"], str(repos))
+        with self.assertRaisesRegex(ValueError, "Missing inputs:repos"):
+            compile_workflow(self.root / "run.yaml", verify_repos=True)
+
+    def test_explicit_public_input_cannot_map_into_private_workspace(self):
+        self.contract["inputs"]["leak"] = {
+            "source": str(HERE / "tasks/saleor-prd-tdd/instruction.md"),
+            "workspace": "private/golden.md",
+        }
+        with self.assertRaisesRegex(ValueError, "must stay below public"):
+            self.compile()
+
+    def test_private_source_cannot_be_disguised_as_public_input(self):
+        self.contract["inputs"]["leak"] = {
+            "source": str(HERE / "tasks/saleor-prd-tdd/instruction.md"),
+            "workspace": "public/query.md",
+        }
+        with self.assertRaisesRegex(ValueError, "must come from the task public"):
+            self.compile()
+
+    def test_standard_prd_tdd_and_test_design_contexts(self):
+        result = compile_workflow(
+            HERE / "tasks/standard/workflows/single.yaml", verify_repos=False
+        )
+        self.assertEqual(result["workspace_paths"]["input:query"], "public/query.md")
+        self.assertEqual(
+            result["workspace_paths"]["input:business_conversations"],
+            "public/business-conversations.md",
+        )
+        self.assertEqual(
+            result["workspace_paths"]["input:prd_schema"],
+            "public/prd-schema.md",
+        )
+
+        prd, tdd, test_design = result["stages"][:3]
+        self.assertEqual(set(prd["inputs"]), {
+            "input:query", "input:business_conversations", "input:prd_schema", "input:repos",
+        })
+        self.assertEqual(set(tdd["inputs"]), {
+            "input:query", "input:business_conversations", "input:repos",
+            "artifact:sprint1/prd/prd", "template:frontend_design",
+            "template:backend_design", "template:interface_contract", "template:target_interface",
+        })
+        self.assertEqual(set(test_design["inputs"]), {
+            "input:query", "input:business_conversations", "input:repos",
+            "artifact:sprint1/prd/prd", "artifact:sprint1/tech-design/frontend_design",
+            "artifact:sprint1/tech-design/backend_design",
+            "artifact:sprint1/tech-design/interface_contract",
+            "artifact:sprint1/tech-design/target_schema", "template:test_cases",
+        })
+        self.assertNotIn("private", json.dumps(result, ensure_ascii=False).lower())
+        self.assertNotIn("template:prd", result["workspace_paths"])
+
     def test_relocated_task_prepares_its_own_runtime_and_public_inputs(self):
         from runtime import run_workflow
 

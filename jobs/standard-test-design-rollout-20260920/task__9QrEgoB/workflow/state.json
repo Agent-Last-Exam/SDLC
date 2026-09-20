@@ -1,0 +1,59 @@
+{
+  "mode": "single",
+  "status": "stopped_at_boundary",
+  "cursor": 3,
+  "stages": [
+    {
+      "id": "sprint1/prd",
+      "role": "pm",
+      "status": "accepted",
+      "execution_started": true,
+      "session_id": "01a0bfb7-01f3-72c2-b872-82eade8ed25e",
+      "prd_input_sha256": null,
+      "input_sha256": {},
+      "outputs": {
+        "prd.md": "2d74416990715176b7d6b69a9b0fb2089873e77d4fa96263ad7af51b896e4a7b"
+      }
+    },
+    {
+      "id": "sprint1/tech-design",
+      "role": "architect",
+      "status": "accepted",
+      "execution_started": true,
+      "session_id": "01a0bfb7-01f3-72c2-b872-82eade8ed25e",
+      "prd_input_sha256": "2d74416990715176b7d6b69a9b0fb2089873e77d4fa96263ad7af51b896e4a7b",
+      "input_sha256": {
+        "artifact:sprint1/prd/prd": "2d74416990715176b7d6b69a9b0fb2089873e77d4fa96263ad7af51b896e4a7b"
+      },
+      "outputs": {
+        "backend-design.md": "41fb6a273c391a477f0886b4bcfd9ecf79a50a89df415578922e1aa7133c5489",
+        "frontend-design.md": "bad79df04e4086c5a0ebaa3f89870ec5f44919165e26022c01c4d8a4346a36bb",
+        "interface-contract.md": "f145a6fb6483c9f99a7fe8ecc000b50b2e5cf83a73fb0cd705a5464def57535d",
+        "target-schema.graphql": "b4617d722ea33c627947607146172dd0e910c4e55eb7b4f00e718da0b77e6ef4"
+      }
+    },
+    {
+      "id": "sprint1/test-design",
+      "role": "qa-design",
+      "status": "accepted",
+      "execution_started": true,
+      "session_id": "01a0bfb7-01f3-72c2-b872-82eade8ed25e",
+      "prd_input_sha256": "2d74416990715176b7d6b69a9b0fb2089873e77d4fa96263ad7af51b896e4a7b",
+      "input_sha256": {
+        "artifact:sprint1/prd/prd": "2d74416990715176b7d6b69a9b0fb2089873e77d4fa96263ad7af51b896e4a7b",
+        "artifact:sprint1/tech-design/frontend_design": "bad79df04e4086c5a0ebaa3f89870ec5f44919165e26022c01c4d8a4346a36bb",
+        "artifact:sprint1/tech-design/backend_design": "41fb6a273c391a477f0886b4bcfd9ecf79a50a89df415578922e1aa7133c5489",
+        "artifact:sprint1/tech-design/interface_contract": "f145a6fb6483c9f99a7fe8ecc000b50b2e5cf83a73fb0cd705a5464def57535d",
+        "artifact:sprint1/tech-design/target_schema": "b4617d722ea33c627947607146172dd0e910c4e55eb7b4f00e718da0b77e6ef4"
+      },
+      "outputs": {
+        "test-cases.v1.csv": "d9ac49b8cd47cab328a025f162d5e91859be94d0867c2d643e2fabc0643fd240"
+      }
+    }
+  ],
+  "model_called": true,
+  "synthetic": false,
+  "principal_session": "01a0bfb7-01f3-72c2-b872-82eade8ed25e",
+  "baseline_sha256": "147f957a1bafc9a5ac760262bf6aa6ee89be0ed012103a4d973c6c81562d5b60",
+  "stop_after_stage": "sprint1/test-design"
+}

@@ -102,7 +102,8 @@ class HarborBackend:
             await self.root("chown -R root:root /workspace/repos; chmod -R a-w /workspace/repos")
         # Prove the actual execution identity cannot mutate public input or an
         # accepted stage. The subprocess runs as exactly the upcoming Agent UID.
-        targets = ["/workspace/instruction.md", "/workspace/roles", "/workspace/templates", "/workspace/repos"]
+        targets = ["/workspace/instruction.md", "/workspace/public", "/workspace/base-revisions.json",
+                   "/workspace/roles", "/workspace/templates", "/workspace/repos"]
         if stage.get("write_repos"):
             targets.remove("/workspace/repos")
         if self.stage_index:
@@ -281,13 +282,15 @@ class HarborBackend:
 class WorkflowCodex(BaseAgent):
     SUPPORTS_ATIF = True
 
-    def __init__(self, *args, prepared_path, smoke=False, smoke_scenario="repair", role_probe=False, **kwargs):
+    def __init__(self, *args, prepared_path, smoke=False, smoke_scenario="repair", role_probe=False,
+                 stop_after_stage=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.prepared = Path(prepared_path)
         self.compiled = json.loads((self.prepared / "resolved-workflow.json").read_text())
         self.smoke = smoke
         self.smoke_scenario = smoke_scenario
         self.role_probe = role_probe
+        self.stop_after_stage = stop_after_stage
         self.delegate = StageCodex(
             logs_dir=self.logs_dir, model_name=self.model_name, logger=self.logger,
             system_prompt_path=self.prepared / "workspace/roles/pm.system.md",
@@ -366,5 +369,6 @@ class WorkflowCodex(BaseAgent):
         if self.smoke:
             from runtime.workflow_smoke import SmokeBackend
             backend = SmokeBackend(backend, self.smoke_scenario)
-        controller = Controller(self.compiled, self.prepared / "workspace", control_dir, backend)
+        controller = Controller(self.compiled, self.prepared / "workspace", control_dir, backend,
+                                stop_after_stage=self.stop_after_stage)
         await controller.run()

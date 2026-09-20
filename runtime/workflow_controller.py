@@ -36,13 +36,17 @@ def atomic_json(path, value):
 
 
 class Controller:
-    def __init__(self, compiled, workspace, directory, backend):
+    def __init__(self, compiled, workspace, directory, backend, stop_after_stage=None):
         if compiled["mode"] != "single":
             raise ValueError("Only Single lifecycle execution is implemented")
         self.compiled, self.workspace = compiled, Path(workspace)
         self.directory, self.backend = Path(directory), backend
         if compiled["contract"].get("scope") != "local_sdlc":
             raise ValueError("Only the local_sdlc lifecycle contract is supported")
+        stage_ids = {stage["stage_id"] for stage in compiled["stages"]}
+        if stop_after_stage is not None and stop_after_stage not in stage_ids:
+            raise ValueError(f"Unknown stop stage: {stop_after_stage}")
+        self.stop_after_stage = stop_after_stage
         self.directory.mkdir(parents=True, exist_ok=True)
         if (self.directory / "state.json").exists():
             raise ValueError("Controller state already exists; refuse to replay an accepted stage")
@@ -192,6 +196,11 @@ class Controller:
                 self.event("stage_accepted", stage=stage["stage_id"], hashes=hashes)
                 if stage["role"] == "triage":
                     repair_plan = details
+                if stage["stage_id"] == self.stop_after_stage:
+                    self.state["status"] = "stopped_at_boundary"
+                    self.state["stop_after_stage"] = self.stop_after_stage
+                    self.event("run_stopped_at_boundary", stage=self.stop_after_stage)
+                    return self.state
                 if stage["role"] == "qa":
                     self.state["qa_verdict"] = details["verdict"]
                     if details["verdict"] == "pass" or stage["round"] == 2:

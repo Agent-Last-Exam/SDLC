@@ -183,6 +183,56 @@ inspection. The verifier always restores the recorded base commits before
 applying the candidate model patch and the official test patches, so test files
 cannot be used as the candidate implementation.
 
+## Run The Single Agent Workflow
+
+This task also owns a copy of the bounded Single Agent SDLC workflow under
+`workflows/`, with its roles and artifact templates under `roles/` and
+`templates/`. The original standard Harbor task, prebuilt image, solution, and
+verifier remain unchanged. `workflows/single.yaml` points at the isolated
+`workflow-runtime/` sidecar so a workflow rollout does not replace the standard
+empty/gold entrypoint.
+
+The original `instruction.md` remains the direct coding instruction used by the
+standard benchmark path. The staged lifecycle uses three task-owned files under
+`public/`: `query.md` and `business-conversations.md` form the complete PM
+business context, while `prd-schema.md` is the only PRD template. The workflow
+preparer exposes them at the same paths inside `/workspace/public`; no private
+verifier material is copied into the Agent workspace.
+
+The first three stage boundaries are explicit. PM receives the three public
+files and the two read-only Base repositories. Tech design receives the frozen
+PRD, the two public requirement sources, the Bases, and the technical-design
+templates. Test design receives the frozen PRD, accepted technical design, the
+same public requirement sources, the Bases, and the test-case template. Its
+`test-cases.v1.csv` is an Agent-authored business acceptance plan, not the
+13,082-node standard verifier selection.
+
+Prepare the two exact Base repository snapshots once, then validate or run the
+workflow from the repository root:
+
+```bash
+python3 -m runtime.prepare_sources --task tasks/standard
+
+# Freeze inputs and generate a Harbor recipe without calling a model.
+python3 -m runtime --task tasks/standard --mode single \
+  --prepare-only --job-name standard-single-prepare
+
+# Real Single Agent rollout.
+python3 -m runtime --task tasks/standard --mode single \
+  --use-local-codex-auth
+```
+
+The workflow runtime currently preserves the existing Agent-authored QA routing.
+The standard verifier remains the authoritative product Oracle, but it is not yet
+invoked automatically between the workflow's development and repair stages.
+
+For another task, copy and adapt this workflow bundle without overwriting the
+target instruction, task definition, or environment:
+
+```bash
+python3 -m runtime.scaffold_workflow tasks/<task> --update-manifest
+```
+
 ## Troubleshooting
 
 - If Docker tries to pull an old `:runtime` image, check that `task.toml` and

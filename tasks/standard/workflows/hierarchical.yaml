@@ -1,0 +1,18 @@
+schema_version: 1
+kind: workflow_run
+mode: hierarchical
+task_root: ../workflow-runtime
+contract: lifecycle.yaml
+agent: {adapter: codex, model_binding: CODEX_MODEL}
+execution:
+  scheduling: lead_managed
+  principal_session: lead_with_members
+  roles: explicit
+  revisits: allowed
+  accepted_artifacts: immutable_revisions
+  final_delivery: consistent_revision_closure
+lead:
+  blueprint: null # 本次不编写 Lead；准备检查会明确报告执行阻塞项。
+  organization_skill: null
+  team_tools: [spawn_member, send_task, inspect_member, submit_artifact, request_check, finish_delivery]
+# 共享 stages 是工作类别与交付契约；此模式不把它解释为固定游标。

@@ -92,24 +92,69 @@ def compile_workflow(path, verify_repos=True):
     if contract.get("scope") != "local_sdlc":
         raise ValueError("Only the local_sdlc lifecycle contract is supported")
     sources = {}
+    input_workspace_paths = {}
+    explicit_input_sources = {}
     for group in ("roles", "templates", "inputs"):
         sources[group] = {}
         for name, value in contract[group].items():
-            source = (contract_path.parent / value).resolve()
-            if not source.exists() or (name != "repos" and not source.is_file()):
+            if group == "inputs" and isinstance(value, dict):
+                if set(value) != {"source", "workspace"}:
+                    raise ValueError(
+                        f"Input {name} must declare exactly source and workspace"
+                    )
+                source_value = value["source"]
+                workspace_value = safe_relative(value["workspace"])
+            else:
+                source_value = value
+                workspace_value = None
+            if not isinstance(source_value, str):
+                raise ValueError(f"Invalid {group}:{name} source")
+            source = (contract_path.parent / source_value).resolve()
+            missing = (not source.is_dir() if name == "repos" else not source.is_file())
+            if missing and (name != "repos" or verify_repos):
                 raise ValueError(f"Missing {group}:{name}: {source}")
             sources[group][name] = str(source)
-    if not Path(sources["inputs"]["repos"]).is_dir():
-        raise ValueError("Repository snapshot root is not a directory")
-    workspace_paths = {
-        "input:instruction": "instruction.md",
-        "input:base_revisions": "base-revisions.json",
-        "input:repos": "repos",
+            if group == "inputs":
+                if not re.fullmatch(r"[a-z][a-z0-9_]*", name):
+                    raise ValueError(f"Invalid input name: {name}")
+                input_workspace_paths[name] = workspace_value
+                if isinstance(value, dict):
+                    explicit_input_sources[name] = source
+    legacy_input_paths = {
+        "instruction": "instruction.md",
+        "base_revisions": "base-revisions.json",
+        "repos": "repos",
     }
-    if set(contract["inputs"]) != {key.split(":")[1] for key in workspace_paths}:
-        raise ValueError("Unknown or missing public inputs")
+    if not {"base_revisions", "repos"}.issubset(contract["inputs"]):
+        raise ValueError("Missing required Base inputs")
+    if verify_repos and not Path(sources["inputs"]["repos"]).is_dir():
+        raise ValueError("Repository snapshot root is not a directory")
+    for name, value in input_workspace_paths.items():
+        if value is None:
+            if name not in legacy_input_paths:
+                raise ValueError(f"Input {name} needs an explicit workspace path")
+            input_workspace_paths[name] = legacy_input_paths[name]
+    if input_workspace_paths["base_revisions"] != "base-revisions.json":
+        raise ValueError("base_revisions must be exposed as base-revisions.json")
+    if input_workspace_paths["repos"] != "repos":
+        raise ValueError("repos must be exposed as repos")
+    for name, value in input_workspace_paths.items():
+        if name not in {"instruction", "base_revisions", "repos"} and not value.startswith("public/"):
+            raise ValueError(f"Public input {name} must stay below public/")
+        contract_public_root = contract_path.parent.parent / "public"
+        if (value.startswith("public/")
+                and not explicit_input_sources[name].is_relative_to(contract_public_root)):
+            raise ValueError(f"Public input {name} must come from the task public directory")
+    if len(set(input_workspace_paths.values())) != len(input_workspace_paths):
+        raise ValueError("Public inputs cannot share a workspace path")
+    workspace_paths = {
+        f"input:{name}": value for name, value in input_workspace_paths.items()
+    }
     for name, source in sources["templates"].items():
-        workspace_paths[f"template:{name}"] = "templates/" + Path(source).name
+        relative = "templates/" + Path(source).name
+        if relative in workspace_paths.values():
+            raise ValueError(f"Template path collides with a public input: {relative}")
+        workspace_paths[f"template:{name}"] = relative
     accepted_refs = set(workspace_paths)
     stages = []
     stage_ids = set()
@@ -228,9 +273,9 @@ def prepare(compiled, destination):
                 target = workspace / relative
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(source, target)
-        revisions = json.loads((workspace / "base-revisions.json").read_text())
+        revisions = json.loads((workspace / compiled["workspace_paths"]["input:base_revisions"]).read_text())
         for name, revision in revisions.items():
-            target = workspace / "repos" / name
+            target = workspace / compiled["workspace_paths"]["input:repos"] / name
             target.mkdir(parents=True)
             repo = Path(compiled["sources"]["inputs"]["repos"]) / name
             expected = revision if isinstance(revision, str) else revision["commit"]

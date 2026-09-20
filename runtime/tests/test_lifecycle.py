@@ -88,6 +88,30 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
         controller = Controller(self.config, self.workspace, self.root / 'control', backend)
         return await controller.run(), backend
 
+    async def test_explicit_boundary_stops_after_sealing_test_design(self):
+        backend = LifecycleBackend(self.workspace)
+        controller = Controller(
+            self.config, self.workspace, self.root / 'control', backend,
+            stop_after_stage='sprint1/test-design',
+        )
+        state = await controller.run()
+        self.assertEqual(state['status'], 'stopped_at_boundary')
+        self.assertEqual(state['stop_after_stage'], 'sprint1/test-design')
+        self.assertEqual(state['cursor'], 3)
+        self.assertEqual([call[0] for call in backend.calls], [
+            'sprint1/prd', 'sprint1/tech-design', 'sprint1/test-design',
+        ])
+        self.assertTrue((self.root / 'control/baseline.json').is_file())
+        self.assertTrue((self.root / 'control/accepted/sprint1/test-design/test-cases.v1.csv').is_file())
+        self.assertEqual(backend.stops, 1)
+
+    async def test_unknown_explicit_boundary_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, 'Unknown stop stage'):
+            Controller(
+                self.config, self.workspace, self.root / 'control',
+                LifecycleBackend(self.workspace), stop_after_stage='sprint3/nope',
+            )
+
     async def test_first_pass_stops_before_repair(self):
         state, backend = await self.run_case(scenario='pass')
         self.assertEqual(state['status'], 'complete')

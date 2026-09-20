@@ -4,5 +4,6 @@
 .prepared/
 jobs/
 tasks/saleor-prd-tdd/environment/repos/
+tasks/standard/environment/repos/
 __pycache__/
 *.pyc

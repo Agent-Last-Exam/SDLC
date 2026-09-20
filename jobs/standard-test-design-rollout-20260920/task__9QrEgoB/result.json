@@ -1,0 +1,112 @@
+{
+    "id": "50a3038a-2c7e-46a4-8322-b21b17ff11b2",
+    "task_name": "sdlcbench/saleor-3.23-single-workflow",
+    "trial_name": "task__9QrEgoB",
+    "trial_uri": "file:///home/iriszeng18_gmail_com/software-last-exam/jobs/standard-test-design-rollout-20260920/task__9QrEgoB",
+    "task_id": {
+        "path": "/home/iriszeng18_gmail_com/software-last-exam/.prepared/standard-test-design-rollout-20260920/task"
+    },
+    "source": null,
+    "task_checksum": "e766a1512646cac061379d13f3fc7773f938450b2899a36315b15bed94968800",
+    "config": {
+        "task": {
+            "path": "/home/iriszeng18_gmail_com/software-last-exam/.prepared/standard-test-design-rollout-20260920/task",
+            "git_url": null,
+            "git_commit_id": null,
+            "name": null,
+            "ref": null,
+            "overwrite": false,
+            "download_dir": null,
+            "source": null
+        },
+        "trial_name": "task__9QrEgoB",
+        "trials_dir": "/home/iriszeng18_gmail_com/software-last-exam/jobs/standard-test-design-rollout-20260920",
+        "install_only": false,
+        "timeout_multiplier": 1.0,
+        "agent_timeout_multiplier": null,
+        "verifier_timeout_multiplier": null,
+        "agent_setup_timeout_multiplier": null,
+        "environment_build_timeout_multiplier": null,
+        "agent": {
+            "name": null,
+            "import_path": "runtime.workflow_agent:WorkflowCodex",
+            "model_name": "gpt-5.6-sol",
+            "n_concurrent": null,
+            "concurrency_group": null,
+            "skills": [],
+            "override_timeout_sec": null,
+            "override_setup_timeout_sec": 600.0,
+            "max_timeout_sec": null,
+            "resume_trajectory": false,
+            "load_trajectory": null,
+            "extra_allowed_hosts": [],
+            "kwargs": {
+                "prepared_path": "/home/iriszeng18_gmail_com/software-last-exam/.prepared/standard-test-design-rollout-20260920",
+                "smoke": false,
+                "smoke_scenario": "repair",
+                "role_probe": false,
+                "stop_after_stage": "sprint1/test-design"
+            },
+            "mcp_servers": []
+        },
+        "environment": {
+            "type": "docker",
+            "import_path": null,
+            "force_build": false,
+            "delete": true,
+            "cpu_enforcement_policy": "auto",
+            "memory_enforcement_policy": "auto",
+            "override_cpus": null,
+            "override_memory_mb": null,
+            "override_storage_mb": null,
+            "override_gpus": null,
+            "override_tpu": null,
+            "mounts": null,
+            "extra_docker_compose": [],
+            "kwargs": {},
+            "extra_allowed_hosts": []
+        },
+        "verifier": {
+            "override_timeout_sec": null,
+            "max_timeout_sec": null,
+            "disable": true
+        },
+        "artifacts": [],
+        "extra_instruction_paths": [],
+        "job_id": "0db248a3-5c8d-4c9d-b42d-5185e340eb4b"
+    },
+    "agent_info": {
+        "name": "sdlc-workflow-codex",
+        "version": "0.154.0",
+        "model_info": {
+            "name": "gpt-5.6-sol",
+            "provider": null
+        }
+    },
+    "agent_result": {
+        "n_input_tokens": 9837600,
+        "n_cache_tokens": 9418112,
+        "n_output_tokens": 99150,
+        "cost_usd": 7.4281968,
+        "rollout_details": null,
+        "metadata": null
+    },
+    "verifier_result": null,
+    "exception_info": null,
+    "started_at": "2026-09-20T16:35:35.670147Z",
+    "finished_at": "2026-09-20T17:24:14.124110Z",
+    "environment_setup": {
+        "started_at": "2026-09-20T16:35:36.107016Z",
+        "finished_at": "2026-09-20T16:46:40.445421Z"
+    },
+    "agent_setup": {
+        "started_at": "2026-09-20T16:46:40.445894Z",
+        "finished_at": "2026-09-20T16:46:42.907186Z"
+    },
+    "agent_execution": {
+        "started_at": "2026-09-20T16:46:42.907711Z",
+        "finished_at": "2026-09-20T17:23:52.826230Z"
+    },
+    "verifier": null,
+    "step_results": null
+}

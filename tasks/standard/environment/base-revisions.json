@@ -1,0 +1,12 @@
+{
+  "saleor": {
+    "url": "https://github.com/saleor/saleor.git",
+    "version": "3.22.0",
+    "commit": "6cfb77430ddbc53f48dfd3462fbefaad4e8c3d45"
+  },
+  "saleor-dashboard": {
+    "url": "https://github.com/saleor/saleor-dashboard.git",
+    "version": "3.22.9",
+    "commit": "e934ff0abf5e643d2e8eab5cce609387fe0e37b6"
+  }
+}

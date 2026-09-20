@@ -6,7 +6,8 @@
 | --- | --- |
 | run_workflow.py | 解析参数、冻结输入、创建 Harbor job、回收结果并生成 report.md |
 | prepare_workflow.py | 解析 task 配置、校验依赖与 Base SHA、生成公开 workspace |
-| prepare_sources.py | 精确获取并校验三仓 Base；不复制工作树改动 |
+| scaffold_workflow.py | 智能复制 task-owned workflow；保留目标业务输入并按需生成运行 sidecar |
+| prepare_sources.py | 按 `--task` 精确获取并校验 Base；不复制工作树改动 |
 | workflow_controller.py | 阶段游标、单次执行、封存、QA 分支与终止 |
 | workflow_agent.py | Harbor/Codex 适配、用户权限隔离、会话证据、阶段进程清理 |
 | codex_app_turn.py | 容器内原生 App Server 连接、角色消息注入、执行回合 |
