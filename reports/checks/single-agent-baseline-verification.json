@@ -1,0 +1,49 @@
+{
+  "checked_at": "2026-09-20T05:17:27.087869+00:00",
+  "model_called": false,
+  "unit_tests": {
+    "passed": 57,
+    "result": "OK",
+    "covers": [
+      "Baseline binding through repair",
+      "Host PRD/cases/manifest tampering stops without retry, including invalid submission and tool failure",
+      "Container file content, deletion and symlink checks"
+    ]
+  },
+  "smoke": {
+    "job": "jobs/lifecycle-baseline-lock-20260920",
+    "status": "complete",
+    "accepted_stages": 11,
+    "baseline_sha256": "b4d000b91c0d10d09a428ea5c0fac324c5cfd001b9c3b890d272bf22242c933d",
+    "baseline": {
+      "version": 1,
+      "artifacts": {
+        "artifact:sprint1/prd/prd": {
+          "path": "/workspace/artifacts/sprint1/prd/prd.md",
+          "sha256": "f58f33231c74718ed3c965fbb33d630dd40f1373d3eaf2b74e5eae315d4f628d",
+          "source_stage": "sprint1/prd"
+        },
+        "artifact:sprint1/test-design/test_cases": {
+          "path": "/workspace/artifacts/sprint1/test-design/test-cases.v1.csv",
+          "sha256": "f18b1f645a834290a0c8935a7fed7c90f7e76e99a67d79b47a7b1392c577384f",
+          "source_stage": "sprint1/test-design"
+        }
+      }
+    },
+    "all_referenced_baseline_hashes_match": true
+  },
+  "source_sha256": {
+    "runtime/workflow_controller.py": "825ea8a06d64cd1f07898404fd2bd18ec629c12d7c46b62a73fc166ee4b7c73e",
+    "runtime/workflow_agent.py": "beccedaf38c87c930e2fcd9e2a103a0f771ece7417cf98774163869dea3cd369",
+    "runtime/prepare_workflow.py": "240464062194307c80b5894c63d3c01386a227a710cf8a79200c0e9c23ddf360",
+    "runtime/tests/test_lifecycle.py": "5e2ddbb7de5a2f88188afc0ddcb7176a008a502fcd4cc3c539ebe4694a1286ac",
+    "runtime/reporting.py": "40b3912bef2152149c0521cb0893059b337f42fe39163738f7fa0fc4fdcad24b"
+  },
+  "limitations": [
+    "Synthetic container rollout; no real model or full Saleor business verification."
+  ],
+  "retention": {
+    "raw_job_and_prepared_removed_at": "2026-09-20T09:11:40.082664+00:00",
+    "reason": "Removed redundant synthetic run directories at user request; this summary preserves the previously verified results."
+  }
+}

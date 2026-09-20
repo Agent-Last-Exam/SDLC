@@ -89,6 +89,8 @@ def compile_workflow(path, verify_repos=True):
     contract = read_yaml(contract_path)
     if contract.get("schema_version") != 1 or contract.get("kind") != "delivery_contract":
         raise ValueError("Unsupported delivery contract")
+    if contract.get("scope") != "local_sdlc":
+        raise ValueError("Only the local_sdlc lifecycle contract is supported")
     sources = {}
     for group in ("roles", "templates", "inputs"):
         sources[group] = {}
@@ -131,6 +133,9 @@ def compile_workflow(path, verify_repos=True):
             "writable_directory": "/workspace/artifacts/" + sid,
             "scratch": "/workspace/scratch",
         }
+        for key in ("round", "write_repos", "capture_repos", "reuse_unless", "reuse_stage"):
+            if key in stage:
+                envelope[key] = stage[key]
         for name, value in stage["outputs"].items():
             value = safe_relative(value)
             if not value.startswith(f"artifacts/{sid}/") or value in output_paths:
@@ -146,6 +151,32 @@ def compile_workflow(path, verify_repos=True):
             raise ValueError(f"Missing final artifact: {ref}")
     if contract["delivery"]["stop_after"] != stages[-1]["stage_id"]:
         raise ValueError("Stop boundary must match final stage")
+    expected = [("sprint1/" + name, role) for name, role in (
+        ("prd", "pm"), ("tech-design", "architect"), ("test-design", "qa-design"),
+        ("development", "developer"), ("deploy", "deployer"), ("qa", "qa"))]
+    expected += [("sprint2/" + name, role) for name, role in (
+        ("triage", "triage"), ("tech-design", "architect"),
+        ("development", "developer"), ("deploy", "deployer"), ("qa", "qa"))]
+    if [(s["stage_id"], s["role"]) for s in stages] != expected or contract["delivery"].get("qa_rounds") != 2:
+        raise ValueError("Local SDLC requires the bounded two-sprint plan")
+    for stage in stages:
+        if stage["role"] != "pm" and "artifact:sprint1/prd/prd" not in stage["inputs"]:
+            raise ValueError("Every downstream stage must use the accepted first-round PRD")
+        expected_round = int(stage["stage_id"][6])
+        if stage["role"] not in {"pm", "architect"} or expected_round == 2:
+            if type(stage.get("round")) is not int or stage["round"] != expected_round:
+                raise ValueError("Stage round must match its sprint")
+        if bool(stage.get("write_repos")) != (stage["role"] == "developer") or bool(stage.get("capture_repos")) != (stage["role"] == "developer"):
+            raise ValueError("Only development stages must write and capture repositories")
+        if stage["stage_id"].startswith("sprint2/") and stage["role"] == "architect":
+            if stage.get("reuse_unless") != "design_changed" or stage.get("reuse_stage") != stage["stage_id"].replace("sprint2/", "sprint1/"):
+                raise ValueError("Invalid repair-stage reuse policy")
+        elif "reuse_unless" in stage or "reuse_stage" in stage:
+            raise ValueError("Only repair design stages may reuse artifacts")
+        if stage["role"] == "qa":
+            case_refs = [ref for ref in stage["inputs"] if ref.endswith("/test_cases")]
+            if case_refs != ["artifact:sprint1/test-design/test_cases"]:
+                raise ValueError("Both QA rounds must use the accepted first-round test cases")
     revisions = json.loads(Path(sources["inputs"]["base_revisions"]).read_text())
     if verify_repos:
         for name, revision in revisions.items():
@@ -156,12 +187,14 @@ def compile_workflow(path, verify_repos=True):
             if git(repo, "status", "--porcelain"):
                 raise ValueError(f"Dirty Base snapshot: {name}")
     blockers = ["Preparation does not check model authentication or Docker availability; use run_workflow to execute"]
+    if mode == "flat":
+        blockers.append("Flat lifecycle isolation and handoff are not implemented")
     if mode == "hierarchical":
         blockers.append("Lead blueprint, organization skill and team tools are not implemented")
     return {"schema_version": 1, "mode": mode, "run": run, "contract": contract,
             "task_root": str(task_root), "harbor_sources": {k: str(v) for k, v in harbor_sources.items()},
             "sources": sources, "stages": stages, "workspace_paths": workspace_paths,
-            "execution_implemented": mode in {"single", "flat"},
+            "execution_implemented": mode == "single",
             "execution_ready": False, "execution_blockers": blockers}
 
 

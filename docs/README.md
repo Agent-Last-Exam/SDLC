@@ -1,8 +1,8 @@
 # 文档导航
 
-- [instruction-to-review.md](instruction-to-review.md)：当前已实现的两阶段流程、输入输出、权限与能力边界。
+- [single-agent-lifecycle.md](single-agent-lifecycle.md)：当前 Single 完整流程、修复分支、本地部署与验证边界。
 - [rollout-records.md](rollout-records.md)：运行报告、历史自审、日志、冻结输入和正式交付的对应关系。
 - [directory-layout.md](directory-layout.md)：2026-09-18 目录整理、旧路径到新路径、验证方法。
-- [workflow-runtime.md](workflow-runtime.md) 与 examples/：早期多 sprint、完整开发生命周期设计草案。未实现部分不能据此当作可运行功能。
+- [workflow-runtime.md](workflow-runtime.md)：当前准备、编排、执行、部署、封存和记录的模块分工。
 
 开始使用请看 [项目 README](../README.md)，运行结论请看 [jobs 索引](../jobs/README.md)。

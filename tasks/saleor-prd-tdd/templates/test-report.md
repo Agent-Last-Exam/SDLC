@@ -9,7 +9,9 @@
 
 ## 1. 结论
 
-{本轮测试结论及对应的 TC；与 test-verify.json 中的 verdict 一致。}
+结论：{pass / fail，与 test-verify.json 的 verdict 一致}
+
+{本轮结论及对应的 TC；失败或环境阻塞时在缺陷章节给出可行动的问题。}
 
 ## 2. 需求验收情况
 

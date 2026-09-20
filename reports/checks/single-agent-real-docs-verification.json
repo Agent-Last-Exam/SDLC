@@ -1,0 +1,60 @@
+{
+  "checked_at": "2026-09-20T08:58:16.458976+00:00",
+  "job": "jobs/single-real-baseline-20260920",
+  "model": "gpt-6-astra",
+  "model_called": true,
+  "outcome": "stopped_as_requested_after_test_design",
+  "raw_runtime_status": "failed",
+  "stop_reason": "Controller sandbox operation failed: OPERATOR_STOP_AFTER_TEST_DESIGN: accepted test cases sealed; development disabled",
+  "operator_stop": "jobs/single-real-baseline-20260920/operator-stop.json",
+  "accepted_stages": [
+    {
+      "id": "sprint1/prd",
+      "attempts": 1
+    },
+    {
+      "id": "sprint1/tech-design",
+      "attempts": 2
+    },
+    {
+      "id": "sprint1/test-design",
+      "attempts": 1
+    }
+  ],
+  "development_model_calls": 0,
+  "source_write_access_granted": false,
+  "verified_artifact_hashes": 17,
+  "test_cases": 130,
+  "acceptance_criteria": 96,
+  "covered_acceptance_criteria": 96,
+  "baseline": {
+    "version": 1,
+    "artifacts": {
+      "artifact:sprint1/prd/prd": {
+        "path": "/workspace/artifacts/sprint1/prd/prd.md",
+        "sha256": "28416a9b3fedc00e7e64efb7f21c2a6bc53f3410500f511b6f9590ac6df83e46",
+        "source_stage": "sprint1/prd"
+      },
+      "artifact:sprint1/test-design/test_cases": {
+        "path": "/workspace/artifacts/sprint1/test-design/test-cases.v1.csv",
+        "sha256": "9f98e49f0bc32df9182147ec047f56f2127adeecc37ed55945faa75172c21756",
+        "source_stage": "sprint1/test-design"
+      }
+    }
+  },
+  "baseline_sha256": "0b8e7934a6760776da079d4f97cf160f1eed9c081500ea0e21a4e63e01855fb5",
+  "principal_sessions": [
+    "01a0bdc5-74ab-7a63-b23b-c2a95f12c8e9"
+  ],
+  "rejected_submissions": [
+    {
+      "stage": "sprint1/tech-design",
+      "error": "SDL may be a fragment; removed definitions absent from design: ['DigitalContentCountableEdge', 'DigitalContentDelete', 'DigitalContentInput', 'DigitalContentUpdate', 'DigitalContentUploadInput', 'DigitalContentUrlCreate', 'DigitalContentUrlCreateInput']"
+    }
+  ],
+  "limitations": [
+    "Document generation and structural checks only; no development, deployment or business test execution.",
+    "Coverage count measures AC references, not independent validation of test effectiveness.",
+    "Runtime reports failed because the one-run operator guard deliberately blocked development activation; the first three stages were accepted."
+  ]
+}

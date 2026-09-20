@@ -1,0 +1,235 @@
+schema_version: 1
+kind: delivery_contract
+name: saleor-single-agent-lifecycle
+scope: local_sdlc
+roles:
+  pm: ../roles/pm.system.md
+  architect: ../roles/architect.system.md
+  qa-design: ../roles/qa-design.system.md
+  developer: ../roles/developer.system.md
+  deployer: ../roles/deployer.system.md
+  qa: ../roles/qa.system.md
+  triage: ../roles/triage.system.md
+inputs:
+  instruction: ../instruction.md
+  base_revisions: ../environment/base-revisions.json
+  repos: ../environment/repos
+templates:
+  prd: ../templates/prd.md
+  frontend_design: ../templates/frontend-design.md
+  backend_design: ../templates/backend-design.md
+  interface_contract: ../templates/interface-contract.md
+  target_interface: ../templates/target-interface.md
+  test_cases: ../templates/test-cases.md
+  test_handoff: ../templates/test-handoff.md
+  test_results: ../templates/test-results.md
+  test_report: ../templates/test-report.md
+  test_verify_schema_json: ../templates/test-verify.schema.json
+  repair_plan_schema_json: ../templates/repair-plan.schema.json
+  deployment_schema_json: ../templates/deployment.schema.json
+stages:
+- id: sprint1/prd
+  role: pm
+  inputs:
+  - input:instruction
+  - input:repos
+  - template:prd
+  outputs:
+    prd: artifacts/sprint1/prd/prd.md
+- id: sprint1/tech-design
+  role: architect
+  inputs:
+  - input:instruction
+  - input:repos
+  - artifact:sprint1/prd/prd
+  - template:frontend_design
+  - template:backend_design
+  - template:interface_contract
+  - template:target_interface
+  activities:
+  - design
+  outputs:
+    frontend_design: artifacts/sprint1/tech-design/frontend-design.md
+    backend_design: artifacts/sprint1/tech-design/backend-design.md
+    interface_contract: artifacts/sprint1/tech-design/interface-contract.md
+    target_schema: artifacts/sprint1/tech-design/target-schema.graphql
+  additional_outputs:
+    directory: artifacts/sprint1/tech-design/interfaces
+    purpose: other_changed_protocol_boundaries
+- id: sprint1/test-design
+  role: qa-design
+  inputs:
+  - input:instruction
+  - input:repos
+  - artifact:sprint1/prd/prd
+  - artifact:sprint1/tech-design/frontend_design
+  - artifact:sprint1/tech-design/backend_design
+  - artifact:sprint1/tech-design/interface_contract
+  - artifact:sprint1/tech-design/target_schema
+  - template:test_cases
+  outputs:
+    test_cases: artifacts/sprint1/test-design/test-cases.v1.csv
+  round: 1
+- id: sprint1/development
+  role: developer
+  inputs:
+  - input:instruction
+  - input:repos
+  - artifact:sprint1/prd/prd
+  - artifact:sprint1/tech-design/frontend_design
+  - artifact:sprint1/tech-design/backend_design
+  - artifact:sprint1/tech-design/interface_contract
+  - artifact:sprint1/tech-design/target_schema
+  - template:test_handoff
+  outputs:
+    handoff: artifacts/sprint1/development/test-handoff.md
+  round: 1
+  write_repos: true
+  capture_repos: true
+- id: sprint1/deploy
+  role: deployer
+  inputs:
+  - input:instruction
+  - input:repos
+  - artifact:sprint1/prd/prd
+  - artifact:sprint1/development/handoff
+  - template:test_handoff
+  - template:deployment_schema_json
+  outputs:
+    handoff: artifacts/sprint1/deploy/test-handoff.md
+    deployment: artifacts/sprint1/deploy/deployment.json
+  round: 1
+- id: sprint1/qa
+  role: qa
+  inputs:
+  - input:instruction
+  - input:repos
+  - artifact:sprint1/prd/prd
+  - artifact:sprint1/tech-design/frontend_design
+  - artifact:sprint1/tech-design/backend_design
+  - artifact:sprint1/tech-design/interface_contract
+  - artifact:sprint1/tech-design/target_schema
+  - artifact:sprint1/test-design/test_cases
+  - artifact:sprint1/deploy/handoff
+  - template:test_results
+  - template:test_report
+  - template:test_verify_schema_json
+  outputs:
+    results: artifacts/sprint1/qa/test-results.1.csv
+    report: artifacts/sprint1/qa/test-report.1.md
+    verdict: artifacts/sprint1/qa/test-verify.json
+  round: 1
+- id: sprint2/triage
+  role: triage
+  inputs:
+  - input:instruction
+  - input:repos
+  - artifact:sprint1/prd/prd
+  - artifact:sprint1/tech-design/frontend_design
+  - artifact:sprint1/tech-design/backend_design
+  - artifact:sprint1/tech-design/interface_contract
+  - artifact:sprint1/tech-design/target_schema
+  - artifact:sprint1/test-design/test_cases
+  - artifact:sprint1/qa/report
+  - artifact:sprint1/qa/results
+  - template:repair_plan_schema_json
+  outputs:
+    repair_plan: artifacts/sprint2/triage/repair-plan.json
+  round: 2
+- activities:
+  - design
+  additional_outputs:
+    directory: artifacts/sprint2/tech-design/interfaces
+    purpose: other_changed_protocol_boundaries
+  id: sprint2/tech-design
+  inputs:
+  - input:instruction
+  - input:repos
+  - artifact:sprint1/prd/prd
+  - template:frontend_design
+  - template:backend_design
+  - template:interface_contract
+  - template:target_interface
+  - artifact:sprint1/tech-design/frontend_design
+  - artifact:sprint1/tech-design/backend_design
+  - artifact:sprint1/tech-design/interface_contract
+  - artifact:sprint1/tech-design/target_schema
+  - artifact:sprint2/triage/repair_plan
+  outputs:
+    backend_design: artifacts/sprint2/tech-design/backend-design.md
+    frontend_design: artifacts/sprint2/tech-design/frontend-design.md
+    interface_contract: artifacts/sprint2/tech-design/interface-contract.md
+    target_schema: artifacts/sprint2/tech-design/target-schema.graphql
+  role: architect
+  round: 2
+  reuse_unless: design_changed
+  reuse_stage: sprint1/tech-design
+- id: sprint2/development
+  role: developer
+  inputs:
+  - input:instruction
+  - input:repos
+  - artifact:sprint1/prd/prd
+  - artifact:sprint2/tech-design/frontend_design
+  - artifact:sprint2/tech-design/backend_design
+  - artifact:sprint2/tech-design/interface_contract
+  - artifact:sprint2/tech-design/target_schema
+  - template:test_handoff
+  - artifact:sprint2/triage/repair_plan
+  - artifact:sprint1/qa/report
+  - artifact:sprint1/qa/results
+  outputs:
+    handoff: artifacts/sprint2/development/test-handoff.md
+  round: 2
+  write_repos: true
+  capture_repos: true
+- id: sprint2/deploy
+  role: deployer
+  inputs:
+  - input:instruction
+  - input:repos
+  - artifact:sprint1/prd/prd
+  - artifact:sprint2/development/handoff
+  - template:test_handoff
+  - template:deployment_schema_json
+  outputs:
+    handoff: artifacts/sprint2/deploy/test-handoff.md
+    deployment: artifacts/sprint2/deploy/deployment.json
+  round: 2
+- id: sprint2/qa
+  role: qa
+  inputs:
+  - input:instruction
+  - input:repos
+  - artifact:sprint1/prd/prd
+  - artifact:sprint2/tech-design/frontend_design
+  - artifact:sprint2/tech-design/backend_design
+  - artifact:sprint2/tech-design/interface_contract
+  - artifact:sprint2/tech-design/target_schema
+  - artifact:sprint1/test-design/test_cases
+  - artifact:sprint2/deploy/handoff
+  - template:test_results
+  - template:test_report
+  - template:test_verify_schema_json
+  - artifact:sprint1/qa/report
+  outputs:
+    results: artifacts/sprint2/qa/test-results.2.csv
+    report: artifacts/sprint2/qa/test-report.2.md
+    verdict: artifacts/sprint2/qa/test-verify.json
+  round: 2
+delivery:
+  required:
+  - artifact:sprint1/prd/prd
+  - artifact:sprint1/tech-design/frontend_design
+  - artifact:sprint1/tech-design/backend_design
+  - artifact:sprint1/tech-design/interface_contract
+  - artifact:sprint1/tech-design/target_schema
+  - artifact:sprint1/test-design/test_cases
+  - artifact:sprint1/development/handoff
+  - artifact:sprint1/deploy/handoff
+  - artifact:sprint1/deploy/deployment
+  - artifact:sprint1/qa/results
+  - artifact:sprint1/qa/report
+  - artifact:sprint1/qa/verdict
+  stop_after: sprint2/qa
+  qa_rounds: 2

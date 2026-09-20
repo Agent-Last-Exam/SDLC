@@ -34,7 +34,7 @@ def kind(config):
         return "合成联调（无模型，非业务交付）"
     if kwargs.get("role_probe"):
         return "角色切换探针（真实模型，非业务交付）"
-    return "文档 rollout（真实模型）"
+    return "Workflow rollout（真实模型）"
 
 
 def job_config(job):
@@ -82,12 +82,16 @@ def write_report(job):
         lines += ["", f"## {trial.name}", "", f"状态：**{trial_status(trial, config)}**；模型：`{model}`。"]
         if state.get("status") == "blocked":
             lines += ["此历史运行按当时的自审规则停在 blocked，已接受产物保留。该状态不等于工具异常或业务批准；当前流程已取消自审步骤。"]
+        if state.get("status") == "qa_failed":
+            lines += ["第二轮 QA 仍未通过，已达到修复轮次上限。失败报告已封存并保留；未宣布交付成功。"]
+        if state.get("qa_verdict"):
+            lines += [f"最后一轮 QA 结论：`{state['qa_verdict']}`（Agent 提交的结论，不是独立 verifier 评分）。"]
         if state.get("principal_session"):
             lines += [f"主原生会话：`{state['principal_session']}`。"]
         if state.get("continued_from"):
             source = Path(state["continued_from"])
             lines += ["续跑来源：" + link(str(source.parent.parent.name), source / "state.json", job) + "。前序已接受阶段沿用原记录，不是本 job 重新生成。"]
-        for rel in ("workflow/state.json", "workflow/events.jsonl", "agent/codex.txt", "agent/sessions", "agent/trajectory.json", "result.json", "exception.txt"):
+        for rel in ("workflow/state.json", "workflow/baseline.json", "workflow/events.jsonl", "agent/codex.txt", "agent/sessions", "agent/trajectory.json", "result.json", "exception.txt"):
             target = trial / rel
             if target.exists():
                 lines.append("- " + link(rel, target, job))
@@ -96,26 +100,47 @@ def write_report(job):
             lines += ["", f"异常类型：`{result['exception_info'].get('exception_type', 'unknown')}`；详情见 trial result / exception 日志。"]
         stages = state.get("stages", [])
         if stages:
-            lines += ["", "### 阶段记录", "", "| 阶段 | 角色 | 状态 | 提交次数 |", "| --- | --- | --- | --- |"]
+            lines += ["", "### 阶段记录", "", "| 阶段 | 角色 | 状态 | 执行次数 |", "| --- | --- | --- | --- |"]
             for stage in stages:
-                lines.append(f"| {stage['id']} | {stage['role']} | {stage['status']} | {len(stage.get('attempts', []))} |")
-            lines += ["", "同一阶段在接受前的补交不属于阶段回退。各次门禁结果以 state.json 为准。"]
-            sessions = {a.get("session_id") for s in stages for a in s.get("attempts", []) if a.get("session_id")}
+                lines.append(f"| {stage['id']} | {stage['role']} | {stage['status']} | {len(stage['attempts']) if 'attempts' in stage else int(stage.get('execution_started', False))} |")
+                if stage.get("reused_from"):
+                    lines.append(f"| ↳ 复用 {stage['reused_from']} | — | 未调用 Agent | 0 |")
+            lines += ["", "accepted 表示阶段输出已封存，不代表内容验收通过。当前每阶段只执行一次，不做格式检查或自动补交。"]
+            if any("attempts" in stage for stage in stages):
+                lines += ["此记录使用历史 attempts 格式，保留当时的提交次数和结果。"]
+            sessions = {a.get("session_id") for s in stages for a in s.get("attempts", [s]) if a.get("session_id")}
             lines += [f"记录到的主会话数：{len(sessions)}；模式：{state.get('mode', '未记录')}。"]
             first = next((s for s in stages if s.get("role") == "pm" and s.get("outputs", {}).get("prd.md")), None)
-            inputs = [a.get("prd_input_sha256") for s in stages if s.get("role") == "architect" for a in s.get("attempts", [])]
+            inputs = [a.get("prd_input_sha256") for s in stages
+                      if s.get("role") == "architect" and not s.get("reused_from")
+                      for a in s.get("attempts", [s])]
             if first and inputs:
                 exact = all(v == first["outputs"]["prd.md"] for v in inputs)
                 lines += [f"PRD 输出 / 技术阶段输入哈希：{'一致' if exact else '不一致或缺失'}。"]
-            lines += ["", "### 已接受产物", "", "以 workflow/accepted 为正式交付，artifacts 中可能含未接受草稿。", "",
+            lines += ["", "### 已封存产物", "", "以下只列 state.json 已封存的文件；失败阶段可能在 accepted 目录留下部分收集文件。artifacts 是 Harbor 回收副本。", "",
                       "| 文件 | SHA256 | 当前文件校验 |", "| --- | --- | --- |"]
             for stage in stages:
+                if stage["status"] != "accepted":
+                    continue
                 for name, expected in stage.get("outputs", {}).items():
                     target = trial / "workflow/accepted" / stage["id"] / name
                     matches = target.is_file() and hashlib.sha256(target.read_bytes()).hexdigest() == expected
                     lines.append(f"| {link(stage['id'] + '/' + name, target, job)} | `{expected}` | {'一致' if matches else '缺失或不一致'} |")
-            for target in sorted((trial / "workflow/attempts").glob("*/*/*/native-evidence.json")):
+            for target in sorted([*(trial / "workflow/stages").glob("*/*/native-evidence.json"),
+                                  *(trial / "workflow/attempts").glob("*/*/*/native-evidence.json")]):
                 lines += ["", "原生角色证据：" + link(str(target.relative_to(trial / "workflow")), target, job)]
+            for stage in stages:
+                if stage.get("candidate"):
+                    snapshot = trial / "workflow/candidates" / stage["id"]
+                    archive = snapshot / "repos.tar"
+                    expected = stage["candidate"].get("archive_sha256")
+                    matches = archive.is_file() and hashlib.sha256(archive.read_bytes()).hexdigest() == expected
+                    lines += ["", f"代码快照 {stage['id']}：" + link("repos.tar", archive, job) + " · "
+                              + link("manifest.json", snapshot / "manifest.json", job)
+                              + f"；归档校验：{'一致' if matches else '缺失或不一致'}。"]
+            for target in sorted([*(trial / "workflow/stages").glob("*/*/deployment-evidence.json"),
+                                  *(trial / "workflow/attempts").glob("*/*/*/deployment-evidence.json")]):
+                lines += ["", "部署健康检查：" + link(str(target.relative_to(trial / "workflow")), target, job)]
         if state.get("role_probe"):
             lines += ["", "### 原生角色探针", "", "| 角色 | 会话 | 回复 |", "| --- | --- | --- |"]
             for record in state.get("records", []):
@@ -130,7 +155,7 @@ def write_report(job):
             lines += ["", "### 历史 Agent 自审问题", "", "下表来自旧流程的 " + link("review.md", review, job) + "，不代表独立审核；当前流程不再生成此文件。", ""]
             if start >= 0 and end > start:
                 lines += [text[start:end].split("\n", 1)[1].strip()]
-    lines += ["", "## 适用边界", "", "结构门禁、文件哈希和角色证据不证明业务设计正确。本阶段未执行 Saleor 功能开发、业务测试或部署。合成联调与角色探针不能作为真实 PRD/TDD 交付。"]
+    lines += ["", "## 适用边界", "", "文件封存、哈希和角色证据不证明业务正确；具体执行范围以阶段记录为准。部署健康检查只证明本地服务入口可访问。QA 结论由 Agent 提交，未启用独立业务 verifier。合成联调与角色探针不能作为真实业务交付。"]
     write_generated(job / "report.md", "\n".join(lines))
     return job / "report.md"
 

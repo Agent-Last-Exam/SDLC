@@ -2,7 +2,7 @@ schema_version: 1
 kind: workflow_run
 mode: hierarchical
 task_root: ..
-contract: design-delivery.yaml
+contract: lifecycle.yaml
 agent: {adapter: codex, model_binding: CODEX_MODEL}
 execution:
   scheduling: lead_managed

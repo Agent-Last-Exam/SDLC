@@ -64,10 +64,12 @@ def main():
         rpc(3, "thread/inject_items", {"threadId": thread_id, "items": [
             {"type": "message", "role": "developer", "content": [{"type": "input_text", "text": request["prompt"]}]}
         ]})
-        rpc(4, "turn/start", {"threadId": thread_id, "input": [{"type": "text", "text": request["instruction"]}], "effort": "high"})
+        started = rpc(4, "turn/start", {"threadId": thread_id, "input": [{"type": "text", "text": request["instruction"]}], "effort": "high"})
+        turn_id = started["turn"]["id"]
         while True:
             event = early_completions.pop(0) if early_completions else receive()
-            if event.get("method") == "turn/completed" and event["params"].get("threadId") == thread_id:
+            if (event.get("method") == "turn/completed" and event["params"].get("threadId") == thread_id
+                    and event["params"]["turn"]["id"] == turn_id):
                 turn = event["params"]["turn"]
                 if turn["status"] != "completed":
                     raise RuntimeError(f"Codex turn {turn['status']}: {turn.get('error')}")

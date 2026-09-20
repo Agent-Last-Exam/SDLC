@@ -21,7 +21,7 @@ class WorkflowPreparationTests(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.root = Path(self.tmp.name).resolve()
         self.addCleanup(self.tmp.cleanup)
-        self.contract = read_yaml(HERE / "tasks/saleor-prd-tdd/workflows/design-delivery.yaml")
+        self.contract = read_yaml(HERE / "tasks/saleor-prd-tdd/workflows/lifecycle.yaml")
         # Preserve real inputs while mutating isolated copies of YAML.
         for group in ("roles", "templates", "inputs"):
             self.contract[group] = {k: str((HERE / "tasks/saleor-prd-tdd/workflows" / v).resolve())
@@ -38,12 +38,14 @@ class WorkflowPreparationTests(unittest.TestCase):
 
     def test_prd_handoff_and_final_scope(self):
         result = self.compile()
-        prd, tech = result["stages"]
+        prd, tech = result["stages"][:2]
         ref = "artifact:sprint1/prd/prd"
         self.assertEqual(prd["outputs"][ref], tech["inputs"][ref])
         self.assertEqual(len(tech["outputs"]), 4)
-        self.assertEqual(result["contract"]["delivery"]["stop_after"], "sprint1/tech-design")
+        self.assertEqual(result["contract"]["delivery"]["stop_after"], "sprint2/qa")
         self.assertFalse(result["execution_ready"])
+        self.assertEqual(len(result["stages"]), 11)
+        self.assertTrue(result["execution_implemented"])
 
     def test_future_or_missing_artifact_is_rejected(self):
         self.contract["stages"][0]["inputs"].append("artifact:sprint1/tech-design/backend_design")
@@ -78,6 +80,7 @@ class WorkflowPreparationTests(unittest.TestCase):
             result = self.compile()
             self.assertEqual(result["stages"], single["stages"])
             self.assertFalse(result["execution_ready"])
+            self.assertFalse(result["execution_implemented"])
         self.assertEqual(result["run"]["execution"]["scheduling"], "lead_managed")
 
     def test_duplicate_keys_rejected(self):
@@ -113,7 +116,7 @@ class WorkflowPreparationTests(unittest.TestCase):
         dockerfile = task / "environment/Dockerfile"
         dockerfile.write_text(dockerfile.read_text() + "\n# Task-owned build\n")
         (task / "instruction.md").write_text("Custom task instruction\n")
-        args = ["run_workflow", "--task", str(task), "--mode", "flat", "--prepare-only", "--job-name", "fixture-run"]
+        args = ["run_workflow", "--task", str(task), "--mode", "single", "--prepare-only", "--job-name", "fixture-run"]
         home = self.root / "runtime-home"
         with patch.object(run_workflow, "HERE", home), patch("sys.argv", args), contextlib.redirect_stdout(io.StringIO()):
             self.assertEqual(run_workflow.main(), 0)
@@ -125,7 +128,7 @@ class WorkflowPreparationTests(unittest.TestCase):
         self.assertFalse((prepared / "workspace/templates/technical-review.md").exists())
         self.assertEqual((prepared / "workspace/repos/fixture/README.md").read_text(), "Task-local fixture\n")
         compiled = json.loads((prepared / "resolved-workflow.json").read_text())
-        self.assertEqual(compiled["mode"], "flat")
+        self.assertEqual(compiled["mode"], "single")
         for group in compiled["sources"].values():
             self.assertTrue(all(Path(p).is_relative_to(task) for p in group.values()))
         for role in ("pm", "architect"):

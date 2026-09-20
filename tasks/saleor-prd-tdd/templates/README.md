@@ -10,7 +10,7 @@
 | 接口契约 | [interface-contract.md](interface-contract.md) | Markdown |
 | 完整目标接口 | [target-interface.md](target-interface.md) | GraphQL SDL，其他协议按需补充 |
 | 测试用例 | [test-cases.md](test-cases.md) | CSV，首版 test-cases.v1.csv |
-| 提测报告 | [test-handoff.md](test-handoff.md) | Markdown，开发创建、部署更新同一份 |
+| 提测报告 | [test-handoff.md](test-handoff.md) | Markdown，开发和部署各自交付一个不可变版本 |
 | 测试执行记录 | [test-results.md](test-results.md) | CSV，test-results.{round}.csv |
 | 测试报告 | [test-report.md](test-report.md) | Markdown，test-report.{round}.md |
 | QA 结果 JSON | [test-verify.schema.json](test-verify.schema.json) | JSON，test-verify.json |
@@ -21,4 +21,4 @@ QA 模板依据用户指定的[「QA阶段的Schema」章节](https://rcnmkynuc7
 
 本 task 将执行记录和报告的文件后缀统一为测试轮次，使同一 sprint 内的返工复测保留历史。报告增加轮次、被测版本和测试环境，以关联本轮实际测试对象。测试用例跨轮次延续，不随每次执行重编号；修订用例时使用新版本并延续 TC 编号。
 
-提测报告按本次用户要求新增；角色顺序、共享报告的更新和返工交接见 [角色说明](../roles/README.md)。新阶段目前为角色及产物定义，尚未接通自动执行。
+角色与交接见 [角色说明](../roles/README.md)，完整流程已接入 Single。修复研判使用 [repair-plan.schema.json](repair-plan.schema.json)；容器内服务声明使用 [deployment.schema.json](deployment.schema.json)。QA 报告的结论行必须明确写 `结论：pass` 或 `结论：fail`，与同轮 JSON 一致。

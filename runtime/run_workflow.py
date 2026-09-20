@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare and run the documentation workflow through local Harbor."""
+"""Prepare and run task-owned workflows through local Harbor."""
 import argparse
 from datetime import datetime
 import json
@@ -24,28 +24,23 @@ def main():
     parser.add_argument("--model")
     parser.add_argument("--use-local-codex-auth", action="store_true")
     parser.add_argument("--smoke", action="store_true", help="Synthetic executor, no model; clearly marked outputs")
+    parser.add_argument("--smoke-scenario", choices=["pass", "repair", "repair-reuse", "fail"], default="repair")
     parser.add_argument("--role-probe", action="store_true", help="Two minimal real model turns verifying same-session role activation")
-    parser.add_argument("--continue-from", type=Path, help="Continue a failed trial after its accepted PRD, keeping its native session")
     parser.add_argument("--prepare-only", action="store_true")
     parser.add_argument("--job-name")
     args = parser.parse_args()
     if args.smoke and args.role_probe:
         parser.error("--smoke and --role-probe are mutually exclusive")
-    if args.continue_from and (args.smoke or args.role_probe):
-        parser.error("Continuation cannot be combined with synthetic/probe mode")
     env = os.environ.copy()
     load_env(HERE / ".env", env)
     try:
         compiled = compile_workflow(resolve_config(args.config, args.task, args.mode))
     except (ValueError, KeyError, OSError) as exc:
         parser.error(str(exc))
-    if compiled["mode"] == "hierarchical":
-        parser.error("Hierarchical is configured but its Lead backend is not implemented")
+    if not compiled["execution_implemented"]:
+        parser.error(f"{compiled['mode']} execution is not implemented for the lifecycle; use --mode single")
     if compiled["run"]["agent"]["adapter"] != "codex":
         parser.error("This execution backend currently supports Codex only")
-    supported_stages = [("sprint1/prd", "pm"), ("sprint1/tech-design", "architect")]
-    if [(s["stage_id"], s["role"]) for s in compiled["stages"]] != supported_stages:
-        parser.error("This backend implements only the PRD -> technical-design documentation contract")
     model = args.model or env.get("CODEX_MODEL")
     if args.use_local_codex_auth:
         codex_home = Path.home() / ".codex"
@@ -72,11 +67,6 @@ def main():
     if (HERE / "jobs" / name).exists():
         parser.error("Job already exists")
     prepare(compiled, prepared)
-    if args.continue_from:
-        old_config = json.loads((args.continue_from / "config.json").read_text())
-        old_prepared = Path(old_config["agent"]["kwargs"]["prepared_path"])
-        if json.loads((prepared / "input-manifest.json").read_text()) != json.loads((old_prepared / "input-manifest.json").read_text()):
-            parser.error("Public inputs changed; cannot continue the same workflow")
     task = prepared / "task"
     environment = task / "environment"
     environment.mkdir(parents=True)
@@ -84,7 +74,7 @@ def main():
     shutil.copyfile(prepared / "runtime-inputs/Dockerfile", environment / "Dockerfile")
     (environment / ".dockerignore").write_text("*\n!Dockerfile\n!workspace/\n!workspace/**\n")
     (environment / "docker-compose.yaml").write_text("services:\n  main:\n    security_opt:\n      - no-new-privileges:true\n")
-    (task / "instruction.md").write_text("Execute the configured documentation workflow; stop after technical design delivery.\n")
+    (task / "instruction.md").write_text("Execute the configured workflow with its stage boundaries and termination rules.\n")
     shutil.copyfile(prepared / "runtime-inputs/task.toml", task / "task.toml")
     recipe = {
         "job_name": name, "jobs_dir": str(HERE / "jobs"), "n_attempts": 1, "n_concurrent_trials": 1,
@@ -92,8 +82,7 @@ def main():
         "verifier": {"disable": True},
         "agents": [{"import_path": "runtime.workflow_agent:WorkflowCodex", "model_name": model,
                     "override_setup_timeout_sec": 600,
-                    "kwargs": {"prepared_path": str(prepared), "smoke": args.smoke, "role_probe": args.role_probe,
-                               "continue_from": str(args.continue_from.resolve()) if args.continue_from else None}}],
+                    "kwargs": {"prepared_path": str(prepared), "smoke": args.smoke, "smoke_scenario": args.smoke_scenario, "role_probe": args.role_probe}}],
         "tasks": [{"path": str(task)}],
     }
     (prepared / "job.json").write_text(json.dumps(recipe, indent=2) + "\n")

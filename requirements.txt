@@ -1,2 +1,1 @@
-# Install into the same Python environment that runs Harbor.
-graphql-core==3.2.6
+# Runtime uses the Harbor environment; no additional packages are required.
