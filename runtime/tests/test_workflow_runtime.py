@@ -15,8 +15,9 @@ from runtime.codex_app_turn import app_server_command
 class FakeBackend:
     synthetic = True
 
-    def __init__(self, workspace, outcome="pass", reject_once=False, switch_session=False):
-        self.workspace, self.outcome = workspace, outcome
+    def __init__(self, workspace, reject_once=False, switch_session=False, pending_design=False):
+        self.workspace = workspace
+        self.pending_design = pending_design
         self.reject_once, self.switch_session = reject_once, switch_session
         self.calls = []
         self.stage_index = 0
@@ -27,7 +28,10 @@ class FakeBackend:
     async def execute(self, stage, prompt, instruction, session, attempt_dir):
         self.calls.append((stage["role"], session, prompt))
         self.candidate = attempt_dir / "fixture"
-        write_fixture(self.candidate, stage["role"], self.workspace, self.outcome)
+        write_fixture(self.candidate, stage["role"], self.workspace)
+        if self.pending_design and stage["role"] == "architect":
+            p = self.candidate / "backend-design.md"
+            p.write_text(p.read_text().replace("无业务有效性声明。", "待确认：退款权益尚需产品决定；身份 token 清单未提供。"))
         if self.reject_once and stage["role"] == "pm" and self.attempt == 1:
             p = self.candidate / "prd.md"
             p.write_text(p.read_text().replace("优先级：P0", "优先级：关键"))
@@ -79,6 +83,13 @@ class RuntimeTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(backend.calls[0][1])
         self.assertEqual(backend.calls[1][1], "thread-0")
         self.assertIn("SDLC_STAGE_ROLE: architect", backend.calls[1][2])
+        for call, stage in zip(backend.calls, self.config["stages"]):
+            for path in (*stage["inputs"].values(), *stage["outputs"].values()):
+                self.assertIn(f"`{path}`", call[2])
+            for internal_detail in ("base-revisions.json", "Controller", "封存", '"stage_id"'):
+                self.assertNotIn(internal_detail, call[2])
+        self.assertNotIn("Architect", backend.calls[0][2])
+        self.assertNotIn("架构师", backend.calls[0][2])
         first, second = state["stages"]
         self.assertEqual(first["outputs"]["prd.md"], second["attempts"][0]["prd_input_sha256"])
 
@@ -95,12 +106,17 @@ class RuntimeTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(state["stages"][0]["attempts"][0]["status"], "rejected")
         self.assertEqual(state["status"], "complete")
 
-    async def test_blocked_review_is_preserved_and_stops(self):
-        backend = FakeBackend(self.workspace, outcome="blocked")
+    async def test_design_delivery_completes_with_pending_items_without_self_review(self):
+        backend = FakeBackend(self.workspace, pending_design=True)
         state = await self.run_controller(backend)
-        self.assertEqual(state["status"], "blocked")
+        self.assertEqual(state["status"], "complete")
+        self.assertEqual(state["cursor"], 2)
         self.assertEqual(len(backend.calls), 2)
-        self.assertTrue((self.root / "control/accepted/sprint1/tech-design/review.md").is_file())
+        accepted = self.root / "control/accepted/sprint1/tech-design"
+        self.assertEqual({p.name for p in accepted.iterdir()}, {
+            "frontend-design.md", "backend-design.md", "interface-contract.md", "target-schema.graphql"})
+        self.assertIn("待确认：退款权益", (accepted / "backend-design.md").read_text())
+        self.assertNotIn("review_outcome", state["stages"][1]["attempts"][0]["gate"])
 
     async def test_session_change_fails_instead_of_silent_flat(self):
         backend = FakeBackend(self.workspace, switch_session=True)

@@ -75,14 +75,16 @@ class Controller:
                     attempt_dir = self.directory / "attempts" / stage["stage_id"] / str(attempt)
                     attempt_dir.mkdir(parents=True)
                     role = (self.workspace / "roles" / f"{stage['role']}.system.md").read_text()
+                    inputs = "\n".join(f"- `{path}`" for path in stage["inputs"].values())
+                    outputs = "\n".join(f"- `{path}`" for path in stage["outputs"].values())
                     active_prompt = (
-                        f"SDLC_STAGE_ROLE: {stage['role']}\nSDLC_STAGE_ID: {stage['stage_id']}\n"
-                        "当前活动角色取代历史阶段角色；历史角色不再授权写入或继续执行。"
-                        "只完成当前阶段并写出规定文件，然后结束本轮响应；阶段推进由外部 Controller 负责。\n\n" + role
+                        "你现在的角色和工作如下。\n\n" + role
+                        + f"\n\n本次使用的材料路径：\n{inputs}\n\n本次交付文件的路径：\n{outputs}\n"
+                        + f"\n<!-- SDLC_STAGE_ROLE: {stage['role']} -->\n"
                     )
-                    instruction = "读取当前阶段声明的输入并完成正式输出。\n" + json.dumps(stage, ensure_ascii=False, indent=2)
+                    instruction = "请根据这些材料完成你的工作，将交付文件保存到指定位置。"
                     if feedback:
-                        instruction += "\n上一提交未通过公开结构检查。仅修正当前阶段产物：\n" + feedback
+                        instruction += "\n提交的文档有以下格式问题，请修正后重新保存：\n" + feedback
                     (attempt_dir / "role.md").write_text(active_prompt)
                     (attempt_dir / "instruction.md").write_text(instruction)
                     prior_hash = digest(self.accepted_prd) if self.accepted_prd else None
@@ -124,10 +126,6 @@ class Controller:
                         self.accepted_prd = sealed / "prd.md"
                     self.state["cursor"] = index + 1
                     self.event("stage_accepted", stage=stage["stage_id"], hashes=hashes)
-                    if details.get("review_outcome") == "blocked":
-                        self.state["status"] = "blocked"
-                        self.event("run_blocked", reason="technical_review")
-                        return self.state
                     break
             self.state["status"] = "complete"
             self.event("run_completed")

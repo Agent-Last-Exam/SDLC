@@ -101,7 +101,6 @@ def compile_workflow(path, verify_repos=True):
         raise ValueError("Repository snapshot root is not a directory")
     workspace_paths = {
         "input:instruction": "instruction.md",
-        "input:organization_delivery": "organization-delivery.md",
         "input:base_revisions": "base-revisions.json",
         "input:repos": "repos",
     }

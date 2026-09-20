@@ -1,4 +1,4 @@
-# Saleor：Instruction → PRD → 技术设计与自审
+# Saleor：Instruction → PRD → 技术设计
 
 这个目录是一个完整的任务定义。业务输入、sprint/stage 编排、输入输出、角色、模板和环境配置都归本 task 所有；不依赖全局 spec/。runtime/ 提供执行机制。
 
@@ -9,9 +9,8 @@
 | [instruction.md](instruction.md) | 本次 Saleor 业务目标与交付范围 |
 | [workflows/design-delivery.yaml](workflows/design-delivery.yaml) | sprint/stage 顺序、角色、Input/Output 引用、最终产物和停止点 |
 | [workflows/single.yaml](workflows/single.yaml)、[flat.yaml](workflows/flat.yaml)、[hierarchical.yaml](workflows/hierarchical.yaml) | 本 task 的三种模式配置；通过 task_root 指回本目录，共用交付契约 |
-| [roles/](roles/README.md) | 本 task 的 PM、研发负责人角色 SP，允许包含本 task 的具体路径 |
-| [templates/](templates/) | PRD、前后端技术设计、接口契约、目标接口、技术自审模板 |
-| [organization-delivery.md](organization-delivery.md) | 供本 task 所有角色读取的共同交付规范 |
+| [roles/](roles/README.md) | PM、架构师、QA 测试设计、开发、部署、QA 测试执行的角色与交接定义 |
+| [templates/](templates/README.md) | PRD、技术设计、测试用例、提测报告和 QA 结果模板 |
 | [task.toml](task.toml) | Harbor 运行超时、网络与资源配置；启动器直接冻结并使用 |
 | [environment/Dockerfile](environment/Dockerfile) | 本 task 的容器构建定义；workspace/ 由准备器提供 |
 | [environment/base-revisions.json](environment/base-revisions.json)、environment/repos/ | 精确 Base 版本和源码 |
@@ -38,12 +37,14 @@
 
 ## 配置如何交接
 
-启动时，运行器冻结公开输入至 `.prepared/<job>/workspace/`；将 task.toml 与 Dockerfile 冻结到 runtime-inputs/，据此组装 task/ 和 job.json。容器中的 instruction.md、organization-delivery.md、roles/、templates/、repos/ 都在 `/workspace` 下。
+启动时，运行器冻结公开输入至 `.prepared/<job>/workspace/`；将 task.toml 与 Dockerfile 冻结到 runtime-inputs/，据此组装 task/ 和 job.json。容器中的 instruction.md、roles/、templates/、repos/ 都在 `/workspace` 下。
 
-PM 写入 `/workspace/artifacts/sprint1/prd/prd.md`。技术阶段以 `artifact:sprint1/prd/prd` 引用同一份已封存文件；输出写入 `/workspace/artifacts/sprint1/tech-design/`。目录搬迁不改变容器路径，因此两个优化后的角色 SP 正文无需改写。
+PM 写入 `/workspace/artifacts/sprint1/prd/prd.md`。技术阶段以 `artifact:sprint1/prd/prd` 引用同一份已封存文件；输出写入 `/workspace/artifacts/sprint1/tech-design/`。两个角色的 System Prompt 用自然的职业描述说明工作、材料和交付位置。
 
-organization-delivery.md 是共同阅读的规范，解释 ID 引用、文件格式、交接、自审与 blocked 含义；不直接控制运行。可执行的 stage 输入输出和停止点以 workflows/design-delivery.yaml 为准，强制约束由 Controller、目录权限和结构门禁执行。修改交付契约时同步修改规范、模板及涉及的角色路径。
+不再单独提供 organization-delivery.md，也不要求架构师自审或生成 review.md。角色 System Prompt 说明身份、工作、材料与交付位置；模板定义字段和格式。运行器根据 workflows/design-delivery.yaml 执行阶段编排，并附加本次材料与交付文件的路径列表。角色不会收到完整配置 JSON、版本核验任务或控制器说明。Controller、目录权限和结构门禁执行交接约束。修改契约时同步相关角色指令和模板。
 
-本 task 目前只有 sprint1 的 PRD 和技术设计两个 stage。sprint 数量和编排归任务配置所有；执行后端目前只支持这两个文档阶段，新增 Code/QA/Deploy 仍需实现对应能力，不能只加 YAML 就运行。
+当前可执行配置仍只有 sprint1 的 PRD 和技术设计两个 stage。已补齐后续四份角色 Prompt 与产物模板，交接顺序是 QA 先设计用例 → 开发并写提测报告 → 部署并更新同一份提测报告 → QA 执行测试并输出 CSV、报告和 JSON。具体路径和 QA 失败后的返工交接见 [角色说明](roles/README.md)。
+
+这些新增阶段和返工循环尚未接入执行后端。sprint 数量和编排归任务配置所有；运行器还需支持代码修改、提测报告的跨阶段更新、测试环境生命周期和 QA 结果分支，不能只加 YAML 就运行。
 
 改过角色、模板或业务输入后开新 run；历史 jobs/ 与 .prepared/ 保留当时的版本。结果见 [运行记录说明](../../docs/rollout-records.md)，不会写回 task 的输入目录。

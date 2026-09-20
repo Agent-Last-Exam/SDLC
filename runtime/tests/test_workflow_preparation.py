@@ -41,12 +41,12 @@ class WorkflowPreparationTests(unittest.TestCase):
         prd, tech = result["stages"]
         ref = "artifact:sprint1/prd/prd"
         self.assertEqual(prd["outputs"][ref], tech["inputs"][ref])
-        self.assertEqual(len(tech["outputs"]), 5)
+        self.assertEqual(len(tech["outputs"]), 4)
         self.assertEqual(result["contract"]["delivery"]["stop_after"], "sprint1/tech-design")
         self.assertFalse(result["execution_ready"])
 
     def test_future_or_missing_artifact_is_rejected(self):
-        self.contract["stages"][0]["inputs"].append("artifact:sprint1/tech-design/review")
+        self.contract["stages"][0]["inputs"].append("artifact:sprint1/tech-design/backend_design")
         with self.assertRaisesRegex(ValueError, "future input"):
             self.compile()
 
@@ -56,7 +56,7 @@ class WorkflowPreparationTests(unittest.TestCase):
             self.compile()
 
     def test_output_cannot_write_into_previous_stage(self):
-        self.contract["stages"][1]["outputs"]["review"] = "artifacts/sprint1/prd/review.md"
+        self.contract["stages"][1]["outputs"]["backend_design"] = "artifacts/sprint1/prd/backend-design.md"
         with self.assertRaisesRegex(ValueError, "outside its stage"):
             self.compile()
 
@@ -121,6 +121,8 @@ class WorkflowPreparationTests(unittest.TestCase):
         self.assertEqual((prepared / "task/task.toml").read_bytes(), toml.read_bytes())
         self.assertEqual((prepared / "task/environment/Dockerfile").read_bytes(), dockerfile.read_bytes())
         self.assertEqual((prepared / "workspace/instruction.md").read_text(), "Custom task instruction\n")
+        self.assertFalse((prepared / "workspace/organization-delivery.md").exists())
+        self.assertFalse((prepared / "workspace/templates/technical-review.md").exists())
         self.assertEqual((prepared / "workspace/repos/fixture/README.md").read_text(), "Task-local fixture\n")
         compiled = json.loads((prepared / "resolved-workflow.json").read_text())
         self.assertEqual(compiled["mode"], "flat")

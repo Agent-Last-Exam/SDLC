@@ -84,7 +84,7 @@ def main():
     shutil.copyfile(prepared / "runtime-inputs/Dockerfile", environment / "Dockerfile")
     (environment / ".dockerignore").write_text("*\n!Dockerfile\n!workspace/\n!workspace/**\n")
     (environment / "docker-compose.yaml").write_text("services:\n  main:\n    security_opt:\n      - no-new-privileges:true\n")
-    (task / "instruction.md").write_text("Execute the configured documentation workflow; stop after technical review.\n")
+    (task / "instruction.md").write_text("Execute the configured documentation workflow; stop after technical design delivery.\n")
     shutil.copyfile(prepared / "runtime-inputs/task.toml", task / "task.toml")
     recipe = {
         "job_name": name, "jobs_dir": str(HERE / "jobs"), "n_attempts": 1, "n_concurrent_trials": 1,
@@ -122,7 +122,7 @@ def main():
     print(f"Workflow {state['status']}: {state_file}", flush=True)
     if not args.role_probe:
         print(f"Accepted artifacts: {trial / 'workflow/accepted'}", flush=True)
-    return 0 if state["status"] == "complete" else 2 if state["status"] == "blocked" else 1
+    return 0 if state["status"] == "complete" else 1
 
 
 if __name__ == "__main__":

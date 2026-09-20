@@ -1,6 +1,6 @@
 # SDLC Workflow Runtime 设计
 
-2026-09-18 范围更新：本轮只做到技术评审，新的两阶段契约与三模式配置见 [Instruction 到技术评审](instruction-to-review.md) 和 `../tasks/saleor-prd-tdd/workflows/`。下文及 examples/ 保留早期完整生命周期草案；新流程的目录、ID、模板与实际准备能力以前者为准。
+2026-09-20 范围更新：当前只做到技术设计交付，已取消额外公共规范和自审步骤。两阶段契约与三模式配置见 [Instruction 到技术设计](instruction-to-review.md) 和 `../tasks/saleor-prd-tdd/workflows/`。下文及 examples/ 保留早期完整生命周期草案；新流程的目录、ID、模板与实际准备能力以前者为准。
 
 状态：设计草案，2026-09-17。本文和 examples 中的 YAML 尚未接入 `run.py`，不是已经实现或验证过的运行能力。本轮只设计，不启动模型，不扩展 Saleor 业务环境。
 

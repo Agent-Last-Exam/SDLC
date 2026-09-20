@@ -16,7 +16,7 @@
 | agents.py | Codex/Claude Code prompt 薄适配器；当前 workflow 使用 Codex |
 | environment.py | 按字面量读取本机 .env，不执行 shell |
 
-`prepare_workflow.HERE` 指向 仓库根目录，不依赖 shell 当前目录推算资源位置；用户传入的相对路径仍相对调用目录。公开规范、角色、模板、workflow 和业务源码都位于 tasks/<task>/，执行记录位于 jobs/。
+`prepare_workflow.HERE` 指向 仓库根目录，不依赖 shell 当前目录推算资源位置；用户传入的相对路径仍相对调用目录。角色、模板、workflow 和业务源码都位于 tasks/<task>/，执行记录位于 jobs/。
 
 Controller 数据在 trial/workflow 下，不挂载给 Agent。Agent 只拥有本阶段产物和 scratch 等目录的写权限；已接受文件与源码归 root 只读。详见 [当前设计](../docs/instruction-to-review.md)。
 

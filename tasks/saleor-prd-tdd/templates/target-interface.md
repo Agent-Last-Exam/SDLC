@@ -11,4 +11,4 @@ Saleor 使用 GraphQL。读取 `/workspace/repos/saleor/saleor/graphql/schema.gr
 - Saleor 本轮业务明确包含接口变更，目标 SDL 为必交。通用任务若无接口变更，可以由任务配置声明不要求，并在后端设计 §2 说明；Agent 不自行删除本轮必交项。
 - 若其他边界使用 REST/gRPC，沿用边界现有格式提供完整 OpenAPI/proto，并在接口契约中登记文件；不强制转换为 GraphQL。
 
-这些目标描述保留协议原生格式；PRD、设计与评审等叙述文档统一使用 Markdown。
+这些目标描述保留协议原生格式；PRD 与设计等叙述文档统一使用 Markdown。

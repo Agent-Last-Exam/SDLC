@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "test-verdict",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["round", "verdict"],
+  "properties": {
+    "round": { "type": "integer", "minimum": 1 },
+    "verdict": { "enum": ["pass", "fail"] }
+  }
+}

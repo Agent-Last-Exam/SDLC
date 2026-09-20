@@ -1,10 +1,12 @@
-# 本机 Harbor：Instruction → PRD → 技术评审
+# 本机 Harbor：Instruction → PRD → 技术设计
 
-这里用固定版本的 Saleor 源码启动 Codex，按顺序完成 **PM / PRD → 架构师 / 前后端技术设计与自审**。每阶段有明确输入、模板、角色和输出，接受的产物只读，流程在技术评审交付后停止。
+这里用固定版本的 Saleor 源码启动 Codex，按顺序完成 **PM / PRD → 架构师 / 前后端技术设计**。每阶段有明确输入、模板、角色和输出，接受的产物只读，流程在技术设计交付后停止。角色 System Prompt 明确输入、工作、输出路径和交接边界；模板定义字段与格式。
 
-**先看结果：** [真实 rollout 报告](jobs/workflow-single-20260918-b/report.md) · [全部运行索引](jobs/README.md) · [正式交付文件](jobs/workflow-single-20260918-b/task__bVyhiV4/workflow/accepted/sprint1/)。
+后续的 **QA 测试设计 → 开发 → 部署 → QA 测试执行** 已补齐[角色与交接定义](tasks/saleor-prd-tdd/roles/README.md)及[模板](tasks/saleor-prd-tdd/templates/README.md)，自动执行和 QA 失败后的返工循环尚未接通。
 
-2026-09-18 已用本机 Codex 登录完成真实文档交付；自审为 `blocked`，原因是两项产品/迁移信息待确认。首次运行修复角色切换后在同一原生会话续跑，原失败记录保留。完整记录见报告。
+**历史运行结果：** [真实 rollout 报告](jobs/workflow-single-20260918-b/report.md) · [全部运行索引](jobs/README.md) · [正式交付文件](jobs/workflow-single-20260918-b/task__bVyhiV4/workflow/accepted/sprint1/)。
+
+当前流程已取消额外公共交付规范和自审步骤，尚未重跑真实模型。2026-09-18 的旧流程已用本机 Codex 登录完成真实文档交付；自审为 `blocked`，原因是两项产品/迁移信息待确认。首次运行修复角色切换后在同一原生会话续跑，原失败记录保留。完整记录见报告。
 
 ## 目录怎么读
 
@@ -50,19 +52,19 @@
 每次运行结束自动生成 `jobs/<job>/report.md`。报告链接到：
 
 - `<trial>/workflow/accepted/sprint1/prd/prd.md`：正式 PRD。
-- `<trial>/workflow/accepted/sprint1/tech-design/`：前后端技术设计、接口契约、完整 Schema、其他协议文件和 `review.md`。
+- `<trial>/workflow/accepted/sprint1/tech-design/`：前后端技术设计、接口契约、完整 Schema、其他协议文件。
 - `<trial>/workflow/state.json` / `events.jsonl`：阶段状态、提交记录、输入输出哈希。
 - `<trial>/agent/`：原生会话、Agent 日志与 Harbor trajectory。
 
-**report.md 是运行报告，review.md 是技术自审。** `artifacts/` 还可能含未通过门禁的草稿，正式交付以 `workflow/accepted/` 为准。详细路径与失败记录说明见 [rollout-records.md](docs/rollout-records.md)。
+**report.md 是运行器生成的运行报告。** 旧运行中的 `review.md` 是当时的自审产物，当前流程不再生成。 `artifacts/` 还可能含未通过门禁的草稿，正式交付以 `workflow/accepted/` 为准。详细路径与失败记录说明见 [rollout-records.md](docs/rollout-records.md)。
 
 ## 当前支持范围
 
 | 模式 / Agent | 当前能力 |
 | --- | --- |
-| Single / Codex | 同一原生主会话，阶段切换角色；真实文档交付已验证 |
+| Single / Codex | 同一原生主会话，阶段切换角色；旧契约真实文档交付已验证 |
 | Flat / Codex | 每阶段新 Agent，仅文件交接；无模型容器联调已验证 |
 | Hierarchical | 共用契约已配置；Lead 执行后端尚未实现，启动时明确拒绝 |
 | Claude Code | 分阶段 workflow 尚未接入 |
 
-退出码：`0` 完成，`2` 技术自审 blocked，`1` 执行失败（参数错误由 CLI 返回）。blocked 会保存交付，不回退 PRD 或进入 Code。当前没有开发、QA、部署阶段，没有 Oracle/Noop 或独立语义评分。
+退出码：`0` 文档交付完成，`1` 执行失败（参数错误由 CLI 返回）。设计中的待确认事项保留在对应文档中，不额外生成自审结论或触发业务 blocked。结构验收通过不表示业务正确性已获批准。当前没有开发、QA、部署阶段，没有 Oracle/Noop 或独立语义评分。

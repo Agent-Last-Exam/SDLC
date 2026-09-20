@@ -3,7 +3,7 @@
 版本：{v1}
 责任：产品
 状态：{需求范围与验收条件已定义 | 存在待确认项}
-输入：instruction.md；base-revisions.json
+输入：instruction.md；现有项目代码
 修订：{首次交付；修订时记录版本、内容及原因}
 
 ## 1. 业务背景与目标

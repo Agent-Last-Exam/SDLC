@@ -67,7 +67,7 @@ def write_report(job):
                     ((p / "config.json").exists() or (p / "result.json").exists() or (p / "workflow").exists()))
     lines = [f"# Rollout report：{job.name}", "", f"类型：{kind(config)}。",
              f"开始：{local_time(summary.get('started_at'))}；结束：{local_time(summary.get('finished_at'))}（上海时间）。",
-             "", "本报告由运行器根据状态与文件证据生成；`review.md` 是 Agent 的技术自审报告，两者用途不同。",
+             "", "本报告由运行器根据状态与文件证据生成，不调用模型。",
              "本工作流关闭 Harbor verifier；Harbor 的 Mean / reward 不是本次文档质量或成功与否的判断。", ""]
     for p in (job / "config.json", job / "result.json"):
         if p.exists():
@@ -81,7 +81,7 @@ def write_report(job):
         model = agent.get("model_info", {}).get("name") or (config.get("agents") or [{}])[0].get("model_name", "未记录")
         lines += ["", f"## {trial.name}", "", f"状态：**{trial_status(trial, config)}**；模型：`{model}`。"]
         if state.get("status") == "blocked":
-            lines += ["所有已接受产物保留，技术自审有未决项，流程停在交付边界。blocked 不等于工具异常，也不等于业务批准。"]
+            lines += ["此历史运行按当时的自审规则停在 blocked，已接受产物保留。该状态不等于工具异常或业务批准；当前流程已取消自审步骤。"]
         if state.get("principal_session"):
             lines += [f"主原生会话：`{state['principal_session']}`。"]
         if state.get("continued_from"):
@@ -127,7 +127,7 @@ def write_report(job):
             text = review.read_text()
             start = text.find("## 4. 问题与处置")
             end = text.find("## 5.", start)
-            lines += ["", "### Agent 自审问题", "", "下表来自 " + link("review.md", review, job) + "，不代表独立审核。", ""]
+            lines += ["", "### 历史 Agent 自审问题", "", "下表来自旧流程的 " + link("review.md", review, job) + "，不代表独立审核；当前流程不再生成此文件。", ""]
             if start >= 0 and end > start:
                 lines += [text[start:end].split("\n", 1)[1].strip()]
     lines += ["", "## 适用边界", "", "结构门禁、文件哈希和角色证据不证明业务设计正确。本阶段未执行 Saleor 功能开发、业务测试或部署。合成联调与角色探针不能作为真实 PRD/TDD 交付。"]

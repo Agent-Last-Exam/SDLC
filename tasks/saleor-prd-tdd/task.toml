@@ -2,7 +2,7 @@ schema_version = "1.3"
 
 [task]
 name = "sdlcbench/saleor-prd-tdd"
-description = "Instruction to PRD and reviewed technical design"
+description = "Instruction to PRD and technical design"
 
 [metadata]
 category = "documentation"

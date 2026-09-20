@@ -103,7 +103,6 @@ def validate_prd(directory, templates):
 def validate_design(directory, templates, prd_path, base_schema):
     names = ("frontend-design", "backend-design", "interface-contract")
     texts = {name: markdown(directory / f"{name}.md", templates / f"{name}.md") for name in names}
-    review = markdown(directory / "review.md", templates / "technical-review.md")
     requirements = set(blocks(prd_path.read_text(), "R"))
     front = blocks(texts["frontend-design"], "FD")
     back = blocks(texts["backend-design"], "BD")
@@ -139,14 +138,8 @@ def validate_design(directory, templates, prd_path, base_schema):
     for tid in graph:
         visit(tid)
     for prefix, known in (("R", requirements), ("FD", set(front)), ("BD", set(back)), ("I", set(interfaces)), ("BT", set(tasks))):
-        used = refs("\n".join(texts.values()) + "\n" + review, prefix)
+        used = refs("\n".join(texts.values()), prefix)
         require(used <= known, f"Dangling {prefix} references: {sorted(used - known)}")
-    outcome = re.search(r"^结论：(pass|blocked)\s*$", review, re.M)
-    require(outcome, "Review must declare 结论：pass or blocked")
-    require(requirements <= refs(review, "R"), "Review must account for every PRD requirement")
-    if outcome[1] == "pass":
-        require(requirements <= covered, f"Pass review has uncovered requirements: {sorted(requirements - covered)}")
-        require(not re.search(r"\|\s*是\s*\|\s*(?:尚未解决|未解决)", review), "Pass review contains unresolved blocking issue")
     schema_path = directory / "target-schema.graphql"
     require(schema_path.is_file() and not schema_path.is_symlink(), "Missing target-schema.graphql")
     try:
@@ -166,11 +159,11 @@ def validate_design(directory, templates, prd_path, base_schema):
         raise
     except Exception as exc:
         raise GateError(f"GraphQL SDL cannot be built: {exc}") from exc
-    return {"review_outcome": outcome[1], "requirements": sorted(requirements),
+    return {"requirements": sorted(requirements),
             "covered_requirements": sorted(covered), "design_units": sorted(set(front) | set(back)),
             "interfaces": sorted(interfaces), "schema_definitions": len(target_names),
             "removed_schema_definitions": sorted(removed),
-            "limits": "Public structural checks and Agent self-review; not independent semantic approval"}
+            "limits": "Public structural checks only; not semantic approval"}
 
 
 def validate_stage(stage, directory, workspace, accepted_prd=None):

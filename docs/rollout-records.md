@@ -28,15 +28,15 @@ software-last-exam/
 
 安装检查和角色探针的记录结构较小，不会生成业务 PRD。报告会明确写出类型，不把 smoke fixture 当作业务文档。
 
-## report.md 与 review.md
+## 当前运行报告与历史自审文件
 
-`report.md` 由主机运行器读取 state、result 和 accepted 文件生成，记录阶段状态、原生会话、续跑关系、哈希校验和证据链接。不会再调用模型。它引用 Agent 自审的问题表，不增加独立语义评价。
+`report.md` 由主机运行器读取 state、result 和 accepted 文件生成，记录阶段状态、原生会话、续跑关系、哈希校验和证据链接。不会再调用模型。当前流程只交付 PRD 和技术设计，不要求自审。读取旧记录时，报告仍可展示历史自审问题。
 
-`review.md` 由架构师 Agent 生成，是技术设计交付的一部分；记录设计覆盖、检查范围、问题、pass/blocked 结论。本次是同一个 Agent 自审。
+2026-09-18 旧流程中的 `review.md` 由架构师 Agent 生成，当时属于技术设计交付的一部分；记录设计覆盖、检查范围、问题、pass/blocked 结论。当时是同一个 Agent 自审；这些历史文件与状态保持原样。
 
-结构验收通过与自审 blocked 可以同时成立：文件完整且格式合规，但某些业务决策待确认。Harbor verifier 已禁用，Mean=0 不说明文档质量为零；应读取 workflow/state.json。
+旧流程中，结构验收通过与自审 blocked 可以同时成立：文件完整且格式合规，但某些业务决策待确认。Harbor verifier 已禁用，Mean=0 不说明文档质量为零；应读取 workflow/state.json。
 
-## 本次真实 rollout 的链路
+## 2026-09-18 旧契约真实 rollout 的链路
 
 1. [workflow-single-20260918-a](../jobs/workflow-single-20260918-a/report.md)：PRD 接受，原生角色切换未生效，技术阶段失败。
 2. [role-probe-a](../jobs/workflow-role-probe-20260918-a/report.md) / [role-probe-b](../jobs/workflow-role-probe-20260918-b/report.md)：前者记录另一种失败的切换方式；后者验证同会话的原生 developer 消息注入。
@@ -64,4 +64,4 @@ software-last-exam/
 /Users/zhihu/.local/share/uv/tools/harbor/bin/python -m runtime   --use-local-codex-auth --continue-from jobs/<failed-job>/<trial>
 ```
 
-仅支持已经接受 PRD 后的失败/中断记录，并核对全部公开输入与接受文件哈希。业务自审 blocked 不能用此入口绕过；源输入变化时新建 run。旧历史 recipe 中的模块路径保留原样；新运行请用新入口生成 recipe。
+仅支持已经接受 PRD 后的失败/中断记录，并核对全部公开输入与接受文件哈希。历史自审 blocked 不能用此入口改写；源输入变化时新建 run。当前角色与交付契约已变化，旧契约任务应保留原记录，新建运行。旧历史 recipe 中的模块路径保留原样；新运行请用新入口生成 recipe。

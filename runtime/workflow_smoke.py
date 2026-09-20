@@ -6,7 +6,7 @@ import tempfile
 from runtime.workflow_agent import HarborBackend
 
 
-def write_fixture(directory, role, workspace, outcome="pass"):
+def write_fixture(directory, role, workspace):
     directory.mkdir(parents=True, exist_ok=True)
     if role == "pm":
         (directory / "prd.md").write_text("""# PRD：SYNTHETIC SMOKE ONLY
@@ -90,23 +90,6 @@ I01 属于 BD01。
 - 变更与兼容：无变化。
 ## 3. 其他
 非正式技术设计。
-""")
-    (directory / "review.md").write_text(f"""# 技术评审：SYNTHETIC SMOKE ONLY
-版本：v1
-责任：架构师自审
-评审方式：合成执行器，无模型
-结论：{outcome}
-依据：PRD v1；前端 v1；后端 v1；接口 v1
-## 1. 评审对象
-全部合成产物。
-## 2. 需求与设计覆盖
-R01 由 FD01、BD01、I01 覆盖。
-## 3. 接口与工程一致性
-仅用于验证运行器门禁。
-## 4. 问题与处置
-{'没有合成阻塞问题。' if outcome == 'pass' else '测试 blocked 停止，不允许进入后续阶段。'}
-## 5. 结论与交接
-这不是实际 PRD/TDD，不证明模型或业务质量。
 """)
     shutil.copyfile(workspace / "repos/saleor/saleor/graphql/schema.graphql", directory / "target-schema.graphql")
 
