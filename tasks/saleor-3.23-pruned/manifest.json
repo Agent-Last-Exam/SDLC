@@ -1,0 +1,118 @@
+{
+  "schema": "sdlcbench-harbor-delivery-v2",
+  "task_id": "saleor-3.23",
+  "release_id": "saleor-3.23-pruned-20260927-01",
+  "mode": "full",
+  "release_status": "calibrated-verified",
+  "source_fingerprint": "3f99808a52bcaf443b7960bb3eee47c02a3e9ff37522d1b2db2c7b7d52b02f14",
+  "shared_payload_fingerprint": "6297d25e11b45fd10be7dc142c27971e17cf62bc3e8edb64f53b2d12c93c9073",
+  "shared_files": {
+    "README.md": "c786f20cf51375a022df8943fe8cfe50cae508cb69c4f7d62c365e1bba0b4b2d",
+    "instruction.md": "c30e2fe79894ef93307b98475882226b301f63255c0b62e7c1bf6d0f0436b2f5",
+    "solution/saleor-dashboard.code.patch": "ad02c0504fa6dfe4f2c6969628b281d660bcac8072bd0eba8da239c9e907b9c2",
+    "solution/saleor.code.patch": "dfcee8e2ef4dd10092efea58b28d26726ae99f8eb5aca0f18a8adb6cb3a8887f",
+    "tests/apply_patches.py": "9016791e55112d68409142a245dc25263d7972daeb00bd319ca8c5e9e856e838",
+    "tests/config.json": "e1ffb2cd593468a0f56fb892956291e7ed2ded23c9c4a19fa466219a2782f1c3",
+    "tests/grader.py": "4c40f1e87c52068fcf367ab0edfc7158fcf70b2c3c4518b41bfd09651712b97c",
+    "tests/patch_manifest.json": "8fab58c13f09002ec8b5458b5d23e14f32b462a66cbd545311a24f1031538235",
+    "tests/prepare.py": "b64660dea14ca656512876ea07474e3232fd6bf7049226fff7dba708fa4a5fb5",
+    "tests/saleor-dashboard.test.patch": "14488c9b7e8127976f2ab8abfd78543185d2e48979d005965906358db4456bae",
+    "tests/saleor.test.patch": "1f544aa7a18f316f6e9df997b4da0bd35be24eea4671b025b4368d3fa3599e80",
+    "tests/seed_e2e_fixtures.py": "7940a9a6fbda081e0bb640cb0cbb3c0d361503c937c3ae256da7c0eabba0b3b4",
+    "tests/test.sh": "e762ae7ec880164bd5353094e2d70cfba112c163324b9c8c36b2a4226f4bb20d"
+  },
+  "source_files": {
+    "package.yaml": "1479c5df42359beb7f59847f3cfa024a8b16e68a33993c6fe15229d548f5a75d",
+    "manifest.json": "67b7c87efcbf9b892344ecda362513215f581a855e21049a343c98428d2c6fce",
+    "README.md": "c786f20cf51375a022df8943fe8cfe50cae508cb69c4f7d62c365e1bba0b4b2d",
+    "instruction.md": "c30e2fe79894ef93307b98475882226b301f63255c0b62e7c1bf6d0f0436b2f5",
+    "env/manifest.json": "dfa56208c3ea7f5fea5c73c14f6b6c6ba28f8a2fb85530383a3d6c62a2e128a8",
+    "env/saleor.env.patch": "f1a86eb7fd35685e474e39560e1b7378f02713f985d08f9bc0ce9bd94f96300c",
+    "env/saleor-dashboard.env.patch": "fd9edc96a558db352b9d866c72e33b1f45bf6578061783985a4273a173829fbc",
+    "patches/patch_manifest.json": "8fab58c13f09002ec8b5458b5d23e14f32b462a66cbd545311a24f1031538235",
+    "patches/saleor-dashboard.code.patch": "ad02c0504fa6dfe4f2c6969628b281d660bcac8072bd0eba8da239c9e907b9c2",
+    "patches/saleor-dashboard.test.patch": "14488c9b7e8127976f2ab8abfd78543185d2e48979d005965906358db4456bae",
+    "patches/saleor.code.patch": "dfcee8e2ef4dd10092efea58b28d26726ae99f8eb5aca0f18a8adb6cb3a8887f",
+    "patches/saleor.test.patch": "1f544aa7a18f316f6e9df997b4da0bd35be24eea4671b025b4368d3fa3599e80",
+    "verifier/apply_patches.py": "9016791e55112d68409142a245dc25263d7972daeb00bd319ca8c5e9e856e838",
+    "verifier/config.json": "e1ffb2cd593468a0f56fb892956291e7ed2ded23c9c4a19fa466219a2782f1c3",
+    "verifier/grader.py": "4c40f1e87c52068fcf367ab0edfc7158fcf70b2c3c4518b41bfd09651712b97c",
+    "verifier/prepare.py": "b64660dea14ca656512876ea07474e3232fd6bf7049226fff7dba708fa4a5fb5",
+    "verifier/test.sh": "e762ae7ec880164bd5353094e2d70cfba112c163324b9c8c36b2a4226f4bb20d",
+    "templates/eci-environment.Dockerfile": "9e2db0eb8fb4ef17248156ed0b31df5dcacb1849540baa795ad1e5ff0155b685",
+    "templates/task.toml": "bb2dc9ac4640bef5a6b564fbdf3469814890df1b3594889c007b43fd7e9d6c15",
+    "templates/tests.Dockerfile": "dd31cfcd8576536da13a33ed3d6ec52899aeae6ab8634cd119e51ef6ddb29feb",
+    "../../images/saleor-3.23/verifier-assets/seed_e2e_fixtures.py": "7940a9a6fbda081e0bb640cb0cbb3c0d361503c937c3ae256da7c0eabba0b3b4"
+  },
+  "release_state_sha256": "ecb8024c8846d19589744fb7e6aa728c1799801e985ed089b1ea97a355a51b8a",
+  "parity_policy": {
+    "allowed_profile_paths": [
+      "environment/**",
+      "tests/Dockerfile",
+      "task.toml"
+    ],
+    "template_contracts": {
+      "task.toml": {
+        "allowed_value_differences": [
+          "environment_image_ref"
+        ]
+      },
+      "tests/Dockerfile": {
+        "allowed_value_differences": [
+          "environment_image_ref"
+        ]
+      }
+    }
+  },
+  "rendered_templates": {
+    "tests/Dockerfile": {
+      "template_sha256": "dd31cfcd8576536da13a33ed3d6ec52899aeae6ab8634cd119e51ef6ddb29feb",
+      "values": {
+        "environment_image_ref": "sdlcbench/saleor-3.23-env:build-0a5d5bc656cb"
+      }
+    },
+    "task.toml": {
+      "template_sha256": "bb2dc9ac4640bef5a6b564fbdf3469814890df1b3594889c007b43fd7e9d6c15",
+      "values": {
+        "environment_image_ref": "sdlcbench/saleor-3.23-env:build-0a5d5bc656cb",
+        "release_id": "saleor-3.23-pruned-20260927-01",
+        "release_status": "calibrated-verified",
+        "task_id": "saleor-3.23"
+      }
+    }
+  },
+  "files": {
+    "README.md": "c786f20cf51375a022df8943fe8cfe50cae508cb69c4f7d62c365e1bba0b4b2d",
+    "environment/Dockerfile": "d657d5a9f3080c154177568b1dedb07a885479a3baef839516c81b537e33e6ca",
+    "environment/harbor/saleor-3.23/env/saleor-dashboard.env.patch": "fd9edc96a558db352b9d866c72e33b1f45bf6578061783985a4273a173829fbc",
+    "environment/harbor/saleor-3.23/env/saleor.env.patch": "f1a86eb7fd35685e474e39560e1b7378f02713f985d08f9bc0ce9bd94f96300c",
+    "environment/images/saleor-3.23/base/dependencies/SHA256SUMS": "3798d471fcab75a990a92ad603deeaaba432c0c106e09718b75cc9abc25b8c11",
+    "environment/images/saleor-3.23/base/dependencies/target/saleor/pyproject.toml": "82b9a72e6d8b542db2df3ac285a668823f1b151b90f1d9c0d84d74c6715c5d0b",
+    "environment/images/saleor-3.23/base/dependencies/target/saleor/uv.lock": "86a35ab0bf69629d04cc7f3d09f1c1fa205eb6afc6620b317754490b33f22907",
+    "environment/images/saleor-3.23/base/dependencies/target/saleor-dashboard/.npmrc": "4b84eb91234d80d48c16b50746106405c4cd6d97581f7464001a7dc84dd9d185",
+    "environment/images/saleor-3.23/base/dependencies/target/saleor-dashboard/package.json": "24d5218dd6e6116b0a2b6c623dbe359fbcf5cbc3eb7cbbc88ff4e73582988a04",
+    "environment/images/saleor-3.23/base/dependencies/target/saleor-dashboard/pnpm-lock.yaml": "94f62d10e4012ff8991fa27a9d844d4851f57ab9c391e1fc72564ace7d2eb952",
+    "environment/images/saleor-3.23/base/dependencies/target/saleor-dashboard/pnpm-workspace.yaml": "28d32b41bd516d83d9d23525b12533688a6d6dd428fbe938e3b48796761fe866",
+    "environment/images/saleor-3.23/base/runtime/merge_dependencies.py": "055d3d50df6bbe22593b5687598621e3d63775377d562b6ae5112485a4b21415",
+    "environment/images/saleor-3.23/base/runtime/nginx-dashboard.conf": "6e38f29b73d7a96e0b9653263af4de79840d29e759c48a7dc78a0d09b8a7a3f6",
+    "environment/images/saleor-3.23/base/runtime/run-suite.sh": "c0f508f4b5538110f08b9f94414372cee531fb4b0db501bd15342d2fd757a02e",
+    "environment/images/saleor-3.23/base/runtime/seed_e2e_fixtures.py": "968ea57be8ded252832128315afcc7149789e6b8818bfb3238884ab5396ae573",
+    "environment/images/saleor-3.23/base/runtime/services.sh": "16cc7cbc6c765663fad4fd6f9eddaec767ee95043c1da3c5c67ba42e27b04ab3",
+    "environment/images/saleor-3.23/base/runtime/start-services.sh": "c55dfef2550358eb45eda59e00aca041df1fea941f5439c0a8dc3e659a3216b8",
+    "environment/images/saleor-3.23/base/runtime/stop-services.sh": "baf39468b8caf1f5d305aed78af1fa94a605dca9b1ce8a77181a2ee7595e4fe1",
+    "instruction.md": "c30e2fe79894ef93307b98475882226b301f63255c0b62e7c1bf6d0f0436b2f5",
+    "solution/saleor-dashboard.code.patch": "ad02c0504fa6dfe4f2c6969628b281d660bcac8072bd0eba8da239c9e907b9c2",
+    "solution/saleor.code.patch": "dfcee8e2ef4dd10092efea58b28d26726ae99f8eb5aca0f18a8adb6cb3a8887f",
+    "task.toml": "38b4fee25b479e31457898d8c5d1bdea87275763d706f5515e7d5362ee2a7249",
+    "tests/Dockerfile": "fa0dcdaac1b9f5c07c71399078982a476bb409209ab07511a45d3d9610510712",
+    "tests/apply_patches.py": "9016791e55112d68409142a245dc25263d7972daeb00bd319ca8c5e9e856e838",
+    "tests/config.json": "e1ffb2cd593468a0f56fb892956291e7ed2ded23c9c4a19fa466219a2782f1c3",
+    "tests/grader.py": "4c40f1e87c52068fcf367ab0edfc7158fcf70b2c3c4518b41bfd09651712b97c",
+    "tests/patch_manifest.json": "8fab58c13f09002ec8b5458b5d23e14f32b462a66cbd545311a24f1031538235",
+    "tests/prepare.py": "b64660dea14ca656512876ea07474e3232fd6bf7049226fff7dba708fa4a5fb5",
+    "tests/saleor-dashboard.test.patch": "14488c9b7e8127976f2ab8abfd78543185d2e48979d005965906358db4456bae",
+    "tests/saleor.test.patch": "1f544aa7a18f316f6e9df997b4da0bd35be24eea4671b025b4368d3fa3599e80",
+    "tests/seed_e2e_fixtures.py": "7940a9a6fbda081e0bb640cb0cbb3c0d361503c937c3ae256da7c0eabba0b3b4",
+    "tests/test.sh": "e762ae7ec880164bd5353094e2d70cfba112c163324b9c8c36b2a4226f4bb20d"
+  }
+}

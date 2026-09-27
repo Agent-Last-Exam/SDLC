@@ -1,0 +1,54 @@
+{
+  "schema": "sdlcbench-env-patch-manifest-v1",
+  "status": "environment-accepted",
+  "task_id": "saleor-3.23",
+  "repositories": {
+    "saleor": {
+      "upstream_base": "6cfb77430ddbc53f48dfd3462fbefaad4e8c3d45",
+      "target": "e11a5557eff29fbb2eed36e6ff3cd0af08ab9e10",
+      "raw_patches": {
+        "code": {"path": "../raw-patches/saleor.code.patch", "sha256": "6a0e25be42e8fe52ae0084a964b4c85c0be2bb0f5e20063d0ff0756c3d227140"},
+        "test": {"path": "../raw-patches/saleor.test.patch", "sha256": "f56b0ef21c912227aa33a8a9a559f08f79255e94b4da6d40c993b290533b6995"}
+      },
+      "env_patch": {"path": "saleor.env.patch", "files": 3, "bytes": 82121, "sha256": "f1a86eb7fd35685e474e39560e1b7378f02713f985d08f9bc0ce9bd94f96300c"},
+      "code_patch": {"path": "../patches/saleor.code.patch", "files": 553, "bytes": 2363221, "sha256": "fac345acb493d74f1640bc18e3776bcc1a2f25c879d2a8b1d46d66885b1439e5"},
+      "test_patch": {"path": "../patches/saleor.test.patch", "files": 476, "bytes": 3419020, "sha256": "646b829dd529ec7990ed5f6fa053964d9fa5fe3073e50f5e8042319b24ecc56f"},
+      "agent_baseline_commit": "c864e66b8e537d30732ddba62d3a4c47e49e4a3e",
+      "agent_baseline_tree": "ed6b341ee8326d2efd809a59d388a5b2e187f0d4",
+      "trees": {
+        "code": "bc89d53dad23b01ef0fe8e65f4de26738e773766",
+        "test": "2258ea6699bd1758c7ba9422b98dba361ab4be64",
+        "combined": "dcbfb3104aefc53a42341bc5e8e1d4d4ba48e1ad"
+      },
+      "test_adaptations": {
+        "saleor/app/tests/fixtures/app_extension.py": "use stable mount values instead of the target-only enum",
+        "saleor/app/tests/fixtures/app_problem.py": "import the target-only model when the fixture executes",
+        "saleor/attribute/tests/fixtures/attribute.py": "accept the base and target EditorJS helpers without changing fixture values",
+        "saleor/checkout/tests/fixtures/checkout.py": "import the target-only delivery model when the fixture executes",
+        "saleor/graphql/tests/fixtures.py": "import the target-only user helper when the fixture executes",
+        "saleor/page/tests/fixtures/page.py": "import target search support when the fixture executes",
+        "saleor/tests/utils.py": "fall back to the same raw EditorJS document when the target model is absent"
+      }
+    },
+    "saleor-dashboard": {
+      "upstream_base": "e934ff0abf5e643d2e8eab5cce609387fe0e37b6",
+      "target": "61a3c045f7d7aba8dc343563757fdfdd249cd656",
+      "raw_patches": {
+        "code": {"path": "../raw-patches/saleor-dashboard.code.patch", "sha256": "4a2f6fec1c03ca5e9824f0f50d1d4af9644928efd7a91a59019f5bcf4fff35be"},
+        "test": {"path": "../raw-patches/saleor-dashboard.test.patch", "sha256": "a373fa4d26284e77c430205e9b4682d65979af6096a47375520919472b49a78b"}
+      },
+      "env_patch": {"path": "saleor-dashboard.env.patch", "files": 7, "bytes": 1693923, "sha256": "fd9edc96a558db352b9d866c72e33b1f45bf6578061783985a4273a173829fbc"},
+      "code_patch": {"path": "../patches/saleor-dashboard.code.patch", "files": 2984, "bytes": 14193476, "sha256": "e02693f6b42f38b19ec122eb95e568e879af6dacb518c811663d3adef6d8f6a5"},
+      "test_patch": {"path": "../patches/saleor-dashboard.test.patch", "files": 495, "bytes": 3774213, "sha256": "6f729b63db239a024d92cc7401988f7afde497935fa4698b282f69d62dca4d7d"},
+      "agent_baseline_commit": "aebb2401b5079fbbb8c60150289d1896c108feca",
+      "agent_baseline_tree": "8fb032b5672b0cb10da5a6163471020378e0d954",
+      "trees": {
+        "code": "93fd2788386ef7535640ed978a49ca617f85d05e",
+        "test": "7e0eb927ff8dae2d9a263d1819882fae3a937094",
+        "combined": "0173eb8fa4e64158817f5de80a7246ac05b573c0"
+      }
+    }
+  },
+  "composition": "E -> G -> T and E -> T -> G produce each repository's recorded combined tree",
+  "discarded": ["CI and release automation", "devcontainer", "editor and agent configuration", "repository maintenance", "changelog and contribution documentation", "release-only metadata"]
+}

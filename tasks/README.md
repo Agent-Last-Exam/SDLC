@@ -8,6 +8,11 @@
 | saleor-dashboard 3.22.2 | 59e600df5fa8bc9cc875bb7beaeca43a2549d2d5 |
 | saleor-platform | 8330f42e5673fe0c4fd4a445d6789bd257cc9265 |
 
+## 已冻结的 Harbor 任务
+
+- [standard/](standard/README.md)：2026-09-20 的历史 Saleor 3.23 标准任务。
+- [saleor-3.23-pruned/](saleor-3.23-pruned/README.md)：剪枝后的正式 Golden Harbor，release ID 为 `saleor-3.23-pruned-20260927-01`；Base 使用 architecture-upgraded environment 与最终 test patch，Target 在同一测试树上增加最终 code patch，冻结选择为 F2P 5,365、P2P 15,013。
+
 源码在 environment/repos/，由 `python3 -m runtime.prepare_sources --task tasks/<task>` 精确获取。目录中的 Base Git 仓库保持干净，不放 Agent 输出。新 workflow 用 git archive 创建无历史的独立源码快照，放进每个 job 的冻结 workspace。
 
 已有 Harbor task 可以智能复制现有 Single workflow；业务 instruction、原 task.toml 和原 Dockerfile 不会被覆盖：

@@ -1,0 +1,68 @@
+{
+  "schema": "sdlcbench-patch-manifest-v1",
+  "task_id": "saleor-3.23",
+  "status": "patch-composition-verified; pruning-applied",
+  "tree_semantics": {
+    "code_tree": "upstream base plus code patch",
+    "test_tree": "upstream base plus test patch",
+    "combined_tree": "upstream base plus code and test patches",
+    "evaluation_base_tree": "agent environment baseline plus test patch",
+    "evaluation_target": "agent environment baseline plus model code patch and test patch"
+  },
+  "repos": {
+    "saleor": {
+      "github": "saleor/saleor",
+      "base": "6cfb77430ddbc53f48dfd3462fbefaad4e8c3d45",
+      "target": "0b4ecb1130bcc42aad5facd1657f088ed0d7b7ac",
+      "env_patch": {
+        "path": "env/saleor.env.patch",
+        "sha256": "f1a86eb7fd35685e474e39560e1b7378f02713f985d08f9bc0ce9bd94f96300c"
+      },
+      "code_patch": {
+        "path": "solution/saleor.code.patch",
+        "sha256": "dfcee8e2ef4dd10092efea58b28d26726ae99f8eb5aca0f18a8adb6cb3a8887f",
+        "files": 515,
+        "bytes": 2117708
+      },
+      "test_patch": {
+        "path": "tests/saleor.test.patch",
+        "sha256": "1f544aa7a18f316f6e9df997b4da0bd35be24eea4671b025b4368d3fa3599e80",
+        "files": 435,
+        "bytes": 3572133
+      },
+      "agent_baseline_commit": "c864e66b8e537d30732ddba62d3a4c47e49e4a3e",
+      "agent_baseline_tree": "ed6b341ee8326d2efd809a59d388a5b2e187f0d4",
+      "test_tree": "8238527a020c7105be5a4671315ffab50b6ed025",
+      "code_tree": "a17d6d6868a038acfd9eba5e885ee5660cbc64d6",
+      "combined_tree": "0b4ecb1130bcc42aad5facd1657f088ed0d7b7ac",
+      "evaluation_base_tree": "8238527a020c7105be5a4671315ffab50b6ed025"
+    },
+    "saleor-dashboard": {
+      "github": "saleor/saleor-dashboard",
+      "base": "e934ff0abf5e643d2e8eab5cce609387fe0e37b6",
+      "target": "38d10cfc303166d7ea2d3a93d3991bff151b5eeb",
+      "env_patch": {
+        "path": "env/saleor-dashboard.env.patch",
+        "sha256": "fd9edc96a558db352b9d866c72e33b1f45bf6578061783985a4273a173829fbc"
+      },
+      "code_patch": {
+        "path": "solution/saleor-dashboard.code.patch",
+        "sha256": "ad02c0504fa6dfe4f2c6969628b281d660bcac8072bd0eba8da239c9e907b9c2",
+        "files": 2940,
+        "bytes": 16845769
+      },
+      "test_patch": {
+        "path": "tests/saleor-dashboard.test.patch",
+        "sha256": "14488c9b7e8127976f2ab8abfd78543185d2e48979d005965906358db4456bae",
+        "files": 470,
+        "bytes": 1397611
+      },
+      "agent_baseline_commit": "aebb2401b5079fbbb8c60150289d1896c108feca",
+      "agent_baseline_tree": "8fb032b5672b0cb10da5a6163471020378e0d954",
+      "test_tree": "33b55853eb52195440f2cdb121223e580724cec2",
+      "code_tree": "ae0a87797fbde54a1442b890a904a7c9672c4233",
+      "combined_tree": "38d10cfc303166d7ea2d3a93d3991bff151b5eeb",
+      "evaluation_base_tree": "4f2a89c3140dc77ed6fc4741084a424769863c42"
+    }
+  }
+}
