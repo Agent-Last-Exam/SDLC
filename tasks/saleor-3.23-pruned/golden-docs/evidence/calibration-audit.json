@@ -1,0 +1,380 @@
+{
+  "schema": "saleor-pruned-calibration-audit-v1",
+  "selection": {
+    "path": "/home/yang/task/saleor-app-problems-removal/validation/golden-20260927-calibration/final/selection.json",
+    "sha256": "c6652cccc79707f4d744e2e7c0a437902e8b3be25a87efd6157952ac3c4a9e60",
+    "f2p": 5365,
+    "p2p": 15013,
+    "total": 20378
+  },
+  "patches": {
+    "saleor.code.patch": "dfcee8e2ef4dd10092efea58b28d26726ae99f8eb5aca0f18a8adb6cb3a8887f",
+    "saleor.test.patch": "1f544aa7a18f316f6e9df997b4da0bd35be24eea4671b025b4368d3fa3599e80",
+    "saleor-dashboard.code.patch": "ad02c0504fa6dfe4f2c6969628b281d660bcac8072bd0eba8da239c9e907b9c2",
+    "saleor-dashboard.test.patch": "14488c9b7e8127976f2ab8abfd78543185d2e48979d005965906358db4456bae"
+  },
+  "reports": {
+    "pre/core-unit": {
+      "path": "/home/yang/task/saleor-app-problems-removal/validation/golden-20260926/logs/verifier/pre/core-unit/results.xml",
+      "sha256": "d9aae61d876e2950e16d5ec8847ed35e43557ee8e3939ad8a0c609290c4a4a3f"
+    },
+    "post/core-unit": {
+      "path": "/home/yang/task/saleor-app-problems-removal/validation/golden-20260926/logs/verifier/core-unit-post/results.xml",
+      "sha256": "f8420b0ce372cbce8b7a5309349f665b720f53593f1d3a5d65c6e1b8178064b0"
+    },
+    "pre/core-e2e": {
+      "path": "/home/yang/task/saleor-app-problems-removal/validation/golden-20260926/logs/verifier/pre/core-e2e/results.xml",
+      "sha256": "d85d0347b853173bca0c01acddeb501533e069af28cdcfbcc40904800afce458"
+    },
+    "post/core-e2e": {
+      "path": "/home/yang/task/saleor-app-problems-removal/validation/golden-20260926/logs/verifier/core-e2e-post/results.xml",
+      "sha256": "cac8ba5edb0e056bc641c914f80ce1eed227c1ddb5aeb4b569d0b33d834340a8"
+    },
+    "pre/dash-unit": {
+      "path": "/home/yang/task/saleor-app-problems-removal/validation/golden-20260926/logs/verifier/pre/dash-unit/results.json",
+      "sha256": "1a3d3bf88b511ba7afba1caa79079dea72633ba4937742e7f030d817c2307c45"
+    },
+    "post/dash-unit": {
+      "path": "/home/yang/task/saleor-app-problems-removal/validation/golden-20260926/logs/verifier/dash-unit-post/results.json",
+      "sha256": "bcfe7ac38ee059766cb85efcf6805811e58e338efd5f7f2b51abe0ceba331e40"
+    },
+    "pre/dash-e2e": {
+      "path": "/home/yang/task/saleor-app-problems-removal/validation/golden-20260926/logs/verifier/pre/dash-e2e/results.json",
+      "sha256": "9b6f9282ceced11b7878a81d5c4e54f375fe327d08b785865a439a893960dda2"
+    },
+    "post/dash-e2e": {
+      "path": "/home/yang/task/saleor-app-problems-removal/validation/golden-20260926/logs/verifier/dash-e2e-post-final/results.json",
+      "sha256": "c7a3dc3b376f1cebcebd6d40058b19272c7a186f30f7fc29d634655a68c74926"
+    },
+    "post/dash-e2e-rerun": {
+      "path": "/home/yang/task/saleor-app-problems-removal/validation/golden-20260926/logs/verifier/dash-e2e-post-rerun-20260927/results.json",
+      "sha256": "0f7ecdfc45ed866a60e9653ff8b0e655cc6b46a2506412a258af2540f5568857"
+    }
+  },
+  "suites": {
+    "core-unit": {
+      "pre": {
+        "nodes": 14423,
+        "passed": 12760,
+        "failed": 1663,
+        "skipped": 0
+      },
+      "post": {
+        "nodes": 16813,
+        "passed": 16810,
+        "failed": 2,
+        "skipped": 1
+      },
+      "p2p": 12760,
+      "f2p": 4050,
+      "target_nonpassing_excluded": 3
+    },
+    "core-e2e": {
+      "pre": {
+        "nodes": 313,
+        "passed": 210,
+        "failed": 103,
+        "skipped": 0
+      },
+      "post": {
+        "nodes": 225,
+        "passed": 225,
+        "failed": 0,
+        "skipped": 0
+      },
+      "p2p": 210,
+      "f2p": 15,
+      "target_nonpassing_excluded": 0
+    },
+    "dash-unit": {
+      "pre": {
+        "nodes": 2346,
+        "passed": 2042,
+        "failed": 296,
+        "skipped": 8
+      },
+      "post": {
+        "nodes": 3167,
+        "passed": 3159,
+        "failed": 0,
+        "skipped": 8
+      },
+      "p2p": 2042,
+      "f2p": 1117,
+      "target_nonpassing_excluded": 8
+    },
+    "dash-e2e": {
+      "pre": {
+        "nodes": 217,
+        "passed": 1,
+        "failed": 183,
+        "skipped": 33
+      },
+      "post": {
+        "nodes": 217,
+        "passed": 184,
+        "failed": 1,
+        "skipped": 32
+      },
+      "p2p": 1,
+      "f2p": 183,
+      "target_nonpassing_excluded": 33
+    }
+  },
+  "rerun_overrides": [
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.orders.spec.ts.TC: SALEOR_28 Create basic order #e2e #order",
+      "from": "failed",
+      "to": "passed"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.orders.spec.ts.TC: SALEOR_76 Create order with transaction flow activated #e2e #order",
+      "from": "failed",
+      "to": "passed"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.vouchers.spec.ts.TC: SALEOR_87 Edit voucher Usage Limits: used in total, per customer, staff only, code used once #vouchers #e2e",
+      "from": "failed",
+      "to": "passed"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.apps-e2e.apps.spec.ts.TC: SALEOR_119 User should be able to install and configure app from manifest #e2e",
+      "from": "failed",
+      "to": "failed"
+    }
+  ],
+  "target_nonpassing_excluded": [
+    {
+      "node_id": "saleor.core-unit.saleor.core.tests.test_http_client.test_http_client_disallows_private_ip_ranges[http]",
+      "suite": "core-unit",
+      "target_status": "failed"
+    },
+    {
+      "node_id": "saleor.core-unit.saleor.core.tests.test_http_client.test_http_client_disallows_private_ip_ranges[https]",
+      "suite": "core-unit",
+      "target_status": "failed"
+    },
+    {
+      "node_id": "saleor.core-unit.saleor.product.tests.test_tasks.test_mem_usage_recalculate_discounted_price_for_products_task",
+      "suite": "core-unit",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-unit.src/components/ConditionalFilter/FiltersQueryBuilder/queryVarsBuilders/SlugChannelQueryVarsBuilder.test.ts.SlugChannelQueryVarsBuilder updateFilterQueryVariables should use an array of channel slugs for multiple values",
+      "suite": "dash-unit",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-unit.src/components/ConditionalFilter/FiltersQueryBuilder/queryVarsBuilders/SlugChannelQueryVarsBuilder.test.ts.SlugChannelQueryVarsBuilder updateFilterQueryVariables should use the channel's slug for a single value",
+      "suite": "dash-unit",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-unit.src/components/ConditionalFilter/ValueProvider/UrlToken.test.ts.UrlEntry should create an instance for a static condition",
+      "suite": "dash-unit",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-unit.src/components/Metadata/Metadata.test.tsx.Metadata editor can edit field name",
+      "suite": "dash-unit",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-unit.src/containers/BackgroundTasks/BackgroundTasksProvider.test.tsx.Background task provider can cancel task",
+      "suite": "dash-unit",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-unit.src/containers/BackgroundTasks/BackgroundTasksProvider.test.tsx.Background task provider can handle task error",
+      "suite": "dash-unit",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-unit.src/containers/BackgroundTasks/BackgroundTasksProvider.test.tsx.Background task provider can queue a task",
+      "suite": "dash-unit",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-unit.src/containers/BackgroundTasks/BackgroundTasksProvider.test.tsx.Background task provider can queue multiple tasks",
+      "suite": "dash-unit",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.apps-e2e.apps.spec.ts.TC: SALEOR_119 User should be able to install and configure app from manifest #e2e",
+      "suite": "dash-e2e",
+      "target_status": "failed"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.attributes.spec.ts.TC: SALEOR_127 User should be able to update attribute values in existing e2e content attribute to be updated attribute #e2e #attributes",
+      "suite": "dash-e2e",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.attributes.spec.ts.TC: SALEOR_127 User should be able to update attribute values in existing e2e product attribute to be updated attribute #e2e #attributes",
+      "suite": "dash-e2e",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.customers.spec.ts.TC: SALEOR_205 Bulk delete customers #e2e #customer",
+      "suite": "dash-e2e",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.discounts.spec.ts.TC: SALEOR_155 Create Categories rule for e2e category in a catalogue promotion #discounts #e2e",
+      "suite": "dash-e2e",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.discounts.spec.ts.TC: SALEOR_155 Create Collections rule for e2e collection in a catalogue promotion #discounts #e2e",
+      "suite": "dash-e2e",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.discounts.spec.ts.TC: SALEOR_155 Create Products rule for Colored Parrot Cushion in a catalogue promotion #discounts #e2e",
+      "suite": "dash-e2e",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.discounts.spec.ts.TC: SALEOR_155 Create Variants rule for Colored Parrot Cushion - 70 / 70 in a catalogue promotion #discounts #e2e",
+      "suite": "dash-e2e",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.discounts.spec.ts.TC: SALEOR_157 Create subtotal type rule with multiple conditions with greater than in order promotion #discounts #e2e",
+      "suite": "dash-e2e",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.discounts.spec.ts.TC: SALEOR_157 Create subtotal type rule with multiple conditions with lower than in order promotion #discounts #e2e",
+      "suite": "dash-e2e",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.discounts.spec.ts.TC: SALEOR_160 Create gift reward rule with Subtotal between 150.00 and 170.00 in order promotion #discounts #e2e",
+      "suite": "dash-e2e",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.discounts.spec.ts.TC: SALEOR_160 Create gift reward rule with Total between 20.00 and 50.00 in order promotion #discounts #e2e",
+      "suite": "dash-e2e",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.navigation.spec.ts.TC: SALEOR_196 Should bulk delete menus from the list #navigation #e2e",
+      "suite": "dash-e2e",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.navigation.spec.ts.TC: SALEOR_198 Should update existing menu #navigation #e2e",
+      "suite": "dash-e2e",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.orders.spec.ts.TC: SALEOR_191 Refund products from the fully paid order #e2e #refunds",
+      "suite": "dash-e2e",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.orders.spec.ts.TC: SALEOR_192 Should create a manual refund with a custom amount #e2e #refunds",
+      "suite": "dash-e2e",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.orders.spec.ts.TC: SALEOR_193 Update order with non-manual refund in DRAFT status #e2e #refunds",
+      "suite": "dash-e2e",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.orders.spec.ts.TC: SALEOR_193 Update order with non-manual refund in FAILURE status #e2e #refunds",
+      "suite": "dash-e2e",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.orders.spec.ts.TC: SALEOR_217 Complete basic order for non existing customer #e2e #order",
+      "suite": "dash-e2e",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.orders.spec.ts.TC: SALEOR_83 Draft orders bulk delete #e2e #draft",
+      "suite": "dash-e2e",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.singlePermissions/readonlyExtensionsAccess.spec.ts.TC: SALEOR_131 User with channel permissions should have readonly access to installed extensions #e2e #apps",
+      "suite": "dash-e2e",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.singlePermissions/readonlyExtensionsAccess.spec.ts.TC: SALEOR_131 User with customer permissions should have readonly access to installed extensions #e2e #apps",
+      "suite": "dash-e2e",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.singlePermissions/readonlyExtensionsAccess.spec.ts.TC: SALEOR_131 User with discount permissions should have readonly access to installed extensions #e2e #apps",
+      "suite": "dash-e2e",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.singlePermissions/readonlyExtensionsAccess.spec.ts.TC: SALEOR_131 User with giftCard permissions should have readonly access to installed extensions #e2e #apps",
+      "suite": "dash-e2e",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.singlePermissions/readonlyExtensionsAccess.spec.ts.TC: SALEOR_131 User with order permissions should have readonly access to installed extensions #e2e #apps",
+      "suite": "dash-e2e",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.singlePermissions/readonlyExtensionsAccess.spec.ts.TC: SALEOR_131 User with page permissions should have readonly access to installed extensions #e2e #apps",
+      "suite": "dash-e2e",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.singlePermissions/readonlyExtensionsAccess.spec.ts.TC: SALEOR_131 User with product permissions should have readonly access to installed extensions #e2e #apps",
+      "suite": "dash-e2e",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.singlePermissions/readonlyExtensionsAccess.spec.ts.TC: SALEOR_131 User with productTypeAndAttribute permissions should have readonly access to installed extensions #e2e #apps",
+      "suite": "dash-e2e",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.singlePermissions/readonlyExtensionsAccess.spec.ts.TC: SALEOR_131 User with settings permissions should have readonly access to installed extensions #e2e #apps",
+      "suite": "dash-e2e",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.singlePermissions/readonlyExtensionsAccess.spec.ts.TC: SALEOR_131 User with shipping permissions should have readonly access to installed extensions #e2e #apps",
+      "suite": "dash-e2e",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.singlePermissions/readonlyExtensionsAccess.spec.ts.TC: SALEOR_131 User with staff permissions should have readonly access to installed extensions #e2e #apps",
+      "suite": "dash-e2e",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.singlePermissions/readonlyExtensionsAccess.spec.ts.TC: SALEOR_131 User with translations permissions should have readonly access to installed extensions #e2e #apps",
+      "suite": "dash-e2e",
+      "target_status": "skipped"
+    },
+    {
+      "node_id": "saleor-dashboard.dash-e2e.e2e.taxes.spec.ts.TC: SALEOR_115 Change taxes in channel to use tax app  #taxes #e2e",
+      "suite": "dash-e2e",
+      "target_status": "skipped"
+    }
+  ],
+  "comparison_to_candidate_20260924": {
+    "candidate_f2p": 6057,
+    "candidate_p2p": 14592,
+    "p2p_retained": 14569,
+    "p2p_removed_or_reclassified": 23,
+    "p2p_added_or_reclassified": 444,
+    "f2p_retained": 5322,
+    "f2p_removed_or_reclassified": 735,
+    "f2p_added_or_reclassified": 43,
+    "old_p2p_to_new_f2p": 18,
+    "old_f2p_to_new_p2p": 383
+  }
+}

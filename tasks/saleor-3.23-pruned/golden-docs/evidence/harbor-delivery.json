@@ -1,0 +1,60 @@
+{
+  "schema": "saleor-golden-harbor-pairing-v1",
+  "task_id": "saleor-3.23",
+  "release_id": "saleor-3.23-pruned-20260927-01",
+  "standard_path_from_docs_root": "..",
+  "harbor_manifest": {
+    "sha256": "afffc5dd49974888c3afb450d13d8b73f9236867f0ce7e7999a3d2ee3fd8537c",
+    "source_fingerprint": "3f99808a52bcaf443b7960bb3eee47c02a3e9ff37522d1b2db2c7b7d52b02f14",
+    "shared_payload_fingerprint": "6297d25e11b45fd10be7dc142c27971e17cf62bc3e8edb64f53b2d12c93c9073",
+    "release_state_sha256": "ecb8024c8846d19589744fb7e6aa728c1799801e985ed089b1ea97a355a51b8a",
+    "files_verified": 32
+  },
+  "environment_image": {
+    "ref": "sdlcbench/saleor-3.23-env:build-0a5d5bc656cb",
+    "id": "sha256:1c590c7d7564592da1d333adb39879f7ddca2488424d5293e8b83c9f0e774d12",
+    "build_fingerprint": "0a5d5bc656cb3cb95590de479cc5de02b823db42953a2eda0e05a38395b7da93",
+    "rebuilt": false
+  },
+  "verifier": {
+    "config_sha256": "e1ffb2cd593468a0f56fb892956291e7ed2ded23c9c4a19fa466219a2782f1c3",
+    "patch_manifest_sha256": "8fab58c13f09002ec8b5458b5d23e14f32b462a66cbd545311a24f1031538235",
+    "composition": {
+      "base": "architecture-upgraded environment plus final pruned test patch",
+      "target": "base plus final pruned code patch",
+      "same_test_patch": true
+    },
+    "trees": {
+      "base": {
+        "saleor": "8238527a020c7105be5a4671315ffab50b6ed025",
+        "saleor-dashboard": "4f2a89c3140dc77ed6fc4741084a424769863c42"
+      },
+      "target": {
+        "saleor": "0b4ecb1130bcc42aad5facd1657f088ed0d7b7ac",
+        "saleor-dashboard": "38d10cfc303166d7ea2d3a93d3991bff151b5eeb"
+      }
+    }
+  },
+  "patches": {
+    "saleor.code.patch": "dfcee8e2ef4dd10092efea58b28d26726ae99f8eb5aca0f18a8adb6cb3a8887f",
+    "saleor.test.patch": "1f544aa7a18f316f6e9df997b4da0bd35be24eea4671b025b4368d3fa3599e80",
+    "saleor-dashboard.code.patch": "ad02c0504fa6dfe4f2c6969628b281d660bcac8072bd0eba8da239c9e907b9c2",
+    "saleor-dashboard.test.patch": "14488c9b7e8127976f2ab8abfd78543185d2e48979d005965906358db4456bae"
+  },
+  "selection": {
+    "source_sha256": "c6652cccc79707f4d744e2e7c0a437902e8b3be25a87efd6157952ac3c4a9e60",
+    "package_v2_sha256": "1917f52b0d106d712908701e61a4b3d25c9a05da4289f4b278b48bbe95a346df",
+    "f2p": 5365,
+    "p2p": 15013,
+    "overlap": 0
+  },
+  "verification": {
+    "reward": 1,
+    "f2p_passed": 5365,
+    "p2p_passed": 15013,
+    "base_f2p_passed": 0,
+    "base_p2p_passed": 15013,
+    "partial": 1.0
+  },
+  "archive_generated": false
+}

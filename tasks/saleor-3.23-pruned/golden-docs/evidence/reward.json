@@ -1,0 +1,26 @@
+{
+  "reward": 1,
+  "f2p_total": 5365,
+  "f2p_passed": 5365,
+  "p2p_total": 15013,
+  "p2p_passed": 15013,
+  "f2p": 1.0,
+  "p2p": 1.0,
+  "partial": 1.0,
+  "pre_f2p_passed": 0,
+  "pre_p2p_passed": 15013,
+  "reports": {
+    "pre": [
+      "/home/yang/task/saleor-app-problems-removal/validation/golden-20260927-calibration/final/reports/pre/core-unit/results.xml",
+      "/home/yang/task/saleor-app-problems-removal/validation/golden-20260927-calibration/final/reports/pre/core-e2e/results.xml",
+      "/home/yang/task/saleor-app-problems-removal/validation/golden-20260927-calibration/final/reports/pre/dash-unit/results.json",
+      "/home/yang/task/saleor-app-problems-removal/validation/golden-20260927-calibration/final/reports/pre/dash-e2e/results.json"
+    ],
+    "post": [
+      "/home/yang/task/saleor-app-problems-removal/validation/golden-20260927-calibration/final/reports/post/core-unit/results.xml",
+      "/home/yang/task/saleor-app-problems-removal/validation/golden-20260927-calibration/final/reports/post/core-e2e/results.xml",
+      "/home/yang/task/saleor-app-problems-removal/validation/golden-20260927-calibration/final/reports/post/dash-unit/results.json",
+      "/home/yang/task/saleor-app-problems-removal/validation/golden-20260927-calibration/final/reports/post/dash-e2e/results.json"
+    ]
+  }
+}

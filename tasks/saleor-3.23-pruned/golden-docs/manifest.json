@@ -1,0 +1,64 @@
+{
+  "schema": "saleor-golden-docs-delivery-v1",
+  "release_id": "saleor-golden-docs-20260926-01",
+  "task_id": "saleor-3.23",
+  "status": "documentation-frozen; pruned-prd-v2-added; paired-pruned-patch-recalibrated; harbor-paired",
+  "scope": "pruned Saleor 3.23 product requirements, technical design, interface contract, GraphQL schema, golden test design, traceability, references, and verification evidence",
+  "active_prd": "PRD/prd-golden.md",
+  "documents": {
+    "prd": "PRD/prd.md",
+    "prd_pruned": "PRD/prd-golden.md",
+    "backend_design": "TDD/backend-design.md",
+    "frontend_design": "TDD/frontend-design.md",
+    "interface_contract": "TDD/interface-contract.md",
+    "target_schema": "TDD/target-schema.graphql",
+    "test_cases": "Test/test-cases.v1.csv",
+    "test_traceability": "Test/test-patch-traceability.md"
+  },
+  "prd_versions": {
+    "traceability": "PRD/prd.md",
+    "pruned": "PRD/prd-golden.md",
+    "pruned_requirement_count": 16,
+    "pruned_numbered_acceptance_criteria": 76,
+    "traceability_requirement_count": 18,
+    "traceability_numbered_acceptance_criteria": 63,
+    "removed_requirement_sections": ["R07", "R11"]
+  },
+  "counts": {
+    "requirements": 16,
+    "numbered_acceptance_criteria": 76,
+    "normalized_non_target_acceptance_clauses": 2,
+    "total_testable_acceptance_items": 76,
+    "test_scenario_coverage_mode": "aggregated",
+    "golden_test_cases": 65,
+    "f2p": 5365,
+    "p2p": 15013
+  },
+  "validation": {
+    "f2p_passed": 5365,
+    "p2p_passed": 15013,
+    "reward": 1,
+    "ctrf_passed": 20378,
+    "ctrf_failed": 0
+  },
+  "traceability_counts": {
+    "requirements": 18,
+    "numbered_acceptance_criteria": 63,
+    "normalized_non_target_acceptance_clauses": 2,
+    "historical_total_testable_acceptance_items": 65
+  },
+  "pairing": {
+    "manifest": "evidence/golden-patch-manifest.json",
+    "harbor_delivery": "evidence/harbor-delivery.json",
+    "harbor_release_id": "saleor-3.23-pruned-20260927-01",
+    "harbor_standard": "..",
+    "harbor_manifest_sha256": "afffc5dd49974888c3afb450d13d8b73f9236867f0ce7e7999a3d2ee3fd8537c",
+    "selection": "evidence/selection.json",
+    "selection_sha256": "c6652cccc79707f4d744e2e7c0a437902e8b3be25a87efd6157952ac3c4a9e60",
+    "calibration_audit": "evidence/calibration-audit.json",
+    "verification_summary": "evidence/verification-summary.md",
+    "harbor_20260927_compatible": true,
+    "harbor_20260926_compatible": false
+  },
+  "integrity": "SHA256SUMS"
+}
