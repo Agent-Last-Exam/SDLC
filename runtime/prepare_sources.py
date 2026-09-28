@@ -9,7 +9,7 @@ import subprocess
 import tempfile
 
 HERE = Path(__file__).resolve().parents[1]
-DEFAULT_TASK = HERE / "tasks/saleor-prd-tdd"
+DEFAULT_TASK = HERE / "tasks/standard"
 
 
 def git(repo, *args):

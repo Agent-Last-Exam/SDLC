@@ -222,6 +222,19 @@ python3 -m runtime --task tasks/standard --mode single \
   --use-local-codex-auth
 ```
 
+文档阶段需要独立 Rubric Judge 时，提供仓库外的冻结私有清单，并可在测试设计封存后停止：
+
+```bash
+python3 -m runtime --task tasks/standard --mode single \
+  --stop-after-stage sprint1/test-design \
+  --document-eval-manifest /absolute/private/path/document-rubrics.json \
+  --judge-model gpt-6-astra \
+  --use-local-codex-auth
+```
+
+评测范围、私有清单契约及 Harbor 分数见
+[`docs/document-rubric-evaluation.md`](../../docs/document-rubric-evaluation.md)。
+
 The workflow runtime currently preserves the existing Agent-authored QA routing.
 The standard verifier remains the authoritative product Oracle, but it is not yet
 invoked automatically between the workflow's development and repair stages.

@@ -44,8 +44,10 @@ build_timeout_sec = 7200.0
         self.assertIn('docker_image = "fixture:base"', (self.target / "task.toml").read_text())
         self.assertIn("task_root: ../workflow-runtime",
                       (self.target / "workflows/single.yaml").read_text())
-        self.assertIn("instruction: ../workflow-instruction.md",
-                      (self.target / "workflows/lifecycle.yaml").read_text())
+        self.assertEqual(
+            (self.target / "public/query.md").read_text(),
+            "Workflow product brief\n",
+        )
         self.assertNotIn("saleor-platform", (self.target / "roles/pm.system.md").read_text())
         revisions = json.loads((self.target / "environment/base-revisions.json").read_text())
         self.assertEqual(revisions["saleor-dashboard"]["commit"], "b" * 40)
@@ -61,11 +63,11 @@ build_timeout_sec = 7200.0
         scaffold(DEFAULT_SOURCE, self.target)
         second = scaffold(DEFAULT_SOURCE, self.target)
         self.assertFalse(second["written"])
-        (self.target / "templates/prd.md").write_text("local change\n")
+        (self.target / "templates/frontend-design.md").write_text("local change\n")
         with self.assertRaisesRegex(ValueError, "Refusing"):
             scaffold(DEFAULT_SOURCE, self.target)
         result = scaffold(DEFAULT_SOURCE, self.target, force=True)
-        self.assertIn("templates/prd.md", result["written"])
+        self.assertIn("templates/frontend-design.md", result["written"])
 
 
 if __name__ == "__main__":

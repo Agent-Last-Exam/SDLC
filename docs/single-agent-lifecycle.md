@@ -1,6 +1,6 @@
 # Single Agent：首次交付与修复 Sprint
 
-依据：[飞书 Single Agent workflow](https://rcnmkynuc7as.feishu.cn/wiki/GsuKwp9JJiTLPckayTwctTjxnic#share-Lb86dSnDHoCEjnxQJjPceWKknNc)，2026-09-20 读取文档 revision 1648 及两张内嵌画板。根据用户后续要求，测试用例只生成一次，修复阶段不更新。执行配置为 [lifecycle.yaml](../tasks/saleor-prd-tdd/workflows/lifecycle.yaml)。
+依据：[飞书 Single Agent workflow](https://rcnmkynuc7as.feishu.cn/wiki/GsuKwp9JJiTLPckayTwctTjxnic#share-Lb86dSnDHoCEjnxQJjPceWKknNc)，2026-09-20 读取文档 revision 1648 及两张内嵌画板。根据用户后续要求，测试用例只生成一次，修复阶段不更新。执行配置为 [lifecycle.yaml](../tasks/standard/workflows/lifecycle.yaml)。
 
 ## 推进规则
 

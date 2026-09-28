@@ -13,13 +13,14 @@ import tomllib
 import uuid
 
 from runtime.prepare_workflow import HERE, compile_workflow, prepare, resolve_config
+from runtime.document_rubric import Manifest
 from runtime.environment import load_env
 from runtime.reporting import write_report, write_index
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, help="Explicit task-owned workflow YAML")
-    parser.add_argument("--task", type=Path, help="Task directory; defaults to tasks/saleor-prd-tdd")
+    parser.add_argument("--task", type=Path, help="Task directory; defaults to tasks/standard")
     parser.add_argument("--mode", choices=["single", "flat", "hierarchical"])
     parser.add_argument("--model")
     parser.add_argument("--use-local-codex-auth", action="store_true")
@@ -28,12 +29,36 @@ def main():
     parser.add_argument("--role-probe", action="store_true", help="Two minimal real model turns verifying same-session role activation")
     parser.add_argument("--prepare-only", action="store_true")
     parser.add_argument("--stop-after-stage", help="Stop successfully after this accepted lifecycle stage")
+    parser.add_argument("--document-eval-manifest", type=Path,
+                        help="Private frozen document-rubric manifest; enables the Harbor document verifier")
+    parser.add_argument("--judge-model",
+                        help="Independent document Judge model; or set DOCUMENT_JUDGE_MODEL")
+    parser.add_argument("--judge-replicas", type=int, choices=(1, 2, 3),
+                        help="Override the private manifest's independent Judge count")
     parser.add_argument("--job-name")
     args = parser.parse_args()
     if args.smoke and args.role_probe:
         parser.error("--smoke and --role-probe are mutually exclusive")
     env = os.environ.copy()
     load_env(HERE / ".env", env)
+    evaluation_manifest = None
+    judge_model = args.judge_model or env.get("DOCUMENT_JUDGE_MODEL")
+    if args.document_eval_manifest:
+        if args.smoke or args.role_probe:
+            parser.error("document evaluation requires a real workflow rollout")
+        evaluation_manifest = args.document_eval_manifest.resolve()
+        try:
+            Manifest.load(evaluation_manifest)
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            parser.error(f"Invalid document evaluation manifest: {exc}")
+        if not judge_model:
+            parser.error("Pass --judge-model or set DOCUMENT_JUDGE_MODEL")
+        if args.stop_after_stage is None:
+            args.stop_after_stage = "sprint1/test-design"
+        elif args.stop_after_stage != "sprint1/test-design":
+            parser.error("document evaluation is scoped to --stop-after-stage sprint1/test-design")
+    elif args.judge_model or args.judge_replicas:
+        parser.error("Judge options require --document-eval-manifest")
     try:
         compiled = compile_workflow(resolve_config(args.config, args.task, args.mode))
     except (ValueError, KeyError, OSError) as exc:
@@ -80,15 +105,30 @@ def main():
     (environment / "docker-compose.yaml").write_text("services:\n  main:\n    security_opt:\n      - no-new-privileges:true\n")
     (task / "instruction.md").write_text("Execute the configured workflow with its stage boundaries and termination rules.\n")
     shutil.copyfile(prepared / "runtime-inputs/task.toml", task / "task.toml")
+    verifier = {"disable": True}
+    if evaluation_manifest is not None:
+        verifier = {
+            "import_path": "runtime.document_rubric_verifier:DocumentRubricVerifier",
+            "kwargs": {
+                "manifest_path": str(evaluation_manifest),
+                "prepared_path": str(prepared),
+                "judge_model": judge_model,
+                "evaluation_boundary": args.stop_after_stage,
+                **({"judge_replicas": args.judge_replicas} if args.judge_replicas else {}),
+            },
+        }
     recipe = {
         "job_name": name, "jobs_dir": str(HERE / "jobs"), "n_attempts": 1, "n_concurrent_trials": 1,
         "retry": {"max_retries": 0}, "environment": {"type": "docker", "delete": True},
-        "verifier": {"disable": True},
+        "verifier": verifier,
         "agents": [{"import_path": "runtime.workflow_agent:WorkflowCodex", "model_name": model,
                     "override_setup_timeout_sec": 600,
                     "kwargs": {"prepared_path": str(prepared), "smoke": args.smoke,
                                "smoke_scenario": args.smoke_scenario, "role_probe": args.role_probe,
-                               "stop_after_stage": args.stop_after_stage}}],
+                               "stop_after_stage": args.stop_after_stage,
+                               "missing_output_policy": (
+                                   "continue_for_evaluation" if evaluation_manifest is not None else "fail"
+                               )}}],
         "tasks": [{"path": str(task)}],
     }
     (prepared / "job.json").write_text(json.dumps(recipe, indent=2) + "\n")

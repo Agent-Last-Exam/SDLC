@@ -18,7 +18,7 @@ import re
 
 
 HERE = Path(__file__).resolve().parents[1]
-DEFAULT_SOURCE = HERE / "tasks/saleor-prd-tdd"
+DEFAULT_SOURCE = HERE / "tasks/standard"
 
 
 def _toml(path):
@@ -119,9 +119,10 @@ def _render(source, relative, specs, sidecar, workflow_instruction):
                "`saleor-dashboard/` 是商家管理前端，`saleor-platform/` 提供项目运行与部署配置。")
         new = ("现有项目的代码仓库位于 `/workspace/repos/`：`saleor/` 是核心后端，"
                "`saleor-dashboard/` 是商家管理前端。")
-        if old not in text:
-            raise ValueError("Cannot adapt PM repository inventory: source text changed")
-        content = text.replace(old, new).encode()
+        if "saleor-platform" in text:
+            if old not in text:
+                raise ValueError("Cannot adapt PM repository inventory: source text changed")
+            content = text.replace(old, new).encode()
     if sidecar and relative.parent == Path("workflows") and relative.name in {
         "single.yaml", "flat.yaml", "hierarchical.yaml"
     }:
@@ -129,15 +130,6 @@ def _render(source, relative, specs, sidecar, workflow_instruction):
         if "task_root: .." not in text:
             raise ValueError(f"Cannot adapt task_root in {relative}")
         content = text.replace("task_root: ..", "task_root: ../workflow-runtime", 1).encode()
-    if workflow_instruction and relative == Path("workflows/lifecycle.yaml"):
-        text = content.decode()
-        if "instruction: ../instruction.md" not in text:
-            raise ValueError("Cannot bind the target-specific workflow instruction")
-        content = text.replace(
-            "instruction: ../instruction.md",
-            "instruction: ../workflow-instruction.md",
-            1,
-        ).encode()
     return content
 
 
@@ -171,13 +163,15 @@ def scaffold(source, target, *, force=False, update_manifest=False):
     sidecar = bool(base_image)
     workflow_instruction = (target / "workflow-instruction.md").is_file()
     planned = {}
-    for directory in ("roles", "templates", "workflows"):
+    for directory in ("roles", "templates", "workflows", "public"):
         for item in sorted((source / directory).rglob("*")):
             if item.is_file():
                 relative = item.relative_to(source)
                 planned[relative] = _render(
                     source, relative, specs, sidecar, workflow_instruction
                 )
+    if workflow_instruction:
+        planned[Path("public/query.md")] = (target / "workflow-instruction.md").read_bytes()
     if derived:
         planned[Path("environment/base-revisions.json")] = (
             json.dumps(specs, ensure_ascii=False, indent=2) + "\n"

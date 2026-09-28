@@ -36,7 +36,8 @@ def atomic_json(path, value):
 
 
 class Controller:
-    def __init__(self, compiled, workspace, directory, backend, stop_after_stage=None):
+    def __init__(self, compiled, workspace, directory, backend, stop_after_stage=None,
+                 missing_output_policy="fail"):
         if compiled["mode"] != "single":
             raise ValueError("Only Single lifecycle execution is implemented")
         self.compiled, self.workspace = compiled, Path(workspace)
@@ -46,12 +47,24 @@ class Controller:
         stage_ids = {stage["stage_id"] for stage in compiled["stages"]}
         if stop_after_stage is not None and stop_after_stage not in stage_ids:
             raise ValueError(f"Unknown stop stage: {stop_after_stage}")
+        if missing_output_policy not in {"fail", "continue_for_evaluation"}:
+            raise ValueError(f"Unknown missing output policy: {missing_output_policy}")
+        if missing_output_policy == "continue_for_evaluation":
+            if stop_after_stage is None:
+                raise ValueError("Evaluation output policy requires an explicit stop stage")
+            boundary = next(index for index, stage in enumerate(compiled["stages"])
+                            if stage["stage_id"] == stop_after_stage)
+            if any(stage["role"] not in {"pm", "architect", "qa-design"}
+                   for stage in compiled["stages"][:boundary + 1]):
+                raise ValueError("Evaluation output policy is limited to document stages")
         self.stop_after_stage = stop_after_stage
+        self.missing_output_policy = missing_output_policy
         self.directory.mkdir(parents=True, exist_ok=True)
         if (self.directory / "state.json").exists():
             raise ValueError("Controller state already exists; refuse to replay an accepted stage")
         self.state = {"mode": compiled["mode"], "status": "running", "cursor": 0, "stages": [],
-                      "model_called": not backend.synthetic, "synthetic": backend.synthetic}
+                      "model_called": not backend.synthetic, "synthetic": backend.synthetic,
+                      "missing_output_policy": missing_output_policy, "delivery_complete": True}
         self.accepted_prd = None
         self.baseline = {}
 
@@ -62,9 +75,12 @@ class Controller:
             return
         name = names[sid]
         ref = next(ref for ref, path in stage["outputs"].items() if Path(path).name == name)
+        relative = str(Path(stage["outputs"][ref]).relative_to(stage["writable_directory"]))
+        if relative not in hashes:
+            return
         if ref in self.baseline:
             raise RuntimeError("Baseline cannot be replaced within a run")
-        self.baseline[ref] = {"path": stage["outputs"][ref], "sha256": hashes[name], "source_stage": sid}
+        self.baseline[ref] = {"path": stage["outputs"][ref], "sha256": hashes[relative], "source_stage": sid}
         if len(self.baseline) == 2:
             path = self.directory / "baseline.json"
             if path.exists():
@@ -121,6 +137,15 @@ class Controller:
                 stage_dir = self.directory / "stages" / stage["stage_id"]
                 stage_dir.mkdir(parents=True)
                 role = (self.workspace / "roles" / f"{stage['role']}.system.md").read_text()
+                artifact_inputs = {
+                    ref: self.directory / "accepted" / Path(path).relative_to("/workspace/artifacts")
+                    for ref, path in stage["inputs"].items() if ref.startswith("artifact:")
+                }
+                missing_inputs = [
+                    {"ref": ref, "path": stage["inputs"][ref]}
+                    for ref, path in artifact_inputs.items()
+                    if not path.is_file() or path.is_symlink()
+                ]
                 inputs = "\n".join(f"- `{path}`" for path in stage["inputs"].values())
                 outputs = "\n".join(f"- `{path}`" for path in stage["outputs"].values())
                 previous = self.state["stages"][-2]["id"] if len(self.state["stages"]) > 1 else None
@@ -140,14 +165,21 @@ class Controller:
                     + f"\n<!-- SDLC_STAGE_ROLE: {stage['role']} -->\n"
                     + f"<!-- SDLC_STAGE_ID: {stage['stage_id']} -->\n"
                 )
+                if missing_inputs:
+                    missing_paths = "\n".join(f"- `{item['path']}`" for item in missing_inputs)
+                    active_prompt += (
+                        "\n以下上游材料未交付。按缺失事实继续当前阶段，不得代写或回填上游文件；"
+                        "只基于现有材料完成本阶段并明确受影响内容：\n" + missing_paths + "\n"
+                    )
                 instruction = "请根据这些材料完成你的工作，将交付文件保存到指定位置。"
                 (stage_dir / "role.md").write_text(active_prompt)
                 (stage_dir / "instruction.md").write_text(instruction)
                 prior_hash = digest(self.accepted_prd) if self.accepted_prd else None
-                input_hashes = {ref: digest(self.directory / "accepted" / Path(path).relative_to("/workspace/artifacts"))
-                                for ref, path in stage["inputs"].items() if ref.startswith("artifact:")}
+                input_hashes = {ref: digest(path) for ref, path in artifact_inputs.items()
+                                if path.is_file() and not path.is_symlink()}
                 self.event("stage_started", stage=stage["stage_id"], resume_session=session,
-                           role_sha256=hashlib.sha256(active_prompt.encode()).hexdigest(), prd_input_sha256=prior_hash)
+                           role_sha256=hashlib.sha256(active_prompt.encode()).hexdigest(),
+                           prd_input_sha256=prior_hash, missing_inputs=missing_inputs)
                 await self.backend.activate(stage, session)
                 await self.check_baseline(stage)
                 stage_record["execution_started"] = True
@@ -165,15 +197,19 @@ class Controller:
                 self.state["principal_session"] = session
                 sealed = self.directory / "accepted" / stage["stage_id"]
                 sealed.parent.mkdir(parents=True, exist_ok=True)
-                stage_record.update(session_id=session, prd_input_sha256=prior_hash, input_sha256=input_hashes)
+                stage_record.update(session_id=session, prd_input_sha256=prior_hash,
+                                    input_sha256=input_hashes, missing_inputs=missing_inputs)
                 try:
                     await self.backend.collect(stage, sealed)
                     if stage["role"] == "qa":
                         await self.backend.collect_service_logs(stage_dir)
-                    for path in stage["outputs"].values():
+                    missing_outputs = []
+                    for ref, path in stage["outputs"].items():
                         output = sealed / Path(path).relative_to(stage["writable_directory"])
                         if not output.is_file() or output.is_symlink():
-                            raise RuntimeError(f"Missing regular output: {path}")
+                            missing_outputs.append({"ref": ref, "path": path})
+                    if missing_outputs and self.missing_output_policy == "fail":
+                        raise RuntimeError(f"Missing regular output: {missing_outputs[0]['path']}")
                     details = stage_routing(stage, sealed)
                     if stage["role"] == "deployer":
                         await self.backend.deploy(stage, sealed, stage_dir)
@@ -187,13 +223,19 @@ class Controller:
                 await self.backend.seal(stage, hashes)
                 self.freeze_baseline(stage, hashes)
                 await self.check_baseline(stage)
-                stage_record.update(status="accepted", outputs=hashes)
+                stage_record.update(status="accepted", outputs=hashes,
+                                    missing_outputs=missing_outputs,
+                                    delivery_complete=not missing_outputs)
+                if missing_outputs:
+                    self.state["delivery_complete"] = False
                 if details:
                     stage_record["routing"] = details
                 if stage["role"] == "pm":
-                    self.accepted_prd = sealed / "prd.md"
+                    prd = sealed / "prd.md"
+                    self.accepted_prd = prd if prd.is_file() and not prd.is_symlink() else None
                 self.state["cursor"] = index + 1
-                self.event("stage_accepted", stage=stage["stage_id"], hashes=hashes)
+                self.event("stage_accepted", stage=stage["stage_id"], hashes=hashes,
+                           missing_outputs=missing_outputs)
                 if stage["role"] == "triage":
                     repair_plan = details
                 if stage["stage_id"] == self.stop_after_stage:

@@ -23,10 +23,10 @@
 以下命令在 **仓库根目录**执行。使用已安装的 Harbor Python，Docker Desktop 和 `harbor` 需可用；本机已经准备好源码与依赖。
 
 ```bash
-/Users/zhihu/.local/share/uv/tools/harbor/bin/python -m runtime --task tasks/saleor-prd-tdd --mode single --use-local-codex-auth
+/Users/zhihu/.local/share/uv/tools/harbor/bin/python -m runtime --task tasks/standard --mode single --use-local-codex-auth
 ```
 
-省略 `--task/--mode` 时默认 Saleor Single 完整流程；Flat / Hierarchical 仅有新契约的声明配置，启动器拒绝执行。具体任务文件见 [Saleor task README](tasks/saleor-prd-tdd/README.md)。
+省略 `--task/--mode` 时默认 Saleor Single 完整流程；Flat / Hierarchical 仅有新契约的声明配置，启动器拒绝执行。具体任务文件见 [Saleor task README](tasks/standard/README.md)。
 
 显式读取本机 `~/.codex/auth.json`，模型默认从本机 Codex 配置读取；可用 `--model` 覆盖。凭证经进程环境注入容器，不进入公开准备包或报告。每次分配新 job 名；可用 `--job-name my-sdlc-run` 指定。
 
@@ -41,7 +41,7 @@
 /Users/zhihu/.local/share/uv/tools/harbor/bin/python -m unittest discover -s runtime/tests -t . -v
 ```
 
-首次在新机器准备时先执行 `python3 -m runtime.prepare_sources`，并在 Harbor Python 环境安装 `requirements.txt`。源码完整 SHA 见 [base-revisions.json](tasks/saleor-prd-tdd/environment/base-revisions.json)。
+首次在新机器准备时先执行 `python3 -m runtime.prepare_sources`，并在 Harbor Python 环境安装 `requirements.txt`。源码完整 SHA 见 [base-revisions.json](tasks/standard/environment/base-revisions.json)。
 
 ## 从哪里找产物
 

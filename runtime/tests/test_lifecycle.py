@@ -77,11 +77,11 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
         self.root = Path(self.temp.name)
         self.workspace = self.root / 'workspace'
         for name in ('templates', 'roles'):
-            shutil.copytree(HERE / 'tasks/saleor-prd-tdd' / name, self.workspace / name)
+            shutil.copytree(HERE / 'tasks/standard' / name, self.workspace / name)
         schema = self.workspace / 'repos/saleor/saleor/graphql/schema.graphql'
         schema.parent.mkdir(parents=True)
         schema.write_text('type Query { shop: Shop! }\ntype Shop { name: String! }\n')
-        self.config = compile_workflow(HERE / 'tasks/saleor-prd-tdd/workflows/single.yaml', verify_repos=False)
+        self.config = compile_workflow(HERE / 'tasks/standard/workflows/single.yaml', verify_repos=False)
 
     async def run_case(self, **kwargs):
         backend = LifecycleBackend(self.workspace, **kwargs)
@@ -110,6 +110,20 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
             Controller(
                 self.config, self.workspace, self.root / 'control',
                 LifecycleBackend(self.workspace), stop_after_stage='sprint3/nope',
+            )
+
+    async def test_incomplete_output_policy_is_limited_to_document_boundary(self):
+        with self.assertRaisesRegex(ValueError, 'explicit stop stage'):
+            Controller(
+                self.config, self.workspace, self.root / 'control',
+                LifecycleBackend(self.workspace),
+                missing_output_policy='continue_for_evaluation',
+            )
+        with self.assertRaisesRegex(ValueError, 'document stages'):
+            Controller(
+                self.config, self.workspace, self.root / 'control2',
+                LifecycleBackend(self.workspace), stop_after_stage='sprint1/development',
+                missing_output_policy='continue_for_evaluation',
             )
 
     async def test_first_pass_stops_before_repair(self):
@@ -289,6 +303,45 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(state['status'], 'failed')
         self.assertNotIn('outputs', state['stages'][0])
 
+    async def test_document_evaluation_records_missing_frontend_and_continues(self):
+        backend = LifecycleBackend(self.workspace)
+        original = backend.execute
+
+        async def execute(stage, *args):
+            result = await original(stage, *args)
+            if stage['stage_id'] == 'sprint1/tech-design':
+                (backend.candidate / 'frontend-design.md').unlink()
+            return result
+
+        with patch.object(backend, 'execute', execute):
+            state = await Controller(
+                self.config,
+                self.workspace,
+                self.root / 'control',
+                backend,
+                stop_after_stage='sprint1/test-design',
+                missing_output_policy='continue_for_evaluation',
+            ).run()
+        self.assertEqual(state['status'], 'stopped_at_boundary')
+        self.assertFalse(state['delivery_complete'])
+        self.assertEqual([call[0] for call in backend.calls], [
+            'sprint1/prd', 'sprint1/tech-design', 'sprint1/test-design',
+        ])
+        missing = state['stages'][1]['missing_outputs']
+        self.assertEqual(missing, [{
+            'ref': 'artifact:sprint1/tech-design/frontend_design',
+            'path': '/workspace/artifacts/sprint1/tech-design/frontend-design.md',
+        }])
+        self.assertEqual(state['stages'][2]['missing_inputs'], missing)
+        self.assertNotIn(
+            'artifact:sprint1/tech-design/frontend_design',
+            state['stages'][2]['input_sha256'],
+        )
+        self.assertIn('上游材料未交付', backend.calls[2][2])
+        self.assertTrue(
+            (self.root / 'control/accepted/sprint1/test-design/test-cases.v1.csv').is_file()
+        )
+
     async def test_existing_state_cannot_be_replayed(self):
         await self.run_case(scenario='pass')
         with self.assertRaisesRegex(ValueError, 'replay'):
@@ -301,7 +354,7 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
                 Controller(config, self.workspace, self.root / 'control', LifecycleBackend(self.workspace))
 
     def test_unsafe_round_and_reuse_policies_fail_at_compile_time(self):
-        task = HERE / 'tasks/saleor-prd-tdd'
+        task = HERE / 'tasks/standard'
         base = task / 'workflows'
         run = read_yaml(base / 'single.yaml')
         run.update(task_root=str(task), contract='contract.yaml')
@@ -309,7 +362,11 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
         config_path.write_text(yaml.safe_dump(run))
         original = read_yaml(base / 'lifecycle.yaml')
         for group in ('roles', 'templates', 'inputs'):
-            original[group] = {k: str((base / v).resolve()) for k, v in original[group].items()}
+            original[group] = {
+                key: ({**value, 'source': str((base / value['source']).resolve())}
+                      if isinstance(value, dict) else str((base / value).resolve()))
+                for key, value in original[group].items()
+            }
         for index, key, value in ((5, 'round', True), (5, 'round', 2),
                                   (5, 'write_repos', True), (8, 'capture_repos', False),
                                   (6, 'reuse_unless', 'design_changed'), (7, 'reuse_stage', 'sprint1/prd')):

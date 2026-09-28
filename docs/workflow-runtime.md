@@ -1,6 +1,6 @@
 # Workflow runtime
 
-当前唯一交付契约是 task 内的 [lifecycle.yaml](../tasks/saleor-prd-tdd/workflows/lifecycle.yaml)，推进规则见 [Single 流程](single-agent-lifecycle.md)。single.yaml 指定同一 Codex 主会话执行；flat.yaml 和 hierarchical.yaml 声明同一契约，但尚无执行后端。旧两阶段契约、入口和 PRD 后续跑机制已删除。
+当前唯一交付契约是 task 内的 [lifecycle.yaml](../tasks/standard/workflows/lifecycle.yaml)，推进规则见 [Single 流程](single-agent-lifecycle.md)。single.yaml 指定同一 Codex 主会话执行；flat.yaml 和 hierarchical.yaml 声明同一契约，但尚无执行后端。旧两阶段契约、入口和 PRD 后续跑机制已删除。
 
 | 模块 | 当前职责 |
 | --- | --- |
@@ -18,4 +18,4 @@ Controller 在宿主机持有状态，不把控制数据挂载给 Agent。各阶
 
 部署时由 Controller 校验当前源码摘要、清空部署目录并复制源码，再核验副本摘要；部署 Agent 交付的 prepare 命令在该副本上安装、构建和初始化。服务直接从新目录启动，就绪证据保存实际物化候选摘要、阶段、启动声明摘要和 HTTP 状态。准备失败和部署失败都不会进入 QA。
 
-运行器不检查文档内容，也不自动补交。每阶段执行一次，文件收集到 accepted 后封存；日志存入 stages，不生成 attempts 或额外输出快照。封存与服务就绪不替代业务验收。QA 结论来自同一 Agent 的报告，目前没有独立业务 verifier。现有状态目录拒绝重放，不提供断点恢复入口；历史 jobs/ 和 .prepared/ 保留原始记录。
+运行器默认不检查文档内容，也不自动补交。提供私有文档 Rubric 清单时，独立 verifier 在阶段完成后评价 PRD、技术设计和测试设计，并生成 Harbor score；不评价代码或部署。文档评测模式会记录缺失交付并继续到测试设计边界；缺少任一要求文件时最终 reward 为 0。其他执行模式仍把缺少声明输出作为运行错误。每阶段执行一次，文件收集到 accepted 后封存；日志存入 stages，不生成 attempts 或额外输出快照。封存与服务就绪不替代业务验收。现有状态目录拒绝重放，不提供断点恢复入口；历史 jobs/ 和 .prepared/ 保留原始记录。

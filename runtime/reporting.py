@@ -41,6 +41,12 @@ def job_config(job):
     return read_json(job / "config.json") or read_json(job.parent.parent / ".prepared" / job.name / "job.json")
 
 
+def document_verifier_enabled(config):
+    verifier = config.get("verifier", {})
+    return (not verifier.get("disable", False)
+            and verifier.get("import_path") == "runtime.document_rubric_verifier:DocumentRubricVerifier")
+
+
 def trial_status(trial, config):
     state = read_json(trial / "workflow/state.json")
     result = read_json(trial / "result.json")
@@ -65,10 +71,17 @@ def write_report(job):
     summary = read_json(job / "result.json")
     trials = sorted(p for p in job.iterdir() if p.is_dir() and
                     ((p / "config.json").exists() or (p / "result.json").exists() or (p / "workflow").exists()))
+    verifier_enabled = document_verifier_enabled(config)
+    verifier_note = (
+        "本工作流启用独立文档 Rubric Judge；Harbor reward 来自冻结评分项，"
+        "须与分组分数和逐项证据共同解读。"
+        if verifier_enabled else
+        "本工作流关闭 Harbor verifier；Harbor 的 Mean / reward 不是本次文档质量或成功与否的判断。"
+    )
     lines = [f"# Rollout report：{job.name}", "", f"类型：{kind(config)}。",
              f"开始：{local_time(summary.get('started_at'))}；结束：{local_time(summary.get('finished_at'))}（上海时间）。",
              "", "本报告由运行器根据状态与文件证据生成，不调用模型。",
-             "本工作流关闭 Harbor verifier；Harbor 的 Mean / reward 不是本次文档质量或成功与否的判断。", ""]
+             verifier_note, ""]
     for p in (job / "config.json", job / "result.json"):
         if p.exists():
             lines.append("- " + link(p.name, p, job))
@@ -98,6 +111,16 @@ def write_report(job):
         if result.get("exception_info"):
             # Exception details can contain request data; link the raw log, copy only the class.
             lines += ["", f"异常类型：`{result['exception_info'].get('exception_type', 'unknown')}`；详情见 trial result / exception 日志。"]
+        rewards = (result.get("verifier_result") or {}).get("rewards") or {}
+        if verifier_enabled and rewards:
+            lines += ["", "### 文档 Rubric Judge", "", "| 指标 | 分数 |", "| --- | ---: |"]
+            for key, value in rewards.items():
+                lines.append(f"| `{key}` | {value} |")
+            for rel in ("verifier/reward.json", "verifier/reward-details.json",
+                        "verifier/document-evaluation.md", "verifier/document-evaluation.json"):
+                target = trial / rel
+                if target.exists():
+                    lines.append("- " + link(rel, target, job))
         stages = state.get("stages", [])
         if stages:
             lines += ["", "### 阶段记录", "", "| 阶段 | 角色 | 状态 | 执行次数 |", "| --- | --- | --- | --- |"]
@@ -106,6 +129,10 @@ def write_report(job):
                 if stage.get("reused_from"):
                     lines.append(f"| ↳ 复用 {stage['reused_from']} | — | 未调用 Agent | 0 |")
             lines += ["", "accepted 表示阶段输出已封存，不代表内容验收通过。当前每阶段只执行一次，不做格式检查或自动补交。"]
+            missing_outputs = [item for stage in stages for item in stage.get("missing_outputs", [])]
+            if missing_outputs:
+                lines += ["", "要求交付但未生成的文件：", ""]
+                lines.extend(f"- `{item['path']}`" for item in missing_outputs)
             if any("attempts" in stage for stage in stages):
                 lines += ["此记录使用历史 attempts 格式，保留当时的提交次数和结果。"]
             sessions = {a.get("session_id") for s in stages for a in s.get("attempts", [s]) if a.get("session_id")}
@@ -155,7 +182,14 @@ def write_report(job):
             lines += ["", "### 历史 Agent 自审问题", "", "下表来自旧流程的 " + link("review.md", review, job) + "，不代表独立审核；当前流程不再生成此文件。", ""]
             if start >= 0 and end > start:
                 lines += [text[start:end].split("\n", 1)[1].strip()]
-    lines += ["", "## 适用边界", "", "文件封存、哈希和角色证据不证明业务正确；具体执行范围以阶段记录为准。部署健康检查只证明本地服务入口可访问。QA 结论由 Agent 提交，未启用独立业务 verifier。合成联调与角色探针不能作为真实业务交付。"]
+    boundary = (
+        "文件封存、哈希和角色证据本身不证明业务正确。文档 Judge 只评价其冻结清单覆盖的文档产物，"
+        "不评价代码、部署或真实业务运行；Judge 模型、Rubric 版本、逐项证据和评测异常必须保留。"
+        if verifier_enabled else
+        "文件封存、哈希和角色证据不证明业务正确；具体执行范围以阶段记录为准。部署健康检查只证明本地服务入口可访问。"
+        "QA 结论由 Agent 提交，未启用独立业务 verifier。合成联调与角色探针不能作为真实业务交付。"
+    )
+    lines += ["", "## 适用边界", "", boundary]
     write_generated(job / "report.md", "\n".join(lines))
     return job / "report.md"
 

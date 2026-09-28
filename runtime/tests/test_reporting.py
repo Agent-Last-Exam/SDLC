@@ -60,7 +60,8 @@ class ReportingTests(unittest.TestCase):
                 {"id": "sprint1/tech-design", "role": "architect", "status": "failed",
                  "execution_started": True, "session_id": "s", "prd_input_sha256": digest},
                 {"id": "sprint2/tech-design", "role": "architect", "status": "accepted",
-                 "reused_from": "sprint1/tech-design", "outputs": {}}]}))
+                 "reused_from": "sprint1/tech-design", "outputs": {},
+                 "missing_outputs": [{"path": "/workspace/artifacts/sprint2/tech-design/frontend-design.md"}]}]}))
         text = write_report(self.job).read_text()
         self.assertIn("| sprint1/prd | pm | accepted | 1 |", text)
         self.assertIn("| sprint1/tech-design | architect | failed | 1 |", text)
@@ -69,6 +70,8 @@ class ReportingTests(unittest.TestCase):
         self.assertIn("stages/sprint1/prd/native-evidence.json", text)
         self.assertIn("stages/sprint1/prd/deployment-evidence.json", text)
         self.assertIn("不代表内容验收通过", text)
+        self.assertIn("要求交付但未生成的文件", text)
+        self.assertIn("/workspace/artifacts/sprint2/tech-design/frontend-design.md", text)
         self.assertNotIn("partial.md", text)
         self.assertNotIn("attempts", text)
 
@@ -101,6 +104,29 @@ class ReportingTests(unittest.TestCase):
         self.assertIn("**qa_failed**", text)
         self.assertIn("达到修复轮次上限", text)
         self.assertNotIn("本阶段未执行 Saleor", text)
+
+    def test_document_verifier_scores_are_reported_with_scoped_boundary(self):
+        (self.job / "config.json").write_text(json.dumps({
+            "agents": [{"model_name": "solver", "kwargs": {}}],
+            "verifier": {
+                "import_path": "runtime.document_rubric_verifier:DocumentRubricVerifier",
+                "kwargs": {"judge_model": "judge"},
+            },
+        }))
+        (self.trial / "workflow/state.json").write_text(json.dumps({
+            "status": "stopped_at_boundary", "mode": "single", "stages": []
+        }))
+        (self.trial / "result.json").write_text(json.dumps({
+            "verifier_result": {"rewards": {"reward": 0.75, "group_prd": 1.0}}
+        }))
+        verifier = self.trial / "verifier"
+        verifier.mkdir()
+        (verifier / "document-evaluation.md").write_text("report")
+        (verifier / "document-evaluation.json").write_text("{}")
+        text = write_report(self.job).read_text()
+        self.assertIn("独立文档 Rubric Judge", text)
+        self.assertIn("`reward` | 0.75", text)
+        self.assertIn("不评价代码、部署", text)
 
 
 if __name__ == "__main__":

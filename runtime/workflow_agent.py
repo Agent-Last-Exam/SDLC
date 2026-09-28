@@ -1,10 +1,12 @@
 """Harbor adapter: controller outside the sandbox, Codex inside it."""
+import hashlib
 import json
 from pathlib import Path
 import re
 import shlex
 
 from harbor.agents.base import BaseAgent
+from harbor.agents.installed.opencode import OpenCode
 from runtime.agents import PromptCodex
 from runtime.workflow_controller import Controller, digest
 from runtime.local_deployment import validate_manifest
@@ -49,6 +51,31 @@ class StageCodex(PromptCodex):
             command = "bash -o pipefail -c " + shlex.quote(
                 "python3 /opt/sdlc/codex_app_turn.py /tmp/sdlc-app-request.json 2>&1 | tee /logs/agent/codex.txt")
         return await super().exec_as_agent(environment, command, **kwargs)
+
+
+class StageOpenCode(OpenCode):
+    """OpenCode stage adapter with an injected role prompt and stable state path."""
+
+    allow_subagents = False
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.prompt_text = ""
+
+    async def install(self, environment):
+        result = await environment.exec(
+            ". ~/.nvm/nvm.sh 2>/dev/null || true; opencode --version",
+            user=environment.default_user,
+        )
+        if result.return_code == 0 and (
+            self._version is None or (result.stdout or "").strip() == self._version
+        ):
+            return
+        await super().install(environment)
+
+    async def run(self, instruction, environment, context):
+        active = self.prompt_text + "\n\n" + instruction
+        return await super().run(active, environment, context)
 
 
 class HarborBackend:
@@ -201,6 +228,37 @@ class HarborBackend:
 
     async def execute(self, stage, prompt, instruction, resume_session, stage_dir):
         self.agent.prompt_text = prompt
+        if isinstance(self.agent, StageOpenCode):
+            self.agent._resume = bool(resume_session)
+            try:
+                await self.agent.run(instruction, self.environment, self.context)
+            finally:
+                self.agent._resume = False
+            await self.quiesce()
+            remote = "/logs/agent/opencode.txt"
+            local = stage_dir / "opencode.jsonl"
+            await self.environment.download_file(remote, local)
+            session_ids = []
+            for line in local.read_text().splitlines():
+                try:
+                    event = json.loads(line)
+                except ValueError:
+                    continue
+                session_id = event.get("sessionID")
+                if isinstance(session_id, str):
+                    session_ids.append(session_id)
+            if len(set(session_ids)) != 1:
+                raise RuntimeError("Expected exactly one OpenCode session ID in the stage log")
+            session_id = session_ids[0]
+            (stage_dir / "native-evidence.json").write_text(json.dumps({
+                "session_id": session_id,
+                "active_role": stage["role"],
+                "stage_id": stage["stage_id"],
+                "role_prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(),
+                "session_continuity_verified": resume_session in (None, session_id),
+                "transport": "opencode-jsonl",
+            }, indent=2) + "\n")
+            return session_id
         request_path = stage_dir / "app-request.json"
         request_path.write_text(json.dumps({"model": self.agent.model_name, "prompt": prompt,
                                            "instruction": instruction, "session_id": resume_session,
@@ -283,7 +341,7 @@ class WorkflowCodex(BaseAgent):
     SUPPORTS_ATIF = True
 
     def __init__(self, *args, prepared_path, smoke=False, smoke_scenario="repair", role_probe=False,
-                 stop_after_stage=None, **kwargs):
+                 stop_after_stage=None, missing_output_policy="fail", **kwargs):
         super().__init__(*args, **kwargs)
         self.prepared = Path(prepared_path)
         self.compiled = json.loads((self.prepared / "resolved-workflow.json").read_text())
@@ -291,10 +349,12 @@ class WorkflowCodex(BaseAgent):
         self.smoke_scenario = smoke_scenario
         self.role_probe = role_probe
         self.stop_after_stage = stop_after_stage
+        self.missing_output_policy = missing_output_policy
         self.delegate = StageCodex(
             logs_dir=self.logs_dir, model_name=self.model_name, logger=self.logger,
             system_prompt_path=self.prepared / "workspace/roles/pm.system.md",
             version="0.154.0", reasoning_effort="high", web_search="disabled",
+            extra_env=self._extra_env,
         )
         self.delegate.allow_subagents = self.compiled["run"]["execution"].get("subagents", {}).get("enabled", False)
 
@@ -327,6 +387,24 @@ class WorkflowCodex(BaseAgent):
         for name in ("codex_app_turn.py", "workspace_snapshot.py", "local_deployment.py", "workspace_cleanup.py"):
             await environment.upload_file(Path(__file__).parent / name, "/opt/sdlc/" + name)
         await self.delegate.exec_as_root(environment, "chmod 555 /opt/sdlc/*.py")
+        # Prebuilt benchmark images keep the two frozen repositories directly
+        # below /workspace. Native Kubernetes Jobs upload the public workflow
+        # envelope after the image starts, so materialize clean, .git-free Base
+        # trees at the workflow contract paths when they are not already there.
+        materialize = r'''set -eu
+mkdir -p /workspace/repos
+for name in saleor saleor-dashboard; do
+  if [ -d "/workspace/repos/$name" ]; then
+    continue
+  fi
+  expected="$(python3 -c 'import json,sys; v=json.load(open("/workspace/base-revisions.json"))[sys.argv[1]]; print(v if isinstance(v,str) else v["commit"])' "$name")"
+  test "$(git -C "/workspace/$name" rev-parse HEAD)" = "$expected"
+  mkdir -p "/workspace/repos/$name"
+  git -C "/workspace/$name" archive "$expected" | tar -xf - -C "/workspace/repos/$name"
+done'''
+        result = await environment.exec(materialize, user="root", cwd="/workspace")
+        if result.return_code:
+            raise RuntimeError("Could not materialize frozen workflow Base repositories")
 
     async def run(self, instruction, environment, context):
         # Sibling of /logs/agent, not inside any mounted Agent-writable log root.
@@ -370,5 +448,35 @@ class WorkflowCodex(BaseAgent):
             from runtime.workflow_smoke import SmokeBackend
             backend = SmokeBackend(backend, self.smoke_scenario)
         controller = Controller(self.compiled, self.prepared / "workspace", control_dir, backend,
-                                stop_after_stage=self.stop_after_stage)
+                                stop_after_stage=self.stop_after_stage,
+                                missing_output_policy=self.missing_output_policy)
         await controller.run()
+
+
+class WorkflowOpenCode(WorkflowCodex):
+    """Run the same bounded workflow with one resumable OpenCode session."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.delegate = StageOpenCode(
+            logs_dir=self.logs_dir,
+            model_name=self.model_name,
+            logger=self.logger,
+            version="1.18.31",
+            extra_env=self._extra_env,
+            opencode_config={"permission": "allow"},
+        )
+        self.delegate.allow_subagents = False
+
+    @staticmethod
+    def name():
+        return "sdlc-workflow-opencode"
+
+    def version(self):
+        return "1.18.31"
+
+    def populate_context_post_run(self, context):
+        try:
+            self.delegate.populate_context_post_run(context)
+        except Exception:
+            self.logger.exception("Failed to export OpenCode workflow trajectory")

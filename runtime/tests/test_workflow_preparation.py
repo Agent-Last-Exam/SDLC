@@ -1,6 +1,5 @@
 """Contract/preparation checks; no Agent, Docker, model, or network calls."""
 
-import copy
 import contextlib
 import io
 import json
@@ -21,18 +20,27 @@ class WorkflowPreparationTests(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.root = Path(self.tmp.name).resolve()
         self.addCleanup(self.tmp.cleanup)
-        self.contract = read_yaml(HERE / "tasks/saleor-prd-tdd/workflows/lifecycle.yaml")
+        workflows = HERE / "tasks/standard/workflows"
+        (self.root / "workflows").mkdir()
+        shutil.copytree(HERE / "tasks/standard/public", self.root / "public")
+        self.contract = read_yaml(workflows / "lifecycle.yaml")
         # Preserve real inputs while mutating isolated copies of YAML.
         for group in ("roles", "templates", "inputs"):
-            self.contract[group] = {k: str((HERE / "tasks/saleor-prd-tdd/workflows" / v).resolve())
-                                    for k, v in self.contract[group].items()}
-        self.run = read_yaml(HERE / "tasks/saleor-prd-tdd/workflows/single.yaml")
+            self.contract[group] = {
+                key: ({**value, "source": str(
+                    (self.root / value["workspace"]).resolve()
+                    if value["workspace"].startswith("public/")
+                    else (workflows / value["source"]).resolve()
+                )} if isinstance(value, dict) else str((workflows / value).resolve()))
+                for key, value in self.contract[group].items()
+            }
+        self.run = read_yaml(workflows / "single.yaml")
         self.run["contract"] = "contract.yaml"
 
     def compile(self):
         self.run["task_root"] = str(DEFAULT_TASK)
-        (self.root / "contract.yaml").write_text(yaml.safe_dump(self.contract))
-        config = self.root / "run.yaml"
+        (self.root / "workflows/contract.yaml").write_text(yaml.safe_dump(self.contract))
+        config = self.root / "workflows/run.yaml"
         config.write_text(yaml.safe_dump(self.run))
         return compile_workflow(config, verify_repos=False)
 
@@ -75,7 +83,7 @@ class WorkflowPreparationTests(unittest.TestCase):
     def test_all_modes_share_same_contract(self):
         single = self.compile()
         for mode in ("flat", "hierarchical"):
-            self.run = read_yaml(HERE / f"tasks/saleor-prd-tdd/workflows/{mode}.yaml")
+            self.run = read_yaml(HERE / f"tasks/standard/workflows/{mode}.yaml")
             self.run["contract"] = "contract.yaml"
             result = self.compile()
             self.assertEqual(result["stages"], single["stages"])
@@ -98,16 +106,16 @@ class WorkflowPreparationTests(unittest.TestCase):
             resolve_config(self.root / "run.yaml", mode="single")
 
     def test_config_only_compile_does_not_require_prepared_repository_cache(self):
-        repos = Path(self.contract["inputs"]["repos"])
+        repos = Path(self.contract["inputs"]["repos"]["source"])
         self.assertFalse(repos.exists())
         result = self.compile()
         self.assertEqual(result["sources"]["inputs"]["repos"], str(repos))
         with self.assertRaisesRegex(ValueError, "Missing inputs:repos"):
-            compile_workflow(self.root / "run.yaml", verify_repos=True)
+            compile_workflow(self.root / "workflows/run.yaml", verify_repos=True)
 
     def test_explicit_public_input_cannot_map_into_private_workspace(self):
         self.contract["inputs"]["leak"] = {
-            "source": str(HERE / "tasks/saleor-prd-tdd/instruction.md"),
+            "source": str(HERE / "tasks/standard/instruction.md"),
             "workspace": "private/golden.md",
         }
         with self.assertRaisesRegex(ValueError, "must stay below public"):
@@ -115,7 +123,7 @@ class WorkflowPreparationTests(unittest.TestCase):
 
     def test_private_source_cannot_be_disguised_as_public_input(self):
         self.contract["inputs"]["leak"] = {
-            "source": str(HERE / "tasks/saleor-prd-tdd/instruction.md"),
+            "source": str(HERE / "tasks/standard/instruction.md"),
             "workspace": "public/query.md",
         }
         with self.assertRaisesRegex(ValueError, "must come from the task public"):
@@ -168,11 +176,12 @@ class WorkflowPreparationTests(unittest.TestCase):
                         "-c", "commit.gpgsign=false", "commit", "-qm", "Fixture"], check=True)
         sha = subprocess.check_output(["git", "-C", str(repo), "rev-parse", "HEAD"], text=True).strip()
         (task / "environment/base-revisions.json").write_text(json.dumps({"fixture": {"commit": sha}}))
-        toml = task / "task.toml"
+        toml = task / "workflow-runtime/task.toml"
         toml.write_text(toml.read_text().replace("10800.0", "321.0"))
-        dockerfile = task / "environment/Dockerfile"
+        dockerfile = task / "workflow-runtime/environment/Dockerfile"
         dockerfile.write_text(dockerfile.read_text() + "\n# Task-owned build\n")
-        (task / "instruction.md").write_text("Custom task instruction\n")
+        query = task / "public/query.md"
+        query.write_text("Custom task query\n")
         args = ["run_workflow", "--task", str(task), "--mode", "single", "--prepare-only", "--job-name", "fixture-run"]
         home = self.root / "runtime-home"
         with patch.object(run_workflow, "HERE", home), patch("sys.argv", args), contextlib.redirect_stdout(io.StringIO()):
@@ -180,7 +189,7 @@ class WorkflowPreparationTests(unittest.TestCase):
         prepared = home / ".prepared/fixture-run"
         self.assertEqual((prepared / "task/task.toml").read_bytes(), toml.read_bytes())
         self.assertEqual((prepared / "task/environment/Dockerfile").read_bytes(), dockerfile.read_bytes())
-        self.assertEqual((prepared / "workspace/instruction.md").read_text(), "Custom task instruction\n")
+        self.assertEqual((prepared / "workspace/public/query.md").read_text(), "Custom task query\n")
         self.assertFalse((prepared / "workspace/organization-delivery.md").exists())
         self.assertFalse((prepared / "workspace/templates/technical-review.md").exists())
         self.assertEqual((prepared / "workspace/repos/fixture/README.md").read_text(), "Task-local fixture\n")

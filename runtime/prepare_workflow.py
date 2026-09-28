@@ -18,7 +18,7 @@ import tempfile
 import yaml
 
 HERE = Path(__file__).resolve().parents[1]
-DEFAULT_TASK = HERE / "tasks/saleor-prd-tdd"
+DEFAULT_TASK = HERE / "tasks/standard"
 
 
 def resolve_config(config=None, task=None, mode=None):
@@ -314,7 +314,7 @@ def prepare(compiled, destination):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("config", nargs="?", type=Path)
-    parser.add_argument("--task", type=Path, help="Task directory; defaults to tasks/saleor-prd-tdd")
+    parser.add_argument("--task", type=Path, help="Task directory; defaults to tasks/standard")
     parser.add_argument("--mode", choices=["single", "flat", "hierarchical"])
     parser.add_argument("--output", type=Path, help="Create a new complete public workspace; never runs an Agent")
     args = parser.parse_args()
