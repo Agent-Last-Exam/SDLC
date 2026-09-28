@@ -1,0 +1,218 @@
+{
+  "schema_version": 1,
+  "rubric_set_id": "saleor-standard-docs",
+  "rubric_version": "2026-09-28-v2",
+  "source_revisions": {
+    "tdd_rubric_doc": "OMSqdrbv0oRjjuxYSbrcIOVtnOg@161",
+    "stage_evaluation_doc": "NAsmdh9NVoVbPBxW8A8cI2Q7n8p@266",
+    "golden_prd_sha256": "b5425781eee4cab2bbffb61032613012dc498d4553619fa978c2d819c9afaff2"
+  },
+  "aggregation": "min_group_pass_rate",
+  "judge_replicas": 2,
+  "groups": [
+    {
+      "group_id": "prd",
+      "title": "PRD 质量",
+      "stage": "sprint1/prd",
+      "evidence": [
+        {"root": "candidate", "path": "sprint1/prd/prd.md", "purpose": "候选 PRD"},
+        {"root": "public", "path": "query.md", "purpose": "公开业务委托与范围"},
+        {"root": "public", "path": "business-conversations.md", "purpose": "固定补充业务决定"},
+        {"root": "public", "path": "prd-schema.md", "purpose": "PRD 产物 Schema"},
+        {"root": "private", "path": "golden-prd.md", "purpose": "语义对照参考，不是唯一措辞或方案"},
+        {"root": "base", "path": "saleor", "purpose": "后端静态现状"},
+        {"root": "base", "path": "saleor-dashboard", "purpose": "Dashboard 静态现状"}
+      ],
+      "rubrics": [
+        {
+          "rubric_id": "PRD1",
+          "title": "目标与范围对齐",
+          "criteria": "准确承接公开业务目标、目标用户、范围和非目标；不把后续实现任务、未验证收益或范围外产品写成当前事实或交付。",
+          "refs": ["阶段评测方案 01 · PRD 评测：目标与范围对齐"],
+          "critical": true
+        },
+        {
+          "rubric_id": "PRD2",
+          "title": "需求完整性",
+          "criteria": "覆盖公开输入中的用户、接入方、核心流程、异常、边界、兼容、迁移、恢复和存量连续性义务；不得以 Base 未实现或外部事实未知为由删除已明确义务。",
+          "refs": ["阶段评测方案 01 · PRD 评测：需求完整性"],
+          "critical": true
+        },
+        {
+          "rubric_id": "PRD3",
+          "title": "清晰性与确定性",
+          "criteria": "术语、身份、条件、默认值、状态和业务规则明确；读者无需猜测关键行为；真实未知和待确认事项显式标注。",
+          "refs": ["阶段评测方案 01 · PRD 评测：清晰性与确定性"],
+          "critical": false
+        },
+        {
+          "rubric_id": "PRD4",
+          "title": "一致性与正确性",
+          "criteria": "文档内部规则一致，与公开决定和可核实 Base 事实相容；事实、假设、目标和建议有清楚边界；不把静态代码、配置或测试文件冒充运行结果。",
+          "refs": ["阶段评测方案 01 · PRD 评测：一致性与正确性"],
+          "critical": true
+        },
+        {
+          "rubric_id": "PRD5",
+          "title": "可验收性",
+          "criteria": "每项需求有可观察、可判定且与该需求对应的验收条件；覆盖正常、权限、失败、兼容、迁移、幂等和恢复中的适用场景，不写成已执行结果。",
+          "refs": ["阶段评测方案 01 · PRD 评测：可验收性"],
+          "critical": true
+        },
+        {
+          "rubric_id": "PRD6",
+          "title": "优先级与可交付性",
+          "criteria": "优先级符合公开的业务影响口径；依赖、风险、维护窗口和切换前置条件足以支持交付决策；粒度与任务规模一致。",
+          "refs": ["阶段评测方案 01 · PRD 评测：优先级与可交付性"],
+          "critical": false
+        }
+      ]
+    },
+    {
+      "group_id": "tech_design",
+      "title": "技术设计",
+      "stage": "sprint1/tech-design",
+      "evidence": [
+        {"root": "candidate", "path": "sprint1/prd/prd.md", "purpose": "冻结 PRD"},
+        {"root": "candidate", "path": "sprint1/tech-design", "purpose": "候选技术设计产物集合"},
+        {"root": "public", "path": "query.md", "purpose": "原始业务语义"},
+        {"root": "public", "path": "business-conversations.md", "purpose": "固定业务决定"},
+        {"root": "templates", "path": "frontend-design.md", "purpose": "前端设计 Schema"},
+        {"root": "templates", "path": "backend-design.md", "purpose": "后端设计 Schema"},
+        {"root": "templates", "path": "interface-contract.md", "purpose": "接口契约 Schema"},
+        {"root": "templates", "path": "target-interface.md", "purpose": "目标接口交付规范"},
+        {"root": "base", "path": "saleor", "purpose": "后端 Base"},
+        {"root": "base", "path": "saleor-dashboard", "purpose": "Dashboard Base"}
+      ],
+      "rubrics": [
+        {
+          "rubric_id": "TDD-A1",
+          "title": "产物、章节与字段完整",
+          "criteria": "任务适用的前端设计、后端设计、接口契约及完整目标接口描述存在；模板要求的章节、表格列、设计块和契约字段齐全且非空。不能以通用 TDD、目录或接口 diff 代替。",
+          "refs": ["TDD Rubrics A1"],
+          "critical": true
+        },
+        {
+          "rubric_id": "TDD-A2",
+          "title": "编号引用与归属有效",
+          "criteria": "R、FD、BD、I、BT 编号唯一；R→FD/BD、I→BD、前端 I→FD→R、BT→BD 和 BT 依赖引用目标存在且归属一致。",
+          "refs": ["TDD Rubrics A2"],
+          "critical": true
+        },
+        {
+          "rubric_id": "TDD-A3",
+          "title": "责任、版本与名称一致",
+          "criteria": "各设计产物责任和依据版本符合 Schema；与 PRD 指向同一事物时沿用同一名称，不发生含义漂移。",
+          "refs": ["TDD Rubrics A3"],
+          "critical": false
+        },
+        {
+          "rubric_id": "TDD-A4",
+          "title": "编号历史与修订合规",
+          "criteria": "本任务为首版时不虚构历史修订要求；若候选声明修订，则版本、修订说明和编号稳定性彼此一致，不重排或复用已发布编号。",
+          "refs": ["TDD Rubrics A4"],
+          "critical": false
+        },
+        {
+          "rubric_id": "TDD-B1",
+          "title": "各端完整承接需求",
+          "criteria": "前后端分别覆盖其承担的需求和关键验收行为；跨端职责可衔接；不仅列编号或复述 PRD，而是说明实现行为和限制。",
+          "refs": ["TDD Rubrics B1"],
+          "critical": true
+        },
+        {
+          "rubric_id": "TDD-B2",
+          "title": "适配现有系统并遵守约束",
+          "criteria": "页面、模块、服务、接口和配置落点与 Base 相符；新增身份明确；不依赖不存在能力、错误代码位置或无依据新增业务义务；等价方案可不同于参考设计。",
+          "refs": ["TDD Rubrics B2"],
+          "critical": true
+        },
+        {
+          "rubric_id": "TDD-B3",
+          "title": "关键行为足以实施",
+          "criteria": "主流程和适用异常场景明确输入、责任模块、主要交互、关键状态变化与结果；不存在无人承担、状态不收敛或仅复述需求的问题。",
+          "refs": ["TDD Rubrics B3"],
+          "critical": false
+        },
+        {
+          "rubric_id": "TDD-B4",
+          "title": "接口契约消除歧义",
+          "criteria": "提供方、调用方、定义片段、字段及可空语义、权限、错误、业务完成判定和兼容过渡相互一致，能区分接收请求与业务完成。",
+          "refs": ["TDD Rubrics B4"],
+          "critical": true
+        },
+        {
+          "rubric_id": "TDD-B5",
+          "title": "数据与异常保持业务不变量",
+          "criteria": "数据身份、状态转换及重复、并发、超时、部分失败机制共同保持资金、权限、数据和迁移不变量；重试、幂等和补偿不能只停留在口号。",
+          "refs": ["TDD Rubrics B5"],
+          "critical": true
+        },
+        {
+          "rubric_id": "TDD-B6",
+          "title": "非功能约束得到支撑",
+          "criteria": "任务适用的性能、容量、安全和隐私约束有具体设计机制；量化假设和口径明确；身份、权限及数据边界可落实。",
+          "refs": ["TDD Rubrics B6"],
+          "critical": false
+        },
+        {
+          "rubric_id": "TDD-B7",
+          "title": "开发依赖与联调可执行",
+          "criteria": "前端依赖判断、生产方与消费方联调、BT 对 BD 的覆盖及 BT 依赖完整、无循环，并与接口契约成熟度一致。",
+          "refs": ["TDD Rubrics B7"],
+          "critical": false
+        },
+        {
+          "rubric_id": "TDD-B8",
+          "title": "目标接口完整且一致",
+          "criteria": "目标 GraphQL 描述格式有效、定义完整；未改部分保持 Base 语义；变更覆盖需求，并与接口契约的类型、可空性、参数、返回及兼容约定一致，不能只交 diff。",
+          "refs": ["TDD Rubrics B8"],
+          "critical": true
+        }
+      ]
+    },
+    {
+      "group_id": "test_design",
+      "title": "测试设计质量",
+      "stage": "sprint1/test-design",
+      "evidence": [
+        {"root": "candidate", "path": "sprint1/prd/prd.md", "purpose": "冻结 PRD"},
+        {"root": "candidate", "path": "sprint1/tech-design", "purpose": "已接受技术设计"},
+        {"root": "candidate", "path": "sprint1/test-design/test-cases.v1.csv", "purpose": "候选测试设计"},
+        {"root": "templates", "path": "test-cases.md", "purpose": "测试用例 Schema"},
+        {"root": "base", "path": "saleor", "purpose": "后端可测试边界"},
+        {"root": "base", "path": "saleor-dashboard", "purpose": "Dashboard 可测试边界"}
+      ],
+      "rubrics": [
+        {
+          "rubric_id": "TEST1",
+          "title": "需求与风险覆盖",
+          "criteria": "承接 PRD 验收条件，覆盖核心业务、权限、失败、边界、兼容、迁移、幂等、恢复和跨前后端契约中的适用场景，并结合技术设计和 Base 确定重点。",
+          "refs": ["阶段评测方案 04 · QA 评测：需求与风险覆盖"],
+          "critical": true
+        },
+        {
+          "rubric_id": "TEST2",
+          "title": "用例内容与断言质量",
+          "criteria": "前置条件、测试数据、操作步骤和预期结果明确对应；断言检查真实业务结果而非仅检查请求成功、字段存在或页面出现。",
+          "refs": ["阶段评测方案 04 · QA 评测：用例与测试代码质量"],
+          "critical": true
+        },
+        {
+          "rubric_id": "TEST3",
+          "title": "可执行性与独立性",
+          "criteria": "用例具有明确版本与环境前提，数据可准备，步骤可复现，结果可判定；用例之间不依赖隐含顺序，无法执行的外部条件被显式标注。",
+          "refs": ["阶段评测方案 04 · QA 评测：用例与测试代码质量；实际执行边界"],
+          "critical": false
+        },
+        {
+          "rubric_id": "TEST4",
+          "title": "追踪与跨产物一致性",
+          "criteria": "每条用例可追踪到有效 PRD AC，必要时关联 FD、BD 或 I；模块名称、优先级、接口语义和预期结果与冻结 PRD、技术设计及目标 Schema 一致。",
+          "refs": ["阶段评测方案 04 · QA 评测：质量报告与一致性；测试用例 Schema"],
+          "critical": true
+        }
+      ]
+    }
+  ]
+}

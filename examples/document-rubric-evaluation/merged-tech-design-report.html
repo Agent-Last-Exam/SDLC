@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SDLC 文档质量问题报告</title>
+  <style>
+    :root { --bg:#f4f7fb; --panel:#fff; --ink:#172033; --muted:#647089; --line:#dce3ee; --blue:#225bd6; --red:#b42318; --red-bg:#fff1ef; --amber:#9a6700; --amber-bg:#fff8dc; --green:#16794b; --green-bg:#eaf8f1; }
+    * { box-sizing:border-box } body { margin:0; font-family:Inter,"PingFang SC","Microsoft YaHei",system-ui,sans-serif; background:var(--bg); color:var(--ink); line-height:1.65 }
+    main { max-width:1180px; margin:auto; padding:40px 24px 80px }
+    .hero { background:linear-gradient(135deg,#152b58,#225bd6); color:#fff; padding:36px; border-radius:20px; box-shadow:0 16px 50px #1b3f8c2e }
+    .hero h1 { margin:6px 0 8px; font-size:clamp(28px,5vw,48px); line-height:1.15 } .hero p { max-width:850px; color:#dce7ff; margin:0 }
+    .meta { margin-top:20px; display:flex; flex-wrap:wrap; gap:10px } .meta span { background:#ffffff1a; border:1px solid #ffffff38; padding:5px 10px; border-radius:999px; font-size:13px }
+    .stats { display:grid; grid-template-columns:repeat(5,1fr); gap:14px; margin:22px 0 }
+    .stat { background:var(--panel); border:1px solid var(--line); border-radius:15px; padding:18px } .stat strong { display:block; font-size:28px; line-height:1.15 } .stat span { color:var(--muted); font-size:13px }
+    .alert { background:var(--red-bg); border-left:5px solid var(--red); padding:16px 18px; border-radius:10px; margin:20px 0 }
+    h2 { margin:42px 0 16px; font-size:25px } h3 { margin:2px 0 0; font-size:19px } h4 { margin:0 0 6px; font-size:14px; color:#33415c } p { margin:0 }
+    .layout { display:grid; grid-template-columns:1.2fr .8fr; gap:18px } .panel { background:var(--panel); border:1px solid var(--line); border-radius:15px; padding:20px }
+    table { width:100%; border-collapse:collapse } th,td { text-align:left; padding:10px 8px; border-bottom:1px solid var(--line) } th { color:var(--muted); font-size:12px; text-transform:uppercase }
+    .pattern-list { display:grid; gap:12px } .pattern-card { display:flex; gap:14px; background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:17px }
+    .pattern-count { flex:0 0 42px; height:42px; display:grid; place-items:center; background:#edf3ff; color:var(--blue); border-radius:12px; font-weight:800; font-size:20px }
+    .pattern-card p { color:var(--muted); margin-top:4px } .chips,.passed { display:flex; flex-wrap:wrap; gap:7px; margin-top:10px } .chips span,.pass-chip { background:#f0f3f8; color:#42506a; border-radius:999px; padding:3px 8px; font-size:12px }
+    .controls { position:sticky; top:0; z-index:4; display:flex; gap:10px; flex-wrap:wrap; background:#f4f7fbeF; backdrop-filter:blur(8px); padding:12px 0 }
+    input,select { min-height:42px; border:1px solid #bec9da; border-radius:10px; padding:8px 12px; background:#fff; color:var(--ink) } input[type=search] { flex:1; min-width:240px } label { display:flex; align-items:center; gap:7px; color:#44516a; font-size:14px }
+    .issue-list { display:grid; gap:16px } .issue-card { background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:21px; box-shadow:0 5px 20px #243c6910 }
+    .issue-head { display:flex; justify-content:space-between; gap:16px; align-items:flex-start } .eyebrow { color:var(--blue); font-weight:700; font-size:12px; letter-spacing:.03em }
+    .badge { border-radius:999px; padding:4px 9px; white-space:nowrap; font-size:12px; font-weight:750 } .badge.critical { color:var(--red); background:var(--red-bg) } .badge.normal { color:var(--amber); background:var(--amber-bg) }
+    .issue-id { display:inline-block; margin:10px 0 16px; font:12px ui-monospace,SFMono-Regular,monospace; color:#58657b; background:#f2f5f9; padding:4px 7px; border-radius:6px }
+    .issue-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px } .issue-grid section { background:#f8fafe; border-radius:11px; padding:14px } .issue-grid .fix { grid-column:1/-1; background:#edf5ff }
+    details { margin-top:14px; border-top:1px solid var(--line); padding-top:12px } summary { cursor:pointer; color:var(--blue); font-weight:700 }
+    .evidence-list { padding-left:20px } .evidence-list li { margin:13px 0 } .evidence-meta { display:flex; flex-wrap:wrap; gap:8px; align-items:center; color:var(--muted); font-size:12px }
+    code { background:#edf1f7; padding:2px 5px; border-radius:5px; overflow-wrap:anywhere } blockquote { margin:6px 0; padding:10px 13px; border-left:3px solid #86a7e8; background:#f6f8fc; color:#34415a }
+    .pass-chip { background:var(--green-bg); color:var(--green) } .footer { margin-top:44px; color:var(--muted); font-size:12px } .hidden { display:none!important }
+    @media(max-width:850px) { .stats { grid-template-columns:repeat(2,1fr) } .layout,.issue-grid { grid-template-columns:1fr } .issue-grid .fix { grid-column:auto } }
+    @media print { body { background:#fff } main { max-width:none; padding:0 } .hero { color:#000; background:#fff; box-shadow:none; border:1px solid #aaa } .hero p,.meta span { color:#333 } .controls { display:none } .issue-card { break-inside:avoid; box-shadow:none } details { display:block } details>summary { display:none } details>* { display:block!important } }
+  </style>
+</head>
+<body><main>
+  <header class="hero">
+    <div class="eyebrow" style="color:#bcd1ff">HARBOR DOCUMENT RUBRIC · FINAL ADJUDICATED RESULT</div>
+    <h1>SDLC 文档质量问题报告</h1>
+    <p>本报告列出最终裁决中的全部失败 Rubric，并提供可定位证据与修复动作。范围仅为 PRD、技术设计和测试设计文档，不代表代码、部署或生产效果验证。</p>
+    <div class="meta"><span>Run: sdlc-doc-gpt56-r2-regrade12-20260927</span><span>Trial: task__kQSKRnT</span><span>Judge: openai/gpt-5.6-sol × 2</span><span>生成时间: 2026-09-28T10:46:10+08:00</span></div>
+  </header>
+
+  <section class="stats">
+    <div class="stat"><strong>0.125</strong><span>Harbor reward</span></div>
+    <div class="stat"><strong>8/22</strong><span>Rubric 通过</span></div>
+    <div class="stat"><strong>14</strong><span>问题总数</span></div>
+    <div class="stat"><strong>9</strong><span>关键问题</span></div>
+    <div class="stat"><strong>35.7%</strong><span>关键项通过率</span></div>
+  </section>
+  <div class="alert"><strong>结论：</strong>评测流程已成功生成正式分数，但文档未通过验收（document_acceptance = 0）。优先处理 9 个关键问题，再修复 5 个非关键问题。</div>
+
+  <section class="layout">
+    <div class="panel"><h2 style="margin-top:0">分组结果</h2><table><thead><tr><th>阶段</th><th>通过率</th><th>失败数</th></tr></thead><tbody><tr><td>PRD</td><td>33.3%</td><td>4</td></tr><tr><td>技术设计</td><td>25.0%</td><td>9</td></tr><tr><td>测试设计</td><td>75.0%</td><td>1</td></tr></tbody></table><p style="margin-top:12px;color:var(--muted);font-size:12px">技术设计按同一阶段合并展示 12 条 Rubric；Harbor reward 仍是 regrade12 的原始正式分数。</p></div>
+    <div class="panel"><h2 style="margin-top:0">通过项</h2><div class="passed"><span class='pass-chip'>PRD1 · 目标与范围对齐</span><span class='pass-chip'>PRD4 · 一致性与正确性</span><span class='pass-chip'>TDD-A3 · 责任、版本与名称一致</span><span class='pass-chip'>TDD-A4 · 编号历史与修订合规</span><span class='pass-chip'>TDD-B6 · 非功能约束得到支撑</span><span class='pass-chip'>TEST1 · 需求与风险覆盖</span><span class='pass-chip'>TEST2 · 用例内容与断言质量</span><span class='pass-chip'>TEST4 · 追踪与跨产物一致性</span></div></div>
+  </section>
+
+  <h2>五类主要问题</h2><section class="pattern-list">
+        <article class="pattern-card">
+          <div class="pattern-count">4</div>
+          <div><h3>PRD 义务、状态与验收未完全冻结</h3><p>业务输入已给出明确义务，但 PRD 使用概括表述、Base 默认语义或不完整 AC，导致后续设计缺少稳定基线。</p>
+          <div class="chips"><span>PRD2</span><span>PRD3</span><span>PRD5</span><span>PRD6</span></div></div>
+        </article>
+        <article class="pattern-card">
+          <div class="pattern-count">4</div>
+          <div><h3>接口定义与调用方语义不一致</h3><p>退款金额、库存设置局部更新和 Webhook 事件在 PRD、接口契约、SDL、前端调用之间发生冲突。</p>
+          <div class="chips"><span>TDD-B1</span><span>TDD-B4</span><span>TDD-B7</span><span>TDD-B8</span></div></div>
+        </article>
+        <article class="pattern-card">
+          <div class="pattern-count">2</div>
+          <div><h3>外部退款缺少可收敛的一致性机制</h3><p>设计提到 pending、幂等和补偿，但没有稳定外部幂等键、结果收件箱、对账机制与专用异常状态。</p>
+          <div class="chips"><span>TDD-B3</span><span>TDD-B5</span></div></div>
+        </article>
+        <article class="pattern-card">
+          <div class="pattern-count">3</div>
+          <div><h3>技术产物与 Base 的形式/归属不一致</h3><p>缺失完整 OpenAPI、接口归属链不一致，并错误识别 React 版本。</p>
+          <div class="chips"><span>TDD-A1</span><span>TDD-A2</span><span>TDD-B2</span></div></div>
+        </article>
+        <article class="pattern-card">
+          <div class="pattern-count">1</div>
+          <div><h3>测试用例覆盖较好，但执行环境未产品化</h3><p>测试追踪和业务断言较完整，但缺少固定环境、数据准备、外部依赖和观察入口。</p>
+          <div class="chips"><span>TEST3</span></div></div>
+        </article></section>
+
+  <h2>逐项问题与具体样例</h2>
+  <div class="controls">
+    <input id="search" type="search" placeholder="搜索 Rubric、issue_id、问题或建议">
+    <select id="group" aria-label="按阶段筛选"><option value="">全部阶段</option><option value="prd">PRD</option><option value="tech_design">技术设计</option><option value="test_design">测试设计</option></select>
+    <label><input id="critical" type="checkbox">只看关键项</label>
+    <span id="count" style="align-self:center;color:var(--muted)"></span>
+  </div>
+  <section id="issues" class="issue-list">
+    <article class="issue-card" data-group="prd" data-critical="true" data-search="prd2 需求完整性 prd2-omitted-fixed-obligations 覆盖面虽广，但遗漏明确义务：r01只限制私有 metadata 的读取暴露，没有禁止敏感信息写入公共 metadata；r15也未明确保持已有列表入口传递选中 id。固定输入中的已明确义务不能以概括性兼容表述替代。 补充两条明确需求：禁止敏感信息写入公共 metadata；已有列表入口必须传递选中 id。为两条需求分别分配 r/ac 编号，并在后续 fd、bd、i 中建立追踪。">
+      <div class="issue-head">
+        <div>
+          <div class="eyebrow">PRD · 需求覆盖</div>
+          <h3>PRD2 · 需求完整性</h3>
+        </div>
+        <span class="badge critical">关键项</span>
+      </div>
+      <div class="issue-id">PRD2-OMITTED-FIXED-OBLIGATIONS</div>
+      <div class="issue-grid">
+        <section><h4>问题</h4><p>覆盖面虽广，但遗漏明确义务：R01只限制私有 metadata 的读取暴露，没有禁止敏感信息写入公共 metadata；R15也未明确保持已有列表入口传递选中 ID。固定输入中的已明确义务不能以概括性兼容表述替代。</p></section>
+        <section><h4>影响</h4><p>固定业务义务被遗漏，后续设计和测试可能系统性缺项。</p></section>
+        <section class="fix"><h4>建议修复</h4><p>补充两条明确需求：禁止敏感信息写入公共 metadata；已有列表入口必须传递选中 ID。为两条需求分别分配 R/AC 编号，并在后续 FD、BD、I 中建立追踪。</p></section>
+      </div>
+      <details>
+        <summary>查看 3 条具体证据</summary>
+        <ol class="evidence-list">
+        <li>
+          <div class="evidence-meta"><code>公开输入/query.md</code><span>经营资料与检索，第13行</span></div>
+          <blockquote>敏感信息不能放入公共 metadata。</blockquote>
+        </li>
+        <li>
+          <div class="evidence-meta"><code>候选产物/sprint1/prd/prd.md</code><span>R01，第41行</span></div>
+          <blockquote>私有 metadata 不得向匿名用户或无权订阅者暴露。</blockquote>
+        </li>
+        <li>
+          <div class="evidence-meta"><code>公开输入/business-conversations.md</code><span>扩展体验，第119行</span></div>
+          <blockquote>详情传对象 ID、已有列表传选中 ID，有渠道上下文传当前渠道，不额外附带无关数据。</blockquote>
+        </li></ol>
+      </details>
+    </article>
+    <article class="issue-card" data-group="prd" data-critical="false" data-search="prd3 清晰性与确定性 prd3-unspecified-breaker-semantics 应用熔断需求及验收条件仅引用“base 默认阈值与自动恢复语义”，未写明可核实的统计窗、失败阈值、冷却时间和恢复条件。base 中这些值可以静态确定，但prd读者仍需自行调查才能知道关键状态转换规则，不满足确定性要求。 在 r16 中冻结熔断统计窗、最小失败数、失败率、冷却时间，以及 closed/open/half_open 的进入与恢复条件；不要仅引用“base 默认语义”。">
+      <div class="issue-head">
+        <div>
+          <div class="eyebrow">PRD · 规则确定性</div>
+          <h3>PRD3 · 清晰性与确定性</h3>
+        </div>
+        <span class="badge normal">非关键项</span>
+      </div>
+      <div class="issue-id">PRD3-UNSPECIFIED-BREAKER-SEMANTICS</div>
+      <div class="issue-grid">
+        <section><h4>问题</h4><p>应用熔断需求及验收条件仅引用“Base 默认阈值与自动恢复语义”，未写明可核实的统计窗、失败阈值、冷却时间和恢复条件。Base 中这些值可以静态确定，但PRD读者仍需自行调查才能知道关键状态转换规则，不满足确定性要求。</p></section>
+        <section><h4>影响</h4><p>研发必须自行查源码猜测状态转换，需求不可独立实施。</p></section>
+        <section class="fix"><h4>建议修复</h4><p>在 R16 中冻结熔断统计窗、最小失败数、失败率、冷却时间，以及 CLOSED/OPEN/HALF_OPEN 的进入与恢复条件；不要仅引用“Base 默认语义”。</p></section>
+      </div>
+      <details>
+        <summary>查看 2 条具体证据</summary>
+        <ol class="evidence-list">
+        <li>
+          <div class="evidence-meta"><code>候选产物/sprint1/prd/prd.md</code><span>R16，第221-227行</span></div>
+          <blockquote>保留 Base 默认阈值与自动恢复语义</blockquote>
+        </li>
+        <li>
+          <div class="evidence-meta"><code>冻结 Base/saleor/saleor/webhook/circuit_breaker/breaker_board.py</code><span>第20-39行</span></div>
+          <blockquote>BREAKER_BOARD_FAILURE_MIN_COUNT: int = 100</blockquote>
+        </li></ol>
+      </details>
+    </article>
+    <article class="issue-card" data-group="prd" data-critical="true" data-search="prd5 可验收性 prd5-missing-direct-compatibility-acs 多数需求有细致ac，但并非每项规则都有直接对应的可判定场景。r15要求保留全部既有挂载点、目标及默认popup，ac只笼统要求新旧入口体验一致；r13规定新装和升级未配置默认all，却没有直接验收未配置默认值及存量密码连续性。这些兼容和默认行为无法由现有ac完整判定。 增加可直接判定的兼容性 ac：逐项验证全部旧挂载点、目标、默认 popup、列表选中 id；增加未配置默认 all、升级兼容和存量密码连续性的场景。">
+      <div class="issue-head">
+        <div>
+          <div class="eyebrow">PRD · 验收设计</div>
+          <h3>PRD5 · 可验收性</h3>
+        </div>
+        <span class="badge critical">关键项</span>
+      </div>
+      <div class="issue-id">PRD5-MISSING-DIRECT-COMPATIBILITY-ACS</div>
+      <div class="issue-grid">
+        <section><h4>问题</h4><p>多数需求有细致AC，但并非每项规则都有直接对应的可判定场景。R15要求保留全部既有挂载点、目标及默认POPUP，AC只笼统要求新旧入口体验一致；R13规定新装和升级未配置默认ALL，却没有直接验收未配置默认值及存量密码连续性。这些兼容和默认行为无法由现有AC完整判定。</p></section>
+        <section><h4>影响</h4><p>兼容和默认行为无法形成可重复的验收结论。</p></section>
+        <section class="fix"><h4>建议修复</h4><p>增加可直接判定的兼容性 AC：逐项验证全部旧挂载点、目标、默认 POPUP、列表选中 ID；增加未配置默认 ALL、升级兼容和存量密码连续性的场景。</p></section>
+      </div>
+      <details>
+        <summary>查看 3 条具体证据</summary>
+        <ol class="evidence-list">
+        <li>
+          <div class="evidence-meta"><code>候选产物/sprint1/prd/prd.md</code><span>R15，第209行</span></div>
+          <blockquote>在保留全部已有挂载点、目标和默认 POPUP 行为的基础上</blockquote>
+        </li>
+        <li>
+          <div class="evidence-meta"><code>候选产物/sprint1/prd/prd.md</code><span>AC-15-5，第215行</span></div>
+          <blockquote>新旧入口体验一致且不重复，无扩展时不显示空容器</blockquote>
+        </li>
+        <li>
+          <div class="evidence-meta"><code>候选产物/sprint1/prd/prd.md</code><span>R13，第185行</span></div>
+          <blockquote>新装、升级未配置均默认 ALL</blockquote>
+        </li></ol>
+      </details>
+    </article>
+    <article class="issue-card" data-group="prd" data-critical="false" data-search="prd6 优先级与可交付性 prd6-misclassified-core-priorities 依赖、维护窗口和切换门槛总体充分，但五类详情widget和应用故障状态均是公开目标中的明确首版能力；移除后相应目标不能实现，按公开优先级口径应为p0而非p1。 将 r15、r16 调整为 p0，并纳入首版切换门槛；若坚持 p1，需要同步缩减首版目标和发布判定，避免“目标未实现但可发布”。">
+      <div class="issue-head">
+        <div>
+          <div class="eyebrow">PRD · 优先级</div>
+          <h3>PRD6 · 优先级与可交付性</h3>
+        </div>
+        <span class="badge normal">非关键项</span>
+      </div>
+      <div class="issue-id">PRD6-MISCLASSIFIED-CORE-PRIORITIES</div>
+      <div class="issue-grid">
+        <section><h4>问题</h4><p>依赖、维护窗口和切换门槛总体充分，但五类详情Widget和应用故障状态均是公开目标中的明确首版能力；移除后相应目标不能实现，按公开优先级口径应为P0而非P1。</p></section>
+        <section><h4>影响</h4><p>发布门槛可能在核心目标尚未完成时被错误放行。</p></section>
+        <section class="fix"><h4>建议修复</h4><p>将 R15、R16 调整为 P0，并纳入首版切换门槛；若坚持 P1，需要同步缩减首版目标和发布判定，避免“目标未实现但可发布”。</p></section>
+      </div>
+      <details>
+        <summary>查看 3 条具体证据</summary>
+        <ol class="evidence-list">
+        <li>
+          <div class="evidence-meta"><code>公开输入/query.md</code><span>本阶段任务与输出，第55行</span></div>
+          <blockquote>去掉后目标无法实现或造成不可用、数据/安全问题为 P0</blockquote>
+        </li>
+        <li>
+          <div class="evidence-meta"><code>候选产物/sprint1/prd/prd.md</code><span>R15，第208行</span></div>
+          <blockquote>优先级：P1</blockquote>
+        </li>
+        <li>
+          <div class="evidence-meta"><code>候选产物/sprint1/prd/prd.md</code><span>R16，第220行</span></div>
+          <blockquote>优先级：P1</blockquote>
+        </li></ol>
+      </details>
+    </article>
+    <article class="issue-card" data-group="tech_design" data-critical="true" data-search="tdd-a1 产物、章节与字段完整 tdd-a1-incomplete-digital-download-contract 前端设计、后端设计、接口契约和完整目标 sdl 均存在，但 i05 登记的历史下载 http 边界仅有叙述性 markdown，未给出实际路径模板，也未按目标接口交付规范提供完整 openapi。因而完整目标接口描述条件不成立。 为数字下载 http 边界给出实际路径模板、参数、状态码、鉴权、错误语义和兼容策略，并按交付规范提供完整 openapi 文件，在 interface-contract.md 中登记。">
+      <div class="issue-head">
+        <div>
+          <div class="eyebrow">技术设计 · 产物完整性</div>
+          <h3>TDD-A1 · 产物、章节与字段完整</h3>
+        </div>
+        <span class="badge critical">关键项</span>
+      </div>
+      <div class="issue-id">TDD-A1-INCOMPLETE-DIGITAL-DOWNLOAD-CONTRACT</div>
+      <div class="issue-grid">
+        <section><h4>问题</h4><p>前端设计、后端设计、接口契约和完整目标 SDL 均存在，但 I05 登记的历史下载 HTTP 边界仅有叙述性 Markdown，未给出实际路径模板，也未按目标接口交付规范提供完整 OpenAPI。因而完整目标接口描述条件不成立。</p></section>
+        <section><h4>影响</h4><p>HTTP 边界无法据此生成客户端、实现服务或验证兼容性。</p></section>
+        <section class="fix"><h4>建议修复</h4><p>为数字下载 HTTP 边界给出实际路径模板、参数、状态码、鉴权、错误语义和兼容策略，并按交付规范提供完整 OpenAPI 文件，在 interface-contract.md 中登记。</p></section>
+      </div>
+      <details>
+        <summary>查看 2 条具体证据</summary>
+        <ol class="evidence-list">
+        <li>
+          <div class="evidence-meta"><code>模板/target-interface.md</code><span>第12行</span></div>
+          <blockquote>若其他边界使用 REST/gRPC，沿用边界现有格式提供完整 OpenAPI/proto，并在接口契约中登记文件</blockquote>
+        </li>
+        <li>
+          <div class="evidence-meta"><code>候选产物/sprint1/tech-design/interfaces/digital-download.md</code><span>第13-15行</span></div>
+          <blockquote>方法：`GET`；路径：沿用 Base 的数字下载 token 路径，不改变已签发 URL 的 path 结构。</blockquote>
+        </li></ol>
+      </details>
+    </article>
+    <article class="issue-card" data-group="tech_design" data-critical="true" data-search="tdd-a2 编号引用与归属有效 tdd-a2-i06-r11-ownership i06 的前端归属链把 fd06 和 r11列为消费者及对应需求，但后端接口清单和权威契约仅将 i06 归属 bd05、bd06；承接 r11 的 bd07 未列为 i06 所属设计单元。因此前端 i→fd→r 与 i→bd→r 的归属不一致。 统一 i06 的归属链：若 i06 承接 r11，则把 bd07 纳入 i06 的后端设计单元；否则从 fd06/i06 链中移除 r11，并建立正确接口编号。">
+      <div class="issue-head">
+        <div>
+          <div class="eyebrow">技术设计 · 追踪一致性</div>
+          <h3>TDD-A2 · 编号引用与归属有效</h3>
+        </div>
+        <span class="badge critical">关键项</span>
+      </div>
+      <div class="issue-id">TDD-A2-I06-R11-OWNERSHIP</div>
+      <div class="issue-grid">
+        <section><h4>问题</h4><p>I06 的前端归属链把 FD06 和 R11列为消费者及对应需求，但后端接口清单和权威契约仅将 I06 归属 BD05、BD06；承接 R11 的 BD07 未列为 I06 所属设计单元。因此前端 I→FD→R 与 I→BD→R 的归属不一致。</p></section>
+        <section><h4>影响</h4><p>需求到前后端设计的责任链断裂，容易漏开发或漏测。</p></section>
+        <section class="fix"><h4>建议修复</h4><p>统一 I06 的归属链：若 I06 承接 R11，则把 BD07 纳入 I06 的后端设计单元；否则从 FD06/I06 链中移除 R11，并建立正确接口编号。</p></section>
+      </div>
+      <details>
+        <summary>查看 3 条具体证据</summary>
+        <ol class="evidence-list">
+        <li>
+          <div class="evidence-meta"><code>候选产物/sprint1/tech-design/frontend-design.md</code><span>第97行</span></div>
+          <blockquote>| I06 | FD05、FD06 | R08、R10、R11 | 需等待 |</blockquote>
+        </li>
+        <li>
+          <div class="evidence-meta"><code>候选产物/sprint1/tech-design/backend-design.md</code><span>第120行</span></div>
+          <blockquote>| I06 | BD05、BD06 | Transaction connection 和来源字段 |</blockquote>
+        </li>
+        <li>
+          <div class="evidence-meta"><code>候选产物/sprint1/tech-design/backend-design.md</code><span>第77-78行</span></div>
+          <blockquote>### BD07 · 历史资金归一与四插件退出
+- 覆盖需求：R11、R12</blockquote>
+        </li></ol>
+      </details>
+    </article>
+    <article class="issue-card" data-group="tech_design" data-critical="true" data-search="tdd-b1 各端完整承接需求 tdd-b1-refund-amount-omission 退款目标接口要求每个来源分配都显式提供正金额，dashboard 也只是预填剩余可退额，没有承接服务端“省略金额取剩余可退”的行为。调用方无法表达该验收场景，因此需求未被各端完整覆盖。 让退款接口能够表达“省略金额取剩余可退”：将金额改为可省略并定义默认计算，或新增清晰的全额剩余退款输入；dashboard 同步支持这一表达。">
+      <div class="issue-head">
+        <div>
+          <div class="eyebrow">技术设计 · 端到端承接</div>
+          <h3>TDD-B1 · 各端完整承接需求</h3>
+        </div>
+        <span class="badge critical">关键项</span>
+      </div>
+      <div class="issue-id">TDD-B1-REFUND-AMOUNT-OMISSION</div>
+      <div class="issue-grid">
+        <section><h4>问题</h4><p>退款目标接口要求每个来源分配都显式提供正金额，Dashboard 也只是预填剩余可退额，没有承接服务端“省略金额取剩余可退”的行为。调用方无法表达该验收场景，因此需求未被各端完整覆盖。</p></section>
+        <section><h4>影响</h4><p>前后端无法表达 PRD 已要求的退款场景。</p></section>
+        <section class="fix"><h4>建议修复</h4><p>让退款接口能够表达“省略金额取剩余可退”：将金额改为可省略并定义默认计算，或新增清晰的全额剩余退款输入；Dashboard 同步支持这一表达。</p></section>
+      </div>
+      <details>
+        <summary>查看 2 条具体证据</summary>
+        <ol class="evidence-list">
+        <li>
+          <div class="evidence-meta"><code>候选产物/sprint1/tech-design/interface-contract.md</code><span>I07，第142-152行</span></div>
+          <blockquote>allocations: [TransactionRefundAllocationInput!]!；金额必须大于 0</blockquote>
+        </li>
+        <li>
+          <div class="evidence-meta"><code>候选产物/sprint1/prd/prd.md</code><span>AC-09-1，第140行</span></div>
+          <blockquote>省略金额取剩余可退</blockquote>
+        </li></ol>
+      </details>
+    </article>
+    <article class="issue-card" data-group="tech_design" data-critical="true" data-search="tdd-b2 适配现有系统并遵守约束 tdd-b2-react-base-mismatch 设计错误识别 dashboard 的核心运行时版本。固定 base 使用 react 18.3.1，而候选以 react 17 作为现有架构前提，不能证明前端方案已准确适配指定 base。 将前端架构基线改为 react 18.3.1，并重新核对 apollo、router、macaw ui、并发渲染及现有页面落点，删除 react 17 假设。">
+      <div class="issue-head">
+        <div>
+          <div class="eyebrow">技术设计 · Base 适配</div>
+          <h3>TDD-B2 · 适配现有系统并遵守约束</h3>
+        </div>
+        <span class="badge critical">关键项</span>
+      </div>
+      <div class="issue-id">TDD-B2-REACT-BASE-MISMATCH</div>
+      <div class="issue-grid">
+        <section><h4>问题</h4><p>设计错误识别 Dashboard 的核心运行时版本。固定 Base 使用 React 18.3.1，而候选以 React 17 作为现有架构前提，不能证明前端方案已准确适配指定 Base。</p></section>
+        <section><h4>影响</h4><p>建立在错误运行时版本上的设计可能落点和兼容判断失真。</p></section>
+        <section class="fix"><h4>建议修复</h4><p>将前端架构基线改为 React 18.3.1，并重新核对 Apollo、Router、Macaw UI、并发渲染及现有页面落点，删除 React 17 假设。</p></section>
+      </div>
+      <details>
+        <summary>查看 2 条具体证据</summary>
+        <ol class="evidence-list">
+        <li>
+          <div class="evidence-meta"><code>候选产物/sprint1/tech-design/frontend-design.md</code><span>方案概述，第10行</span></div>
+          <blockquote>在现有 React 17、Apollo Client、React Router v5 和 Macaw UI 架构内</blockquote>
+        </li>
+        <li>
+          <div class="evidence-meta"><code>冻结 Base/saleor-dashboard/package.json</code><span>dependencies，第114-115行</span></div>
+          <blockquote>&quot;react&quot;: &quot;18.3.1&quot;, &quot;react-dom&quot;: &quot;18.3.1&quot;</blockquote>
+        </li></ol>
+      </details>
+    </article>
+    <article class="issue-card" data-group="tech_design" data-critical="false" data-search="tdd-b3 关键行为足以实施 tdd-b3-external-refund-reconciliation 设计只说明请求前置 pending、正常回报和失败项重试，没有定义外部已成功但响应丢失或本地落账失败时的识别依据、持久状态、责任模块及补偿或人工收敛流程。bt10 提到验证补偿不能替代可实施的行为设计。 设计外部退款的完整状态机：请求前持久化、外部调用标识、响应丢失、外部成功但本地落账失败、补偿、人工处理和最终收敛；明确责任模块与观察依据。">
+      <div class="issue-head">
+        <div>
+          <div class="eyebrow">技术设计 · 异常收敛</div>
+          <h3>TDD-B3 · 关键行为足以实施</h3>
+        </div>
+        <span class="badge normal">非关键项</span>
+      </div>
+      <div class="issue-id">TDD-B3-EXTERNAL-REFUND-RECONCILIATION</div>
+      <div class="issue-grid">
+        <section><h4>问题</h4><p>设计只说明请求前置 pending、正常回报和失败项重试，没有定义外部已成功但响应丢失或本地落账失败时的识别依据、持久状态、责任模块及补偿或人工收敛流程。BT10 提到验证补偿不能替代可实施的行为设计。</p></section>
+        <section><h4>影响</h4><p>外部成功而本地失败时没有确定恢复路径，业务状态不收敛。</p></section>
+        <section class="fix"><h4>建议修复</h4><p>设计外部退款的完整状态机：请求前持久化、外部调用标识、响应丢失、外部成功但本地落账失败、补偿、人工处理和最终收敛；明确责任模块与观察依据。</p></section>
+      </div>
+      <details>
+        <summary>查看 2 条具体证据</summary>
+        <ol class="evidence-list">
+        <li>
+          <div class="evidence-meta"><code>候选产物/sprint1/tech-design/backend-design.md</code><span>BD05，第71行</span></div>
+          <blockquote>外部项先写 REFUND_REQUEST/pending 后调用对应 transaction app，回报按现有 transaction event 幂等键落账。</blockquote>
+        </li>
+        <li>
+          <div class="evidence-meta"><code>公开输入/business-conversations.md</code><span>收款退款，第71行</span></div>
+          <blockquote>外部资金已成功而本地失败，同样要保留资金事实并进入补偿或人工处理状态</blockquote>
+        </li></ol>
+      </details>
+    </article>
+    <article class="issue-card" data-group="tech_design" data-critical="true" data-search="tdd-b4 接口契约消除歧义 tdd-b4-stock-settings-omission-conflict 契约宣称配置字段可独立省略，前端也只发送变化字段，但更新 inventorymode 所在的 stocksettingsinput 仍强制 allocationstrategy。调用方不能按文档只提交库存模式，目标定义、调用策略和省略语义相互冲突。 统一 i04 的局部更新语义：要么将 allocationstrategy 改为可省略，要么要求客户端携带现值；接口契约、sdl 和前端 changed-fields 策略必须一致。">
+      <div class="issue-head">
+        <div>
+          <div class="eyebrow">技术设计 · 接口契约</div>
+          <h3>TDD-B4 · 接口契约消除歧义</h3>
+        </div>
+        <span class="badge critical">关键项</span>
+      </div>
+      <div class="issue-id">TDD-B4-STOCK-SETTINGS-OMISSION-CONFLICT</div>
+      <div class="issue-grid">
+        <section><h4>问题</h4><p>契约宣称配置字段可独立省略，前端也只发送变化字段，但更新 inventoryMode 所在的 StockSettingsInput 仍强制 allocationStrategy。调用方不能按文档只提交库存模式，目标定义、调用策略和省略语义相互冲突。</p></section>
+        <section><h4>影响</h4><p>局部保存会因必填兄弟字段而失败，契约存在自相矛盾。</p></section>
+        <section class="fix"><h4>建议修复</h4><p>统一 I04 的局部更新语义：要么将 allocationStrategy 改为可省略，要么要求客户端携带现值；接口契约、SDL 和前端 changed-fields 策略必须一致。</p></section>
+      </div>
+      <details>
+        <summary>查看 3 条具体证据</summary>
+        <ol class="evidence-list">
+        <li>
+          <div class="evidence-meta"><code>候选产物/sprint1/tech-design/interface-contract.md</code><span>I04，第93行</span></div>
+          <blockquote>更新 input 内字段省略时分别保留。</blockquote>
+        </li>
+        <li>
+          <div class="evidence-meta"><code>候选产物/sprint1/tech-design/target-schema.graphql</code><span>StockSettingsInput，第28404-28409行</span></div>
+          <blockquote>allocationStrategy: AllocationStrategyEnum!</blockquote>
+        </li>
+        <li>
+          <div class="evidence-meta"><code>候选产物/sprint1/tech-design/frontend-design.md</code><span>FD04，第56行</span></div>
+          <blockquote>保存只发送 changed fields</blockquote>
+        </li></ol>
+      </details>
+    </article>
+    <article class="issue-card" data-group="tech_design" data-critical="true" data-search="tdd-b5 数据与异常保持业务不变量 tdd-b5-refund-external-idempotency 设计未规定发送给外部提供方的稳定幂等标识、结果收件箱或主动对账机制，也没有外部成功而本地失败的专用状态。响应丢失或落账失败后既无法可靠收敛，也无法证明后续处理不会重复请求外部退款，资金不变量缺少保障。 向外部提供方传递稳定幂等键，持久化每次尝试与外部结果，增加结果收件箱/主动对账，并定义“外部成功、本地失败”的专用状态，确保不会重复退款。">
+      <div class="issue-head">
+        <div>
+          <div class="eyebrow">技术设计 · 资金不变量</div>
+          <h3>TDD-B5 · 数据与异常保持业务不变量</h3>
+        </div>
+        <span class="badge critical">关键项</span>
+      </div>
+      <div class="issue-id">TDD-B5-REFUND-EXTERNAL-IDEMPOTENCY</div>
+      <div class="issue-grid">
+        <section><h4>问题</h4><p>设计未规定发送给外部提供方的稳定幂等标识、结果收件箱或主动对账机制，也没有外部成功而本地失败的专用状态。响应丢失或落账失败后既无法可靠收敛，也无法证明后续处理不会重复请求外部退款，资金不变量缺少保障。</p></section>
+        <section><h4>影响</h4><p>响应丢失或重试可能造成重复外部退款，威胁资金不变量。</p></section>
+        <section class="fix"><h4>建议修复</h4><p>向外部提供方传递稳定幂等键，持久化每次尝试与外部结果，增加结果收件箱/主动对账，并定义“外部成功、本地失败”的专用状态，确保不会重复退款。</p></section>
+      </div>
+      <details>
+        <summary>查看 2 条具体证据</summary>
+        <ol class="evidence-list">
+        <li>
+          <div class="evidence-meta"><code>候选产物/sprint1/tech-design/backend-design.md</code><span>BD05，第71行</span></div>
+          <blockquote>回报按现有 transaction event 幂等键落账。跨外部系统不宣称原子</blockquote>
+        </li>
+        <li>
+          <div class="evidence-meta"><code>候选产物/sprint1/prd/prd.md</code><span>AC-09-4，第143行</span></div>
+          <blockquote>外部成功而本地落账失败进入补偿或人工处理状态，不重复请求外部资金</blockquote>
+        </li></ol>
+      </details>
+    </article>
+    <article class="issue-card" data-group="tech_design" data-critical="false" data-search="tdd-b7 开发依赖与联调可执行 tdd-b7-channel-contract-blocks-integration bt 依赖链本身无明显循环，但 i04 的生产方 sdl与消费方提交策略尚未对齐。前端仅发送 inventorymode 时会缺少必填 allocationstrategy，导致 schema/codegen 后仍不能按文档直接联调，接口成熟度不足。 在 codegen 和联调前锁定 i04 的 null/omitted 语义，增加契约测试覆盖只修改 inventorymode 的请求，确保生产方和消费方可直接联调。">
+      <div class="issue-head">
+        <div>
+          <div class="eyebrow">技术设计 · 联调依赖</div>
+          <h3>TDD-B7 · 开发依赖与联调可执行</h3>
+        </div>
+        <span class="badge normal">非关键项</span>
+      </div>
+      <div class="issue-id">TDD-B7-CHANNEL-CONTRACT-BLOCKS-INTEGRATION</div>
+      <div class="issue-grid">
+        <section><h4>问题</h4><p>BT 依赖链本身无明显循环，但 I04 的生产方 SDL与消费方提交策略尚未对齐。前端仅发送 inventoryMode 时会缺少必填 allocationStrategy，导致 schema/codegen 后仍不能按文档直接联调，接口成熟度不足。</p></section>
+        <section><h4>影响</h4><p>Schema/codegen 完成后仍会在首个局部更新请求上阻塞联调。</p></section>
+        <section class="fix"><h4>建议修复</h4><p>在 codegen 和联调前锁定 I04 的 null/omitted 语义，增加契约测试覆盖只修改 inventoryMode 的请求，确保生产方和消费方可直接联调。</p></section>
+      </div>
+      <details>
+        <summary>查看 3 条具体证据</summary>
+        <ol class="evidence-list">
+        <li>
+          <div class="evidence-meta"><code>候选产物/sprint1/tech-design/frontend-design.md</code><span>FD04，第56行</span></div>
+          <blockquote>保存只发送 changed fields</blockquote>
+        </li>
+        <li>
+          <div class="evidence-meta"><code>候选产物/sprint1/tech-design/target-schema.graphql</code><span>StockSettingsInput，第28404-28409行及第34917-34920行</span></div>
+          <blockquote>allocationStrategy: AllocationStrategyEnum! ... inventoryMode: ChannelInventoryModeEnum</blockquote>
+        </li>
+        <li>
+          <div class="evidence-meta"><code>候选产物/sprint1/tech-design/frontend-design.md</code><span>依赖与联调，第104行</span></div>
+          <blockquote>前后端共同锁定 enum、error code 和 null/omitted 语义后再生成类型。</blockquote>
+        </li></ol>
+      </details>
+    </article>
+    <article class="issue-card" data-group="tech_design" data-critical="true" data-search="tdd-b8 目标接口完整且一致 tdd-b8-target-schema-inconsistent 新增事件已进入 webhook 事件枚举和 subscription，却未加入 webhooksampleeventtypeenum，无法在既有样例入口一致选择。目标 sdl还存在退款金额不可省略及 stocksettingsinput 必填兄弟字段与省略约定冲突，因而目标接口不完整一致。 把新增事件同步加入 webhooksampleeventtypeenum；同时修复退款金额可省略和 stocksettingsinput 局部更新冲突，保证 sdl、契约与调用方一致。">
+      <div class="issue-head">
+        <div>
+          <div class="eyebrow">技术设计 · Schema 一致性</div>
+          <h3>TDD-B8 · 目标接口完整且一致</h3>
+        </div>
+        <span class="badge critical">关键项</span>
+      </div>
+      <div class="issue-id">TDD-B8-TARGET-SCHEMA-INCONSISTENT</div>
+      <div class="issue-grid">
+        <section><h4>问题</h4><p>新增事件已进入 Webhook 事件枚举和 Subscription，却未加入 WebhookSampleEventTypeEnum，无法在既有样例入口一致选择。目标 SDL还存在退款金额不可省略及 StockSettingsInput 必填兄弟字段与省略约定冲突，因而目标接口不完整一致。</p></section>
+        <section><h4>影响</h4><p>目标 SDL 无法覆盖完整事件和调用语义，消费者会得到不一致接口。</p></section>
+        <section class="fix"><h4>建议修复</h4><p>把新增事件同步加入 WebhookSampleEventTypeEnum；同时修复退款金额可省略和 StockSettingsInput 局部更新冲突，保证 SDL、契约与调用方一致。</p></section>
+      </div>
+      <details>
+        <summary>查看 3 条具体证据</summary>
+        <ol class="evidence-list">
+        <li>
+          <div class="evidence-meta"><code>候选产物/sprint1/tech-design/target-schema.graphql</code><span>WebhookSampleEventTypeEnum，第3324-3467行</span></div>
+          <blockquote>TRANSACTION_ITEM_METADATA_UPDATED ... SHOP_METADATA_UPDATED</blockquote>
+        </li>
+        <li>
+          <div class="evidence-meta"><code>候选产物/sprint1/tech-design/target-schema.graphql</code><span>WebhookEventTypeEnum 扩展，第35257-35270行</span></div>
+          <blockquote>SHOP_UPDATED ... SHIPPING_METHOD_METADATA_UPDATED</blockquote>
+        </li>
+        <li>
+          <div class="evidence-meta"><code>候选产物/sprint1/prd/prd.md</code><span>AC-18-5，第251行</span></div>
+          <blockquote>新增事件名在 schema、Manifest、创建/更新、事件列表、样例和 Dashboard 中一致</blockquote>
+        </li></ol>
+      </details>
+    </article>
+    <article class="issue-card" data-group="test_design" data-critical="false" data-search="test3 可执行性与独立性 test3-env-and-harness-unspecified 未定义所谓“标准本地验收环境”的具体版本、配置、负载和观察工具，也未给出受控 dns、公网图片端、psp、webhook、故障注入及持久数据检查能力的准备方式或不可用标记。大量用例仅把这些能力写成抽象前置条件，因此不同执行者无法稳定复现，外部条件是否满足也不可判定。 新增测试环境契约：固定 api/dashboard/schema/构建版本、配置与负载；给出数据准备、查询与持久化观察入口；定义 dns、公网端、psp、webhook、故障注入能力及不可用标记，并说明每条用例的重置方式。">
+      <div class="issue-head">
+        <div>
+          <div class="eyebrow">测试设计 · 测试可执行性</div>
+          <h3>TEST3 · 可执行性与独立性</h3>
+        </div>
+        <span class="badge normal">非关键项</span>
+      </div>
+      <div class="issue-id">TEST3-ENV-AND-HARNESS-UNSPECIFIED</div>
+      <div class="issue-grid">
+        <section><h4>问题</h4><p>未定义所谓“标准本地验收环境”的具体版本、配置、负载和观察工具，也未给出受控 DNS、公网图片端、PSP、Webhook、故障注入及持久数据检查能力的准备方式或不可用标记。大量用例仅把这些能力写成抽象前置条件，因此不同执行者无法稳定复现，外部条件是否满足也不可判定。</p></section>
+        <section><h4>影响</h4><p>不同执行者无法稳定复现测试，也无法判断外部条件是否满足。</p></section>
+        <section class="fix"><h4>建议修复</h4><p>新增测试环境契约：固定 API/Dashboard/schema/构建版本、配置与负载；给出数据准备、查询与持久化观察入口；定义 DNS、公网端、PSP、Webhook、故障注入能力及不可用标记，并说明每条用例的重置方式。</p></section>
+      </div>
+      <details>
+        <summary>查看 2 条具体证据</summary>
+        <ol class="evidence-list">
+        <li>
+          <div class="evidence-meta"><code>候选产物/sprint1/test-design/test-cases.v1.csv</code><span>TC019，行 92</span></div>
+          <blockquote>标准本地验收环境明确配置；准备商品、订单、顾客、礼品卡和交易测试对象。</blockquote>
+        </li>
+        <li>
+          <div class="evidence-meta"><code>候选产物/sprint1/test-design/test-cases.v1.csv</code><span>TC014，行 67</span></div>
+          <blockquote>受控 DNS 可解析到回环、私网、链路本地、metadata 地址，并准备重绑定及非 HTTP URL。</blockquote>
+        </li></ol>
+      </details>
+    </article></section>
+
+  <section class="panel" style="margin-top:38px">
+    <h2 style="margin-top:0">建议修复顺序</h2>
+    <ol>
+      <li><strong>先冻结 PRD：</strong>补齐固定义务、熔断状态、直接 AC，并纠正 R15/R16 优先级。</li>
+      <li><strong>再统一接口：</strong>同时修改退款输入、库存局部更新、I06 归属和 Webhook 样例枚举，避免局部修复制造新冲突。</li>
+      <li><strong>补齐资金异常设计：</strong>加入外部幂等键、尝试记录、结果收件箱、对账和补偿状态机。</li>
+      <li><strong>最后固化测试环境：</strong>将版本、数据、外部服务、故障注入、观察入口和重置方式写成可执行契约。</li>
+    </ol>
+  </section>
+
+  <footer class="footer">
+    <div>Rubric set: saleor-standard-docs · 2026-09-26-v1</div>
+    <div>Evaluation SHA-256: b3821661f929c766cbf2511c76919240f80946a3152768b127c014d2159f4141</div>
+    <div>原始文件：verifier/document-evaluation.json、reward-details.json、reward.json</div>
+  </footer>
+  <script id="report-data" type="application/json">{"failed": [{"group_id": "prd", "stage": "sprint1/prd", "rubric_id": "PRD2", "title": "需求完整性", "weight": 1.0, "critical": true, "verdict": "F", "evidence": [{"path": "/workspace/public/query.md", "location": "经营资料与检索，第13行", "quote": "敏感信息不能放入公共 metadata。"}, {"path": "/opt/document-eval/candidate/sprint1/prd/prd.md", "location": "R01，第41行", "quote": "私有 metadata 不得向匿名用户或无权订阅者暴露。"}, {"path": "/workspace/public/business-conversations.md", "location": "扩展体验，第119行", "quote": "详情传对象 ID、已有列表传选中 ID，有渠道上下文传当前渠道，不额外附带无关数据。"}], "reason": "覆盖面虽广，但遗漏明确义务：R01只限制私有 metadata 的读取暴露，没有禁止敏感信息写入公共 metadata；R15也未明确保持已有列表入口传递选中 ID。固定输入中的已明确义务不能以概括性兼容表述替代。", "issue_id": "PRD2-OMITTED-FIXED-OBLIGATIONS"}, {"group_id": "prd", "stage": "sprint1/prd", "rubric_id": "PRD3", "title": "清晰性与确定性", "weight": 1.0, "critical": false, "verdict": "F", "evidence": [{"path": "/opt/document-eval/candidate/sprint1/prd/prd.md", "location": "R16，第221-227行", "quote": "保留 Base 默认阈值与自动恢复语义"}, {"path": "/workspace/repos/saleor/saleor/webhook/circuit_breaker/breaker_board.py", "location": "第20-39行", "quote": "BREAKER_BOARD_FAILURE_MIN_COUNT: int = 100"}], "reason": "应用熔断需求及验收条件仅引用“Base 默认阈值与自动恢复语义”，未写明可核实的统计窗、失败阈值、冷却时间和恢复条件。Base 中这些值可以静态确定，但PRD读者仍需自行调查才能知道关键状态转换规则，不满足确定性要求。", "issue_id": "PRD3-UNSPECIFIED-BREAKER-SEMANTICS"}, {"group_id": "prd", "stage": "sprint1/prd", "rubric_id": "PRD5", "title": "可验收性", "weight": 1.0, "critical": true, "verdict": "F", "evidence": [{"path": "/opt/document-eval/candidate/sprint1/prd/prd.md", "location": "R15，第209行", "quote": "在保留全部已有挂载点、目标和默认 POPUP 行为的基础上"}, {"path": "/opt/document-eval/candidate/sprint1/prd/prd.md", "location": "AC-15-5，第215行", "quote": "新旧入口体验一致且不重复，无扩展时不显示空容器"}, {"path": "/opt/document-eval/candidate/sprint1/prd/prd.md", "location": "R13，第185行", "quote": "新装、升级未配置均默认 ALL"}], "reason": "多数需求有细致AC，但并非每项规则都有直接对应的可判定场景。R15要求保留全部既有挂载点、目标及默认POPUP，AC只笼统要求新旧入口体验一致；R13规定新装和升级未配置默认ALL，却没有直接验收未配置默认值及存量密码连续性。这些兼容和默认行为无法由现有AC完整判定。", "issue_id": "PRD5-MISSING-DIRECT-COMPATIBILITY-ACS"}, {"group_id": "prd", "stage": "sprint1/prd", "rubric_id": "PRD6", "title": "优先级与可交付性", "weight": 1.0, "critical": false, "verdict": "F", "evidence": [{"path": "/workspace/public/query.md", "location": "本阶段任务与输出，第55行", "quote": "去掉后目标无法实现或造成不可用、数据/安全问题为 P0"}, {"path": "/opt/document-eval/candidate/sprint1/prd/prd.md", "location": "R15，第208行", "quote": "优先级：P1"}, {"path": "/opt/document-eval/candidate/sprint1/prd/prd.md", "location": "R16，第220行", "quote": "优先级：P1"}], "reason": "依赖、维护窗口和切换门槛总体充分，但五类详情Widget和应用故障状态均是公开目标中的明确首版能力；移除后相应目标不能实现，按公开优先级口径应为P0而非P1。", "issue_id": "PRD6-MISCLASSIFIED-CORE-PRIORITIES"}, {"group_id": "tech_design", "stage": "sprint1/tech-design", "rubric_id": "TDD-A1", "title": "产物、章节与字段完整", "weight": 1.0, "critical": true, "verdict": "F", "evidence": [{"path": "/workspace/templates/target-interface.md", "location": "第12行", "quote": "若其他边界使用 REST/gRPC，沿用边界现有格式提供完整 OpenAPI/proto，并在接口契约中登记文件"}, {"path": "/opt/document-eval/candidate/sprint1/tech-design/interfaces/digital-download.md", "location": "第13-15行", "quote": "方法：`GET`；路径：沿用 Base 的数字下载 token 路径，不改变已签发 URL 的 path 结构。"}], "reason": "前端设计、后端设计、接口契约和完整目标 SDL 均存在，但 I05 登记的历史下载 HTTP 边界仅有叙述性 Markdown，未给出实际路径模板，也未按目标接口交付规范提供完整 OpenAPI。因而完整目标接口描述条件不成立。", "issue_id": "TDD-A1-INCOMPLETE-DIGITAL-DOWNLOAD-CONTRACT"}, {"group_id": "tech_design", "stage": "sprint1/tech-design", "rubric_id": "TDD-A2", "title": "编号引用与归属有效", "weight": 1.0, "critical": true, "verdict": "F", "evidence": [{"path": "/opt/document-eval/candidate/sprint1/tech-design/frontend-design.md", "location": "第97行", "quote": "| I06 | FD05、FD06 | R08、R10、R11 | 需等待 |"}, {"path": "/opt/document-eval/candidate/sprint1/tech-design/backend-design.md", "location": "第120行", "quote": "| I06 | BD05、BD06 | Transaction connection 和来源字段 |"}, {"path": "/opt/document-eval/candidate/sprint1/tech-design/backend-design.md", "location": "第77-78行", "quote": "### BD07 · 历史资金归一与四插件退出\n- 覆盖需求：R11、R12"}], "reason": "I06 的前端归属链把 FD06 和 R11列为消费者及对应需求，但后端接口清单和权威契约仅将 I06 归属 BD05、BD06；承接 R11 的 BD07 未列为 I06 所属设计单元。因此前端 I→FD→R 与 I→BD→R 的归属不一致。", "issue_id": "TDD-A2-I06-R11-OWNERSHIP"}, {"group_id": "tech_design", "stage": "sprint1/tech-design", "rubric_id": "TDD-B1", "title": "各端完整承接需求", "weight": 1.0, "critical": true, "verdict": "F", "evidence": [{"path": "/opt/document-eval/candidate/sprint1/tech-design/interface-contract.md", "location": "I07，第142-152行", "quote": "allocations: [TransactionRefundAllocationInput!]!；金额必须大于 0"}, {"path": "/opt/document-eval/candidate/sprint1/prd/prd.md", "location": "AC-09-1，第140行", "quote": "省略金额取剩余可退"}], "reason": "退款目标接口要求每个来源分配都显式提供正金额，Dashboard 也只是预填剩余可退额，没有承接服务端“省略金额取剩余可退”的行为。调用方无法表达该验收场景，因此需求未被各端完整覆盖。", "issue_id": "TDD-B1-REFUND-AMOUNT-OMISSION"}, {"group_id": "tech_design", "stage": "sprint1/tech-design", "rubric_id": "TDD-B2", "title": "适配现有系统并遵守约束", "weight": 1.0, "critical": true, "verdict": "F", "evidence": [{"path": "/opt/document-eval/candidate/sprint1/tech-design/frontend-design.md", "location": "方案概述，第10行", "quote": "在现有 React 17、Apollo Client、React Router v5 和 Macaw UI 架构内"}, {"path": "/workspace/repos/saleor-dashboard/package.json", "location": "dependencies，第114-115行", "quote": "\"react\": \"18.3.1\", \"react-dom\": \"18.3.1\""}], "reason": "设计错误识别 Dashboard 的核心运行时版本。固定 Base 使用 React 18.3.1，而候选以 React 17 作为现有架构前提，不能证明前端方案已准确适配指定 Base。", "issue_id": "TDD-B2-REACT-BASE-MISMATCH"}, {"group_id": "tech_design", "stage": "sprint1/tech-design", "rubric_id": "TDD-B3", "title": "关键行为足以实施", "weight": 1.0, "critical": false, "verdict": "F", "evidence": [{"path": "/opt/document-eval/candidate/sprint1/tech-design/backend-design.md", "location": "BD05，第71行", "quote": "外部项先写 REFUND_REQUEST/pending 后调用对应 transaction app，回报按现有 transaction event 幂等键落账。"}, {"path": "/workspace/public/business-conversations.md", "location": "收款退款，第71行", "quote": "外部资金已成功而本地失败，同样要保留资金事实并进入补偿或人工处理状态"}], "reason": "设计只说明请求前置 pending、正常回报和失败项重试，没有定义外部已成功但响应丢失或本地落账失败时的识别依据、持久状态、责任模块及补偿或人工收敛流程。BT10 提到验证补偿不能替代可实施的行为设计。", "issue_id": "TDD-B3-EXTERNAL-REFUND-RECONCILIATION"}, {"group_id": "tech_design", "stage": "sprint1/tech-design", "rubric_id": "TDD-B4", "title": "接口契约消除歧义", "weight": 1.0, "critical": true, "verdict": "F", "evidence": [{"path": "/opt/document-eval/candidate/sprint1/tech-design/interface-contract.md", "location": "I04，第93行", "quote": "更新 input 内字段省略时分别保留。"}, {"path": "/opt/document-eval/candidate/sprint1/tech-design/target-schema.graphql", "location": "StockSettingsInput，第28404-28409行", "quote": "allocationStrategy: AllocationStrategyEnum!"}, {"path": "/opt/document-eval/candidate/sprint1/tech-design/frontend-design.md", "location": "FD04，第56行", "quote": "保存只发送 changed fields"}], "reason": "契约宣称配置字段可独立省略，前端也只发送变化字段，但更新 inventoryMode 所在的 StockSettingsInput 仍强制 allocationStrategy。调用方不能按文档只提交库存模式，目标定义、调用策略和省略语义相互冲突。", "issue_id": "TDD-B4-STOCK-SETTINGS-OMISSION-CONFLICT"}, {"group_id": "tech_design", "stage": "sprint1/tech-design", "rubric_id": "TDD-B5", "title": "数据与异常保持业务不变量", "weight": 1.0, "critical": true, "verdict": "F", "evidence": [{"path": "/opt/document-eval/candidate/sprint1/tech-design/backend-design.md", "location": "BD05，第71行", "quote": "回报按现有 transaction event 幂等键落账。跨外部系统不宣称原子"}, {"path": "/opt/document-eval/candidate/sprint1/prd/prd.md", "location": "AC-09-4，第143行", "quote": "外部成功而本地落账失败进入补偿或人工处理状态，不重复请求外部资金"}], "reason": "设计未规定发送给外部提供方的稳定幂等标识、结果收件箱或主动对账机制，也没有外部成功而本地失败的专用状态。响应丢失或落账失败后既无法可靠收敛，也无法证明后续处理不会重复请求外部退款，资金不变量缺少保障。", "issue_id": "TDD-B5-REFUND-EXTERNAL-IDEMPOTENCY"}, {"group_id": "tech_design", "stage": "sprint1/tech-design", "rubric_id": "TDD-B7", "title": "开发依赖与联调可执行", "weight": 1.0, "critical": false, "verdict": "F", "evidence": [{"path": "/opt/document-eval/candidate/sprint1/tech-design/frontend-design.md", "location": "FD04，第56行", "quote": "保存只发送 changed fields"}, {"path": "/opt/document-eval/candidate/sprint1/tech-design/target-schema.graphql", "location": "StockSettingsInput，第28404-28409行及第34917-34920行", "quote": "allocationStrategy: AllocationStrategyEnum! ... inventoryMode: ChannelInventoryModeEnum"}, {"path": "/opt/document-eval/candidate/sprint1/tech-design/frontend-design.md", "location": "依赖与联调，第104行", "quote": "前后端共同锁定 enum、error code 和 null/omitted 语义后再生成类型。"}], "reason": "BT 依赖链本身无明显循环，但 I04 的生产方 SDL与消费方提交策略尚未对齐。前端仅发送 inventoryMode 时会缺少必填 allocationStrategy，导致 schema/codegen 后仍不能按文档直接联调，接口成熟度不足。", "issue_id": "TDD-B7-CHANNEL-CONTRACT-BLOCKS-INTEGRATION"}, {"group_id": "tech_design", "stage": "sprint1/tech-design", "rubric_id": "TDD-B8", "title": "目标接口完整且一致", "weight": 1.0, "critical": true, "verdict": "F", "evidence": [{"path": "/opt/document-eval/candidate/sprint1/tech-design/target-schema.graphql", "location": "WebhookSampleEventTypeEnum，第3324-3467行", "quote": "TRANSACTION_ITEM_METADATA_UPDATED ... SHOP_METADATA_UPDATED"}, {"path": "/opt/document-eval/candidate/sprint1/tech-design/target-schema.graphql", "location": "WebhookEventTypeEnum 扩展，第35257-35270行", "quote": "SHOP_UPDATED ... SHIPPING_METHOD_METADATA_UPDATED"}, {"path": "/opt/document-eval/candidate/sprint1/prd/prd.md", "location": "AC-18-5，第251行", "quote": "新增事件名在 schema、Manifest、创建/更新、事件列表、样例和 Dashboard 中一致"}], "reason": "新增事件已进入 Webhook 事件枚举和 Subscription，却未加入 WebhookSampleEventTypeEnum，无法在既有样例入口一致选择。目标 SDL还存在退款金额不可省略及 StockSettingsInput 必填兄弟字段与省略约定冲突，因而目标接口不完整一致。", "issue_id": "TDD-B8-TARGET-SCHEMA-INCONSISTENT"}, {"group_id": "test_design", "stage": "sprint1/test-design", "rubric_id": "TEST3", "title": "可执行性与独立性", "weight": 1.0, "critical": false, "verdict": "F", "evidence": [{"path": "/opt/document-eval/candidate/sprint1/test-design/test-cases.v1.csv", "location": "TC019，行 92", "quote": "标准本地验收环境明确配置；准备商品、订单、顾客、礼品卡和交易测试对象。"}, {"path": "/opt/document-eval/candidate/sprint1/test-design/test-cases.v1.csv", "location": "TC014，行 67", "quote": "受控 DNS 可解析到回环、私网、链路本地、metadata 地址，并准备重绑定及非 HTTP URL。"}], "reason": "未定义所谓“标准本地验收环境”的具体版本、配置、负载和观察工具，也未给出受控 DNS、公网图片端、PSP、Webhook、故障注入及持久数据检查能力的准备方式或不可用标记。大量用例仅把这些能力写成抽象前置条件，因此不同执行者无法稳定复现，外部条件是否满足也不可判定。", "issue_id": "TEST3-ENV-AND-HARNESS-UNSPECIFIED"}], "rewards": {"reward": 0.125, "rubric_pass_rate": 0.363636, "critical_pass_rate": 0.357143, "document_acceptance": 0, "rubric_passed": 8, "rubric_total": 22, "group_prd": 0.333333, "group_tdd_schema": 0.5, "group_tdd_quality": 0.125, "group_test_design": 0.75}}</script>
+  <script>
+    const cards=[...document.querySelectorAll('.issue-card')];
+    const search=document.querySelector('#search'), group=document.querySelector('#group'), critical=document.querySelector('#critical'), count=document.querySelector('#count');
+    function filter(){
+      const q=search.value.trim().toLowerCase(), g=group.value, c=critical.checked;
+      let shown=0;
+      for(const card of cards){
+        const ok=(!q||card.dataset.search.includes(q))&&(!g||card.dataset.group===g)&&(!c||card.dataset.critical==='true');
+        card.classList.toggle('hidden',!ok); if(ok) shown++;
+      }
+      count.textContent=`显示 ${shown} / ${cards.length}`;
+    }
+    search.addEventListener('input',filter); group.addEventListener('change',filter); critical.addEventListener('change',filter); filter();
+  </script>
+</main></body></html>

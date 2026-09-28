@@ -2,7 +2,7 @@
 
 默认 Single 按飞书 workflow 执行 **PRD → 技术设计 → 测试设计 → 开发 → 本地部署 → QA**。首轮 QA 失败后进入修复 Sprint：研判报告，按需更新设计，沿用第一轮测试用例，修复、重新部署、复测；第二轮仍失败则停止并保留报告。详见 [当前流程与实现边界](docs/single-agent-lifecycle.md)。
 
-同一 Codex 原生会话跨阶段延续，developer 消息明确切换职责。各轮文档和代码快照独立保存，部署服务由运行器维持给 QA 使用。当前新增能力经过无模型测试与合成容器联调，尚未运行真实模型的完整 Saleor 交付。
+同一 Codex 原生会话跨阶段延续，developer 消息明确切换职责。各轮文档和代码快照独立保存，部署服务由运行器维持给 QA 使用。文档阶段已有真实 Runner 与独立 Judge 示例；完整代码开发、部署和 QA 仍需单独验收。
 
 ## 目录怎么读
 
@@ -13,6 +13,7 @@
 | [jobs/](jobs/README.md) | 每次 rollout 的 report、状态、轨迹、正式产物 | 看运行结果、定位失败 |
 | [reports/](reports/README.md) | 历史验收证据和运行报告导航 | 看已经验证了哪些能力 |
 | [docs/](docs/README.md) | 当前设计、运行记录说明、目录迁移说明 | 理解机制和目录关系 |
+| [examples/](examples/document-rubric-evaluation/README.md) | 脱敏后的真实候选文档、Rubric 与评分结果 | 理解和复现文档评测输出 |
 | [runtime/tests/](runtime/tests/README.md) | 不调用模型的单元测试 | 验证运行器改动 |
 | `.prepared/<job>/` | 启动时冻结的公开输入、哈希清单和 Harbor recipe | 追溯某次实际使用的配置 |
 
@@ -65,4 +66,4 @@
 | Hierarchical | 共用契约已配置；Lead 执行后端尚未实现，启动时明确拒绝 |
 | Claude Code | 分阶段 workflow 尚未接入 |
 
-退出码：`0` 交付完成，`1` 执行失败或第二轮 QA 未通过。文件封存不等于业务批准；未启用独立业务 verifier。当前不支持断点续跑；失败后保留记录并新建运行。
+退出码：`0` 交付完成，`1` 执行失败或第二轮 QA 未通过。文件封存不等于业务批准；文档阶段可启用独立 Rubric Judge，代码和部署阶段尚无独立业务 verifier。当前不支持断点续跑；失败后保留记录并新建运行。

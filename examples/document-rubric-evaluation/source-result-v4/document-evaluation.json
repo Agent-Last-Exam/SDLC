@@ -1,0 +1,1504 @@
+{
+  "schema_version": 1,
+  "rubric_set_id": "saleor-standard-docs",
+  "rubric_version": "2026-09-26-v1",
+  "source_revisions": {
+    "tdd_rubric_doc": "OMSqdrbv0oRjjuxYSbrcIOVtnOg@161",
+    "stage_evaluation_doc": "NAsmdh9NVoVbPBxW8A8cI2Q7n8p@266",
+    "golden_prd_sha256": "b5425781eee4cab2bbffb61032613012dc498d4553619fa978c2d819c9afaff2"
+  },
+  "aggregation": "min_group_pass_rate",
+  "rewards": {
+    "reward": 0.125,
+    "rubric_pass_rate": 0.363636,
+    "critical_pass_rate": 0.357143,
+    "document_acceptance": 0,
+    "rubric_passed": 8,
+    "rubric_total": 22,
+    "group_prd": 0.333333,
+    "group_tdd_schema": 0.5,
+    "group_tdd_quality": 0.125,
+    "group_test_design": 0.75
+  },
+  "groups": {
+    "prd": 0.3333333333333333,
+    "tdd_schema": 0.5,
+    "tdd_quality": 0.125,
+    "test_design": 0.75
+  },
+  "results": [
+    {
+      "group_id": "prd",
+      "stage": "sprint1/prd",
+      "rubric_id": "PRD1",
+      "title": "目标与范围对齐",
+      "weight": 1.0,
+      "critical": true,
+      "verdict": "P",
+      "evidence": [
+        {
+          "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+          "location": "第1节，第9-18行",
+          "quote": "商家需要在引入更多外部应用的同时，连续处理已有订单、账号、库存、数字权益和资金。"
+        },
+        {
+          "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+          "location": "第5节，第292-302行",
+          "quote": "明确不做：顾客 Storefront、原生 App、支付服务商、身份产品或商家主体认证系统。"
+        }
+      ],
+      "reason": "目标、用户、核心范围及非目标与公开委托一致，并明确区分目标行为与已部署或已验证结果。",
+      "issue_id": null
+    },
+    {
+      "group_id": "prd",
+      "stage": "sprint1/prd",
+      "rubric_id": "PRD2",
+      "title": "需求完整性",
+      "weight": 1.0,
+      "critical": true,
+      "verdict": "F",
+      "evidence": [
+        {
+          "path": "/workspace/public/query.md",
+          "location": "经营资料与检索，第13行",
+          "quote": "敏感信息不能放入公共 metadata。"
+        },
+        {
+          "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+          "location": "R01，第41行",
+          "quote": "私有 metadata 不得向匿名用户或无权订阅者暴露。"
+        },
+        {
+          "path": "/workspace/public/business-conversations.md",
+          "location": "扩展体验，第119行",
+          "quote": "详情传对象 ID、已有列表传选中 ID，有渠道上下文传当前渠道，不额外附带无关数据。"
+        }
+      ],
+      "reason": "覆盖面虽广，但遗漏明确义务：R01只限制私有 metadata 的读取暴露，没有禁止敏感信息写入公共 metadata；R15也未明确保持已有列表入口传递选中 ID。固定输入中的已明确义务不能以概括性兼容表述替代。",
+      "issue_id": "PRD2-OMITTED-FIXED-OBLIGATIONS"
+    },
+    {
+      "group_id": "prd",
+      "stage": "sprint1/prd",
+      "rubric_id": "PRD3",
+      "title": "清晰性与确定性",
+      "weight": 1.0,
+      "critical": false,
+      "verdict": "F",
+      "evidence": [
+        {
+          "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+          "location": "R16，第221-227行",
+          "quote": "保留 Base 默认阈值与自动恢复语义"
+        },
+        {
+          "path": "/workspace/repos/saleor/saleor/webhook/circuit_breaker/breaker_board.py",
+          "location": "第20-39行",
+          "quote": "BREAKER_BOARD_FAILURE_MIN_COUNT: int = 100"
+        }
+      ],
+      "reason": "应用熔断需求及验收条件仅引用“Base 默认阈值与自动恢复语义”，未写明可核实的统计窗、失败阈值、冷却时间和恢复条件。Base 中这些值可以静态确定，但PRD读者仍需自行调查才能知道关键状态转换规则，不满足确定性要求。",
+      "issue_id": "PRD3-UNSPECIFIED-BREAKER-SEMANTICS"
+    },
+    {
+      "group_id": "prd",
+      "stage": "sprint1/prd",
+      "rubric_id": "PRD4",
+      "title": "一致性与正确性",
+      "weight": 1.0,
+      "critical": true,
+      "verdict": "P",
+      "evidence": [
+        {
+          "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+          "location": "第1节，第18行",
+          "quote": "不表示能力已经部署、静态 Base 已通过测试或生产收益已经验证。"
+        },
+        {
+          "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+          "location": "Base 调查依据与限制，第312行",
+          "quote": "上述仅说明静态代码、配置或测试文件存在与当前结构，不证明任何能力已部署、测试通过、迁移可执行或生产有效。"
+        }
+      ],
+      "reason": "业务规则内部一致，与公开决定及核查到的静态 Base 相容；文档明确区分静态现状、目标能力、外部依赖和运行结果，没有把源码存在冒充部署或测试成功。",
+      "issue_id": null
+    },
+    {
+      "group_id": "prd",
+      "stage": "sprint1/prd",
+      "rubric_id": "PRD5",
+      "title": "可验收性",
+      "weight": 1.0,
+      "critical": true,
+      "verdict": "F",
+      "evidence": [
+        {
+          "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+          "location": "R15，第209行",
+          "quote": "在保留全部已有挂载点、目标和默认 POPUP 行为的基础上"
+        },
+        {
+          "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+          "location": "AC-15-5，第215行",
+          "quote": "新旧入口体验一致且不重复，无扩展时不显示空容器"
+        },
+        {
+          "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+          "location": "R13，第185行",
+          "quote": "新装、升级未配置均默认 ALL"
+        }
+      ],
+      "reason": "多数需求有细致AC，但并非每项规则都有直接对应的可判定场景。R15要求保留全部既有挂载点、目标及默认POPUP，AC只笼统要求新旧入口体验一致；R13规定新装和升级未配置默认ALL，却没有直接验收未配置默认值及存量密码连续性。这些兼容和默认行为无法由现有AC完整判定。",
+      "issue_id": "PRD5-MISSING-DIRECT-COMPATIBILITY-ACS"
+    },
+    {
+      "group_id": "prd",
+      "stage": "sprint1/prd",
+      "rubric_id": "PRD6",
+      "title": "优先级与可交付性",
+      "weight": 1.0,
+      "critical": false,
+      "verdict": "F",
+      "evidence": [
+        {
+          "path": "/workspace/public/query.md",
+          "location": "本阶段任务与输出，第55行",
+          "quote": "去掉后目标无法实现或造成不可用、数据/安全问题为 P0"
+        },
+        {
+          "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+          "location": "R15，第208行",
+          "quote": "优先级：P1"
+        },
+        {
+          "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+          "location": "R16，第220行",
+          "quote": "优先级：P1"
+        }
+      ],
+      "reason": "依赖、维护窗口和切换门槛总体充分，但五类详情Widget和应用故障状态均是公开目标中的明确首版能力；移除后相应目标不能实现，按公开优先级口径应为P0而非P1。",
+      "issue_id": "PRD6-MISCLASSIFIED-CORE-PRIORITIES"
+    },
+    {
+      "group_id": "tdd_schema",
+      "stage": "sprint1/tech-design",
+      "rubric_id": "TDD-A1",
+      "title": "产物、章节与字段完整",
+      "weight": 1.0,
+      "critical": true,
+      "verdict": "F",
+      "evidence": [
+        {
+          "path": "/workspace/templates/target-interface.md",
+          "location": "第12行",
+          "quote": "若其他边界使用 REST/gRPC，沿用边界现有格式提供完整 OpenAPI/proto，并在接口契约中登记文件"
+        },
+        {
+          "path": "/opt/document-eval/candidate/sprint1/tech-design/interfaces/digital-download.md",
+          "location": "第13-15行",
+          "quote": "方法：`GET`；路径：沿用 Base 的数字下载 token 路径，不改变已签发 URL 的 path 结构。"
+        }
+      ],
+      "reason": "前端设计、后端设计、接口契约和完整目标 SDL 均存在，但 I05 登记的历史下载 HTTP 边界仅有叙述性 Markdown，未给出实际路径模板，也未按目标接口交付规范提供完整 OpenAPI。因而完整目标接口描述条件不成立。",
+      "issue_id": "TDD-A1-INCOMPLETE-DIGITAL-DOWNLOAD-CONTRACT"
+    },
+    {
+      "group_id": "tdd_schema",
+      "stage": "sprint1/tech-design",
+      "rubric_id": "TDD-A2",
+      "title": "编号引用与归属有效",
+      "weight": 1.0,
+      "critical": true,
+      "verdict": "F",
+      "evidence": [
+        {
+          "path": "/opt/document-eval/candidate/sprint1/tech-design/frontend-design.md",
+          "location": "第97行",
+          "quote": "| I06 | FD05、FD06 | R08、R10、R11 | 需等待 |"
+        },
+        {
+          "path": "/opt/document-eval/candidate/sprint1/tech-design/backend-design.md",
+          "location": "第120行",
+          "quote": "| I06 | BD05、BD06 | Transaction connection 和来源字段 |"
+        },
+        {
+          "path": "/opt/document-eval/candidate/sprint1/tech-design/backend-design.md",
+          "location": "第77-78行",
+          "quote": "### BD07 · 历史资金归一与四插件退出\n- 覆盖需求：R11、R12"
+        }
+      ],
+      "reason": "I06 的前端归属链把 FD06 和 R11列为消费者及对应需求，但后端接口清单和权威契约仅将 I06 归属 BD05、BD06；承接 R11 的 BD07 未列为 I06 所属设计单元。因此前端 I→FD→R 与 I→BD→R 的归属不一致。",
+      "issue_id": "TDD-A2-I06-R11-OWNERSHIP"
+    },
+    {
+      "group_id": "tdd_schema",
+      "stage": "sprint1/tech-design",
+      "rubric_id": "TDD-A3",
+      "title": "责任、版本与名称一致",
+      "weight": 1.0,
+      "critical": false,
+      "verdict": "P",
+      "evidence": [
+        {
+          "path": "/opt/document-eval/candidate/sprint1/tech-design/frontend-design.md",
+          "location": "第1-5行",
+          "quote": "# 前端技术设计：Saleor 商家经营与应用接入升级\n\n版本：v1\n责任：前端技术设计\n依据：PRD 1.0"
+        },
+        {
+          "path": "/opt/document-eval/candidate/sprint1/tech-design/interface-contract.md",
+          "location": "第3-5行",
+          "quote": "版本：v1\n责任：后端技术设计\n依据：后端技术设计 v1，backend-design.md"
+        }
+      ],
+      "reason": "前端、后端及接口契约的版本、责任和依据链符合对应 Schema；标题及 Shop、TransactionItem、Page/PageType、Channel 等业务名称与 PRD 保持一致，未发现含义漂移。",
+      "issue_id": null
+    },
+    {
+      "group_id": "tdd_schema",
+      "stage": "sprint1/tech-design",
+      "rubric_id": "TDD-A4",
+      "title": "编号历史与修订合规",
+      "weight": 1.0,
+      "critical": false,
+      "verdict": "P",
+      "evidence": [
+        {
+          "path": "/opt/document-eval/candidate/sprint1/tech-design/frontend-design.md",
+          "location": "第3-6行",
+          "quote": "版本：v1\n责任：前端技术设计\n依据：PRD 1.0，artifacts/sprint1/prd/prd.md\n修订：首次交付"
+        },
+        {
+          "path": "/opt/document-eval/candidate/sprint1/tech-design/backend-design.md",
+          "location": "第3-6行",
+          "quote": "版本：v1\n责任：后端技术设计\n依据：PRD 1.0，artifacts/sprint1/prd/prd.md\n修订：首次交付"
+        },
+        {
+          "path": "/opt/document-eval/candidate/sprint1/tech-design/interface-contract.md",
+          "location": "第3-6行",
+          "quote": "版本：v1\n责任：后端技术设计\n依据：后端技术设计 v1，backend-design.md\n修订：首次交付"
+        }
+      ],
+      "reason": "三项主要设计产物均声明 v1 首次交付，没有虚构历史修订；现有编号集合未显示重排、复用或与修订版本矛盾。",
+      "issue_id": null
+    },
+    {
+      "group_id": "tdd_quality",
+      "stage": "sprint1/tech-design",
+      "rubric_id": "TDD-B1",
+      "title": "各端完整承接需求",
+      "weight": 1.0,
+      "critical": true,
+      "verdict": "F",
+      "evidence": [
+        {
+          "path": "/opt/document-eval/candidate/sprint1/tech-design/interface-contract.md",
+          "location": "I07，第142-152行",
+          "quote": "allocations: [TransactionRefundAllocationInput!]!；金额必须大于 0"
+        },
+        {
+          "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+          "location": "AC-09-1，第140行",
+          "quote": "省略金额取剩余可退"
+        }
+      ],
+      "reason": "退款目标接口要求每个来源分配都显式提供正金额，Dashboard 也只是预填剩余可退额，没有承接服务端“省略金额取剩余可退”的行为。调用方无法表达该验收场景，因此需求未被各端完整覆盖。",
+      "issue_id": "TDD-B1-REFUND-AMOUNT-OMISSION"
+    },
+    {
+      "group_id": "tdd_quality",
+      "stage": "sprint1/tech-design",
+      "rubric_id": "TDD-B2",
+      "title": "适配现有系统并遵守约束",
+      "weight": 1.0,
+      "critical": true,
+      "verdict": "F",
+      "evidence": [
+        {
+          "path": "/opt/document-eval/candidate/sprint1/tech-design/frontend-design.md",
+          "location": "方案概述，第10行",
+          "quote": "在现有 React 17、Apollo Client、React Router v5 和 Macaw UI 架构内"
+        },
+        {
+          "path": "/workspace/repos/saleor-dashboard/package.json",
+          "location": "dependencies，第114-115行",
+          "quote": "\"react\": \"18.3.1\", \"react-dom\": \"18.3.1\""
+        }
+      ],
+      "reason": "设计错误识别 Dashboard 的核心运行时版本。固定 Base 使用 React 18.3.1，而候选以 React 17 作为现有架构前提，不能证明前端方案已准确适配指定 Base。",
+      "issue_id": "TDD-B2-REACT-BASE-MISMATCH"
+    },
+    {
+      "group_id": "tdd_quality",
+      "stage": "sprint1/tech-design",
+      "rubric_id": "TDD-B3",
+      "title": "关键行为足以实施",
+      "weight": 1.0,
+      "critical": false,
+      "verdict": "F",
+      "evidence": [
+        {
+          "path": "/opt/document-eval/candidate/sprint1/tech-design/backend-design.md",
+          "location": "BD05，第71行",
+          "quote": "外部项先写 REFUND_REQUEST/pending 后调用对应 transaction app，回报按现有 transaction event 幂等键落账。"
+        },
+        {
+          "path": "/workspace/public/business-conversations.md",
+          "location": "收款退款，第71行",
+          "quote": "外部资金已成功而本地失败，同样要保留资金事实并进入补偿或人工处理状态"
+        }
+      ],
+      "reason": "设计只说明请求前置 pending、正常回报和失败项重试，没有定义外部已成功但响应丢失或本地落账失败时的识别依据、持久状态、责任模块及补偿或人工收敛流程。BT10 提到验证补偿不能替代可实施的行为设计。",
+      "issue_id": "TDD-B3-EXTERNAL-REFUND-RECONCILIATION"
+    },
+    {
+      "group_id": "tdd_quality",
+      "stage": "sprint1/tech-design",
+      "rubric_id": "TDD-B4",
+      "title": "接口契约消除歧义",
+      "weight": 1.0,
+      "critical": true,
+      "verdict": "F",
+      "evidence": [
+        {
+          "path": "/opt/document-eval/candidate/sprint1/tech-design/interface-contract.md",
+          "location": "I04，第93行",
+          "quote": "更新 input 内字段省略时分别保留。"
+        },
+        {
+          "path": "/opt/document-eval/candidate/sprint1/tech-design/target-schema.graphql",
+          "location": "StockSettingsInput，第28404-28409行",
+          "quote": "allocationStrategy: AllocationStrategyEnum!"
+        },
+        {
+          "path": "/opt/document-eval/candidate/sprint1/tech-design/frontend-design.md",
+          "location": "FD04，第56行",
+          "quote": "保存只发送 changed fields"
+        }
+      ],
+      "reason": "契约宣称配置字段可独立省略，前端也只发送变化字段，但更新 inventoryMode 所在的 StockSettingsInput 仍强制 allocationStrategy。调用方不能按文档只提交库存模式，目标定义、调用策略和省略语义相互冲突。",
+      "issue_id": "TDD-B4-STOCK-SETTINGS-OMISSION-CONFLICT"
+    },
+    {
+      "group_id": "tdd_quality",
+      "stage": "sprint1/tech-design",
+      "rubric_id": "TDD-B5",
+      "title": "数据与异常保持业务不变量",
+      "weight": 1.0,
+      "critical": true,
+      "verdict": "F",
+      "evidence": [
+        {
+          "path": "/opt/document-eval/candidate/sprint1/tech-design/backend-design.md",
+          "location": "BD05，第71行",
+          "quote": "回报按现有 transaction event 幂等键落账。跨外部系统不宣称原子"
+        },
+        {
+          "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+          "location": "AC-09-4，第143行",
+          "quote": "外部成功而本地落账失败进入补偿或人工处理状态，不重复请求外部资金"
+        }
+      ],
+      "reason": "设计未规定发送给外部提供方的稳定幂等标识、结果收件箱或主动对账机制，也没有外部成功而本地失败的专用状态。响应丢失或落账失败后既无法可靠收敛，也无法证明后续处理不会重复请求外部退款，资金不变量缺少保障。",
+      "issue_id": "TDD-B5-REFUND-EXTERNAL-IDEMPOTENCY"
+    },
+    {
+      "group_id": "tdd_quality",
+      "stage": "sprint1/tech-design",
+      "rubric_id": "TDD-B6",
+      "title": "非功能约束得到支撑",
+      "weight": 1.0,
+      "critical": false,
+      "verdict": "P",
+      "evidence": [
+        {
+          "path": "/opt/document-eval/candidate/sprint1/tech-design/backend-design.md",
+          "location": "BD02，第51行",
+          "quote": "只允许公网 HTTP/HTTPS、禁止 redirect；GET streaming 同时检查 Content-Length 和实际 20 MiB 上限，总预算 20 秒"
+        },
+        {
+          "path": "/opt/document-eval/candidate/sprint1/tech-design/interface-contract.md",
+          "location": "通用约定，第16行",
+          "quote": "所有字段先执行对象权限和渠道隔离，再解析 subscription selection"
+        }
+      ],
+      "reason": "图片下载具有协议、SSRF、容量、像素和时间边界；查询、索引、大表迁移及聚合接口具有分页、索引、批处理和 N+1 控制。权限、渠道、私有 metadata、卡码、凭证及日志脱敏边界也有具体落实机制。",
+      "issue_id": null
+    },
+    {
+      "group_id": "tdd_quality",
+      "stage": "sprint1/tech-design",
+      "rubric_id": "TDD-B7",
+      "title": "开发依赖与联调可执行",
+      "weight": 1.0,
+      "critical": false,
+      "verdict": "F",
+      "evidence": [
+        {
+          "path": "/opt/document-eval/candidate/sprint1/tech-design/frontend-design.md",
+          "location": "FD04，第56行",
+          "quote": "保存只发送 changed fields"
+        },
+        {
+          "path": "/opt/document-eval/candidate/sprint1/tech-design/target-schema.graphql",
+          "location": "StockSettingsInput，第28404-28409行及第34917-34920行",
+          "quote": "allocationStrategy: AllocationStrategyEnum! ... inventoryMode: ChannelInventoryModeEnum"
+        },
+        {
+          "path": "/opt/document-eval/candidate/sprint1/tech-design/frontend-design.md",
+          "location": "依赖与联调，第104行",
+          "quote": "前后端共同锁定 enum、error code 和 null/omitted 语义后再生成类型。"
+        }
+      ],
+      "reason": "BT 依赖链本身无明显循环，但 I04 的生产方 SDL与消费方提交策略尚未对齐。前端仅发送 inventoryMode 时会缺少必填 allocationStrategy，导致 schema/codegen 后仍不能按文档直接联调，接口成熟度不足。",
+      "issue_id": "TDD-B7-CHANNEL-CONTRACT-BLOCKS-INTEGRATION"
+    },
+    {
+      "group_id": "tdd_quality",
+      "stage": "sprint1/tech-design",
+      "rubric_id": "TDD-B8",
+      "title": "目标接口完整且一致",
+      "weight": 1.0,
+      "critical": true,
+      "verdict": "F",
+      "evidence": [
+        {
+          "path": "/opt/document-eval/candidate/sprint1/tech-design/target-schema.graphql",
+          "location": "WebhookSampleEventTypeEnum，第3324-3467行",
+          "quote": "TRANSACTION_ITEM_METADATA_UPDATED ... SHOP_METADATA_UPDATED"
+        },
+        {
+          "path": "/opt/document-eval/candidate/sprint1/tech-design/target-schema.graphql",
+          "location": "WebhookEventTypeEnum 扩展，第35257-35270行",
+          "quote": "SHOP_UPDATED ... SHIPPING_METHOD_METADATA_UPDATED"
+        },
+        {
+          "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+          "location": "AC-18-5，第251行",
+          "quote": "新增事件名在 schema、Manifest、创建/更新、事件列表、样例和 Dashboard 中一致"
+        }
+      ],
+      "reason": "新增事件已进入 Webhook 事件枚举和 Subscription，却未加入 WebhookSampleEventTypeEnum，无法在既有样例入口一致选择。目标 SDL还存在退款金额不可省略及 StockSettingsInput 必填兄弟字段与省略约定冲突，因而目标接口不完整一致。",
+      "issue_id": "TDD-B8-TARGET-SCHEMA-INCONSISTENT"
+    },
+    {
+      "group_id": "test_design",
+      "stage": "sprint1/test-design",
+      "rubric_id": "TEST1",
+      "title": "需求与风险覆盖",
+      "weight": 1.0,
+      "critical": true,
+      "verdict": "P",
+      "evidence": [
+        {
+          "path": "/opt/document-eval/candidate/sprint1/test-design/test-cases.v1.csv",
+          "location": "TC001，行 2-6",
+          "quote": "仅修改发件信息不会改写其他经营资料,AC-01-1;FD01;BD01;I01"
+        },
+        {
+          "path": "/opt/document-eval/candidate/sprint1/test-design/test-cases.v1.csv",
+          "location": "TC121，行 602-606",
+          "quote": "恢复演练记录责任与实测时长而非虚构承诺,AC-20-7;FD11;BD12"
+        }
+      ],
+      "reason": "TC001 至 TC121 连续覆盖 PRD 的 AC-01-1 至 AC-20-7，包括核心业务、权限、安全、失败、边界、兼容、并发幂等、迁移恢复及跨前后端契约；P0 资金、库存、认证和通知风险均有专项用例。",
+      "issue_id": null
+    },
+    {
+      "group_id": "test_design",
+      "stage": "sprint1/test-design",
+      "rubric_id": "TEST2",
+      "title": "用例内容与断言质量",
+      "weight": 1.0,
+      "critical": true,
+      "verdict": "P",
+      "evidence": [
+        {
+          "path": "/opt/document-eval/candidate/sprint1/test-design/test-cases.v1.csv",
+          "location": "TC053，行 262-266",
+          "quote": "总状态 PARTIALLY_SUCCEEDED，成功项事实不回滚。重试仅处理失败项；外部已成功进入补偿且不再次请求。"
+        },
+        {
+          "path": "/opt/document-eval/candidate/sprint1/test-design/test-cases.v1.csv",
+          "location": "TC111，行 552-556",
+          "quote": "已提交变化最终有delivery，未提交无delivery；排队不标成功。耗尽显示EXHAUSTED，有权retry沿用eventId。"
+        }
+      ],
+      "reason": "用例普遍将前置数据、操作和编号预期对应起来，并断言余额、交易、索引、权限、事件、持久记录及外部调用次数等真实业务结果，而非仅检查请求成功、字段存在或页面显示。",
+      "issue_id": null
+    },
+    {
+      "group_id": "test_design",
+      "stage": "sprint1/test-design",
+      "rubric_id": "TEST3",
+      "title": "可执行性与独立性",
+      "weight": 1.0,
+      "critical": false,
+      "verdict": "F",
+      "evidence": [
+        {
+          "path": "/opt/document-eval/candidate/sprint1/test-design/test-cases.v1.csv",
+          "location": "TC019，行 92",
+          "quote": "标准本地验收环境明确配置；准备商品、订单、顾客、礼品卡和交易测试对象。"
+        },
+        {
+          "path": "/opt/document-eval/candidate/sprint1/test-design/test-cases.v1.csv",
+          "location": "TC014，行 67",
+          "quote": "受控 DNS 可解析到回环、私网、链路本地、metadata 地址，并准备重绑定及非 HTTP URL。"
+        }
+      ],
+      "reason": "未定义所谓“标准本地验收环境”的具体版本、配置、负载和观察工具，也未给出受控 DNS、公网图片端、PSP、Webhook、故障注入及持久数据检查能力的准备方式或不可用标记。大量用例仅把这些能力写成抽象前置条件，因此不同执行者无法稳定复现，外部条件是否满足也不可判定。",
+      "issue_id": "TEST3-ENV-AND-HARNESS-UNSPECIFIED"
+    },
+    {
+      "group_id": "test_design",
+      "stage": "sprint1/test-design",
+      "rubric_id": "TEST4",
+      "title": "追踪与跨产物一致性",
+      "weight": 1.0,
+      "critical": true,
+      "verdict": "P",
+      "evidence": [
+        {
+          "path": "/workspace/templates/test-cases.md",
+          "location": "行 10-18",
+          "quote": "用例编号 | TC{nnn}；一级模块 | PRD 业务域分组名；二级模块 | PRD 需求条目；覆盖 | 至少一个 AC-{nn}-{m}"
+        },
+        {
+          "path": "/opt/document-eval/candidate/sprint1/test-design/test-cases.v1.csv",
+          "location": "表头及 TC097，行 1、482",
+          "quote": "用例编号,一级模块,二级模块,用例标题,覆盖,优先级,前置条件,操作步骤,预期结果；AC-17-1;FD10;BD11;I11;I12"
+        }
+      ],
+      "reason": "CSV 表头、编号、模块名称和优先级符合模板；每条用例至少关联一个有效 AC，并在适用处关联 FD、BD、I。接口名称、枚举、错误语义和预期结果与冻结 PRD及已接受技术设计保持一致。",
+      "issue_id": null
+    }
+  ],
+  "judge": {
+    "model": "openai/gpt-5.6-sol",
+    "backend": "opencode",
+    "replicas": 2,
+    "protocol_retries": [],
+    "adjudicated_groups": [
+      "tdd_schema",
+      "tdd_quality"
+    ],
+    "raw_results": {
+      "prd": [
+        {
+          "group_id": "prd",
+          "results": [
+            {
+              "rubric_id": "PRD1",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+                  "location": "第1节，第9-18行",
+                  "quote": "商家需要在引入更多外部应用的同时，连续处理已有订单、账号、库存、数字权益和资金。"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+                  "location": "第5节，第292-302行",
+                  "quote": "明确不做：顾客 Storefront、原生 App、支付服务商、身份产品或商家主体认证系统。"
+                }
+              ],
+              "reason": "目标、用户、核心范围及非目标与公开委托一致，并明确区分目标行为与已部署或已验证结果。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "PRD2",
+              "verdict": "F",
+              "evidence": [
+                {
+                  "path": "/workspace/public/query.md",
+                  "location": "经营资料与检索，第13行",
+                  "quote": "敏感信息不能放入公共 metadata。"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+                  "location": "R01，第41行",
+                  "quote": "私有 metadata 不得向匿名用户或无权订阅者暴露。"
+                },
+                {
+                  "path": "/workspace/public/business-conversations.md",
+                  "location": "扩展体验，第119行",
+                  "quote": "详情传对象 ID、已有列表传选中 ID，有渠道上下文传当前渠道，不额外附带无关数据。"
+                }
+              ],
+              "reason": "覆盖面虽广，但遗漏明确义务：R01只限制私有 metadata 的读取暴露，没有禁止敏感信息写入公共 metadata；R15也未明确保持已有列表入口传递选中 ID。固定输入中的已明确义务不能以概括性兼容表述替代。",
+              "issue_id": "PRD2-OMITTED-FIXED-OBLIGATIONS"
+            },
+            {
+              "rubric_id": "PRD3",
+              "verdict": "F",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+                  "location": "R16，第221-227行",
+                  "quote": "保留 Base 默认阈值与自动恢复语义"
+                },
+                {
+                  "path": "/workspace/repos/saleor/saleor/webhook/circuit_breaker/breaker_board.py",
+                  "location": "第20-39行",
+                  "quote": "BREAKER_BOARD_FAILURE_MIN_COUNT: int = 100"
+                }
+              ],
+              "reason": "应用熔断需求及验收条件仅引用“Base 默认阈值与自动恢复语义”，未写明可核实的统计窗、失败阈值、冷却时间和恢复条件。Base 中这些值可以静态确定，但PRD读者仍需自行调查才能知道关键状态转换规则，不满足确定性要求。",
+              "issue_id": "PRD3-UNSPECIFIED-BREAKER-SEMANTICS"
+            },
+            {
+              "rubric_id": "PRD4",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+                  "location": "第1节，第18行",
+                  "quote": "不表示能力已经部署、静态 Base 已通过测试或生产收益已经验证。"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+                  "location": "Base 调查依据与限制，第312行",
+                  "quote": "上述仅说明静态代码、配置或测试文件存在与当前结构，不证明任何能力已部署、测试通过、迁移可执行或生产有效。"
+                }
+              ],
+              "reason": "业务规则内部一致，与公开决定及核查到的静态 Base 相容；文档明确区分静态现状、目标能力、外部依赖和运行结果，没有把源码存在冒充部署或测试成功。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "PRD5",
+              "verdict": "F",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+                  "location": "R15，第209行",
+                  "quote": "在保留全部已有挂载点、目标和默认 POPUP 行为的基础上"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+                  "location": "AC-15-5，第215行",
+                  "quote": "新旧入口体验一致且不重复，无扩展时不显示空容器"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+                  "location": "R13，第185行",
+                  "quote": "新装、升级未配置均默认 ALL"
+                }
+              ],
+              "reason": "多数需求有细致AC，但并非每项规则都有直接对应的可判定场景。R15要求保留全部既有挂载点、目标及默认POPUP，AC只笼统要求新旧入口体验一致；R13规定新装和升级未配置默认ALL，却没有直接验收未配置默认值及存量密码连续性。这些兼容和默认行为无法由现有AC完整判定。",
+              "issue_id": "PRD5-MISSING-DIRECT-COMPATIBILITY-ACS"
+            },
+            {
+              "rubric_id": "PRD6",
+              "verdict": "F",
+              "evidence": [
+                {
+                  "path": "/workspace/public/query.md",
+                  "location": "本阶段任务与输出，第55行",
+                  "quote": "去掉后目标无法实现或造成不可用、数据/安全问题为 P0"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+                  "location": "R15，第208行",
+                  "quote": "优先级：P1"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+                  "location": "R16，第220行",
+                  "quote": "优先级：P1"
+                }
+              ],
+              "reason": "依赖、维护窗口和切换门槛总体充分，但五类详情Widget和应用故障状态均是公开目标中的明确首版能力；移除后相应目标不能实现，按公开优先级口径应为P0而非P1。",
+              "issue_id": "PRD6-MISCLASSIFIED-CORE-PRIORITIES"
+            }
+          ]
+        },
+        {
+          "group_id": "prd",
+          "results": [
+            {
+              "rubric_id": "PRD1",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+                  "location": "第1节，第9-18行",
+                  "quote": "商家需要在引入更多外部应用的同时，连续处理已有订单、账号、库存、数字权益和资金。"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+                  "location": "第5节，第292-302行",
+                  "quote": "明确不做：顾客 Storefront、原生 App、支付服务商、身份产品或商家主体认证系统。"
+                }
+              ],
+              "reason": "目标、受影响用户、核心 API 与 Dashboard 范围、存量连续性及非目标均与公开委托对齐；同时明确本 PRD 不代表能力已部署或收益已验证，没有把后续实施结果写成当前事实。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "PRD2",
+              "verdict": "F",
+              "evidence": [
+                {
+                  "path": "/workspace/public/query.md",
+                  "location": "经营资料与检索，第13行",
+                  "quote": "敏感信息不能放入公共 metadata。"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+                  "location": "R01，第41-48行",
+                  "quote": "私有 metadata 不得向匿名用户或无权订阅者暴露。"
+                },
+                {
+                  "path": "/workspace/public/business-conversations.md",
+                  "location": "扩展体验，第119行",
+                  "quote": "详情传对象 ID、已有列表传选中 ID，有渠道上下文传当前渠道"
+                }
+              ],
+              "reason": "候选覆盖面很广，但遗漏了固定输入中的明确义务：R01只规定私有 metadata 的读取权限，未规定敏感信息不得写入公共 metadata；R15未承接已有列表入口传递选中 ID；此外未明确图片导入进行中状态、关闭外部过滤前的候选范围扩大提示、数字权益导出的自动履约配置，以及外部支付已成功但礼品卡或库存校验失败时的补偿状态。根据“不得删除已明确义务”的规则，需求完整性不通过。",
+              "issue_id": "PRD2-MISSING-FIXED-OBLIGATIONS"
+            },
+            {
+              "rubric_id": "PRD3",
+              "verdict": "F",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+                  "location": "R16，第221行",
+                  "quote": "保留 Base 默认阈值与自动恢复语义"
+                },
+                {
+                  "path": "/workspace/repos/saleor/saleor/webhook/circuit_breaker/breaker_board.py",
+                  "location": "第21-39行",
+                  "quote": "BREAKER_BOARD_FAILURE_MIN_COUNT: int = 100"
+                }
+              ],
+              "reason": "R16以“Base 默认阈值与自动恢复语义”代替明确产品规则，未列出 CLOSED、OPEN、HALF_OPEN 等状态含义、观察模式行为、阈值和恢复条件。关键故障与恢复行为需要读者自行调查源码才能确定，不满足术语、默认值、状态和业务规则无需猜测的要求。",
+              "issue_id": "PRD3-UNDERSPECIFIED-BREAKER-RULES"
+            },
+            {
+              "rubric_id": "PRD4",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+                  "location": "第6节，第308-312行",
+                  "quote": "上述仅说明静态代码、配置或测试文件存在与当前结构，不证明任何能力已部署、测试通过、迁移可执行或生产有效"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+                  "location": "R13，第185行",
+                  "quote": "新装、升级未配置均默认 ALL，未知值使启动或配置检查失败。"
+                }
+              ],
+              "reason": "文档内部主要规则、默认值和兼容边界一致，并与公开决定相容。Base 调查明确限定为静态事实，未将源码、配置或测试文件冒充运行、部署或生产验证结果；外部规模和路径证据也被标为待补依赖。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "PRD5",
+              "verdict": "F",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+                  "location": "R15，第209行",
+                  "quote": "在保留全部已有挂载点、目标和默认 POPUP 行为的基础上"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+                  "location": "AC-15-5，第215行",
+                  "quote": "新旧入口体验一致且不重复，无扩展时不显示空容器"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+                  "location": "AC-16-4，第226行",
+                  "quote": "沿用 Base 默认熔断阈值、观察与自动恢复语义"
+                }
+              ],
+              "reason": "多数 AC 可观察且覆盖正常、权限、失败和恢复，但仍存在关键需求没有对应的可判定场景。R15未验收全部旧挂载点、目标、默认 POPUP 以及列表选中 ID 的兼容性；R16未给出阈值边界和 OPEN/HALF_OPEN/CLOSED 自动恢复场景；R01也没有阻止敏感信息写入公共 metadata 的验收条件。因此不能认定每项需求均被充分验收覆盖。",
+              "issue_id": "PRD5-AC-COVERAGE-GAPS"
+            },
+            {
+              "rubric_id": "PRD6",
+              "verdict": "F",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+                  "location": "R15，第208行",
+                  "quote": "优先级：P1"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+                  "location": "R16，第220行",
+                  "quote": "优先级：P1"
+                },
+                {
+                  "path": "/workspace/public/query.md",
+                  "location": "本阶段任务与输出，第55行",
+                  "quote": "去掉后目标无法实现或造成不可用、数据/安全问题为 P0"
+                }
+              ],
+              "reason": "五类详情 Widget 和应用故障状态是公开委托明确要求的核心目标，缺失会使“应用使用与故障管理”目标无法实现，应按公开口径列为 P0。候选将 R15、R16列为P1，并以“所有P0通过”为切换条件，可能在这两项未完成时仍判定可交付。其余依赖、维护窗口和恢复门槛较充分，但该优先级错误足以导致不通过。",
+              "issue_id": "PRD6-CORE-APP-FEATURES-MISPRIORITIZED"
+            }
+          ]
+        }
+      ],
+      "tdd_schema": [
+        {
+          "group_id": "tdd_schema",
+          "results": [
+            {
+              "rubric_id": "TDD-A1",
+              "verdict": "F",
+              "evidence": [
+                {
+                  "path": "/workspace/templates/target-interface.md",
+                  "location": "第12行",
+                  "quote": "若其他边界使用 REST/gRPC，沿用边界现有格式提供完整 OpenAPI/proto，并在接口契约中登记文件"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/interfaces/digital-download.md",
+                  "location": "第13-15行",
+                  "quote": "方法：`GET`；路径：沿用 Base 的数字下载 token 路径，不改变已签发 URL 的 path 结构。"
+                }
+              ],
+              "reason": "前端设计、后端设计、接口契约和完整 GraphQL SDL 均已提供，但设计新增并保留了历史下载 HTTP 边界，却只用 Markdown 描述且未给出具体路径或完整 OpenAPI。该目标接口描述不足以满足目标接口交付规范的完整性要求。",
+              "issue_id": "TDD-A1-INCOMPLETE-DIGITAL-DOWNLOAD-CONTRACT"
+            },
+            {
+              "rubric_id": "TDD-A2",
+              "verdict": "F",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/frontend-design.md",
+                  "location": "第97行",
+                  "quote": "| I06 | FD05、FD06 | R08、R10、R11 | 需等待 |"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "第120行",
+                  "quote": "| I06 | BD05、BD06 | Transaction connection 和来源字段 |"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "第77-78行",
+                  "quote": "### BD07 · 历史资金归一与四插件退出\n- 覆盖需求：R11、R12"
+                }
+              ],
+              "reason": "编号本身唯一且 BT 依赖目标存在，但 I06 的归属链不一致：前端将 I06 用于 FD06 的 R11，后端接口清单和契约却仅将 I06 归属 BD05、BD06；实际承接 R11 的 BD07 未登记为 I06 所属设计单元。",
+              "issue_id": "TDD-A2-I06-R11-OWNERSHIP"
+            },
+            {
+              "rubric_id": "TDD-A3",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/frontend-design.md",
+                  "location": "第3-6行",
+                  "quote": "版本：v1\n责任：前端技术设计\n依据：PRD 1.0，artifacts/sprint1/prd/prd.md"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/interface-contract.md",
+                  "location": "第3-5行",
+                  "quote": "版本：v1\n责任：后端技术设计\n依据：后端技术设计 v1，backend-design.md"
+                }
+              ],
+              "reason": "前端、后端和接口契约的责任、版本及依据符合各自 Schema；设计沿用了 PRD 的 Shop、TransactionItem、Page/PageType、Channel 等业务名称，未发现同一事物的含义漂移。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TDD-A4",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "第3-6行",
+                  "quote": "版本：v1\n责任：后端技术设计\n依据：PRD 1.0，artifacts/sprint1/prd/prd.md\n修订：首次交付"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/frontend-design.md",
+                  "location": "第6行",
+                  "quote": "修订：首次交付"
+                }
+              ],
+              "reason": "全部主要设计产物均声明为 v1 首次交付，没有虚构历史修订，也未声称重排或复用已发布编号。",
+              "issue_id": null
+            }
+          ]
+        },
+        {
+          "group_id": "tdd_schema",
+          "results": [
+            {
+              "rubric_id": "TDD-A1",
+              "verdict": "F",
+              "evidence": [
+                {
+                  "path": "/workspace/templates/target-interface.md",
+                  "location": "第12行",
+                  "quote": "若其他边界使用 REST/gRPC，沿用边界现有格式提供完整 OpenAPI/proto"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/interfaces/digital-download.md",
+                  "location": "第13-16行",
+                  "quote": "方法：`GET`；路径：沿用 Base 的数字下载 token 路径，不改变已签发 URL 的 path 结构。"
+                }
+              ],
+              "reason": "前端设计、后端设计、接口契约和完整目标 SDL 均存在，主要章节与设计块也已填写；但历史数字下载被登记为 HTTP 接口后，只以叙述性 Markdown 给出“沿用 Base 路径”，未提供实际路径模板及完整 OpenAPI 或等价的完整协议定义。因此完整目标接口描述条件不全部成立。",
+              "issue_id": "TDD-A1-INCOMPLETE-DIGITAL-DOWNLOAD-CONTRACT"
+            },
+            {
+              "rubric_id": "TDD-A2",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/frontend-design.md",
+                  "location": "第24-38行",
+                  "quote": "## 2. 需求覆盖"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "第111-127行",
+                  "quote": "| I12 | BD11 | Shop/Transaction/metadata 新通知 |"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "第205-213行",
+                  "quote": "### BT17 · 受控切换工具与演练\n- 覆盖设计单元：BD12\n- 依赖：BT05、BT08、BT10、BT12、BT13、BT16"
+                }
+              ],
+              "reason": "R01-R20 均映射到存在的 FD/BD；FD01-FD11、BD01-BD12、I01-I12、BT01-BT17 编号唯一。接口清单、前端联调表及各契约的所属设计单元相互可解析，BT 覆盖和依赖所引用的编号也均存在，未发现重号、悬空引用或归属冲突。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TDD-A3",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+                  "location": "第1-4行",
+                  "quote": "# PRD：Saleor 商家经营与应用接入升级\n\n版本：1.0\n责任：产品"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/frontend-design.md",
+                  "location": "第1-5行",
+                  "quote": "# 前端技术设计：Saleor 商家经营与应用接入升级\n\n版本：v1\n责任：前端技术设计\n依据：PRD 1.0"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/interface-contract.md",
+                  "location": "第1-5行",
+                  "quote": "版本：v1\n责任：后端技术设计\n依据：后端技术设计 v1，backend-design.md"
+                }
+              ],
+              "reason": "前端、后端及接口契约的责任字段符合各自 Schema，依据链为 PRD 1.0 → 技术设计 v1 → 接口契约 v1。文档标题统一沿用“Saleor 商家经营与应用接入升级”，关键业务名称与 PRD 含义一致，未发现版本或名称漂移。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TDD-A4",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/frontend-design.md",
+                  "location": "第3-6行",
+                  "quote": "版本：v1\n责任：前端技术设计\n依据：PRD 1.0，artifacts/sprint1/prd/prd.md\n修订：首次交付"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "第3-6行",
+                  "quote": "版本：v1\n责任：后端技术设计\n依据：PRD 1.0，artifacts/sprint1/prd/prd.md\n修订：首次交付"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/interface-contract.md",
+                  "location": "第3-6行",
+                  "quote": "版本：v1\n责任：后端技术设计\n依据：后端技术设计 v1，backend-design.md\n修订：首次交付"
+                }
+              ],
+              "reason": "三项主设计产物均明确声明 v1 和“首次交付”，没有虚构历史版本或修订记录；已发布编号的稳定性说明与当前连续、无复用的编号集合一致。",
+              "issue_id": null
+            }
+          ]
+        }
+      ],
+      "tdd_quality": [
+        {
+          "group_id": "tdd_quality",
+          "results": [
+            {
+              "rubric_id": "TDD-B1",
+              "verdict": "F",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/interface-contract.md",
+                  "location": "I07，行 142-152",
+                  "quote": "allocations: [TransactionRefundAllocationInput!]!；allocations 和条目均不可空且至少一项"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+                  "location": "AC-09-1，行 140",
+                  "quote": "省略金额取剩余可退"
+                }
+              ],
+              "reason": "退款 API 强制调用方提供非空来源分配及金额，没有承接“省略金额取剩余可退”的服务端行为。Dashboard 自动填充分配不能替代 API 端需求，因此各端未完整覆盖验收语义。",
+              "issue_id": "TDD-B1-REFUND-AMOUNT-OMISSION"
+            },
+            {
+              "rubric_id": "TDD-B2",
+              "verdict": "F",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/frontend-design.md",
+                  "location": "方案概述，行 10",
+                  "quote": "在现有 React 17、Apollo Client、React Router v5 和 Macaw UI 架构内"
+                },
+                {
+                  "path": "/workspace/repos/saleor-dashboard/package.json",
+                  "location": "dependencies，行 114",
+                  "quote": "\"react\": \"18.3.1\""
+                }
+              ],
+              "reason": "前端设计将 Base 错认成 React 17，而固定 Dashboard Base 使用 React 18.3.1。虽然多数模块落点与 Base 相符，但冻结项要求适配现有系统，基础运行时判断错误使该条件不能全部成立。",
+              "issue_id": "TDD-B2-REACT-BASE-MISMATCH"
+            },
+            {
+              "rubric_id": "TDD-B3",
+              "verdict": "F",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "BD05，行 71",
+                  "quote": "外部项先写 REFUND_REQUEST/pending 后调用对应 transaction app，回报按现有 transaction event 幂等键落账。"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+                  "location": "AC-09-4，行 143",
+                  "quote": "外部成功而本地落账失败进入补偿或人工处理状态，不重复请求外部资金"
+                }
+              ],
+              "reason": "设计说明了正常外部回报和部分成功聚合，却没有定义外部已成功但本地回报落账失败时的持久状态、识别依据、责任模块和收敛路径。该适用异常场景可能停留在 pending，或在重试时再次请求外部资金。",
+              "issue_id": "TDD-B3-EXTERNAL-REFUND-RECONCILIATION"
+            },
+            {
+              "rubric_id": "TDD-B4",
+              "verdict": "F",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/target-schema.graphql",
+                  "location": "TransactionRefundRequestInput，行 35020-35031",
+                  "quote": "allocations: [TransactionRefundAllocationInput!]! ... amount: PositiveDecimal!"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/interface-contract.md",
+                  "location": "I07，行 152",
+                  "quote": "金额必须大于 0、符合币种精度且不超过“实扣-已退-处理中”"
+                }
+              ],
+              "reason": "契约只定义必填 allocation 金额，未定义省略退款金额的输入形态及其“取剩余可退”判定，与冻结业务语义不一致。因而调用方无法仅凭契约实现该场景。",
+              "issue_id": "TDD-B4-REFUND-CONTRACT-OMISSION"
+            },
+            {
+              "rubric_id": "TDD-B5",
+              "verdict": "F",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "BD05，行 71",
+                  "quote": "跨外部系统不宣称原子：每项独立状态，聚合可为 PARTIALLY_SUCCEEDED；重试只创建失败项后续请求"
+                },
+                {
+                  "path": "/workspace/public/business-conversations.md",
+                  "location": "收款退款，行 71",
+                  "quote": "外部资金已成功而本地失败，同样要保留资金事实并进入补偿或人工处理状态"
+                }
+              ],
+              "reason": "设计没有给出外部退款请求使用的稳定提供方幂等标识、结果收件箱或主动对账机制，也未定义“外部成功、本地失败”状态。仅对已标记 FAILED 的项重试不足以处理响应丢失或落账失败，无法证明不会重复退款并保持资金不变量。",
+              "issue_id": "TDD-B5-REFUND-EXTERNAL-IDEMPOTENCY"
+            },
+            {
+              "rubric_id": "TDD-B6",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "BD02，行 51",
+                  "quote": "只允许公网 HTTP/HTTPS、禁止 redirect；GET streaming 同时检查 Content-Length 和实际 20 MiB 上限，总预算 20 秒"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/interface-contract.md",
+                  "location": "通用约定，行 16",
+                  "quote": "所有字段先执行对象权限和渠道隔离，再解析 subscription selection"
+                }
+              ],
+              "reason": "设计提供了明确的下载容量、像素和时间边界，SSRF 与日志脱敏机制，并落实权限、渠道和敏感字段边界；大表索引、批处理及查询 N+1 风险也有对应机制。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TDD-B7",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/frontend-design.md",
+                  "location": "依赖与联调，行 90-104",
+                  "quote": "联调按“schema/codegen -> mock contract -> API integration -> 权限/异常 -> E2E”推进。"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "BT17，行 210-213",
+                  "quote": "依赖：BT05、BT08、BT10、BT12、BT13、BT16"
+                }
+              ],
+              "reason": "前端逐接口给出独立开发与联调等待关系，后端 BT 覆盖各 BD 并形成无明显循环的依赖链；最终切换任务依赖关键迁移、资金、认证和通知单元。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TDD-B8",
+              "verdict": "F",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/target-schema.graphql",
+                  "location": "TransactionRefundRequestInput，行 35020-35032",
+                  "quote": "allocations: [TransactionRefundAllocationInput!]! ... amount: PositiveDecimal!"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+                  "location": "AC-09-1，行 140",
+                  "quote": "省略金额取剩余可退，显式金额必须为正"
+                }
+              ],
+              "reason": "目标 SDL 虽包含完整 Base 和新增类型，但退款目标接口强制每项提供金额，无法表达需求规定的省略金额语义。该类型和可空性与业务契约不一致，因此目标接口未完整覆盖需求。",
+              "issue_id": "TDD-B8-REFUND-SDL-AMOUNT-NULLABILITY"
+            }
+          ]
+        },
+        {
+          "group_id": "tdd_quality",
+          "results": [
+            {
+              "rubric_id": "TDD-B1",
+              "verdict": "F",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "BD05，第69-71行",
+                  "quote": "nullable `gift_card`（SET_NULL）"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/prd/prd.md",
+                  "location": "R09 AC-09-6，第145行",
+                  "quote": "有资金记录的卡不能普通删除。"
+                }
+              ],
+              "reason": "后端设计允许删除礼品卡后将交易关联置空，却未设计“有资金记录的卡禁止普通删除”的校验、权限入口或状态转换。该验收行为没有被后端承接，并会使后续原卡退款退化为失败，因此各端需求覆盖不完整。",
+              "issue_id": "TDD-B1-GIFTCARD-DELETE-UNHANDLED"
+            },
+            {
+              "rubric_id": "TDD-B2",
+              "verdict": "F",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "BD04，第63行",
+                  "quote": "回填把当时 max/url days 固化，null 保持无限，不根据当前 Shop 默认重算。"
+                },
+                {
+                  "path": "/workspace/repos/saleor/saleor/product/utils/digital_products.py",
+                  "location": "digital_content_url_is_valid，第27-33行",
+                  "quote": "if content_url.content.use_default_settings: digital_content_settings = get_default_digital_content_settings()"
+                }
+              ],
+              "reason": "Base 对 `use_default_settings` 权益在校验时读取 Shop 默认值，并未保存签发时的默认值快照。候选设计却要求固化“当时”值且不使用当前默认值，没有说明该历史事实从何取得或证据不足时如何阻断迁移；直接把内容字段的 null 当无限还可能扩大已有权益。该迁移方案依赖 Base 中不存在的历史能力。",
+              "issue_id": "TDD-B2-DIGITAL-GRANT-SNAPSHOT-ASSUMPTION"
+            },
+            {
+              "rubric_id": "TDD-B3",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "BD05，第69-71行",
+                  "quote": "逐卡计算 min(余额,剩余应付)，原子扣余额，创建一个 TransactionItem、`CHARGE_SUCCESS` event、GiftCardEvent 和 outbox。"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "BD12，第107-109行",
+                  "quote": "每 job 有 checkpoint、batch ID、幂等唯一键、失败对象和重试报告。"
+                }
+              ],
+              "reason": "主流程及主要异常路径普遍给出了输入、责任模块、锁与事务边界、状态变化、失败结果和恢复方式；资金、索引、通知、认证及维护切换均能定位到具体设计单元并形成终态。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TDD-B4",
+              "verdict": "F",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/interface-contract.md",
+                  "location": "I04，第93行",
+                  "quote": "更新 input 内字段省略时分别保留。"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/target-schema.graphql",
+                  "location": "StockSettingsInput，第28404-28409行",
+                  "quote": "input StockSettingsInput ... allocationStrategy: AllocationStrategyEnum!"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/target-schema.graphql",
+                  "location": "StockSettingsInput extension，第34917-34920行",
+                  "quote": "inventoryMode: ChannelInventoryModeEnum"
+                }
+              ],
+              "reason": "契约宣称库存模式更新可独立省略其他字段，但目标 SDL 保留 Base 中必填的 `allocationStrategy`。调用方无法只发送 `stockSettings.inventoryMode`，与前端“只发送 changed fields”也冲突。字段省略语义、调用方式和目标定义未对齐，无法消除联调歧义。",
+              "issue_id": "TDD-B4-STOCK-SETTINGS-OMISSION-CONFLICT"
+            },
+            {
+              "rubric_id": "TDD-B5",
+              "verdict": "F",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "BD05，第69行",
+                  "quote": "nullable `gift_card`（SET_NULL）"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "BD04，第63行",
+                  "quote": "null 保持无限，不根据当前 Shop 默认重算。"
+                }
+              ],
+              "reason": "两处设计破坏业务不变量：已发生资金动作的礼品卡仍可被普通删除并丢失原卡关联；数字权益迁移又可能把使用 Shop 默认限制的 null 字段解释为无限。前者破坏原路退款，后者可能扩大次数或期限，且均未提供可靠补偿或证据不足阻断机制。",
+              "issue_id": "TDD-B5-PRESERVATION-INVARIANT-GAPS"
+            },
+            {
+              "rubric_id": "TDD-B6",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "BD02，第51行",
+                  "quote": "20 MiB 上限，总预算 20 秒，Pillow/magic bytes 验证真实格式、4000 万像素与解压炸弹。"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "其他，第217-219行",
+                  "quote": "新增索引使用 `atomic=False` + concurrent index，回填后再 attach NOT NULL/CHECK，避免长事务。"
+                }
+              ],
+              "reason": "设计为图片下载、分页、通知渠道、数据库大表和并发锁给出了具体容量或执行边界，并覆盖 SSRF、权限、渠道隔离、凭证、卡码、私有 metadata 和日志脱敏等安全与隐私机制。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TDD-B7",
+              "verdict": "F",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/frontend-design.md",
+                  "location": "FD04，第56行",
+                  "quote": "保存只发送 changed fields"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/target-schema.graphql",
+                  "location": "StockSettingsInput，第28404-28409行",
+                  "quote": "allocationStrategy: AllocationStrategyEnum!"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/frontend-design.md",
+                  "location": "依赖与联调，第104行",
+                  "quote": "前后端共同锁定 enum、error code 和 null/omitted 语义后再生成类型。"
+                }
+              ],
+              "reason": "BT 依赖图本身无明显循环，但当前生产方契约与消费方提交策略已经冲突：前端按变化字段发送库存模式时，SDL 仍要求同时发送 `allocationStrategy`。因此 schema/codegen 后的联调不能按文档直接执行，依赖判断与接口成熟度不一致。",
+              "issue_id": "TDD-B7-CHANNEL-CONTRACT-BLOCKS-INTEGRATION"
+            },
+            {
+              "rubric_id": "TDD-B8",
+              "verdict": "F",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/target-schema.graphql",
+                  "location": "StockSettingsInput，第28404-28409行及第34917-34920行",
+                  "quote": "allocationStrategy: AllocationStrategyEnum! ... inventoryMode: ChannelInventoryModeEnum"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/target-schema.graphql",
+                  "location": "WebhookSampleEventTypeEnum，第3324-3464行",
+                  "quote": "TRANSACTION_ITEM_METADATA_UPDATED ... OBSERVABILITY"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/target-schema.graphql",
+                  "location": "新增 Webhook 事件，第35257-35270行",
+                  "quote": "SHOP_UPDATED ... SHIPPING_METHOD_METADATA_UPDATED"
+                }
+              ],
+              "reason": "目标 SDL 不完整一致。库存更新的必填 `allocationStrategy` 与新增模式的独立省略约定冲突；同时新增事件进入 Webhook 事件枚举，却未进入 `WebhookSampleEventTypeEnum`，不满足事件在样例入口一致可见的要求。候选也明确未完成兼容 parser/type validation，现有静态检查不足以消除这些契约问题。",
+              "issue_id": "TDD-B8-TARGET-SCHEMA-INCONSISTENT"
+            }
+          ]
+        }
+      ],
+      "test_design": [
+        {
+          "group_id": "test_design",
+          "results": [
+            {
+              "rubric_id": "TEST1",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC001，行 2-6",
+                  "quote": "仅修改发件信息不会改写其他经营资料,AC-01-1;FD01;BD01;I01"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC121，行 602-606",
+                  "quote": "恢复演练记录责任与实测时长而非虚构承诺,AC-20-7;FD11;BD12"
+                }
+              ],
+              "reason": "TC001 至 TC121 连续覆盖 PRD 的 AC-01-1 至 AC-20-7，包括核心业务、权限、安全、失败、边界、兼容、并发幂等、迁移恢复及跨前后端契约；P0 资金、库存、认证和通知风险均有专项用例。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TEST2",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC053，行 262-266",
+                  "quote": "总状态 PARTIALLY_SUCCEEDED，成功项事实不回滚。重试仅处理失败项；外部已成功进入补偿且不再次请求。"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC111，行 552-556",
+                  "quote": "已提交变化最终有delivery，未提交无delivery；排队不标成功。耗尽显示EXHAUSTED，有权retry沿用eventId。"
+                }
+              ],
+              "reason": "用例普遍将前置数据、操作和编号预期对应起来，并断言余额、交易、索引、权限、事件、持久记录及外部调用次数等真实业务结果，而非仅检查请求成功、字段存在或页面显示。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TEST3",
+              "verdict": "F",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC019，行 92",
+                  "quote": "标准本地验收环境明确配置；准备商品、订单、顾客、礼品卡和交易测试对象。"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC014，行 67",
+                  "quote": "受控 DNS 可解析到回环、私网、链路本地、metadata 地址，并准备重绑定及非 HTTP URL。"
+                }
+              ],
+              "reason": "未定义所谓“标准本地验收环境”的具体版本、配置、负载和观察工具，也未给出受控 DNS、公网图片端、PSP、Webhook、故障注入及持久数据检查能力的准备方式或不可用标记。大量用例仅把这些能力写成抽象前置条件，因此不同执行者无法稳定复现，外部条件是否满足也不可判定。",
+              "issue_id": "TEST3-ENV-AND-HARNESS-UNSPECIFIED"
+            },
+            {
+              "rubric_id": "TEST4",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/workspace/templates/test-cases.md",
+                  "location": "行 10-18",
+                  "quote": "用例编号 | TC{nnn}；一级模块 | PRD 业务域分组名；二级模块 | PRD 需求条目；覆盖 | 至少一个 AC-{nn}-{m}"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "表头及 TC097，行 1、482",
+                  "quote": "用例编号,一级模块,二级模块,用例标题,覆盖,优先级,前置条件,操作步骤,预期结果；AC-17-1;FD10;BD11;I11;I12"
+                }
+              ],
+              "reason": "CSV 表头、编号、模块名称和优先级符合模板；每条用例至少关联一个有效 AC，并在适用处关联 FD、BD、I。接口名称、枚举、错误语义和预期结果与冻结 PRD及已接受技术设计保持一致。",
+              "issue_id": null
+            }
+          ]
+        },
+        {
+          "group_id": "test_design",
+          "results": [
+            {
+              "rubric_id": "TEST1",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC001-TC121",
+                  "quote": "TC001...AC-01-1... TC121...AC-20-7"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC046、TC053、TC111、TC120",
+                  "quote": "礼品卡扣款在重复和并发下幂等；混合退款部分成功保留并只重试失败项；提交后outbox保证崩溃不丢且耗尽可见；开放后新资金事实下故障采用前向恢复"
+                }
+              ],
+              "reason": "121 条用例逐项承接 PRD 的 AC-01-1 至 AC-20-7，覆盖核心业务、权限、失败与边界、旧契约兼容、迁移、并发幂等、故障恢复及前后端契约。资金、库存、数字权益、认证和通知等高风险路径均有针对性场景。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TEST2",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC029",
+                  "quote": "两个 Channel 关联同一库存为 1 的仓库。"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC029 预期结果",
+                  "quote": "最多一个成交，库存不按 Channel 复制。Stock、Allocation、Reservation 数量无负数或重复扣减/释放。"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC053 预期结果",
+                  "quote": "总状态 PARTIALLY_SUCCEEDED，成功项事实不回滚。重试仅处理失败项；外部已成功进入补偿且不再次请求。"
+                }
+              ],
+              "reason": "用例普遍将前置数据、操作和编号预期对应起来，并断言库存、余额、交易、事件、历史快照、外部调用次数及持久化状态等真实业务结果，而非仅检查请求成功或页面出现。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TEST3",
+              "verdict": "F",
+              "evidence": [
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC019 前置条件",
+                  "quote": "标准本地验收环境明确配置；准备商品、订单、顾客、礼品卡和交易测试对象。"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "多条用例通用步骤 1、3",
+                  "quote": "核对前置条件并记录相关对象、余额、配置、事件或文件基线。通过 Dashboard、GraphQL/HTTP、持久数据及受控外部端核对结果。"
+                }
+              ],
+              "reason": "文件名虽表明 v1，但用例没有给出可执行的 API、Dashboard、schema 或构建版本前提，也未定义“标准本地验收环境”的具体配置。大量步骤使用通用的“核对基线”和“通过持久数据及受控外部端核对”措辞，未定位查询、数据准备方法或观察入口；依赖受控公网端、DNS、PSP、身份提供方等条件的用例也未明确可用性或无法执行时的标记。因此不能确认可复现性与外部条件显式化。",
+              "issue_id": "TD-TEST3-ENV-EXECUTABILITY"
+            },
+            {
+              "rubric_id": "TEST4",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/workspace/templates/test-cases.md",
+                  "location": "第 10-18 行",
+                  "quote": "用例编号 | TC{nnn}；一级模块 | PRD 业务域分组名；二级模块 | PRD 需求条目；覆盖 | 至少一个 AC-{nn}-{m}"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "表头及 TC001",
+                  "quote": "用例编号,一级模块,二级模块,用例标题,覆盖,优先级,前置条件,操作步骤,预期结果"
+                },
+                {
+                  "path": "/opt/document-eval/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "第 26-39 行",
+                  "quote": "R01 | BD01 ... R17、R18、R19 | BD11 ... R20 | BD12"
+                }
+              ],
+              "reason": "候选 CSV 符合目标列结构，编号连续且未复用；每条用例关联有效 AC，并按适用范围关联 FD、BD、I。二级模块沿用 PRD 的需求编号和标题，优先级未高于所属需求，接口名称、默认值和预期语义与冻结 PRD及技术设计一致。",
+              "issue_id": null
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
