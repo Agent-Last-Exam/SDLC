@@ -2,7 +2,7 @@
 
 日期：2026-09-27  
 范围：剪枝后的 Core/Dashboard target  
-结论：配对剪枝 patch 按最终 C/D 口径重新校准并通过冻结测试选择；`saleor-standard-20260927-01` 已由官方 exporter 生成并与 Golden target 配对。
+结论：配对剪枝 patch 按最终 C/D 口径重新校准并通过冻结测试选择；`saleor-standard-20260927-01` 由官方 exporter 生成，随后补齐 Fabbrica codegen 配置并重算完整性身份，与 Golden target 配对。
 
 当前产品范围：`../PRD/prd-golden.md`。本文件中的 patch、tree 和测试结果是该精简范围的实现证据；旧版 `PRD/prd.md` 仅用于历史需求追踪。
 
@@ -11,7 +11,7 @@
 | 仓库 | Code patch SHA-256 | Test patch SHA-256 | Combined tree |
 | --- | --- | --- | --- |
 | Core | `dfcee8e2ef4dd10092efea58b28d26726ae99f8eb5aca0f18a8adb6cb3a8887f` | `1f544aa7a18f316f6e9df997b4da0bd35be24eea4671b025b4368d3fa3599e80` | `0b4ecb1130bcc42aad5facd1657f088ed0d7b7ac` |
-| Dashboard | `ad02c0504fa6dfe4f2c6969628b281d660bcac8072bd0eba8da239c9e907b9c2` | `14488c9b7e8127976f2ab8abfd78543185d2e48979d005965906358db4456bae` | `38d10cfc303166d7ea2d3a93d3991bff151b5eeb` |
+| Dashboard | `fa0c4769a01daead3fa4c921a076e39c27ecf431f699f358db1a199fce397abe` | `14488c9b7e8127976f2ab8abfd78543185d2e48979d005965906358db4456bae` | `8e16e2dc3fa083aceef5bc99b46e73be86573dfe` |
 
 ## 运行结果
 
@@ -29,7 +29,7 @@
 - Selection SHA-256：`c6652cccc79707f4d744e2e7c0a437902e8b3be25a87efd6157952ac3c4a9e60`
 - `reward.json` SHA-256：`9553a43ab4f0ea75bd46b0c6613b103d7651144582bed51e2f1144f8adae0f47`
 - CTRF SHA-256：`11b06c48065953d659d641c5eae8e65aecab544e40107ce1caafbf97d5f1d5b4`
-- 校准审计 SHA-256：`049addc0cccf2029a68f1fb86fab39536c3ed4dc01b0a836e46b5f5d1cc6af6f`
+- 校准审计 SHA-256：`a83d8babbd410872fac59fbd4eb65486899ad8d49ce1001adb91d4c97248d244`
 - 原始校准结果已固化到当前 `evidence/` 目录；运行报告来源路径和 SHA-256 保留在 `calibration-audit.json` 中。
 
 Target Dashboard E2E 原有四个失败项经标准 seed 后隔离复跑，`SALEOR_28`、`SALEOR_76`、`SALEOR_87` 通过并按精确 Playwright identity 合并；`SALEOR_119` 再次因外部 Klaviyo manifest 安装按钮保持 disabled 而超时，保留失败证据且不进入 F2P/P2P。
@@ -38,9 +38,9 @@ Target Dashboard E2E 原有四个失败项经标准 seed 后隔离复跑，`SALE
 
 正式交付目录为 `../..`，即 Git task `tasks/saleor-3.23-pruned/`；release ID 为 `saleor-3.23-pruned-20260927-01`。
 
-- Harbor manifest SHA-256：`afffc5dd49974888c3afb450d13d8b73f9236867f0ce7e7999a3d2ee3fd8537c`
-- Source fingerprint：`3f99808a52bcaf443b7960bb3eee47c02a3e9ff37522d1b2db2c7b7d52b02f14`
-- Shared payload fingerprint：`6297d25e11b45fd10be7dc142c27971e17cf62bc3e8edb64f53b2d12c93c9073`
+- Harbor manifest SHA-256：`af0cc9e1bdabaa629f1c99f9302bb490a57a94ab7a16c8009c04ff0559037dfb`
+- Source fingerprint：`caa062ec2fabfcf2ba9978e08f93afaaf2fbdb5ff65c67c40fde94fcf821dfd7`
+- Shared payload fingerprint：`b7a65b099cc7e178d5498f1d6216abed47421d9d84f6e2d38d6493fdae107681`
 - Environment image：`sdlcbench/saleor-3.23-env:build-0a5d5bc656cb`
 - Environment build fingerprint：`0a5d5bc656cb3cb95590de479cc5de02b823db42953a2eda0e05a38395b7da93`
 - Harbor selection v2 SHA-256：`1917f52b0d106d712908701e61a4b3d25c9a05da4289f4b278b48bbe95a346df`
@@ -51,9 +51,11 @@ Target Dashboard E2E 原有四个失败项经标准 seed 后隔离复跑，`SALE
 | 阶段 | Core | Dashboard |
 | --- | --- | --- |
 | Base / C：environment + test patch | `8238527a020c7105be5a4671315ffab50b6ed025` | `4f2a89c3140dc77ed6fc4741084a424769863c42` |
-| Target / D：C + code patch | `0b4ecb1130bcc42aad5facd1657f088ed0d7b7ac` | `38d10cfc303166d7ea2d3a93d3991bff151b5eeb` |
+| Target / D：C + code patch | `0b4ecb1130bcc42aad5facd1657f088ed0d7b7ac` | `8e16e2dc3fa083aceef5bc99b46e73be86573dfe` |
 
-Package 内 grader 使用正式合并报告复核得到 F2P `5365/5365`、P2P `15013/15013`、Base F2P `0/5365`、Base P2P `15013/15013`、reward `1`。Exporter manifest 内 32 个文件哈希全部重算一致；详细机器可读记录见 `harbor-delivery.json`。
+Package 内 grader 使用正式合并报告复核得到 F2P `5365/5365`、P2P `15013/15013`、Base F2P `0/5365`、Base P2P `15013/15013`、reward `1`。Harbor manifest 内 32 个文件哈希全部重算一致；详细机器可读记录见 `harbor-delivery.json`。
+
+2026-09-29 补齐 Dashboard `codegen-main.ts` 中两个 Fabbrica output blocks，共 22 行生成配置。修复后 code/test 与 test/code 两种应用顺序均得到 Dashboard combined tree `8e16e2dc3fa083aceef5bc99b46e73be86573dfe`；使用包内既有依赖执行 main GraphQL Code Generator 成功，六组 outputs 全部生成，运行后无额外文件差异。该修复不修改生成文件、运行时代码、test patch 或冻结选择，因此沿用上述 F2P/P2P 功能验证结果，未重新执行完整测试套件。
 
 ## 历史不配对包
 

@@ -25,6 +25,8 @@ golden-docs/
 │   └── test-patch-traceability.md
 ├── references/
 │   ├── base-to-target-requirements.md
+│   ├── code-patch-composition-analysis.md
+│   ├── feature-pruning-summary.md
 │   ├── requirements-completeness-audit.md
 │   ├── pruning-order-workflow.md
 │   └── 各剪枝阶段记录
@@ -47,6 +49,8 @@ golden-docs/
 4. `Test/test-cases.v1.csv`：65 条场景级 Golden 测试设计；新 PRD 的细化 AC 由场景聚合验证，不要求一条 AC 对应一条 CSV 记录。
 5. `Test/test-patch-traceability.md`：需求与 test patch 的充分性、必要性双向审计。
 6. `evidence/`：与本文档配对的剪枝 patch 身份及最终评分摘要。
+7. `references/code-patch-composition-analysis.md`：拆解 code patch 中的生成产物、迁移、vendored 内容与 Agent 直接实现部分。
+8. `references/feature-pruning-summary.md`：汇总剪枝代码量、已删除功能、保留边界和统计口径。
 
 ## PRD 版本说明
 

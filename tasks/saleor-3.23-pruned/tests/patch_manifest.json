@@ -40,16 +40,16 @@
     "saleor-dashboard": {
       "github": "saleor/saleor-dashboard",
       "base": "e934ff0abf5e643d2e8eab5cce609387fe0e37b6",
-      "target": "38d10cfc303166d7ea2d3a93d3991bff151b5eeb",
+      "target": "8e16e2dc3fa083aceef5bc99b46e73be86573dfe",
       "env_patch": {
         "path": "env/saleor-dashboard.env.patch",
         "sha256": "fd9edc96a558db352b9d866c72e33b1f45bf6578061783985a4273a173829fbc"
       },
       "code_patch": {
         "path": "solution/saleor-dashboard.code.patch",
-        "sha256": "ad02c0504fa6dfe4f2c6969628b281d660bcac8072bd0eba8da239c9e907b9c2",
+        "sha256": "fa0c4769a01daead3fa4c921a076e39c27ecf431f699f358db1a199fce397abe",
         "files": 2940,
-        "bytes": 16845769
+        "bytes": 16846383
       },
       "test_patch": {
         "path": "tests/saleor-dashboard.test.patch",
@@ -60,8 +60,8 @@
       "agent_baseline_commit": "aebb2401b5079fbbb8c60150289d1896c108feca",
       "agent_baseline_tree": "8fb032b5672b0cb10da5a6163471020378e0d954",
       "test_tree": "33b55853eb52195440f2cdb121223e580724cec2",
-      "code_tree": "ae0a87797fbde54a1442b890a904a7c9672c4233",
-      "combined_tree": "38d10cfc303166d7ea2d3a93d3991bff151b5eeb",
+      "code_tree": "70e0a26cebada5785bfb09094c39caefa153e957",
+      "combined_tree": "8e16e2dc3fa083aceef5bc99b46e73be86573dfe",
       "evaluation_base_tree": "4f2a89c3140dc77ed6fc4741084a424769863c42"
     }
   }

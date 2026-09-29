@@ -1,9 +1,9 @@
 diff --git a/codegen-main.ts b/codegen-main.ts
 new file mode 100644
-index 0000000000000000000000000000000000000000..e1f9a2da64a4020aaee736cc54b931cfebc2c9e9
+index 0000000000000000000000000000000000000000..56e7b0a27bf28cb505b39f37f095242af719a2bb
 --- /dev/null
 +++ b/codegen-main.ts
-@@ -0,0 +1,77 @@
+@@ -0,0 +1,99 @@
 +import { type CodegenConfig } from "@graphql-codegen/cli";
 +
 +const config: CodegenConfig = {
@@ -75,6 +75,28 @@ index 0000000000000000000000000000000000000000..e1f9a2da64a4020aaee736cc54b931cf
 +      preset: "import-types",
 +      presetConfig: {
 +        typesPath: "./types.generated",
++      },
++    },
++    "./src/graphql/fabbricaTypes.generated.ts": {
++      plugins: ["typescript"],
++      config: {
++        enumsAsTypes: true,
++        avoidOptionals: true,
++        nonOptionalTypename: true,
++        scalars: {
++          Day: "number",
++          Hour: "number",
++          Date: "string",
++        },
++        namingConvention: {
++          enumValues: "change-case-all#upperCase",
++        },
++      },
++    },
++    "./src/graphql/fabbrica.generated.ts": {
++      plugins: ["@mizdra/graphql-codegen-typescript-fabbrica"],
++      config: {
++        typesFile: "./fabbricaTypes.generated",
 +      },
 +    },
 +  },

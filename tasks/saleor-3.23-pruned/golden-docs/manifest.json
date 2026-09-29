@@ -2,7 +2,7 @@
   "schema": "saleor-golden-docs-delivery-v1",
   "release_id": "saleor-golden-docs-20260926-01",
   "task_id": "saleor-3.23",
-  "status": "documentation-frozen; pruned-prd-v2-added; paired-pruned-patch-recalibrated; harbor-paired",
+  "status": "documentation-frozen; pruned-prd-v2-added; paired-pruned-patch-recalibrated; fabbrica-codegen-restored; harbor-paired",
   "scope": "pruned Saleor 3.23 product requirements, technical design, interface contract, GraphQL schema, golden test design, traceability, references, and verification evidence",
   "active_prd": "PRD/prd-golden.md",
   "documents": {
@@ -13,7 +13,9 @@
     "interface_contract": "TDD/interface-contract.md",
     "target_schema": "TDD/target-schema.graphql",
     "test_cases": "Test/test-cases.v1.csv",
-    "test_traceability": "Test/test-patch-traceability.md"
+    "test_traceability": "Test/test-patch-traceability.md",
+    "code_patch_composition": "references/code-patch-composition-analysis.md",
+    "feature_pruning_summary": "references/feature-pruning-summary.md"
   },
   "prd_versions": {
     "traceability": "PRD/prd.md",
@@ -52,7 +54,7 @@
     "harbor_delivery": "evidence/harbor-delivery.json",
     "harbor_release_id": "saleor-3.23-pruned-20260927-01",
     "harbor_standard": "..",
-    "harbor_manifest_sha256": "afffc5dd49974888c3afb450d13d8b73f9236867f0ce7e7999a3d2ee3fd8537c",
+    "harbor_manifest_sha256": "af0cc9e1bdabaa629f1c99f9302bb490a57a94ab7a16c8009c04ff0559037dfb",
     "selection": "evidence/selection.json",
     "selection_sha256": "c6652cccc79707f4d744e2e7c0a437902e8b3be25a87efd6157952ac3c4a9e60",
     "calibration_audit": "evidence/calibration-audit.json",

@@ -10,7 +10,7 @@
 
 已剪枝能力不建立新的后端设计单元：App Problems、Page/User 高级搜索、Transaction 日期/事件 where 与 sorting、外部媒体异步 fallback、Variant Generator UI、独立 metadata dialog UI。对这些功能仍存在的基础模型或共享字段，只保留当前 16 个保留需求需要的合同。
 
-技术基线：配对 artifact 为剪枝 patch；Core target tree 为 `0b4ecb1130bcc42aad5facd1657f088ed0d7b7ac`，Dashboard target tree 为 `38d10cfc303166d7ea2d3a93d3991bff151b5eeb`。Core/Dashboard agent baseline、patch SHA 和组合 tree 见 `../evidence/golden-patch-manifest.json`。本设计只以 `../PRD/prd-golden.md` 的 16 个保留需求为活动输入。
+技术基线：配对 artifact 为剪枝 patch；Core target tree 为 `0b4ecb1130bcc42aad5facd1657f088ed0d7b7ac`，Dashboard target tree 为 `8e16e2dc3fa083aceef5bc99b46e73be86573dfe`。Core/Dashboard agent baseline、patch SHA 和组合 tree 见 `../evidence/golden-patch-manifest.json`。本设计只以 `../PRD/prd-golden.md` 的 16 个保留需求为活动输入。
 
 ## 2. 需求覆盖
 

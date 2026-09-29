@@ -4,10 +4,10 @@
   "release_id": "saleor-3.23-pruned-20260927-01",
   "standard_path_from_docs_root": "..",
   "harbor_manifest": {
-    "sha256": "afffc5dd49974888c3afb450d13d8b73f9236867f0ce7e7999a3d2ee3fd8537c",
-    "source_fingerprint": "3f99808a52bcaf443b7960bb3eee47c02a3e9ff37522d1b2db2c7b7d52b02f14",
-    "shared_payload_fingerprint": "6297d25e11b45fd10be7dc142c27971e17cf62bc3e8edb64f53b2d12c93c9073",
-    "release_state_sha256": "ecb8024c8846d19589744fb7e6aa728c1799801e985ed089b1ea97a355a51b8a",
+    "sha256": "af0cc9e1bdabaa629f1c99f9302bb490a57a94ab7a16c8009c04ff0559037dfb",
+    "source_fingerprint": "caa062ec2fabfcf2ba9978e08f93afaaf2fbdb5ff65c67c40fde94fcf821dfd7",
+    "shared_payload_fingerprint": "b7a65b099cc7e178d5498f1d6216abed47421d9d84f6e2d38d6493fdae107681",
+    "release_state_sha256": "773854e7cf9ee8fb9b1d2091bb81ff8c879194da40de874c0d87168650307406",
     "files_verified": 32
   },
   "environment_image": {
@@ -18,7 +18,7 @@
   },
   "verifier": {
     "config_sha256": "e1ffb2cd593468a0f56fb892956291e7ed2ded23c9c4a19fa466219a2782f1c3",
-    "patch_manifest_sha256": "8fab58c13f09002ec8b5458b5d23e14f32b462a66cbd545311a24f1031538235",
+    "patch_manifest_sha256": "d0e269db157d46822f195872fbdc5fa115bf071cbf331ca4be6023c907dbaeda",
     "composition": {
       "base": "architecture-upgraded environment plus final pruned test patch",
       "target": "base plus final pruned code patch",
@@ -31,14 +31,14 @@
       },
       "target": {
         "saleor": "0b4ecb1130bcc42aad5facd1657f088ed0d7b7ac",
-        "saleor-dashboard": "38d10cfc303166d7ea2d3a93d3991bff151b5eeb"
+        "saleor-dashboard": "8e16e2dc3fa083aceef5bc99b46e73be86573dfe"
       }
     }
   },
   "patches": {
     "saleor.code.patch": "dfcee8e2ef4dd10092efea58b28d26726ae99f8eb5aca0f18a8adb6cb3a8887f",
     "saleor.test.patch": "1f544aa7a18f316f6e9df997b4da0bd35be24eea4671b025b4368d3fa3599e80",
-    "saleor-dashboard.code.patch": "ad02c0504fa6dfe4f2c6969628b281d660bcac8072bd0eba8da239c9e907b9c2",
+    "saleor-dashboard.code.patch": "fa0c4769a01daead3fa4c921a076e39c27ecf431f699f358db1a199fce397abe",
     "saleor-dashboard.test.patch": "14488c9b7e8127976f2ab8abfd78543185d2e48979d005965906358db4456bae"
   },
   "selection": {
@@ -55,6 +55,21 @@
     "base_f2p_passed": 0,
     "base_p2p_passed": 15013,
     "partial": 1.0
+  },
+  "codegen_repair": {
+    "date": "2026-09-29",
+    "file": "codegen-main.ts",
+    "added_configuration_lines": 22,
+    "restored_outputs": [
+      "src/graphql/fabbricaTypes.generated.ts",
+      "src/graphql/fabbrica.generated.ts"
+    ],
+    "generated_files_changed": false,
+    "test_patch_changed": false,
+    "selection_changed": false,
+    "code_test_tree": "8e16e2dc3fa083aceef5bc99b46e73be86573dfe",
+    "test_code_tree": "8e16e2dc3fa083aceef5bc99b46e73be86573dfe",
+    "generate_main_clean": true
   },
   "archive_generated": false
 }

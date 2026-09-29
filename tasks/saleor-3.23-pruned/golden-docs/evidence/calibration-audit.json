@@ -10,8 +10,24 @@
   "patches": {
     "saleor.code.patch": "dfcee8e2ef4dd10092efea58b28d26726ae99f8eb5aca0f18a8adb6cb3a8887f",
     "saleor.test.patch": "1f544aa7a18f316f6e9df997b4da0bd35be24eea4671b025b4368d3fa3599e80",
-    "saleor-dashboard.code.patch": "ad02c0504fa6dfe4f2c6969628b281d660bcac8072bd0eba8da239c9e907b9c2",
+    "saleor-dashboard.code.patch": "fa0c4769a01daead3fa4c921a076e39c27ecf431f699f358db1a199fce397abe",
     "saleor-dashboard.test.patch": "14488c9b7e8127976f2ab8abfd78543185d2e48979d005965906358db4456bae"
+  },
+  "post_calibration_repair": {
+    "date": "2026-09-29",
+    "scope": "Dashboard codegen configuration only",
+    "added_lines": 22,
+    "generated_outputs_changed": false,
+    "runtime_code_changed": false,
+    "test_patch_changed": false,
+    "selection_changed": false,
+    "full_test_rerun": false,
+    "validation": [
+      "code and test patches apply in both orders",
+      "both orders produce combined tree 8e16e2dc3fa083aceef5bc99b46e73be86573dfe",
+      "main GraphQL code generation succeeds",
+      "generation leaves no additional diff"
+    ]
   },
   "reports": {
     "pre/core-unit": {

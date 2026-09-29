@@ -25,7 +25,7 @@ tasks/saleor-3.23-pruned/（正式配对 Golden Harbor）
 | 仓库 | Upstream base | 实际 Agent base | 剪枝后 target |
 | --- | --- | --- | --- |
 | Core | `6cfb77430ddbc53f48dfd3462fbefaad4e8c3d45` | `c864e66b8e537d30732ddba62d3a4c47e49e4a3e` | `0b4ecb1130bcc42aad5facd1657f088ed0d7b7ac` |
-| Dashboard | `e934ff0abf5e643d2e8eab5cce609387fe0e37b6` | `aebb2401b5079fbbb8c60150289d1896c108feca` | `38d10cfc303166d7ea2d3a93d3991bff151b5eeb` |
+| Dashboard | `e934ff0abf5e643d2e8eab5cce609387fe0e37b6` | `aebb2401b5079fbbb8c60150289d1896c108feca` | `8e16e2dc3fa083aceef5bc99b46e73be86573dfe` |
 
 实际 Agent base 已包含 environment/architecture patch：Core 的 Python 依赖文件已经升级；Dashboard 已完成 npm 到 pnpm 及依赖/测试配置升级。`upstream_base` 只表示更早的来源版本，不是 Agent 开始实现时的工作树。
 

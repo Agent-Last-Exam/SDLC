@@ -66,7 +66,7 @@ Saleor 3.23 的升级涉及结账配送、库存可用性、支付与订单操�
 ### 3.2 交付基线
 
 - Core target tree：`0b4ecb1130bcc42aad5facd1657f088ed0d7b7ac`；Agent baseline：`c864e66b8e537d30732ddba62d3a4c47e49e4a3e`
-- Dashboard target tree：`38d10cfc303166d7ea2d3a93d3991bff151b5eeb`；Agent baseline：`aebb2401b5079fbbb8c60150289d1896c108feca`
+- Dashboard target tree：`8e16e2dc3fa083aceef5bc99b46e73be86573dfe`；Agent baseline：`aebb2401b5079fbbb8c60150289d1896c108feca`
 - 配对的正式 Harbor 包：`tasks/saleor-3.23-pruned/`（本文档目录的父目录）
 
 ## 4. 需求条目

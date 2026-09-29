@@ -8,7 +8,7 @@
 
 Dashboard 采用现有 React、Apollo、React Hook Form 和页面路由结构。订单/交易、商品可售性、渠道/仓库、App 扩展、认证设置和列表筛选沿用现有模块，新增行为通过 GraphQL query/mutation 和缓存更新实现。页面应显示 loading、permission、empty、validation、stale 和 retry 状态，不以删除后端字段来规避异常。
 
-技术基线：Dashboard target tree 为 `38d10cfc303166d7ea2d3a93d3991bff151b5eeb`，实现参考为配对剪枝 Dashboard patch；完整 SHA 见 `../evidence/golden-patch-manifest.json`。GraphQL 操作使用 target schema 生成的 hooks/types，不直接依赖被剪枝的 App Problems、Variant Generator、Page/User 高级搜索或独立 metadata dialog 路由。
+技术基线：Dashboard target tree 为 `8e16e2dc3fa083aceef5bc99b46e73be86573dfe`，实现参考为配对剪枝 Dashboard patch；完整 SHA 见 `../evidence/golden-patch-manifest.json`。GraphQL 操作使用 target schema 生成的 hooks/types，不直接依赖被剪枝的 App Problems、Variant Generator、Page/User 高级搜索或独立 metadata dialog 路由。
 
 ## 2. 需求覆盖
 
