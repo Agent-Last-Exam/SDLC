@@ -9,6 +9,7 @@
 | 目录 | 放什么 | 什么时候看 |
 | --- | --- | --- |
 | [runtime/](runtime/README.md) | 准备器、Controller、Codex 适配、封存、报告生成 | 修改执行机制 |
+| [coverage_eval/](coverage_eval/README.md) | 配置驱动的 Harbor 覆盖率评测、框架适配器和双组报告 | 运行代码覆盖率评测 |
 | [tasks/](tasks/README.md) | 每个 task 的 Instruction、workflow、roles、templates 和环境 | 修改任务、阶段输入输出和代码版本 |
 | [jobs/](jobs/README.md) | 每次 rollout 的 report、状态、轨迹、正式产物 | 看运行结果、定位失败 |
 | [reports/](reports/README.md) | 历史验收证据和运行报告导航 | 看已经验证了哪些能力 |

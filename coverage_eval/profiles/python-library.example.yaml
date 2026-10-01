@@ -1,0 +1,16 @@
+# Replace base_commit and paths with your own disposable verifier workspace.
+schema_version: 1
+project_id: python-library
+repositories:
+  - name: library
+    path: packages/library
+    base_commit: REPLACE_WITH_BASE_COMMIT
+    source_include: ["lib/**/*.py"]
+    test_support_include: ["**/conftest.py"]
+    suites:
+      - name: library-unit
+        runner: pytest
+        coverage_reader: coverage_py
+        command: [python3, -m, pytest]
+        test_include: ["tests/**/test_*.py"]
+        coverage_sources: [lib]

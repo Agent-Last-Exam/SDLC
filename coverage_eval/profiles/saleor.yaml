@@ -1,0 +1,50 @@
+schema_version: 1
+project_id: saleor-3.23
+base_manifest: patch_manifest.json
+prepare: [python3, "{tests}/prepare.py"]
+services: [bash, /opt/runtime/start-services.sh]
+grader: [python3, "{tests}/grader.py"]
+test_image: sdlcbench/saleor-3.23-test:coverage-local
+docker_args: [--add-host, "example.com:93.184.216.34", --shm-size=2g]
+verifier_timeout_sec: 14400
+repositories:
+  - name: saleor
+    path: saleor
+    source_include: ["saleor/**/*.py"]
+    source_exclude: ["**/tests/**", "**/migrations/**", "**/management/**"]
+    test_include: ["**/test_*.py", "**/*_test.py"]
+    test_support_include: ["**/conftest.py", "**/tests/__init__.py"]
+    suites:
+      - name: core-unit
+        runner: pytest
+        coverage_reader: coverage_py
+        test_include: ["**/test_*.py", "**/*_test.py"]
+        test_exclude: ["**/e2e/**"]
+        coverage_sources: [saleor]
+        args: [--continue-on-collection-errors, "--maxfail=0", --allow-hosts, "localhost,127.0.0.1,::1,cache", -n, "2", -m, "not e2e"]
+        discovery_args: [-m, "not e2e"]
+        baseline_unset_env: [CACHE_URL]
+      - name: core-e2e
+        runner: command
+        coverage_reader: null
+        test_include: ["**/e2e/**/test_*.py"]
+        command: [bash, /opt/runtime/run-suite.sh, core-e2e, coverage-official]
+        result_directory: "{verifier}/core-e2e-coverage-official"
+  - name: saleor-dashboard
+    path: saleor-dashboard
+    source_include: ["src/**/*.ts", "src/**/*.tsx"]
+    test_include: ["**/*.test.[jt]s", "**/*.test.[jt]sx", "**/*.spec.[jt]s", "**/*.spec.[jt]sx", "**/__tests__/**", "playwright/tests/**/*.ts"]
+    suites:
+      - name: dash-unit
+        runner: jest
+        coverage_reader: istanbul
+        test_include: ["src/**/*.test.[jt]s", "src/**/*.test.[jt]sx", "src/**/*.spec.[jt]s", "src/**/*.spec.[jt]sx", "src/**/__tests__/**"]
+        args: [--maxWorkers=2]
+        discovery_args: [--maxWorkers=2]
+        baseline_args: [--transformIgnorePatterns, 'node_modules/(?!\.pnpm|chroma-js|zod|popper\.js)']
+      - name: dash-e2e
+        runner: command
+        coverage_reader: null
+        test_include: ["playwright/tests/**/*.ts"]
+        command: [bash, /opt/runtime/run-suite.sh, dash-e2e, coverage-official]
+        result_directory: "{verifier}/dash-e2e-coverage-official"
