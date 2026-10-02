@@ -179,7 +179,7 @@ class DocumentRubricTests(unittest.TestCase):
         value = opencode_environment(root, config_path, {
             "HOME": "/root",
             "PATH": "/usr/bin",
-            "CODEX_HOME": "/tmp/codex-home",
+            "CLAUDE_CONFIG_DIR": "/tmp/claude-home",
             "HTTP_PROXY": "http://proxy.invalid:7890",
             "https_proxy": "http://proxy.invalid:7890",
             "OPENAI_API_KEY": "test-key",
@@ -188,7 +188,7 @@ class DocumentRubricTests(unittest.TestCase):
         self.assertEqual(value["OPENCODE_CONFIG"], str(config_path))
         self.assertNotIn("HTTP_PROXY", value)
         self.assertNotIn("https_proxy", value)
-        self.assertNotIn("CODEX_HOME", value)
+        self.assertNotIn("CLAUDE_CONFIG_DIR", value)
         self.assertEqual(value["OPENAI_API_KEY"], "test-key")
         self.assertTrue(value["PATH"].startswith("/opt/document-eval/bin:"))
         for name in ("XDG_CONFIG_HOME", "XDG_CACHE_HOME", "XDG_DATA_HOME", "XDG_STATE_HOME"):
@@ -230,21 +230,17 @@ class DocumentRubricTests(unittest.TestCase):
 
         root = Path(self.temp.name)
         task = root / "task"
-        source = Path(run_workflow.__file__).resolve().parents[1] / "tasks/standard"
-        for name in ("roles", "templates", "public", "workflows", "workflow-runtime"):
-            shutil.copytree(source / name, task / name)
-        repo = task / "environment/repos/fixture"
-        repo.mkdir(parents=True)
-        subprocess.run(["git", "init", "-q", str(repo)], check=True)
-        (repo / "README.md").write_text("fixture\n")
-        subprocess.run(["git", "-C", str(repo), "add", "."], check=True)
-        subprocess.run([
-            "git", "-C", str(repo), "-c", "user.name=Fixture",
-            "-c", "user.email=fixture@example.invalid", "-c", "commit.gpgsign=false",
-            "commit", "-qm", "fixture",
-        ], check=True)
-        sha = subprocess.check_output(["git", "-C", str(repo), "rev-parse", "HEAD"], text=True).strip()
-        (task / "environment/base-revisions.json").write_text(json.dumps({"fixture": {"commit": sha}}))
+        (task / "env").mkdir(parents=True)
+        (task / "instruction.md").write_text("Business need\n")
+        (task / "task.toml").write_text(
+            'schema_version = "1.3"\n[task]\nname = "bench/fixture"\n'
+            '[metadata]\ntask_id = "fixture"\n'
+            '[environment]\ndocker_image = "registry.invalid/fixture:1"\ncpus = 4\n'
+            "memory_mb = 8192\nstorage_mb = 20480\nbuild_timeout_sec = 1800.0\n"
+        )
+        (task / "env/manifest.json").write_text(json.dumps({"repositories": {
+            "saleor": {"agent_baseline_commit": "c" * 40},
+        }}))
 
         runtime_home = root / "runtime-home"
         args = [

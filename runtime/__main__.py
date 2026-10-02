@@ -1,4 +1,4 @@
-"""Run the Single Agent SDLC lifecycle."""
+"""Run the SDLC workflow runtime."""
 from runtime.run_workflow import main
 
 if __name__ == "__main__":

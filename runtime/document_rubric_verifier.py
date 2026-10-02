@@ -33,8 +33,7 @@ REMOTE_REQUESTS = REMOTE_ROOT / "requests"
 REMOTE_BASE_REVISIONS = REMOTE_ROOT / "base-revisions.json"
 REMOTE_RUNNER = REMOTE_ROOT / "document_judge_runner.py"
 REMOTE_OPENCODE_RUNNER = REMOTE_ROOT / "document_opencode_judge_runner.py"
-REMOTE_CODEX_HOME = Path("/tmp/document-judge-home")
-REMOTE_SECRETS = Path("/tmp/document-judge-secrets")
+REMOTE_CLAUDE_HOME = Path("/tmp/document-judge-claude")
 REMOTE_OPENCODE_HOME = Path("/tmp/document-judge-opencode")
 REMOTE_OPENCODE_PLUGIN_ARCHIVE = REMOTE_ROOT / "opencode-plugin.tgz"
 REMOTE_JUDGE_CWD = Path("/tmp/document-judge-work")
@@ -60,7 +59,7 @@ class DocumentRubricVerifier(BaseVerifier):
         opencode_plugin_archive_sha256: str | None = None,
         ripgrep_archive_path: str | None = None,
         ripgrep_archive_sha256: str | None = None,
-        judge_backend: str = "codex",
+        judge_backend: str = "claude_code",
         judge_replicas: int | None = None,
         judge_protocol_retries: int = 1,
         judge_timeout_sec: float = 1800.0,
@@ -80,11 +79,10 @@ class DocumentRubricVerifier(BaseVerifier):
             Path(ripgrep_archive_path).resolve() if ripgrep_archive_path else None
         )
         self.ripgrep_archive_sha256 = ripgrep_archive_sha256
-        if judge_backend not in {"codex", "opencode"}:
-            raise ValueError("judge_backend must be codex or opencode")
+        if judge_backend not in {"claude_code", "opencode"}:
+            raise ValueError("judge_backend must be claude_code or opencode")
         self.judge_backend = judge_backend
-        self.judge_model = (judge_model if judge_backend == "opencode"
-                            else judge_model.split("/", 1)[-1])
+        self.judge_model = judge_model
         self.judge_replicas = judge_replicas
         if isinstance(judge_protocol_retries, bool) or not isinstance(
             judge_protocol_retries, int
@@ -358,12 +356,12 @@ done'''
         await self._exec(
             "rm -rf " + " ".join(shlex.quote(path.as_posix()) for path in (
                 REMOTE_PRIVATE, REMOTE_CANDIDATE, REMOTE_REQUESTS,
-                Path("/logs/verifier/document-judge"), REMOTE_CODEX_HOME, REMOTE_SECRETS,
+                Path("/logs/verifier/document-judge"), REMOTE_CLAUDE_HOME,
                 REMOTE_OPENCODE_HOME, REMOTE_JUDGE_CWD, REMOTE_BIN,
             )) + "; mkdir -p "
             + " ".join(shlex.quote(path.as_posix()) for path in (
                 REMOTE_ROOT, REMOTE_PRIVATE, REMOTE_CANDIDATE, REMOTE_REQUESTS,
-                Path("/logs/verifier/document-judge"), REMOTE_CODEX_HOME, REMOTE_SECRETS,
+                Path("/logs/verifier/document-judge"), REMOTE_CLAUDE_HOME,
                 REMOTE_OPENCODE_HOME, REMOTE_JUDGE_CWD, REMOTE_BIN,
             ))
         )
@@ -388,54 +386,42 @@ done'''
                          if self.judge_backend == "opencode" else REMOTE_RUNNER)
         await self.environment.upload_file(runner, remote_runner.as_posix())
 
-        env = {"CODEX_HOME": REMOTE_CODEX_HOME.as_posix()}
+        env = {"CLAUDE_CONFIG_DIR": REMOTE_CLAUDE_HOME.as_posix()}
         for name in (
             "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY",
             "http_proxy", "https_proxy", "all_proxy", "no_proxy",
         ):
             if value := self._configured_env(name):
                 env[name] = value
-        if self.judge_backend == "codex":
+        if self.judge_backend == "claude_code":
             await self._exec(
-                "if ! command -v codex >/dev/null 2>&1; then "
-                "npm install -g @openai/codex@0.154.0 >/tmp/document-judge-npm.log 2>&1; "
-                "fi; codex --version",
+                "if ! command -v claude >/dev/null 2>&1; then "
+                "npm install -g @anthropic-ai/claude-code@2.1.273 "
+                ">/tmp/document-judge-npm.log 2>&1; fi; claude --version",
                 env=env,
             )
         else:
             await self._exec("opencode --version", env=env)
 
-        auth_path = os.environ.get("CODEX_AUTH_JSON_PATH")
-        if self.judge_backend == "codex" and auth_path:
-            source = Path(auth_path)
-            if not source.is_file():
-                raise DocumentEvaluationError("CODEX_AUTH_JSON_PATH does not point to a file")
-            remote_auth = REMOTE_SECRETS / "auth.json"
-            await self.environment.upload_file(source, remote_auth.as_posix())
-            await self._exec(
-                "chmod 600 " + shlex.quote(remote_auth.as_posix())
-                + " && ln -sf " + shlex.quote(remote_auth.as_posix())
-                + " " + shlex.quote((REMOTE_CODEX_HOME / "auth.json").as_posix())
-            )
-        elif self.judge_backend == "codex":
-            api_key = self._configured_env("OPENAI_API_KEY")
-            if not api_key:
+        if self.judge_backend == "claude_code":
+            for name in (
+                "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN",
+                "ANTHROPIC_BASE_URL", "CLAUDE_CODE_OAUTH_TOKEN",
+                "CLAUDE_FORCE_OAUTH", "CLAUDE_CODE_USE_BEDROCK",
+                "AWS_BEARER_TOKEN_BEDROCK", "AWS_ACCESS_KEY_ID",
+                "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN", "AWS_PROFILE",
+                "AWS_REGION",
+            ):
+                if value := self._configured_env(name):
+                    env[name] = value
+            if not any(env.get(name) for name in (
+                "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN",
+                "CLAUDE_CODE_OAUTH_TOKEN", "AWS_BEARER_TOKEN_BEDROCK",
+                "AWS_ACCESS_KEY_ID", "AWS_PROFILE", "CLAUDE_CODE_USE_BEDROCK",
+            )):
                 raise DocumentEvaluationError(
-                    "document judge needs CODEX_AUTH_JSON_PATH or OPENAI_API_KEY"
+                    "Claude Code document judge needs Anthropic, OAuth, or Bedrock credentials"
                 )
-            remote_auth = REMOTE_SECRETS / "auth.json"
-            script = (
-                "import json,os,pathlib; "
-                f"p=pathlib.Path({remote_auth.as_posix()!r}); "
-                "p.write_text(json.dumps({'OPENAI_API_KEY':os.environ['OPENAI_API_KEY']})); "
-                "p.chmod(0o600)"
-            )
-            await self._exec("python3 -c " + shlex.quote(script), env={"OPENAI_API_KEY": api_key})
-            await self._exec(
-                "ln -sf " + shlex.quote(remote_auth.as_posix())
-                + " " + shlex.quote((REMOTE_CODEX_HOME / "auth.json").as_posix())
-            )
-            env["OPENAI_API_KEY"] = api_key
         elif api_key := self._configured_env("OPENAI_API_KEY"):
             env["OPENAI_API_KEY"] = api_key
         else:
@@ -519,6 +505,7 @@ Judge replica：{replica}
     def _retryable_protocol_error(exc: Exception) -> bool:
         message = str(exc)
         return any(marker in message for marker in (
+            "Claude Code final output is not structured JSON",
             "OpenCode final output is not JSON",
             "OpenCode document judge produced no text output",
             "invalid structured judgment",
@@ -553,7 +540,7 @@ Judge replica：{replica}
                 "--cwd", shlex.quote(REMOTE_JUDGE_CWD.as_posix()),
                 "--prompt", shlex.quote(remote_prompt.as_posix()),
             ]
-            if self.judge_backend == "codex":
+            if self.judge_backend == "claude_code":
                 arguments += ["--schema", shlex.quote(remote_schema.as_posix())]
             arguments += [
                 "--output", shlex.quote(remote_output.as_posix()),
@@ -643,11 +630,9 @@ Judge replica：{replica}
             if env is not None:
                 try:
                     await self._exec(
-                        "find " + shlex.quote(REMOTE_SECRETS.as_posix())
-                        + " " + shlex.quote(REMOTE_CODEX_HOME.as_posix())
+                        "find " + shlex.quote(REMOTE_CLAUDE_HOME.as_posix())
                         + " -type f -exec sh -c 'umask 077; : > \"$1\"' sh {} \\;"
-                        + " && find " + shlex.quote(REMOTE_SECRETS.as_posix())
-                        + " " + shlex.quote(REMOTE_CODEX_HOME.as_posix())
+                        + " && find " + shlex.quote(REMOTE_CLAUDE_HOME.as_posix())
                         + " -depth -delete"
                         + " && echo document-judge-cleanup=ok"
                     )

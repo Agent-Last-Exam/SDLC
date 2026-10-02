@@ -1,10 +1,9 @@
-"""Prompt-only adapters; execution, auth and trajectories stay in Harbor 0.20.0."""
+"""Claude Code prompt injection; execution, auth and trajectories stay in Harbor."""
 
 import json
 import shlex
 from pathlib import Path
 
-from harbor.agents.installed.codex import Codex
 from harbor.agents.installed.claude_code import ClaudeCode
 
 
@@ -35,18 +34,11 @@ class PromptMixin:
         )
 
 
-class PromptCodex(PromptMixin, Codex):
-    def build_cli_flags(self):
-        flags = super().build_cli_flags()
-        if self.prompt_mode == "replace":
-            value = "model_instructions_file=" + json.dumps(self.REMOTE_PROMPT)
-        else:
-            value = "developer_instructions=" + json.dumps(self.prompt_text, ensure_ascii=False)
-        return flags + " -c " + shlex.quote(value)
-
-
 class PromptClaudeCode(PromptMixin, ClaudeCode):
     def build_cli_flags(self):
         flags = super().build_cli_flags()
         option = "--system-prompt" if self.prompt_mode == "replace" else "--append-system-prompt"
-        return flags + " " + option + " " + shlex.quote(self.prompt_text)
+        # Claude Code otherwise snapshots the first turn's system prompt and
+        # reuses it on resume, which would leave Single stuck in the PM role.
+        return (flags + " " + option + " " + shlex.quote(self.prompt_text)
+                + " --system-prompt-snapshot off")

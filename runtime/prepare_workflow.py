@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate/freeze public workflow inputs without calling an Agent or a model.
+"""Validate and freeze workflow inputs without calling an Agent or a model.
 
 Use the Harbor Python environment (PyYAML is already installed there).
 This is a preparation tool, not a workflow executor.
@@ -14,21 +14,65 @@ import shutil
 import subprocess
 import tarfile
 import tempfile
+import tomllib
 
 import yaml
 
 HERE = Path(__file__).resolve().parents[1]
-DEFAULT_TASK = HERE / "tasks/standard"
+DEFAULTS = Path(__file__).resolve().parent / "defaults"
+CONTRACT = DEFAULTS / "workflows/lifecycle.yaml"
+
+MODES = ("single", "flat", "hierarchical")
+HIERARCHICAL_BUDGETS = (
+    "max_members", "max_concurrency", "max_lead_turns", "max_assignments",
+    "max_revisions_per_stage", "max_actions_per_turn",
+)
 
 
-def resolve_config(config=None, task=None, mode=None):
-    """Select a task-owned run profile; explicit YAML remains a supported entry."""
-    if config is not None:
-        if task is not None or mode is not None:
-            raise ValueError("Use either --config or --task/--mode")
-        return Path(config).resolve()
-    root = Path(task).resolve() if task is not None else DEFAULT_TASK
-    return root / "workflows" / f"{mode or 'single'}.yaml"
+def resolve_mode(mode):
+    """Select the runtime's run profile for ``mode``."""
+    if mode not in MODES:
+        raise ValueError(f"Unknown mode: {mode}")
+    return DEFAULTS / "workflows" / f"{mode}.yaml"
+
+
+def validate_run(run, path):
+    """Check the profile is well formed; the file is the source, not a copy to verify."""
+    if run.get("schema_version") != 1 or run.get("kind") != "workflow_run":
+        raise ValueError(f"Unsupported workflow schema: {path}")
+    fields = {"schema_version", "kind", "mode", "contract", "agent", "execution"}
+    if set(run) != fields:
+        raise ValueError(f"{path.name}: run profile fields must be {sorted(fields)}")
+    mode = run.get("mode")
+    # The controllers branch on mode alone, so a mismatched file would silently
+    # run a different mode than the one requested.
+    if mode != path.stem:
+        raise ValueError(f"Profile {path.name} declares mode {mode!r}")
+    if run.get("agent") != {"adapter": "claude_code"}:
+        raise ValueError(f"Unsupported agent adapter in {path.name}")
+    execution = run["execution"]
+    expected_execution = {"max_cost_usd"} | (
+        set(HIERARCHICAL_BUDGETS) if mode == "hierarchical" else {"subagents"}
+    )
+    if set(execution) != expected_execution:
+        raise ValueError(
+            f"{path.name}: execution fields must be {sorted(expected_execution)}"
+        )
+    cost = execution.get("max_cost_usd")
+    if type(cost) not in (int, float) or isinstance(cost, bool) or cost <= 0:
+        raise ValueError(f"{path.name}: max_cost_usd must be a positive number")
+    if mode == "hierarchical":
+        for key in HIERARCHICAL_BUDGETS:
+            if type(execution.get(key)) is not int or execution[key] <= 0:
+                raise ValueError(f"{path.name}: {key} must be a positive integer")
+        if execution["max_concurrency"] > execution["max_members"]:
+            raise ValueError(f"{path.name}: max_concurrency cannot exceed max_members")
+    else:
+        subagents = execution.get("subagents")
+        if not isinstance(subagents, dict) or set(subagents) != {"enabled"} \
+                or not isinstance(subagents["enabled"], bool):
+            raise ValueError(f"{path.name}: subagents must contain one boolean enabled field")
+    return run
 
 
 class UniqueLoader(yaml.SafeLoader):
@@ -63,41 +107,174 @@ def git(repo, *args):
     return subprocess.check_output(["git", "-C", str(repo), *args], text=True).strip()
 
 
-def compile_workflow(path, verify_repos=True):
-    path = path.resolve()
-    run = read_yaml(path)
-    if run.get("schema_version") != 1 or run.get("kind") != "workflow_run":
-        raise ValueError("Unsupported workflow schema")
-    task_root = (path.parent / run["task_root"]).resolve()
-    harbor_sources = {"task.toml": task_root / "task.toml",
-                      "Dockerfile": task_root / "environment/Dockerfile"}
-    for name, source in harbor_sources.items():
-        if not source.is_file():
-            raise ValueError(f"Missing task runtime input {name}: {source}")
-    mode = run.get("mode")
-    policies = {
-        "single": ("fixed_forward", "continuous"),
-        "flat": ("fixed_forward", "new_per_stage"),
-        "hierarchical": ("lead_managed", "lead_with_members"),
-    }
-    if mode not in policies:
-        raise ValueError(f"Unknown mode: {mode}")
-    execution = run["execution"]
-    if (execution["scheduling"], execution["principal_session"]) != policies[mode]:
-        raise ValueError("Mode and session/scheduling policies disagree")
-    contract_path = (path.parent / run["contract"]).resolve()
+def resolve_source(value, *, base, task, group):
+    """Resolve a contract source.
+
+    ``defaults:`` reads the runtime default roles and templates, ``task:`` and
+    ``derive:`` are relative to the task root, and a bare path is relative to the
+    contract. ``derive:`` names the package file an input is computed from, so
+    the resolved path is an input to generation rather than a copied file.
+    """
+    for scheme, root, allowed in (
+        ("defaults:", DEFAULTS / group, {"roles", "templates"}),
+        ("task:", task, {"inputs"}),
+        ("derive:", task, {"inputs"}),
+    ):
+        if value.startswith(scheme):
+            if group not in allowed:
+                raise ValueError(f"{scheme} is not accepted for {group}")
+            if root is None:
+                raise ValueError(f"{scheme} requires a task directory; use --task")
+            resolved = (root / safe_relative(value[len(scheme):])).resolve()
+            if not resolved.is_relative_to(root.resolve()):
+                raise ValueError(f"Unsafe {scheme} reference: {value}")
+            return resolved
+    return (base / value).resolve()
+
+
+def derive_base_revisions(manifest):
+    """Build Base revisions from the package's own environment manifest.
+
+    Frozen packages record the immutable commit each repository's diff is taken
+    against; that commit, not the upstream tag, is the Agent's Base.
+    """
+    repositories = json.loads(manifest.read_text())["repositories"]
+    derived = {}
+    for name, value in repositories.items():
+        # Both values are interpolated into generated build commands.
+        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", name):
+            raise ValueError(f"Unsafe repository name: {name}")
+        commit = value["agent_baseline_commit"]
+        if not re.fullmatch(r"[0-9a-f]{40}", str(commit)):
+            raise ValueError(f"Invalid agent baseline commit for {name}: {commit}")
+        derived[name] = {"version": "agent-baseline", "commit": commit}
+    return derived
+
+
+def generated_task_toml(task_toml, mode):
+    environment = task_toml["environment"]
+    name, task_id = task_toml["task"]["name"], task_toml["metadata"]["task_id"]
+    for value in (name, task_id):
+        if '"' in value:
+            raise ValueError(f"Task identity is not a safe TOML string: {value}")
+    return f'''schema_version = "1.3"
+
+[task]
+name = "{name}-{mode}-workflow"
+description = "{mode.title()} Agent SDLC workflow sidecar for {task_id}"
+
+[metadata]
+category = "software-development"
+source_task = "{task_id}"
+scope = "Workflow rollout; benchmark verifier remains owned by the source task"
+
+[agent]
+timeout_sec = 10800.0
+network_mode = "public"
+user = "root"
+
+[environment]
+build_timeout_sec = {float(environment["build_timeout_sec"])}
+cpus = {int(environment["cpus"])}
+memory_mb = {int(environment["memory_mb"])}
+storage_mb = {int(environment["storage_mb"])}
+workdir = "/workspace"
+
+[verifier]
+environment_mode = "separate"
+network_mode = "public"
+timeout_sec = 7200.0
+'''
+
+
+def generated_dockerfile(image, revisions):
+    """Thin overlay on the task's published image; never rebuilds the application."""
+    if not re.fullmatch(r"[A-Za-z0-9./:@_-]+", image):
+        raise ValueError(f"Task docker_image is not a safe concrete image reference: {image}")
+    # The image keeps each repository at /workspace/<name> with its installed
+    # dependencies. Move rather than copy so node_modules survives intact, and
+    # assert the Base commit the verifier diffs against.
+    moves = " \\\n    && ".join(
+        f'test "$(git -C /workspace/{name} rev-parse HEAD)" = "{spec["commit"]}" '
+        f"&& mv /workspace/{name} /workspace/repos/{name}"
+        for name, spec in sorted(revisions.items())
+    )
+    links = " \\\n    && ".join(
+        f"ln -s /workspace/repos/{name} /workspace/{name}" for name in sorted(revisions)
+    )
+    relocate = f'''
+# Relocate the image's repositories to the workspace layout the runtime owns, and
+# keep the original paths as links so the image's own test runtime still resolves.
+RUN mkdir -p /workspace/repos \\
+    && {moves} \\
+    && {links}
+'''
+    return f'''FROM {image}
+
+# Keep the benchmark's preinstalled application dependencies, and add only the
+# tools required by the workflow Agent. Network is needed while building this
+# thin overlay and for model API calls, not for fetching target application code.
+RUN apt-get update \\
+    && apt-get install -y --no-install-recommends ripgrep jq procps less \\
+    && rm -rf /var/lib/apt/lists/* \\
+    && npm install -g @anthropic-ai/claude-code@2.1.273 \\
+    && npm cache clean --force \\
+    && claude --version
+{relocate}
+COPY workspace/ /workspace/
+RUN chown -R root:root /workspace \\
+    && chmod -R a-w /workspace \\
+    && rm -rf /workspace/artifacts \\
+    && mkdir -p /logs/artifacts /logs/agent \\
+    && ln -s /logs/artifacts /workspace/artifacts
+
+WORKDIR /workspace
+ENTRYPOINT []
+CMD ["sleep", "infinity"]
+'''
+
+
+def compile_workflow(mode, task, verify_repos=True, contract_path=CONTRACT):
+    """Compile a run of ``mode`` against a task package.
+
+    The run profile, delivery contract and Harbor task definition are owned by the
+    runtime under ``defaults/``; the package supplies only business inputs, its Base
+    identity and the published image. Nothing is read from the package's workflows.
+    """
+    profile = resolve_mode(mode)
+    run = validate_run(read_yaml(profile), profile)
+    task = Path(task).resolve()
+    if contract_path is CONTRACT:
+        contract_path = (profile.parent / run["contract"]).resolve()
+    task_toml = tomllib.loads((task / "task.toml").read_text())
+    # A package shipping a published image owns no buildable environment, so the
+    # Harbor definition is generated and the repositories come from that image.
+    image = task_toml["environment"].get("docker_image")
+    repos_source = "image" if image else "host"
+    harbor_sources, generated_inputs = {}, {}
+    harbor_generated = {"task.toml": generated_task_toml(task_toml, mode)} if image else {}
+    if not image:
+        harbor_sources = {"task.toml": task / "task.toml",
+                          "Dockerfile": task / "environment/Dockerfile"}
+        for name, source in harbor_sources.items():
+            if not source.is_file():
+                raise ValueError(f"Missing task runtime input {name}: {source}")
+    contract_path = Path(contract_path).resolve()
     contract = read_yaml(contract_path)
     if contract.get("schema_version") != 1 or contract.get("kind") != "delivery_contract":
         raise ValueError("Unsupported delivery contract")
     if contract.get("scope") != "local_sdlc":
         raise ValueError("Only the local_sdlc lifecycle contract is supported")
+    if mode == "hierarchical" and not {"lead", "member", "reviewer"}.issubset(contract.get("roles", {})):
+        raise ValueError("Hierarchical contract requires lead, member and reviewer roles")
     sources = {}
     input_workspace_paths = {}
-    explicit_input_sources = {}
     for group in ("roles", "templates", "inputs"):
         sources[group] = {}
         for name, value in contract[group].items():
-            if group == "inputs" and isinstance(value, dict):
+            if group == "inputs":
+                if not isinstance(value, dict):
+                    raise ValueError(f"Input {name} must explicitly declare source and workspace")
                 if set(value) != {"source", "workspace"}:
                     raise ValueError(
                         f"Input {name} must declare exactly source and workspace"
@@ -109,51 +286,44 @@ def compile_workflow(path, verify_repos=True):
                 workspace_value = None
             if not isinstance(source_value, str):
                 raise ValueError(f"Invalid {group}:{name} source")
-            source = (contract_path.parent / source_value).resolve()
-            missing = (not source.is_dir() if name == "repos" else not source.is_file())
-            if missing and (name != "repos" or verify_repos):
-                raise ValueError(f"Missing {group}:{name}: {source}")
+            source = resolve_source(
+                source_value, base=contract_path.parent, task=task, group=group
+            )
+            if source_value.startswith("derive:"):
+                if name != "base_revisions":
+                    raise ValueError(f"derive: is only defined for base_revisions, not {name}")
+                generated_inputs[name] = json.dumps(
+                    derive_base_revisions(source), ensure_ascii=False, indent=2
+                ) + "\n"
+            elif name == "repos" and repos_source == "image":
+                pass  # The image carries the repositories; no host tree exists.
+            else:
+                missing = (not source.is_dir() if name == "repos" else not source.is_file())
+                if missing and (name != "repos" or verify_repos):
+                    raise ValueError(f"Missing {group}:{name}: {source}")
             sources[group][name] = str(source)
             if group == "inputs":
                 if not re.fullmatch(r"[a-z][a-z0-9_]*", name):
                     raise ValueError(f"Invalid input name: {name}")
                 input_workspace_paths[name] = workspace_value
-                if isinstance(value, dict):
-                    explicit_input_sources[name] = source
-    legacy_input_paths = {
+    required_input_paths = {
         "instruction": "instruction.md",
         "base_revisions": "base-revisions.json",
         "repos": "repos",
     }
-    if not {"base_revisions", "repos"}.issubset(contract["inputs"]):
-        raise ValueError("Missing required Base inputs")
-    if verify_repos and not Path(sources["inputs"]["repos"]).is_dir():
+    if set(contract["inputs"]) != set(required_input_paths):
+        raise ValueError("Local SDLC requires exactly instruction, base_revisions and repos inputs")
+    if verify_repos and repos_source == "host" and not Path(sources["inputs"]["repos"]).is_dir():
         raise ValueError("Repository snapshot root is not a directory")
-    for name, value in input_workspace_paths.items():
-        if value is None:
-            if name not in legacy_input_paths:
-                raise ValueError(f"Input {name} needs an explicit workspace path")
-            input_workspace_paths[name] = legacy_input_paths[name]
-    if input_workspace_paths["base_revisions"] != "base-revisions.json":
-        raise ValueError("base_revisions must be exposed as base-revisions.json")
-    if input_workspace_paths["repos"] != "repos":
-        raise ValueError("repos must be exposed as repos")
-    for name, value in input_workspace_paths.items():
-        if name not in {"instruction", "base_revisions", "repos"} and not value.startswith("public/"):
-            raise ValueError(f"Public input {name} must stay below public/")
-        contract_public_root = contract_path.parent.parent / "public"
-        if (value.startswith("public/")
-                and not explicit_input_sources[name].is_relative_to(contract_public_root)):
-            raise ValueError(f"Public input {name} must come from the task public directory")
-    if len(set(input_workspace_paths.values())) != len(input_workspace_paths):
-        raise ValueError("Public inputs cannot share a workspace path")
+    if input_workspace_paths != required_input_paths:
+        raise ValueError(f"Local SDLC inputs must use workspace paths {required_input_paths}")
     workspace_paths = {
         f"input:{name}": value for name, value in input_workspace_paths.items()
     }
     for name, source in sources["templates"].items():
         relative = "templates/" + Path(source).name
         if relative in workspace_paths.values():
-            raise ValueError(f"Template path collides with a public input: {relative}")
+            raise ValueError(f"Template path collides with a workflow input: {relative}")
         workspace_paths[f"template:{name}"] = relative
     accepted_refs = set(workspace_paths)
     stages = []
@@ -190,6 +360,16 @@ def compile_workflow(path, verify_repos=True):
             workspace_paths[ref] = value
             accepted_refs.add(ref)
             envelope["outputs"][ref] = "/workspace/" + value
+        if "additional_outputs" in stage:
+            additional = stage["additional_outputs"]
+            if not isinstance(additional, dict) or set(additional) != {"directory", "purpose"}:
+                raise ValueError(f"Invalid additional_outputs for {sid}")
+            directory = safe_relative(additional["directory"])
+            if not directory.startswith(f"artifacts/{sid}/"):
+                raise ValueError(f"Additional output outside its stage: {directory}")
+            if any(path == directory or path.startswith(directory + "/") for path in output_paths):
+                raise ValueError(f"Additional output collides with a declared output: {directory}")
+            envelope["additional_output_directory"] = "/workspace/" + directory
         stages.append(envelope)
     for ref in contract["delivery"]["required"]:
         if ref not in accepted_refs or not ref.startswith("artifact:"):
@@ -202,7 +382,7 @@ def compile_workflow(path, verify_repos=True):
     expected += [("sprint2/" + name, role) for name, role in (
         ("triage", "triage"), ("tech-design", "architect"),
         ("development", "developer"), ("deploy", "deployer"), ("qa", "qa"))]
-    if [(s["stage_id"], s["role"]) for s in stages] != expected or contract["delivery"].get("qa_rounds") != 2:
+    if [(s["stage_id"], s["role"]) for s in stages] != expected:
         raise ValueError("Local SDLC requires the bounded two-sprint plan")
     for stage in stages:
         if stage["role"] != "pm" and "artifact:sprint1/prd/prd" not in stage["inputs"]:
@@ -222,8 +402,14 @@ def compile_workflow(path, verify_repos=True):
             case_refs = [ref for ref in stage["inputs"] if ref.endswith("/test_cases")]
             if case_refs != ["artifact:sprint1/test-design/test_cases"]:
                 raise ValueError("Both QA rounds must use the accepted first-round test cases")
-    revisions = json.loads(Path(sources["inputs"]["base_revisions"]).read_text())
-    if verify_repos:
+    revisions = json.loads(
+        generated_inputs["base_revisions"]
+        if "base_revisions" in generated_inputs
+        else Path(sources["inputs"]["base_revisions"]).read_text()
+    )
+    if image:
+        harbor_generated["Dockerfile"] = generated_dockerfile(image, revisions)
+    if verify_repos and repos_source == "host":
         for name, revision in revisions.items():
             repo = Path(sources["inputs"]["repos"]) / name
             expected = revision if isinstance(revision, str) else revision["commit"]
@@ -231,20 +417,15 @@ def compile_workflow(path, verify_repos=True):
                 raise ValueError(f"Wrong Base SHA: {name}")
             if git(repo, "status", "--porcelain"):
                 raise ValueError(f"Dirty Base snapshot: {name}")
-    blockers = ["Preparation does not check model authentication or Docker availability; use run_workflow to execute"]
-    if mode == "flat":
-        blockers.append("Flat lifecycle isolation and handoff are not implemented")
-    if mode == "hierarchical":
-        blockers.append("Lead blueprint, organization skill and team tools are not implemented")
     return {"schema_version": 1, "mode": mode, "run": run, "contract": contract,
-            "task_root": str(task_root), "harbor_sources": {k: str(v) for k, v in harbor_sources.items()},
-            "sources": sources, "stages": stages, "workspace_paths": workspace_paths,
-            "execution_implemented": mode == "single",
-            "execution_ready": False, "execution_blockers": blockers}
+            "task": str(task), "harbor_sources": {k: str(v) for k, v in harbor_sources.items()},
+            "harbor_generated": harbor_generated, "generated_inputs": generated_inputs,
+            "repos_source": repos_source,
+            "sources": sources, "stages": stages, "workspace_paths": workspace_paths}
 
 
 def prepare(compiled, destination):
-    """Create a new public workspace plus host-only preparation manifest.
+    """Create a new Agent workspace plus host-only preparation manifest.
 
     Repository files come from git archive HEAD (no Target, remotes, host paths,
     dirty files, or credential-bearing .git config). No old artifacts are copied.
@@ -261,6 +442,9 @@ def prepare(compiled, destination):
         runtime_inputs.mkdir()
         for name, source in compiled["harbor_sources"].items():
             shutil.copyfile(source, runtime_inputs / name)
+        for name, content in compiled["harbor_generated"].items():
+            (runtime_inputs / name).write_text(content)
+        generated_inputs = compiled["generated_inputs"]
         for group in ("inputs", "templates", "roles"):
             for name, source in compiled["sources"][group].items():
                 if group == "inputs" and name == "repos":
@@ -272,8 +456,15 @@ def prepare(compiled, destination):
                     relative = compiled["workspace_paths"][ref]
                 target = workspace / relative
                 target.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copyfile(source, target)
+                if group == "inputs" and name in generated_inputs:
+                    target.write_text(generated_inputs[name])
+                else:
+                    shutil.copyfile(source, target)
         revisions = json.loads((workspace / compiled["workspace_paths"]["input:base_revisions"]).read_text())
+        if compiled["repos_source"] == "image":
+            # The image already carries each repository with its installed
+            # dependencies; the generated Dockerfile moves them into place.
+            revisions = {}
         for name, revision in revisions.items():
             target = workspace / compiled["workspace_paths"]["input:repos"] / name
             target.mkdir(parents=True)
@@ -307,22 +498,20 @@ def prepare(compiled, destination):
     except BaseException:
         shutil.rmtree(staging)
         raise
-    return {"directory": str(destination), "public_files": len(checksums), "model_called": False,
-            "execution_ready": False}
+    return {"directory": str(destination), "workspace_files": len(checksums),
+            "model_called": False}
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("config", nargs="?", type=Path)
-    parser.add_argument("--task", type=Path, help="Task directory; defaults to tasks/standard")
-    parser.add_argument("--mode", choices=["single", "flat", "hierarchical"])
-    parser.add_argument("--output", type=Path, help="Create a new complete public workspace; never runs an Agent")
+    parser.add_argument("--task", type=Path, required=True, help="Task package directory")
+    parser.add_argument("--mode", choices=MODES, default="single")
+    parser.add_argument("--output", type=Path, help="Create a complete Agent workspace; never runs an Agent")
     args = parser.parse_args()
     try:
-        compiled = compile_workflow(resolve_config(args.config, args.task, args.mode))
+        compiled = compile_workflow(args.mode, args.task)
         result = prepare(compiled, args.output) if args.output else {
             "mode": compiled["mode"], "stages": compiled["stages"],
-            "execution_ready": False, "execution_blockers": compiled["execution_blockers"],
         }
     except (ValueError, KeyError, OSError, subprocess.CalledProcessError) as exc:
         parser.error(str(exc))

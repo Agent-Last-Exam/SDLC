@@ -33,7 +33,7 @@ HTTPServer(('127.0.0.1', 8765), Handler).serve_forever()
 '''
 
 
-def write_fixture(directory, role, workspace):
+def write_fixture(directory, role, workspace, include_repository_fixture=True):
     directory.mkdir(parents=True, exist_ok=True)
     if role == "pm":
         (directory / "prd.md").write_text("""# PRD：SYNTHETIC SMOKE ONLY
@@ -118,7 +118,11 @@ I01 属于 BD01。
 ## 3. 其他
 非正式技术设计。
 """)
-    shutil.copyfile(workspace / "repos/saleor/saleor/graphql/schema.graphql", directory / "target-schema.graphql")
+    if include_repository_fixture:
+        shutil.copyfile(
+            workspace / "repos/saleor/saleor/graphql/schema.graphql",
+            directory / "target-schema.graphql",
+        )
 
 
 class SmokeBackend(HarborBackend):
@@ -133,9 +137,24 @@ class SmokeBackend(HarborBackend):
         # never copies these examples into the Agent environment.
         with tempfile.TemporaryDirectory() as temp:
             source = Path(temp)
-            write_stage_fixture(source, stage, self.workspace, self.scenario)
+            # A docker_image task keeps the Base repositories only in the
+            # container. Generate ordinary fixtures on the host, then copy the
+            # repository-derived schema from the container below.
+            write_stage_fixture(
+                source, stage, self.workspace, self.scenario,
+                include_repository_fixture=False,
+            )
             for path in source.iterdir():
                 await self.environment.upload_file(path, stage["writable_directory"] + "/" + path.name)
+        if stage["role"] == "architect":
+            target = stage["writable_directory"] + "/target-schema.graphql"
+            result = await self.environment.exec(
+                "cp -- /workspace/repos/saleor/saleor/graphql/schema.graphql "
+                + shlex.quote(target),
+                user=self.user,
+            )
+            if result.return_code:
+                raise RuntimeError("Could not copy the smoke target schema from the Base repository")
         if stage["role"] == "developer":
             result = await self.environment.exec(
                 "python3 -c " + shlex.quote("from pathlib import Path; Path('/workspace/repos/smoke-version.txt').write_text(" + repr(str(stage["round"])) + "); Path('/workspace/repos/smoke-server.py').write_text(" + repr(SMOKE_SERVER) + ")"),
@@ -160,11 +179,15 @@ class SmokeBackend(HarborBackend):
         return resume_session or f"synthetic-session-{self.stage_index}"
 
 
-def write_stage_fixture(directory, stage, workspace, scenario="repair"):
+def write_stage_fixture(directory, stage, workspace, scenario="repair",
+                        include_repository_fixture=True):
     """Synthetic branch fixtures; real workflow never exposes these to the Agent."""
     role, number = stage["role"], stage.get("round", 1)
     if role in {"pm", "architect"}:
-        return write_fixture(directory, role, workspace)
+        return write_fixture(
+            directory, role, workspace,
+            include_repository_fixture=include_repository_fixture,
+        )
     CASE_COLUMNS = ['用例编号', '一级模块', '二级模块', '用例标题', '覆盖', '优先级', '前置条件', '操作步骤', '预期结果']
     RESULT_COLUMNS = ['用例编号', '结果', '实际结果', '证据', '缺陷编号']
     directory.mkdir(parents=True, exist_ok=True)
