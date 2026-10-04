@@ -202,7 +202,7 @@ def judgment_schema(group: Group) -> dict[str, Any]:
         "additionalProperties": False,
         "required": ["group_id", "results"],
         "properties": {
-            "group_id": {"const": group.group_id},
+            "group_id": {"type": "string", "const": group.group_id},
             "results": {
                 "type": "array",
                 "minItems": len(rubric_ids),

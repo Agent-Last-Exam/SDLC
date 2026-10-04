@@ -10,27 +10,30 @@ import tempfile
 from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
+from io import BytesIO
 
 from runtime.document_rubric import (
     Manifest,
     aggregate,
     apply_delivery_gate,
     disagreements,
+    judgment_schema,
     rewardkit_details,
     validate_judgment,
 )
 from runtime.document_rubric_verifier import (
     DocumentEvaluationError,
     DocumentRubricVerifier,
-    REMOTE_BASE_REVISIONS,
-    REMOTE_JUDGE_CWD,
+    REMOTE_DIRECT_RUNNER,
 )
-from runtime.document_opencode_judge_runner import (
-    OPENCODE_PLUGIN_VERSION,
-    opencode_config,
-    opencode_environment,
-    prepare_opencode_dependencies,
-    warmup_opencode,
+from runtime.document_direct_judge_runner import (
+    api_model,
+    chat_completions_url,
+    load_credentials,
+    load_prompt,
+    parse_judgment,
+    read_response,
+    request_payload,
 )
 
 
@@ -103,6 +106,10 @@ class DocumentRubricTests(unittest.TestCase):
 
     def test_judgment_requires_fixed_denominator_and_issue_for_failure(self):
         group = Manifest.load(self.path).groups[0]
+        self.assertEqual(
+            judgment_schema(group)["properties"]["group_id"],
+            {"type": "string", "const": "prd"},
+        )
         valid = validate_judgment(group, result("prd", [("P1", "P"), ("P2", "F")]))
         self.assertEqual(len(valid["results"]), 2)
         missing = result("prd", [("P1", "P")])
@@ -165,65 +172,98 @@ class DocumentRubricTests(unittest.TestCase):
         self.assertEqual(details["score"], 0.0)
         self.assertEqual(details["criteria"][1]["error"], "MISSING_REQUIRED_FILE")
 
-    def test_opencode_judge_pins_title_model_to_allowed_judge_model(self):
-        value = opencode_config("openai/hy4-preview", "https://new-api.example/v1")
-        self.assertEqual(value["model"], "openai/hy4-preview")
-        self.assertEqual(value["small_model"], "openai/hy4-preview")
-        self.assertEqual(value["agent"]["title"], {"disable": True})
-        self.assertEqual(value["agent"]["build"], {"steps": 12})
-        self.assertEqual(value["provider"]["openai"]["models"], {"hy4-preview": {}})
-
-    def test_opencode_judge_isolates_global_config_and_plugin_cache(self):
-        root = Path(self.temp.name) / "judge"
-        config_path = root / "opencode.json"
-        value = opencode_environment(root, config_path, {
-            "HOME": "/root",
-            "PATH": "/usr/bin",
-            "CODEX_HOME": "/tmp/codex-home",
-            "HTTP_PROXY": "http://proxy.invalid:7890",
-            "https_proxy": "http://proxy.invalid:7890",
-            "OPENAI_API_KEY": "test-key",
-            "OPENAI_BASE_URL": "https://new-api.example/v1",
-        })
-        self.assertEqual(value["OPENCODE_CONFIG"], str(config_path))
-        self.assertNotIn("HTTP_PROXY", value)
-        self.assertNotIn("https_proxy", value)
-        self.assertNotIn("CODEX_HOME", value)
-        self.assertEqual(value["OPENAI_API_KEY"], "test-key")
-        self.assertTrue(value["PATH"].startswith("/opt/document-eval/bin:"))
-        for name in ("XDG_CONFIG_HOME", "XDG_CACHE_HOME", "XDG_DATA_HOME", "XDG_STATE_HOME"):
-            self.assertTrue(Path(value[name]).is_dir())
-            self.assertTrue(Path(value[name]).is_relative_to(root))
-        for name in (
-            "OPENCODE_PURE", "OPENCODE_DISABLE_MODELS_FETCH",
-            "OPENCODE_DISABLE_AUTOUPDATE", "OPENCODE_DISABLE_PRUNE",
-            "OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER",
-        ):
-            self.assertEqual(value[name], "1")
-
-    def test_opencode_judge_preinstalls_matching_plugin_without_scripts(self):
-        root = Path(self.temp.name) / "judge"
-        with patch("runtime.document_opencode_judge_runner.subprocess.run") as run:
-            prepare_opencode_dependencies(root, {"PATH": "/usr/bin"})
-        package = json.loads((root / "xdg-config/opencode/package.json").read_text())
-        self.assertEqual(
-            package["dependencies"],
-            {"@opencode-ai/plugin": OPENCODE_PLUGIN_VERSION},
+    def test_direct_judge_builds_schema_constrained_chat_request(self):
+        schema = {"$schema": "draft", "type": "object", "properties": {}}
+        value = request_payload("openai/gpt-5.6-sol", "judge", schema, 8000)
+        self.assertEqual(api_model("openai/gpt-5.6-sol"), "gpt-5.6-sol")
+        self.assertEqual(value["model"], "gpt-5.6-sol")
+        self.assertEqual(value["messages"][1]["content"], "judge")
+        self.assertEqual(value["response_format"]["type"], "json_schema")
+        self.assertTrue(value["response_format"]["json_schema"]["strict"])
+        self.assertNotIn(
+            "$schema", value["response_format"]["json_schema"]["schema"]
         )
-        command = run.call_args.args[0]
-        self.assertEqual(command[0:2], ["npm", "install"])
-        self.assertIn("--ignore-scripts", command)
+        self.assertEqual(value["max_completion_tokens"], 8000)
+        self.assertTrue(value["stream"])
+        self.assertEqual(value["stream_options"], {"include_usage": True})
+        self.assertEqual(
+            chat_completions_url("https://provider.example/v1"),
+            "https://provider.example/v1/chat/completions",
+        )
 
-    def test_opencode_judge_warmup_runs_once_per_sandbox(self):
-        root = Path(self.temp.name) / "judge"
-        root.mkdir()
-        completed = SimpleNamespace(returncode=0)
-        with patch("runtime.document_opencode_judge_runner.subprocess.run",
-                   return_value=completed) as run:
-            warmup_opencode(root, "openai/hy4-preview", "/tmp", {})
-            warmup_opencode(root, "openai/hy4-preview", "/tmp", {})
-        self.assertEqual(run.call_count, 1)
-        self.assertEqual((root / ".judge-warmed").read_text(), "ok\n")
+    def test_direct_judge_extracts_structured_assistant_content(self):
+        response = {
+            "choices": [{"message": {"content": '{"group_id":"prd"}'}}]
+        }
+        self.assertEqual(parse_judgment(response), {"group_id": "prd"})
+        with self.assertRaisesRegex(ValueError, "no text content"):
+            parse_judgment({"choices": [{"message": {"content": ""}}]})
+
+    def test_direct_judge_reassembles_streamed_structured_output(self):
+        class Stream(BytesIO):
+            headers = {"Content-Type": "text/event-stream"}
+
+        chunks = [
+            {"id": "resp-1", "model": "judge", "choices": [{
+                "delta": {"reasoning_content": "internal"}, "finish_reason": None,
+            }]},
+            {"id": "resp-1", "model": "judge", "choices": [{
+                "delta": {"content": '{"group_id":'}, "finish_reason": None,
+            }]},
+            {"id": "resp-1", "model": "judge", "choices": [{
+                "delta": {"content": '"prd"}'}, "finish_reason": "stop",
+            }]},
+            {"id": "resp-1", "model": "judge", "choices": [],
+             "usage": {"prompt_tokens": 10, "completion_tokens": 2}},
+        ]
+        body = "".join(
+            "data: " + json.dumps(chunk) + "\n\n" for chunk in chunks
+        ) + "data: [DONE]\n\n"
+        response = read_response(Stream(body.encode()))
+        self.assertEqual(parse_judgment(response), {"group_id": "prd"})
+        self.assertEqual(response["choices"][0]["finish_reason"], "stop")
+        self.assertEqual(response["usage"]["prompt_tokens"], 10)
+
+    def test_direct_judge_accepts_read_only_prompt_mount(self):
+        prompt = Path(self.temp.name) / "prompt.md"
+        prompt.write_text("fixed evidence")
+        with patch("pathlib.Path.unlink", side_effect=OSError("read-only")):
+            self.assertEqual(load_prompt(str(prompt)), "fixed evidence")
+
+    def test_direct_judge_loads_and_deletes_credential_file(self):
+        credential = Path(self.temp.name) / "credentials.json"
+        credential.write_text(json.dumps({
+            "OPENAI_API_KEY": "test-key",
+            "OPENAI_BASE_URL": "https://provider.example/v1",
+        }))
+        self.assertEqual(
+            load_credentials(str(credential)),
+            ("test-key", "https://provider.example/v1"),
+        )
+        self.assertFalse(credential.exists())
+
+    def test_v4_manifest_is_documents_only_and_keeps_atomic_group_counts(self):
+        manifest_path = (
+            Path(__file__).resolve().parents[2]
+            / "examples/document-rubric-evaluation/rubrics/document-rubrics.v4.json"
+        )
+        manifest = Manifest.load(manifest_path)
+        self.assertEqual(
+            {group.group_id: len(group.rubrics) for group in manifest.groups},
+            {"prd": 8, "tech_design": 8, "test_design": 6},
+        )
+        evidence = [item for group in manifest.groups for item in group.evidence]
+        self.assertFalse(any(item.root in {"base", "templates"} for item in evidence))
+        self.assertFalse(any("target-schema.graphql" in item.path for item in evidence))
+        self.assertNotIn(
+            "TDD-B8",
+            {rubric.rubric_id for group in manifest.groups for rubric in group.rubrics},
+        )
+        tdd4 = next(
+            rubric for group in manifest.groups for rubric in group.rubrics
+            if rubric.rubric_id == "TDD4"
+        )
+        self.assertIn("不能作为本项失败依据", tdd4.criteria)
 
     def test_prepare_only_wires_private_manifest_without_copying_it_to_agent(self):
         from runtime import run_workflow
@@ -303,13 +343,11 @@ class DocumentRubricVerifierPreparationTests(unittest.IsolatedAsyncioTestCase):
         verifier.manifest_path = self.manifest_path
         verifier.prepared_path = self.prepared
         verifier.candidate_path = None
-        verifier.opencode_plugin_archive_path = None
-        verifier.opencode_plugin_archive_sha256 = None
-        verifier.ripgrep_archive_path = None
-        verifier.ripgrep_archive_sha256 = None
-        verifier.judge_backend = "opencode"
+        verifier.judge_backend = "direct"
         verifier.judge_model = "judge"
         verifier.judge_timeout_sec = 30
+        verifier.judge_max_completion_tokens = 8000
+        verifier.max_evidence_bytes = 100_000
         verifier.evaluation_boundary = "sprint1/test-design"
         verifier.override_env = {
             "OPENAI_API_KEY": "test-key",
@@ -333,61 +371,68 @@ class DocumentRubricVerifierPreparationTests(unittest.IsolatedAsyncioTestCase):
         self.manifest_path.write_text(json.dumps(value))
         return Manifest.load(self.manifest_path)
 
-    async def test_separate_verifier_uploads_workspace_inputs_before_materializing_base(self):
-        (self.workspace / "public").mkdir()
-        (self.workspace / "public/query.md").write_text("query\n")
-        (self.workspace / "templates").mkdir()
-        (self.workspace / "templates/frontend-design.md").write_text("template\n")
-        commit = "a" * 40
-        (self.workspace / "base-revisions.json").write_text(json.dumps({
-            "saleor": {"commit": commit},
-        }))
-        manifest = self.write_manifest([
-            {"root": "candidate", "path": "sprint1/prd/prd.md", "purpose": "candidate"},
-            {"root": "public", "path": "query.md", "purpose": "query"},
-            {"root": "templates", "path": "frontend-design.md", "purpose": "template"},
-            {"root": "base", "path": "saleor", "purpose": "base"},
-        ])
-
-        await self.verifier()._prepare_remote(manifest)
-
-        base_upload = next(index for index, call in enumerate(self.calls)
-                           if call[:1] == ("upload_file",)
-                           and call[2] == REMOTE_BASE_REVISIONS.as_posix())
-        materialize = next(index for index, call in enumerate(self.calls)
-                           if call[0] == "exec" and "git -C" in call[1])
-        self.assertLess(base_upload, materialize)
-        self.assertIn(
-            ("upload_dir", str((self.workspace / "public").resolve()), "/workspace/public"),
-            self.calls,
-        )
-        self.assertIn(
-            ("upload_dir", str((self.workspace / "templates").resolve()), "/workspace/templates"),
-            self.calls,
-        )
-        self.assertIn("for name in saleor", self.calls[materialize][1])
-        self.assertIn(REMOTE_BASE_REVISIONS.as_posix(), self.calls[materialize][1])
-
-    async def test_candidate_only_rubric_does_not_require_base_workspace(self):
+    async def test_direct_verifier_uploads_only_runner_and_returns_api_environment(self):
         manifest = self.write_manifest([
             {"root": "candidate", "path": "sprint1/prd/prd.md", "purpose": "candidate"},
         ])
 
-        await self.verifier()._prepare_remote(manifest)
+        env = await self.verifier()._prepare_remote(manifest)
 
-        self.assertFalse(any(call[0] == "upload_file"
-                             and call[2] == REMOTE_BASE_REVISIONS.as_posix()
-                             for call in self.calls))
+        self.assertEqual(env, {
+            "OPENAI_API_KEY": "test-key",
+            "OPENAI_BASE_URL": "https://example.invalid/v1",
+        })
+        uploads = [call for call in self.calls if call[0] == "upload_file"]
+        self.assertEqual(len(uploads), 1)
+        self.assertEqual(uploads[0][2], REMOTE_DIRECT_RUNNER.as_posix())
+        self.assertFalse(any(call[0] == "upload_dir" for call in self.calls))
         self.assertFalse(any(call[0] == "exec" and "git -C" in call[1]
                              for call in self.calls))
 
-    async def test_base_rubric_rejects_missing_revision_manifest(self):
+    def test_fixed_evidence_packet_inlines_declared_files_with_hashes(self):
+        (self.workspace / "public").mkdir()
+        (self.workspace / "public/query.md").write_text("public requirement\n")
         manifest = self.write_manifest([
-            {"root": "base", "path": "saleor", "purpose": "base"},
+            {"root": "candidate", "path": "sprint1/prd/prd.md", "purpose": "candidate"},
+            {"root": "public", "path": "query.md", "purpose": "query"},
         ])
+        verifier = self.verifier()
+        entries = verifier._evidence_entries(manifest.groups[0])
 
-        with self.assertRaisesRegex(DocumentEvaluationError, "base-revisions.json"):
-            await self.verifier()._prepare_remote(manifest)
+        self.assertEqual([entry["path"] for entry in entries], [
+            "/candidate/sprint1/prd/prd.md", "/public/query.md",
+        ])
+        full = verifier._evidence_packet(entries, include_content=True)
+        audit = verifier._evidence_packet(entries, include_content=False)
+        self.assertIn("candidate\n", full)
+        self.assertIn("public requirement\n", full)
+        self.assertIn('"sha256":', full)
+        self.assertNotIn("candidate\n", audit)
+        self.assertNotIn("public requirement\n", audit)
+
+    def test_missing_candidate_is_scored_but_missing_evaluator_input_is_infrastructure_error(self):
+        manifest = self.write_manifest([
+            {"root": "candidate", "path": "missing.md", "purpose": "candidate"},
+        ])
+        entries = self.verifier()._evidence_entries(manifest.groups[0])
+        self.assertEqual(entries[0]["content"], "<missing required file>")
+
+        manifest = self.write_manifest([
+            {"root": "public", "path": "missing.md", "purpose": "query"},
+        ])
+        with self.assertRaisesRegex(DocumentEvaluationError, "required evaluator input"):
+            self.verifier()._evidence_entries(manifest.groups[0])
+
+    def test_inline_evidence_has_a_hard_size_limit(self):
+        (self.workspace / "public").mkdir()
+        (self.workspace / "public/query.md").write_text("123456")
+        manifest = self.write_manifest([
+            {"root": "public", "path": "query.md", "purpose": "query"},
+        ])
+        verifier = self.verifier()
+        verifier.max_evidence_bytes = 5
+        with self.assertRaisesRegex(DocumentEvaluationError, "exceeds 5 bytes"):
+            verifier._evidence_entries(manifest.groups[0])
 
     async def test_exec_preserves_stdout_when_shell_warning_occupies_stderr(self):
         verifier = self.verifier()
@@ -414,64 +459,17 @@ class DocumentRubricVerifierPreparationTests(unittest.IsolatedAsyncioTestCase):
         verifier = self.verifier()
         verifier.candidate_path = source_candidate.resolve()
 
-        await verifier._prepare_remote(manifest)
+        entries = verifier._evidence_entries(manifest.groups[0])
 
-        self.assertIn(
-            ("upload_dir", str(source_candidate.resolve()), "/opt/document-eval/candidate"),
-            self.calls,
-        )
+        self.assertEqual(entries[0]["content"], "sealed\n")
         self.assertEqual(
             (source_candidate / "sprint1/prd/prd.md").read_text(),
             "sealed\n",
         )
 
-    async def test_pinned_opencode_plugin_archive_is_uploaded_and_verified(self):
-        archive = self.root / "opencode-plugin.tgz"
-        archive.write_bytes(b"frozen plugin archive")
-        manifest = self.write_manifest([
-            {"root": "candidate", "path": "sprint1/prd/prd.md", "purpose": "candidate"},
-        ])
-        verifier = self.verifier()
-        verifier.opencode_plugin_archive_path = archive
-        verifier.opencode_plugin_archive_sha256 = __import__("hashlib").sha256(
-            archive.read_bytes()
-        ).hexdigest()
-
-        await verifier._prepare_remote(manifest)
-
-        self.assertTrue(any(call[0] == "upload_file" and call[1] == str(archive)
-                            and call[2].endswith("/opencode-plugin.tgz")
-                            for call in self.calls))
-        self.assertTrue(any(call[0] == "exec" and "sha256sum" in call[1]
-                            and "tar xzf" in call[1] for call in self.calls))
-
-    async def test_pinned_ripgrep_archive_is_installed_into_judge_path(self):
-        archive = self.root / "ripgrep.tar.gz"
-        archive.write_bytes(b"frozen ripgrep archive")
-        manifest = self.write_manifest([
-            {"root": "candidate", "path": "sprint1/prd/prd.md", "purpose": "candidate"},
-        ])
-        verifier = self.verifier()
-        verifier.ripgrep_archive_path = archive
-        verifier.ripgrep_archive_sha256 = __import__("hashlib").sha256(
-            archive.read_bytes()
-        ).hexdigest()
-
-        await verifier._prepare_remote(manifest)
-
-        self.assertTrue(any(call[0] == "upload_file" and call[1] == str(archive)
-                            and call[2].endswith("/ripgrep.tar.gz")
-                            for call in self.calls))
-        self.assertTrue(any(call[0] == "exec" and "install -m 555" in call[1]
-                            and "/bin/rg" in call[1] for call in self.calls))
-
-    def test_judge_uses_empty_workdir_outside_candidate_tree(self):
-        self.assertTrue(REMOTE_JUDGE_CWD.is_absolute())
-        self.assertFalse(REMOTE_JUDGE_CWD.is_relative_to(Path("/opt/document-eval")))
-
     def test_only_structured_protocol_errors_are_retryable(self):
         self.assertTrue(DocumentRubricVerifier._retryable_protocol_error(
-            DocumentEvaluationError("OpenCode final output is not JSON: bad")
+            DocumentEvaluationError("Direct document Judge output is not valid JSON: bad")
         ))
         self.assertTrue(DocumentRubricVerifier._retryable_protocol_error(
             DocumentEvaluationError("invalid structured judgment for prd")
