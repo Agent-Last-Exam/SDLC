@@ -1,0 +1,264 @@
+{
+  "prd": {
+    "kind": "document_rubric_judge",
+    "score": 0.875,
+    "criteria": [
+      {
+        "name": "PRD1",
+        "description": "目标与范围对齐",
+        "value": 1.0,
+        "raw": 1.0,
+        "weight": 1.0,
+        "reasoning": "目标覆盖经营资料、库存与运费、资金、登录、应用接入和受控升级，与公开委托一致；范围及非目标清楚，且明确区分需求、静态调查与已部署或已验证事实。"
+      },
+      {
+        "name": "PRD2",
+        "description": "用户与接入方覆盖",
+        "value": 1.0,
+        "raw": 1.0,
+        "weight": 1.0,
+        "reasoning": "受影响的商家角色、员工、顾客、集成方、实施和 QA 均被识别；各需求进一步给出 Dashboard/API/详情页等入口以及服务端权限、渠道隔离、员工与应用双重授权等边界。"
+      },
+      {
+        "name": "PRD3",
+        "description": "核心流程与结果完整",
+        "value": 1.0,
+        "raw": 1.0,
+        "weight": 1.0,
+        "reasoning": "公开输入要求的经营资料、内容、图片、搜索、库存、运费、数字权益、交易退款、插件退出、密码策略、Widget、故障状态、订阅通知及升级流程均有独立需求；各项说明触发条件、业务行为和可观察结果，未发现静默删除明确义务。"
+      },
+      {
+        "name": "PRD4",
+        "description": "异常、安全与数据边界完整",
+        "value": 1.0,
+        "raw": 1.0,
+        "weight": 1.0,
+        "reasoning": "失败路径、服务端写权限、读取与渠道隔离、敏感信息披露、SSRF、危险内容、资金幂等及通知数据最小化均被分别转化为需求和验收条件，没有用隐藏界面或读取限制替代写入授权。"
+      },
+      {
+        "name": "PRD5",
+        "description": "兼容与存量连续性完整",
+        "value": 1.0,
+        "raw": 1.0,
+        "weight": 1.0,
+        "reasoning": "旧入口、默认值、存量渠道、旧订阅、历史账务、旧 Payment、数字文件与已购权益均有具体保留或迁移规则；明确退出项也配置消费者清单和删除门槛，而非仅作概括性兼容声明。"
+      },
+      {
+        "name": "PRD6",
+        "description": "迁移、恢复与补偿完整",
+        "value": 1.0,
+        "raw": 1.0,
+        "weight": 1.0,
+        "reasoning": "切换前影响报告和外部路径预检、备份、停写与在途保护、可续跑迁移、历史权益核对、按币种对账、恢复演练和开放后增量恢复均明确；同时标注了不可直接回滚资金事实及尚待外部补齐的条件。"
+      },
+      {
+        "name": "PRD7",
+        "description": "验收条件可判定",
+        "value": 1.0,
+        "raw": 1.0,
+        "weight": 1.0,
+        "reasoning": "R01—R20 均配置直接对应的编号化验收条件，断言可观察业务结果，并覆盖字段错误、权限拒绝、安全、默认兼容、并发幂等、部分成功、迁移续跑和恢复等适用场景。"
+      },
+      {
+        "name": "PRD8",
+        "description": "优先级与交付决策明确",
+        "value": 0.0,
+        "raw": 0.0,
+        "weight": 1.0,
+        "reasoning": "依赖、风险、维护窗口、版本固定和切换门槛总体充分，也未把计划写成已执行结果；但 R15 的五类首版 Widget 和 R16 的应用故障状态均是公开委托明确要求的本轮核心结果。删除任一项会使“补齐五类详情 Widget”或“区分安装失败、主动停用、投递失败及熔断”的目标无法实现，而非仅让用户增加正常操作，因此按公开优先级口径应为 P0，标成 P1 与业务影响规则不一致。",
+        "error": "PRD8-PRIORITY-WIDGET-FAULT-P1"
+      }
+    ],
+    "warnings": [],
+    "judge_output": "Full structured evidence: verifier/document-evaluation.json"
+  },
+  "tech_design": {
+    "kind": "document_rubric_judge",
+    "score": 0.5,
+    "criteria": [
+      {
+        "name": "TDD1",
+        "description": "需求追踪与设计归属",
+        "value": 1.0,
+        "raw": 1.0,
+        "weight": 1.0,
+        "reasoning": "R01—R20 均在前后端覆盖表中指向明确 FD/BD；I01—I12 均标注所属后端设计单元，并在契约中列明调用方；BT01—BT17 也标注覆盖的 BD。前端负责界面与交互消费，后端负责业务状态、持久化及接口提供，迁移和切换明确归后端/部署编排，引用目标存在且总体归属一致。具体设计是否充分分别由后续评分项判断，不影响本项的追踪关系成立。"
+      },
+      {
+        "name": "TDD2",
+        "description": "前端行为设计充分",
+        "value": 0.0,
+        "raw": 0.0,
+        "weight": 1.0,
+        "reasoning": "FD06 明确认领 R11，但其实际交互只覆盖四类退出插件的“外部已发生结果”登记。对于历史账务归一产生的 REQUIRES_REVIEW，前端没有设计待核对状态反馈、审核证据查看、经审核人工映射入口、成功或拒绝结果及失败恢复，也没有明确说明该操作不由 Dashboard 承担并给出替代路径。因此其已承担的用户入口、状态和恢复行为覆盖不充分。",
+        "error": "TDD2-R11-FRONTEND-REVIEW-GAP"
+      },
+      {
+        "name": "TDD3",
+        "description": "后端状态与数据设计充分",
+        "value": 0.0,
+        "raw": 0.0,
+        "weight": 1.0,
+        "reasoning": "BD07 定义了可信证据的自动归一以及证据不足时进入 REQUIRES_REVIEW，但没有定义经审核人工映射的服务操作、授权主体、状态转换、审计字段写入规则或最终业务结果。I08 明确只登记已经在外部发生的支付事实，不能替代证据不足旧账的审核映射。因此 R11 后端状态机会进入待核对状态，却没有可设计执行的收敛路径。",
+        "error": "TDD3-R11-MANUAL-MAPPING-MISSING"
+      },
+      {
+        "name": "TDD4",
+        "description": "接口叙述契约内部一致",
+        "value": 1.0,
+        "raw": 1.0,
+        "weight": 1.0,
+        "reasoning": "I01—I12 的叙述均列出提供方、调用方、权限、错误、完成判定及兼容方式。搜索任务、外部退款和异步投递明确区分请求可靠登记与最终业务完成；旧数字下载补充协议的身份、错误和完成语义与 I05 一致。固定证据中未发现这些叙述之间存在提供方、权限、完成判定或兼容过渡冲突。"
+      },
+      {
+        "name": "TDD5",
+        "description": "失败、并发与恢复机制闭环",
+        "value": 0.0,
+        "raw": 0.0,
+        "weight": 1.0,
+        "reasoning": "设计覆盖了幂等键、锁、部分成功和 FAILED 项重试，但外部退款只描述“写 pending—调用应用—等待回报”。没有规定调用超时或回报丢失时由谁核对并推进，也没有规定外部已成功而本地落账失败时进入何种补偿/人工状态、如何确认外部事实、防止再次请求资金及何时终止。BT10 仅把“本地落账补偿”列为验证内容，不能替代具体责任、状态变化和恢复机制，关键资金失败窗口仍未闭环。",
+        "error": "TDD5-EXTERNAL-REFUND-RECOVERY-GAP"
+      },
+      {
+        "name": "TDD6",
+        "description": "安全与隐私边界可落实",
+        "value": 1.0,
+        "raw": 1.0,
+        "weight": 1.0,
+        "reasoning": "设计具体落实了领域权限、员工与应用双重权限、Channel queryset 隔离、私有 metadata 裁剪、卡码掩码、下载能力 token、短期 Widget claim 和图片 SSRF 边界。接口响应、通知、状态摘要及日志均规定过滤 URL 参数、header、payload、卡码、密码和 token，未扩大敏感数据可见范围。"
+      },
+      {
+        "name": "TDD7",
+        "description": "性能与容量假设明确",
+        "value": 1.0,
+        "raw": 1.0,
+        "weight": 1.0,
+        "reasoning": "文档给出分页上限、图片字节/像素/时间预算、通知 Channel 上限、搜索本地时限口径以及大表并发建索引和分批回填策略。真实存量、验收负载和维护窗口被保留为待确认依赖，60 秒被明确限定为后续测量的本地验收目标而非生产 SLA，满足容量与未知条件表达要求。"
+      },
+      {
+        "name": "TDD8",
+        "description": "开发依赖与联调可执行",
+        "value": 0.0,
+        "raw": 0.0,
+        "weight": 1.0,
+        "reasoning": "前后端接口联调顺序和既有 BT 图未见循环，但最终切换任务 BT17 的显式依赖没有包含 BT03/BT04 的内容与图片能力、BT06/BT07 的渠道库存与运费能力，且这些 P0 任务也不能从已列依赖传递到 BT17。BT17 同时声明所有 P0 必须有结果才允许切换，导致正式依赖清单与切换门槛不一致，无法从任务图保证完整交付顺序。",
+        "error": "TDD8-BT17-P0-DEPENDENCIES-INCOMPLETE"
+      }
+    ],
+    "warnings": [],
+    "judge_output": "Full structured evidence: verifier/document-evaluation.json"
+  },
+  "test_design": {
+    "kind": "document_rubric_judge",
+    "score": 0.8333333333333334,
+    "criteria": [
+      {
+        "name": "TEST1",
+        "description": "需求追踪完整",
+        "value": 1.0,
+        "raw": 1.0,
+        "weight": 1.0,
+        "reasoning": "测试集按 R01 至 R20 逐条承接全部 PRD 验收条件，覆盖列明确关联 AC，并在适用处继续关联 FD、BD 和接口编号；用例范围从 AC-01-1 连续覆盖至 AC-20-7，未见关键 AC 缺失或无来源用例。"
+      },
+      {
+        "name": "TEST2",
+        "description": "核心业务结果覆盖",
+        "value": 1.0,
+        "raw": 1.0,
+        "weight": 1.0,
+        "reasoning": "核心正常流程覆盖经营资料、库存与运费、数字权益、资金、认证、应用及迁移；用例同时核对 Dashboard、GraphQL/HTTP、持久状态和受控外部端。断言落到交易事件、余额、库存、订单快照、投递状态等真实业务结果，而非只检查请求成功或字段存在。"
+      },
+      {
+        "name": "TEST3",
+        "description": "权限与安全场景覆盖",
+        "value": 1.0,
+        "raw": 1.0,
+        "weight": 1.0,
+        "reasoning": "测试覆盖匿名、员工、管理员、应用及不同权限组合，验证对象权限、渠道隔离、私有 metadata、完整卡码、密码、凭证和令牌等敏感边界；拒绝场景还检查值不变、无事件、无邮件或按不可见处理等拒绝后的业务状态。"
+      },
+      {
+        "name": "TEST4",
+        "description": "异常与连续性场景覆盖",
+        "value": 1.0,
+        "raw": 1.0,
+        "weight": 1.0,
+        "reasoning": "失败、边界、兼容、迁移、幂等、并发、部分成功、补偿、任务续跑、崩溃恢复和开放后前向恢复均有可判定场景；未知规模及未验证外部路径被明确判为未满足依赖，而非推定可执行或通过。"
+      },
+      {
+        "name": "TEST5",
+        "description": "步骤与断言对应",
+        "value": 1.0,
+        "raw": 1.0,
+        "weight": 1.0,
+        "reasoning": "各用例均设有前置条件、操作步骤和编号对应的预期结果。成功、失败、部分成功、并发及重试的判定通常同时给出 UI、接口和持久业务状态，测试者无需自行推断整体成功、资金是否重复或旧值是否保留。"
+      },
+      {
+        "name": "TEST6",
+        "description": "可执行性与独立性",
+        "value": 0.0,
+        "raw": 0.0,
+        "weight": 1.0,
+        "reasoning": "用例虽普遍列出概括性前置条件，但未给出统一验收环境的实际配置、数据夹具/重置方式、受控外部端接入参数，或 worker 崩溃、网络失败、数据库落账失败等故障注入机制。大量前置条件仅写“准备”“可控制”或“明确配置”，无法据文档独立复现；同时没有逐项标注哪些真实外部登录、支付、履约或生产依赖当前不可执行。因此不满足可执行性、独立性及外部执行边界全部成立的要求。",
+        "error": "TEST6-ENV-FIXTURE-EXECUTION-BOUNDARY"
+      }
+    ],
+    "warnings": [],
+    "judge_output": "Full structured evidence: verifier/document-evaluation.json"
+  },
+  "delivery_completeness": {
+    "kind": "deterministic_delivery_gate",
+    "score": 1.0,
+    "criteria": [
+      {
+        "name": "sprint1/prd/prd.md",
+        "description": "Required document output exists as a regular file",
+        "value": 1.0,
+        "raw": 1.0,
+        "weight": 1.0,
+        "reasoning": "required file present"
+      },
+      {
+        "name": "sprint1/tech-design/frontend-design.md",
+        "description": "Required document output exists as a regular file",
+        "value": 1.0,
+        "raw": 1.0,
+        "weight": 1.0,
+        "reasoning": "required file present"
+      },
+      {
+        "name": "sprint1/tech-design/backend-design.md",
+        "description": "Required document output exists as a regular file",
+        "value": 1.0,
+        "raw": 1.0,
+        "weight": 1.0,
+        "reasoning": "required file present"
+      },
+      {
+        "name": "sprint1/tech-design/interface-contract.md",
+        "description": "Required document output exists as a regular file",
+        "value": 1.0,
+        "raw": 1.0,
+        "weight": 1.0,
+        "reasoning": "required file present"
+      },
+      {
+        "name": "sprint1/tech-design/target-schema.graphql",
+        "description": "Required document output exists as a regular file",
+        "value": 1.0,
+        "raw": 1.0,
+        "weight": 1.0,
+        "reasoning": "required file present"
+      },
+      {
+        "name": "sprint1/test-design/test-cases.v1.csv",
+        "description": "Required document output exists as a regular file",
+        "value": 1.0,
+        "raw": 1.0,
+        "weight": 1.0,
+        "reasoning": "required file present"
+      }
+    ],
+    "warnings": [],
+    "judge_output": "Deterministic check recorded in verifier/document-evaluation.json"
+  }
+}

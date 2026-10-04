@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "run_id": "sdlc-doc-direct-v4-regrade4-20260928",
+  "job_id": "5c863b95-df06-4e83-914f-af58e4c0fc75",
+  "trial": "task__FpxVqod",
+  "trial_result_id": "42488d3f-b8e2-4dd5-912a-ccae9de22ce9",
+  "source_trial_id": "d11050fa-0a71-49aa-81ba-fcaf8686e780",
+  "started_at": "2026-09-28T08:08:01.801229Z",
+  "finished_at": "2026-09-28T08:12:02.655940Z",
+  "controller_succeeded": true,
+  "completed_trials": 1,
+  "errored_trials": 0,
+  "exception": null,
+  "judge": {
+    "requested_model": "openai/gpt-5.6-sol",
+    "observed_models": ["gpt-5.6-sol"],
+    "backend": "direct",
+    "transport": "streaming_chat_completions",
+    "evidence_delivery": "fixed_inline_packet",
+    "replicas": 2,
+    "calls": 7,
+    "adjudicated_groups": ["tech_design"],
+    "protocol_retries": 0,
+    "stderr_files": 7,
+    "nonempty_stderr_files": 0,
+    "prompt_tokens": 303906,
+    "cached_prompt_tokens": 0,
+    "cache_write_tokens": 303885,
+    "completion_tokens": 21587,
+    "reasoning_tokens": 6715,
+    "total_tokens": 325493
+  },
+  "scope": {
+    "rubric_version": "2026-09-28-v4-direct-docs",
+    "rubric_total": 22,
+    "target_schema_evidence_paths": 0,
+    "base_evidence_roots": 0,
+    "template_evidence_roots": 0,
+    "graphql_gt_checker": "deferred",
+    "document_structure_checker": "not_enabled",
+    "tdd4_graphql_absence_is_failure_basis": false
+  },
+  "security": {
+    "credential_transport": "one-time 0600 file uploaded over sandbox stdin and deleted after read",
+    "credential_pattern_files_in_downloaded_result": 0,
+    "api_key_rotated_after_diagnostic_exposure": true,
+    "old_key_invalidated": true,
+    "sandbox_credential_files_after_calls": 0
+  },
+  "canaries": {
+    "minimal_after_key_rotation": {
+      "status": "passed",
+      "observed_model": "gpt-5.6-sol",
+      "structured_output": true
+    },
+    "tech_design_long_context": {
+      "status": "passed",
+      "duration_seconds": 53,
+      "prompt_bytes": 143055,
+      "prompt_tokens": 37669,
+      "rubric_count": 8,
+      "observed_model": "gpt-5.6-sol",
+      "streaming": true
+    }
+  },
+  "artifacts": {
+    "runtime_bundle_sha256": "50b7367482a0a610c5aa847c261ce6f6ec2a875c83ee0380723408fb784a5d10",
+    "private_bundle_sha256": "9e7a5dcc17ed381599fc13b6e7589fd2a96fd04863578f9444135b269e90a32d",
+    "harbor_config_sha256": "1c303b583896025b335691ddd2a9bea88cb10de659d69393aebf1666858fea23",
+    "resources_sha256": "c5b265702a0ad35cc10fbb62379878987f35c66c19e5dc963357223ec04fc7d0",
+    "document_evaluation_sha256": "cd1640810a0d381c29bd4ad75f19f06bea3bca02325bd666c52a3e27f65511c4",
+    "reward_sha256": "ec46f88a9ab2684e60353def88155eb3c2cea2945155e319611f50b095ef0202",
+    "download_archive_sha256": "d3395ca4a0c16bdf35112c6b08f2ac7b70df7e73dc262224237a7ac871db3ac8"
+  }
+}

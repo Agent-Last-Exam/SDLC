@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "run_id": "sdlc-doc-direct-v3-regrade3-20260928",
+  "job_id": "888d9795-549a-4be8-8455-7acc37b6972e",
+  "trial": "task__SNi5ph5",
+  "trial_result_id": "6d516cf0-6544-4b04-b898-4b8fb19cc790",
+  "source_trial_id": "d11050fa-0a71-49aa-81ba-fcaf8686e780",
+  "started_at": "2026-09-28T07:49:28.513177Z",
+  "finished_at": "2026-09-28T07:53:34.325177Z",
+  "controller_succeeded": true,
+  "completed_trials": 1,
+  "errored_trials": 0,
+  "exception": null,
+  "judge": {
+    "requested_model": "openai/gpt-5.6-sol",
+    "observed_models": ["gpt-5.6-sol"],
+    "backend": "direct",
+    "evidence_delivery": "fixed_inline_packet",
+    "replicas": 2,
+    "calls": 8,
+    "adjudicated_groups": ["tech_design", "test_design"],
+    "protocol_retries": 0,
+    "stderr_files": 8,
+    "nonempty_stderr_files": 0,
+    "prompt_tokens": 361083,
+    "cached_prompt_tokens": 114260,
+    "cache_write_tokens": 246799,
+    "completion_tokens": 22458,
+    "reasoning_tokens": 6305,
+    "total_tokens": 383541
+  },
+  "scope": {
+    "rubric_version": "2026-09-28-v3-direct-docs",
+    "rubric_total": 22,
+    "target_schema_evidence_paths": 0,
+    "base_evidence_roots": 0,
+    "template_evidence_roots": 0,
+    "graphql_gt_checker": "deferred",
+    "document_structure_checker": "not_enabled"
+  },
+  "security": {
+    "credential_transport": "one-time 0600 file uploaded over sandbox stdin and deleted after read",
+    "credential_pattern_files_in_downloaded_result": 0,
+    "api_key_rotated_after_diagnostic_exposure": true,
+    "old_key_invalidated": true
+  },
+  "canaries": {
+    "minimal": {
+      "status": "passed",
+      "observed_model": "gpt-5.6-sol",
+      "structured_output": true
+    },
+    "tech_design_long_context": {
+      "status": "passed",
+      "duration_seconds": 53,
+      "prompt_bytes": 143055,
+      "prompt_tokens": 37669,
+      "rubric_count": 8,
+      "observed_model": "gpt-5.6-sol",
+      "streaming": true
+    }
+  },
+  "artifacts": {
+    "bundle_sha256": "50b7367482a0a610c5aa847c261ce6f6ec2a875c83ee0380723408fb784a5d10",
+    "harbor_config_sha256": "6ee2bc56cd0162a44447f789bfcf309eabdd3fb0f3c1b724a43a94eca0e7f4b6",
+    "resources_sha256": "3e36d1fd93a8c65055fc08d533d96665454fcdeced1152503cba4fed7f6c5f0f",
+    "document_evaluation_sha256": "34b896a52d312c703ad62195bbd33fdba4713883c45a919f0bed6cd636561c86",
+    "reward_sha256": "95ea95ed156517b3168ee417f2513726a4b58cc369e76d7caf54a5237e515c8c",
+    "download_archive_sha256": "56452dbe55119d5cafcbbf8293d77359b9e3bbba1ae429e7e5ac98573ce68188"
+  }
+}

@@ -1,0 +1,213 @@
+{
+  "schema_version": 1,
+  "rubric_set_id": "saleor-standard-docs",
+  "rubric_version": "2026-09-28-v4-direct-docs",
+  "source_revisions": {
+    "tdd_rubric_doc": "OMSqdrbv0oRjjuxYSbrcIOVtnOg@161",
+    "stage_evaluation_doc": "NAsmdh9NVoVbPBxW8A8cI2Q7n8p@266",
+    "golden_prd_sha256": "b5425781eee4cab2bbffb61032613012dc498d4553619fa978c2d819c9afaff2",
+    "evaluation_scope": "documents-only; GraphQL GT checker deferred"
+  },
+  "aggregation": "min_group_pass_rate",
+  "judge_replicas": 2,
+  "groups": [
+    {
+      "group_id": "prd",
+      "title": "PRD 质量",
+      "stage": "sprint1/prd",
+      "evidence": [
+        {"root": "candidate", "path": "sprint1/prd/prd.md", "purpose": "候选 PRD"},
+        {"root": "public", "path": "query.md", "purpose": "公开业务委托与范围"},
+        {"root": "public", "path": "business-conversations.md", "purpose": "固定补充业务决定"},
+        {"root": "private", "path": "golden-prd.md", "purpose": "语义对照参考，不是唯一措辞或方案"}
+      ],
+      "rubrics": [
+        {
+          "rubric_id": "PRD1",
+          "title": "目标与范围对齐",
+          "criteria": "准确承接公开业务目标、目标结果、范围和非目标；不把后续实现任务、未验证收益或范围外产品写成当前事实或交付。",
+          "refs": ["阶段评测方案 01 · PRD 评测：目标与范围对齐"],
+          "critical": true
+        },
+        {
+          "rubric_id": "PRD2",
+          "title": "用户与接入方覆盖",
+          "criteria": "公开输入中受影响的用户、管理员、运营角色、外部应用或其他接入方均被识别，并说明各自目标、入口和权限边界。",
+          "refs": ["阶段评测方案 01 · PRD 评测：需求完整性"],
+          "critical": false
+        },
+        {
+          "rubric_id": "PRD3",
+          "title": "核心流程与结果完整",
+          "criteria": "公开输入明确要求的核心正常流程均有对应需求，且说明触发条件、关键业务行为和可观察结果；不得静默删除明确义务。",
+          "refs": ["阶段评测方案 01 · PRD 评测：需求完整性"],
+          "critical": true
+        },
+        {
+          "rubric_id": "PRD4",
+          "title": "异常、安全与数据边界完整",
+          "criteria": "公开输入明确的失败路径、权限限制、安全约束和数据边界均转化为需求；读取限制、写入限制、信息披露与失败结果不得互相替代。",
+          "refs": ["阶段评测方案 01 · PRD 评测：需求完整性；清晰性与确定性"],
+          "critical": true
+        },
+        {
+          "rubric_id": "PRD5",
+          "title": "兼容与存量连续性完整",
+          "criteria": "公开输入明确的旧入口、旧数据、旧消费者、默认行为和升级连续性分别得到保留或明确迁移；概括性兼容表述不能替代具体义务。",
+          "refs": ["阶段评测方案 01 · PRD 评测：需求完整性"],
+          "critical": true
+        },
+        {
+          "rubric_id": "PRD6",
+          "title": "迁移、恢复与补偿完整",
+          "criteria": "适用的切换前置条件、迁移步骤、失败恢复、资金或数据补偿及不可直接回退的边界均明确，未知外部条件被标注而非删除。",
+          "refs": ["阶段评测方案 01 · PRD 评测：需求完整性；优先级与可交付性"],
+          "critical": true
+        },
+        {
+          "rubric_id": "PRD7",
+          "title": "验收条件可判定",
+          "criteria": "每项需求有与其直接对应、可观察且可判定的验收条件；断言业务结果，并覆盖该需求适用的权限、失败、兼容、幂等或恢复场景。",
+          "refs": ["阶段评测方案 01 · PRD 评测：可验收性"],
+          "critical": true
+        },
+        {
+          "rubric_id": "PRD8",
+          "title": "优先级与交付决策明确",
+          "criteria": "优先级符合公开业务影响口径；依赖、风险、维护窗口和切换门槛足以支持交付决策，且不把计划写成已执行结果。",
+          "refs": ["阶段评测方案 01 · PRD 评测：优先级与可交付性"],
+          "critical": false
+        }
+      ]
+    },
+    {
+      "group_id": "tech_design",
+      "title": "技术设计",
+      "stage": "sprint1/tech-design",
+      "evidence": [
+        {"root": "candidate", "path": "sprint1/prd/prd.md", "purpose": "冻结 PRD"},
+        {"root": "candidate", "path": "sprint1/tech-design/frontend-design.md", "purpose": "候选前端设计"},
+        {"root": "candidate", "path": "sprint1/tech-design/backend-design.md", "purpose": "候选后端设计"},
+        {"root": "candidate", "path": "sprint1/tech-design/interface-contract.md", "purpose": "候选接口契约"},
+        {"root": "candidate", "path": "sprint1/tech-design/interfaces", "purpose": "非 GraphQL 补充接口契约", "required": false},
+        {"root": "public", "path": "query.md", "purpose": "原始业务语义"},
+        {"root": "public", "path": "business-conversations.md", "purpose": "固定业务决定"}
+      ],
+      "rubrics": [
+        {
+          "rubric_id": "TDD1",
+          "title": "需求追踪与设计归属",
+          "criteria": "R、FD、BD、I、BT 引用目标存在且归属一致；前端、后端和接口责任边界能够追踪到冻结 PRD，不出现无人承担或重复定义。",
+          "refs": ["TDD Rubrics A2"],
+          "critical": true
+        },
+        {
+          "rubric_id": "TDD2",
+          "title": "前端行为设计充分",
+          "criteria": "前端覆盖其承担的用户入口、状态、交互、权限反馈和失败恢复；说明实际行为和限制，而非仅列需求编号或复述 PRD。",
+          "refs": ["TDD Rubrics B1"],
+          "critical": true
+        },
+        {
+          "rubric_id": "TDD3",
+          "title": "后端状态与数据设计充分",
+          "criteria": "后端覆盖其承担的服务责任、数据身份、状态转换、持久化结果和异步边界；主流程能够收敛到明确业务结果。",
+          "refs": ["TDD Rubrics B1；B3"],
+          "critical": true
+        },
+        {
+          "rubric_id": "TDD4",
+          "title": "接口叙述契约内部一致",
+          "criteria": "仅评价 interface-contract.md 及补充叙述文档中明确写出的提供方、调用方、身份权限、错误分类、业务完成判定和兼容过渡是否相互一致，并区分接收请求与业务完成。target-schema.graphql、完整字段集合、类型引用和可空性由外部 GraphQL GT checker 负责；未将它们放入固定证据包不能作为本项失败依据。",
+          "refs": ["TDD Rubrics B4"],
+          "critical": true
+        },
+        {
+          "rubric_id": "TDD5",
+          "title": "失败、并发与恢复机制闭环",
+          "criteria": "适用的重复、并发、超时、部分失败、重试、幂等和补偿机制有明确责任、状态变化及终止条件，不停留在口号。",
+          "refs": ["TDD Rubrics B3；B5"],
+          "critical": true
+        },
+        {
+          "rubric_id": "TDD6",
+          "title": "安全与隐私边界可落实",
+          "criteria": "身份、权限、渠道隔离、敏感数据写入与披露边界均有具体设计机制；失败日志、事件和接口响应不扩大数据可见范围。",
+          "refs": ["TDD Rubrics B5；B6"],
+          "critical": true
+        },
+        {
+          "rubric_id": "TDD7",
+          "title": "性能与容量假设明确",
+          "criteria": "任务适用的性能、容量和时限约束有明确口径、假设与应对机制；未知规模被列为待确认条件，不伪造运行结论。",
+          "refs": ["TDD Rubrics B6"],
+          "critical": false
+        },
+        {
+          "rubric_id": "TDD8",
+          "title": "开发依赖与联调可执行",
+          "criteria": "生产方、消费方、前后端联调和 BT 对 BD 的依赖关系完整且无循环；交付顺序与接口成熟度一致，阻塞条件明确。",
+          "refs": ["TDD Rubrics B7"],
+          "critical": false
+        }
+      ]
+    },
+    {
+      "group_id": "test_design",
+      "title": "测试设计质量",
+      "stage": "sprint1/test-design",
+      "evidence": [
+        {"root": "candidate", "path": "sprint1/prd/prd.md", "purpose": "冻结 PRD"},
+        {"root": "candidate", "path": "sprint1/tech-design/frontend-design.md", "purpose": "已接受前端设计"},
+        {"root": "candidate", "path": "sprint1/tech-design/backend-design.md", "purpose": "已接受后端设计"},
+        {"root": "candidate", "path": "sprint1/tech-design/interface-contract.md", "purpose": "已接受接口契约"},
+        {"root": "candidate", "path": "sprint1/tech-design/interfaces", "purpose": "非 GraphQL 补充接口契约", "required": false},
+        {"root": "candidate", "path": "sprint1/test-design/test-cases.v1.csv", "purpose": "候选测试设计"}
+      ],
+      "rubrics": [
+        {
+          "rubric_id": "TEST1",
+          "title": "需求追踪完整",
+          "criteria": "每条测试用例能够追踪到有效 PRD 验收条件，必要时关联 FD、BD 或 I；不存在无来源用例或有关键 AC 完全没有测试承接。",
+          "refs": ["阶段评测方案 04 · QA 评测：需求与风险覆盖"],
+          "critical": true
+        },
+        {
+          "rubric_id": "TEST2",
+          "title": "核心业务结果覆盖",
+          "criteria": "核心正常流程和跨前后端契约均有用例；断言真实业务状态、数据或可见结果，而非仅检查请求成功、字段存在或页面出现。",
+          "refs": ["阶段评测方案 04 · QA 评测：需求与风险覆盖；用例与测试代码质量"],
+          "critical": true
+        },
+        {
+          "rubric_id": "TEST3",
+          "title": "权限与安全场景覆盖",
+          "criteria": "适用的不同身份、对象权限、渠道隔离、敏感数据写入与披露边界具有可判定用例，并验证拒绝后的业务状态。",
+          "refs": ["阶段评测方案 04 · QA 评测：需求与风险覆盖"],
+          "critical": true
+        },
+        {
+          "rubric_id": "TEST4",
+          "title": "异常与连续性场景覆盖",
+          "criteria": "适用的失败、边界、兼容、迁移、幂等、部分成功、补偿和恢复行为均有可判定场景；明确哪些外部条件尚不能执行。",
+          "refs": ["阶段评测方案 04 · QA 评测：需求与风险覆盖"],
+          "critical": true
+        },
+        {
+          "rubric_id": "TEST5",
+          "title": "步骤与断言对应",
+          "criteria": "前置条件、测试数据、操作步骤和预期结果逐项对应；成功和失败判定明确，不依赖测试者自行猜测隐含状态。",
+          "refs": ["阶段评测方案 04 · QA 评测：用例与测试代码质量"],
+          "critical": false
+        },
+        {
+          "rubric_id": "TEST6",
+          "title": "可执行性与独立性",
+          "criteria": "用例具有明确环境前提，数据可准备，步骤可复现，结果可判定；用例之间不依赖隐含顺序，无法执行的外部条件被显式标注。",
+          "refs": ["阶段评测方案 04 · QA 评测：实际执行边界"],
+          "critical": false
+        }
+      ]
+    }
+  ]
+}

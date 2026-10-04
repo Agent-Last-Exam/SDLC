@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SDLC v3 Direct Judge 验收报告</title>
+<style>
+:root{--ink:#182230;--muted:#667085;--line:#d9e1ec;--paper:#f5f7fb;--blue:#155eef;--green:#087443;--red:#b42318;--amber:#93370d}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",sans-serif}code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;overflow-wrap:anywhere}
+header{padding:48px max(24px,calc((100vw - 1180px)/2));background:linear-gradient(120deg,#101828,#1849a9);color:#fff}header h1{margin:6px 0;font-size:34px}header p{max-width:880px;color:#d6e4ff}main{max-width:1180px;margin:auto;padding:28px 24px 72px}h2{margin-top:34px;font-size:24px}h3{margin:0;font-size:17px}h4{margin:0 0 7px;font-size:12px;text-transform:uppercase;color:#475467}.metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.metric,.panel,.rubric{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px}.metric span,.meta,.muted{color:var(--muted)}.metric b{display:block;font-size:25px;margin-top:4px}.cols,.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.flow div{background:#fff;border:1px solid var(--line);border-radius:10px;padding:13px}.flow b{display:block;color:var(--blue)}.table{overflow:auto;border:1px solid var(--line);border-radius:9px}table{border-collapse:collapse;width:100%;background:#fff}th,td{padding:9px 11px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{background:#eef3fb}.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}button,input{border:1px solid var(--line);border-radius:999px;background:#fff;padding:7px 12px}button{cursor:pointer}button.active{background:#101828;color:#fff}input{min-width:280px}.rubric{margin:11px 0}.rubric.hidden{display:none}.rubric-head{display:flex;justify-content:space-between;gap:12px}.rubric-head>div{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.rubric-head>div:first-child>code{background:#edf2f8;padding:6px;border-radius:6px;font-weight:700}.badge{padding:3px 8px;border-radius:999px;font-size:12px}.llm{background:#eee9ff;color:#5925dc}.pass{background:#e7f6ec;color:var(--green)}.fail{background:#feeceb;color:var(--red)}.critical{background:#fff4e5;color:var(--amber)}.grid section{background:#f8fafc;border-radius:8px;padding:12px}details{margin-top:10px}summary{cursor:pointer;font-weight:600}.callout{border-left:4px solid var(--blue);background:#eef4ff;padding:14px 16px;border-radius:8px}@media(max-width:850px){.metrics{grid-template-columns:repeat(2,1fr)}.cols,.grid{grid-template-columns:1fr}.flow{grid-template-columns:1fr}}@media print{.filters{display:none}body{background:#fff}}
+</style></head><body>
+<header><div>HARBOR · VKE · FIXED INLINE EVIDENCE</div><h1>SDLC v3 Direct Judge 验收报告</h1><p>正式运行 sdlc-doc-direct-v3-regrade3-20260928。复用 source trial 文档，不重新调用 Runner；文档 Judge 直接调用 gpt-5.6-sol，不启动 Judge Agent。</p></header>
+<main>
+<section><h2>结论</h2><div class="callout"><strong>完整技术链路通过，文档验收未全通过。</strong> 1/1 trial 完成、0 exception、交付完整；16/22 条 Rubric 通过，最终 reward 为最低分组 0.625。</div>
+<div class="metrics" style="margin-top:14px"><div class="metric"><span>Reward</span><b>0.625</b></div><div class="metric"><span>Rubric</span><b>16/22</b></div><div class="metric"><span>Critical</span><b>81.25%</b></div><div class="metric"><span>Delivery</span><b>1</b></div><div class="metric"><span>Acceptance</span><b>0</b></div></div></section>
+<section class="cols"><div><h2>分组结果</h2><div class="table"><table><thead><tr><th>分组</th><th>通过率</th></tr></thead><tbody><tr><td>PRD</td><td>87.50%</td></tr><tr><td>技术设计</td><td>62.50%</td></tr><tr><td>测试设计</td><td>66.67%</td></tr></tbody></table></div></div>
+<div><h2>运行验证</h2><div class="panel"><ul><li>实际模型：gpt-5.6-sol（8/8）</li><li>双 Judge：3 组；裁决：tech_design、test_design</li><li>协议重试：0；非空 stderr：0</li><li>GraphQL / Base / 模板结构：不进入 LLM Judge</li><li>凭证模式：一次性 0600 文件，读取后删除</li></ul></div></div></section>
+<section><h2>评分流程</h2><div class="flow"><div><b>1 · 冻结产物</b>读取 source trial 已接受的 PRD、技术设计与测试设计。</div><div><b>2 · 固定证据包</b>代码按 manifest 注入声明文件与 SHA-256。</div><div><b>3 · Direct Judge ×2</b>SSE Chat Completions，严格 JSON Schema。</div><div><b>4 · 分歧裁决</b>仅分歧组追加一次 direct Judge。</div><div><b>5 · 聚合</b>确定性计算分组通过率与 Harbor reward。</div></div></section>
+<section><h2>范围边界</h2><div class="panel"><ul><li><code>target-schema.graphql</code> 未提供给 LLM；GraphQL GT checker 后续独立实现。</li><li>不评价 Markdown 章节或模板格式。</li><li>不执行代码、测试、部署或迁移。</li><li>v3 与历史 v1/v2 的 Rubric 分母和定义不同，分数不可直接作为模型能力增益比较。</li></ul></div></section>
+<section><h2>22 条 Rubric</h2><div class="filters"><button class="active" data-filter="all">全部</button><button data-filter="P">通过</button><button data-filter="F">失败</button><button data-filter="critical">关键项</button><input id="search" placeholder="搜索 ID、标题或理由"></div>
+<article class="rubric" data-verdict="P" data-critical="true"
+ data-search="prd1 目标与范围对齐 准确承接公开业务目标、目标结果、范围和非目标；不把后续实现任务、未验证收益或范围外产品写成当前事实或交付。 prd准确承接核心 api、dashboard、经营连续性、应用接入、资金、账号和迁移目标，并用明确的范围与非目标约束交付边界；同时明确区分需求目标、静态调查和已部署或已验证事实，没有把后续实施或收益写成当前结果。">
+  <div class="rubric-head"><div><code>PRD1</code><h3>目标与范围对齐</h3></div>
+  <div><span class="badge llm">LLM Judge</span><span class="badge pass">P</span><span class="badge critical">关键项</span></div></div>
+  <p class="meta">PRD · 首轮 P/P · 双 Judge 一致</p>
+  <div class="grid"><section><h4>评分条件</h4><p>准确承接公开业务目标、目标结果、范围和非目标；不把后续实现任务、未验证收益或范围外产品写成当前事实或交付。</p></section>
+  <section><h4>最终判定</h4><p>PRD准确承接核心 API、Dashboard、经营连续性、应用接入、资金、账号和迁移目标，并用明确的范围与非目标约束交付边界；同时明确区分需求目标、静态调查和已部署或已验证事实，没有把后续实施或收益写成当前结果。</p><p>Issue：<code>—</code></p></section></div>
+  <details><summary>证据 2 条</summary><div class="table"><table><thead><tr><th>路径</th><th>位置</th><th>摘录</th></tr></thead><tbody><tr><td><code>/candidate/sprint1/prd/prd.md</code></td><td>§1 业务背景与目标</td><td>本 PRD 定义目标行为与可判定验收条件，不表示能力已经部署、静态 Base 已通过测试或生产收益已经验证。</td></tr><tr><td><code>/candidate/sprint1/prd/prd.md</code></td><td>§5 范围与非目标</td><td>明确不做：顾客 Storefront、原生 App、支付服务商、身份产品或商家主体认证系统。</td></tr></tbody></table></div></details>
+</article>
+<article class="rubric" data-verdict="P" data-critical="false"
+ data-search="prd2 用户与接入方覆盖 公开输入中受影响的用户、管理员、运营角色、外部应用或其他接入方均被识别，并说明各自目标、入口和权限边界。 用户表覆盖管理员、内容/仓储/渠道运营、客服、财务、员工、顾客、应用集成方、运维实施和 qa；各需求进一步定义 api、dashboard、详情页、财务列表、登录和订阅等入口，并给出服务端权限、渠道隔离及数据访问边界。">
+  <div class="rubric-head"><div><code>PRD2</code><h3>用户与接入方覆盖</h3></div>
+  <div><span class="badge llm">LLM Judge</span><span class="badge pass">P</span></div></div>
+  <p class="meta">PRD · 首轮 P/P · 双 Judge 一致</p>
+  <div class="grid"><section><h4>评分条件</h4><p>公开输入中受影响的用户、管理员、运营角色、外部应用或其他接入方均被识别，并说明各自目标、入口和权限边界。</p></section>
+  <section><h4>最终判定</h4><p>用户表覆盖管理员、内容/仓储/渠道运营、客服、财务、员工、顾客、应用集成方、运维实施和 QA；各需求进一步定义 API、Dashboard、详情页、财务列表、登录和订阅等入口，并给出服务端权限、渠道隔离及数据访问边界。</p><p>Issue：<code>—</code></p></section></div>
+  <details><summary>证据 3 条</summary><div class="table"><table><thead><tr><th>路径</th><th>位置</th><th>摘录</th></tr></thead><tbody><tr><td><code>/candidate/sprint1/prd/prd.md</code></td><td>§2 用户与场景</td><td>| 商家管理员 | 维护经营资料与权限；查看密码策略、应用状态和升级影响；批准切换与恢复。 |</td></tr><tr><td><code>/candidate/sprint1/prd/prd.md</code></td><td>§2 用户与场景</td><td>| 应用集成方 | 声明详情扩展；按事件、渠道和最少字段订阅；渐进迁移旧字段和固定 payload。 |</td></tr><tr><td><code>/candidate/sprint1/prd/prd.md</code></td><td>R10 验收条件 AC-10-4</td><td>列表、详情和计数统一要求 `HANDLE_PAYMENTS` 并执行渠道隔离；订单深链再次校验订单权限，礼品卡深链不泄露其他卡或完整卡码。</td></tr></tbody></table></div></details>
+</article>
+<article class="rubric" data-verdict="P" data-critical="true"
+ data-search="prd3 核心流程与结果完整 公开输入明确要求的核心正常流程均有对应需求，且说明触发条件、关键业务行为和可观察结果；不得静默删除明确义务。 公开输入要求的经营资料、内容与图片、搜索、库存、运费、数字权益、资金与退款、交易查询、密码策略、widget、故障状态及通知订阅均被拆为需求；各条描述触发或适用条件、关键行为及可观察结果，没有静默删减明确义务。">
+  <div class="rubric-head"><div><code>PRD3</code><h3>核心流程与结果完整</h3></div>
+  <div><span class="badge llm">LLM Judge</span><span class="badge pass">P</span><span class="badge critical">关键项</span></div></div>
+  <p class="meta">PRD · 首轮 P/P · 双 Judge 一致</p>
+  <div class="grid"><section><h4>评分条件</h4><p>公开输入明确要求的核心正常流程均有对应需求，且说明触发条件、关键业务行为和可观察结果；不得静默删除明确义务。</p></section>
+  <section><h4>最终判定</h4><p>公开输入要求的经营资料、内容与图片、搜索、库存、运费、数字权益、资金与退款、交易查询、密码策略、Widget、故障状态及通知订阅均被拆为需求；各条描述触发或适用条件、关键行为及可观察结果，没有静默删减明确义务。</p><p>Issue：<code>—</code></p></section></div>
+  <details><summary>证据 3 条</summary><div class="table"><table><thead><tr><th>路径</th><th>位置</th><th>摘录</th></tr></thead><tbody><tr><td><code>/candidate/sprint1/prd/prd.md</code></td><td>R05 需求描述及验收条件</td><td>为每个渠道新增可读写库存模式：`兼容配送区域` 保留现有经营规则，`仅按渠道仓库` 只从关联当前渠道的仓库计算可售、校验、预留、分配和补货。</td></tr><tr><td><code>/candidate/sprint1/prd/prd.md</code></td><td>R08 验收条件 AC-08-1</td><td>报价、加卡或失败结账不产生成功扣款交易；成功成交后，每张实际扣款卡恰有一条平台交易和对应扣款事件。</td></tr><tr><td><code>/candidate/sprint1/prd/prd.md</code></td><td>R17 需求描述</td><td>新增事件只接受合法 GraphQL subscription query 作为 payload 定义，并支持事件匹配、渠道选择和最少字段；旧事件继续支持既有固定 payload 和自定义 query。</td></tr></tbody></table></div></details>
+</article>
+<article class="rubric" data-verdict="P" data-critical="true"
+ data-search="prd4 异常、安全与数据边界完整 公开输入明确的失败路径、权限限制、安全约束和数据边界均转化为需求；读取限制、写入限制、信息披露与失败结果不得互相替代。 prd分别处理输入校验、失败结果、ssrf 与资源限制、权限拒绝、渠道隔离、私有字段和凭证披露；读取订单、执行退款和修改礼品卡等权限没有互相替代，通知与搜索也保持最小数据边界。">
+  <div class="rubric-head"><div><code>PRD4</code><h3>异常、安全与数据边界完整</h3></div>
+  <div><span class="badge llm">LLM Judge</span><span class="badge pass">P</span><span class="badge critical">关键项</span></div></div>
+  <p class="meta">PRD · 首轮 P/P · 双 Judge 一致</p>
+  <div class="grid"><section><h4>评分条件</h4><p>公开输入明确的失败路径、权限限制、安全约束和数据边界均转化为需求；读取限制、写入限制、信息披露与失败结果不得互相替代。</p></section>
+  <section><h4>最终判定</h4><p>PRD分别处理输入校验、失败结果、SSRF 与资源限制、权限拒绝、渠道隔离、私有字段和凭证披露；读取订单、执行退款和修改礼品卡等权限没有互相替代，通知与搜索也保持最小数据边界。</p><p>Issue：<code>—</code></p></section></div>
+  <details><summary>证据 3 条</summary><div class="table"><table><thead><tr><th>路径</th><th>位置</th><th>摘录</th></tr></thead><tbody><tr><td><code>/candidate/sprint1/prd/prd.md</code></td><td>R03 验收条件 AC-03-2</td><td>回环、私网、链路本地、云元数据地址、DNS 解析绕过及非 HTTP/HTTPS 源均被拒绝；鉴权内部资源不会被代为访问。</td></tr><tr><td><code>/candidate/sprint1/prd/prd.md</code></td><td>R09 验收条件 AC-09-7</td><td>退款要求 `HANDLE_PAYMENTS`，查看订单另校验订单权限；修改卡余额或状态要求 `MANAGE_GIFT_CARD`。</td></tr><tr><td><code>/candidate/sprint1/prd/prd.md</code></td><td>R19 验收条件 AC-19-2</td><td>payload 不包含订阅者无权字段、越权渠道、私有 metadata、无关员工信息、完整卡码、密码或凭证。</td></tr></tbody></table></div></details>
+</article>
+<article class="rubric" data-verdict="P" data-critical="true"
+ data-search="prd5 兼容与存量连续性完整 公开输入明确的旧入口、旧数据、旧消费者、默认行为和升级连续性分别得到保留或明确迁移；概括性兼容表述不能替代具体义务。 旧默认库存方式、旧订阅及固定 payload、旧 id/token、历史 payment、旧插件售后、历史数字权益和既有扩展入口均有具体保留或迁移规则；并明确了不得自动重置、不得改变默认行为和消费者未迁移时的阻断门槛。">
+  <div class="rubric-head"><div><code>PRD5</code><h3>兼容与存量连续性完整</h3></div>
+  <div><span class="badge llm">LLM Judge</span><span class="badge pass">P</span><span class="badge critical">关键项</span></div></div>
+  <p class="meta">PRD · 首轮 P/P · 双 Judge 一致</p>
+  <div class="grid"><section><h4>评分条件</h4><p>公开输入明确的旧入口、旧数据、旧消费者、默认行为和升级连续性分别得到保留或明确迁移；概括性兼容表述不能替代具体义务。</p></section>
+  <section><h4>最终判定</h4><p>旧默认库存方式、旧订阅及固定 payload、旧 ID/token、历史 Payment、旧插件售后、历史数字权益和既有扩展入口均有具体保留或迁移规则；并明确了不得自动重置、不得改变默认行为和消费者未迁移时的阻断门槛。</p><p>Issue：<code>—</code></p></section></div>
+  <details><summary>证据 3 条</summary><div class="table"><table><thead><tr><th>路径</th><th>位置</th><th>摘录</th></tr></thead><tbody><tr><td><code>/candidate/sprint1/prd/prd.md</code></td><td>R05 验收条件 AC-05-1</td><td>既有渠道升级后及未指定模式的新渠道均为兼容模式，并继续要求原配送区域关系。</td></tr><tr><td><code>/candidate/sprint1/prd/prd.md</code></td><td>R17 验收条件 AC-17-3</td><td>旧事件集合、签名、目标 URL、启用状态和字段含义在升级时不自动改变，旧固定 payload 继续可用且本轮不设最终停止日。</td></tr><tr><td><code>/candidate/sprint1/prd/prd.md</code></td><td>R07 验收条件 AC-07-4</td><td>历史有效下载按原剩余次数和期限访问；过期或耗尽继续拒绝，无到期权益不被新增期限。</td></tr></tbody></table></div></details>
+</article>
+<article class="rubric" data-verdict="P" data-critical="true"
+ data-search="prd6 迁移、恢复与补偿完整 适用的切换前置条件、迁移步骤、失败恢复、资金或数据补偿及不可直接回退的边界均明确，未知外部条件被标注而非删除。 切换前影响盘点、外部路径预检、备份、停写与任务排空、可续跑迁移、资金和权益对账、恢复责任与验证均已明确；开放后新事实不可用旧库直接回退，并将未知规模、外部路径和历史证据保留为显式依赖。">
+  <div class="rubric-head"><div><code>PRD6</code><h3>迁移、恢复与补偿完整</h3></div>
+  <div><span class="badge llm">LLM Judge</span><span class="badge pass">P</span><span class="badge critical">关键项</span></div></div>
+  <p class="meta">PRD · 首轮 P/P · 双 Judge 一致</p>
+  <div class="grid"><section><h4>评分条件</h4><p>适用的切换前置条件、迁移步骤、失败恢复、资金或数据补偿及不可直接回退的边界均明确，未知外部条件被标注而非删除。</p></section>
+  <section><h4>最终判定</h4><p>切换前影响盘点、外部路径预检、备份、停写与任务排空、可续跑迁移、资金和权益对账、恢复责任与验证均已明确；开放后新事实不可用旧库直接回退，并将未知规模、外部路径和历史证据保留为显式依赖。</p><p>Issue：<code>—</code></p></section></div>
+  <details><summary>证据 3 条</summary><div class="table"><table><thead><tr><th>路径</th><th>位置</th><th>摘录</th></tr></thead><tbody><tr><td><code>/candidate/sprint1/prd/prd.md</code></td><td>R20 验收条件 AC-20-3</td><td>维护期间停止相关入口写入，暂停或排空任务，记录在途支付回调和待投递事件；回调可持久接收或已验证发送方重试，不吞资金结果。</td></tr><tr><td><code>/candidate/sprint1/prd/prd.md</code></td><td>R20 验收条件 AC-20-6</td><td>开放后出现新订单或外部资金动作再发现故障时，先暂停、保留增量并对账，再前向修复或可重放恢复，不回滚旧数据库抹除新事实。</td></tr><tr><td><code>/candidate/sprint1/prd/prd.md</code></td><td>§6 依赖与上线门槛</td><td>缺少真实外部证据时只能标记依赖未满足，不得宣称可生产上线。</td></tr></tbody></table></div></details>
+</article>
+<article class="rubric" data-verdict="P" data-critical="true"
+ data-search="prd7 验收条件可判定 每项需求有与其直接对应、可观察且可判定的验收条件；断言业务结果，并覆盖该需求适用的权限、失败、兼容、幂等或恢复场景。 r01—r20均附有直接编号的验收条件，断言可观察的业务状态和错误结果，并按适用性覆盖权限拒绝、兼容默认值、并发与幂等、部分成功、重试、迁移核对及恢复场景，具备明确判定基础。">
+  <div class="rubric-head"><div><code>PRD7</code><h3>验收条件可判定</h3></div>
+  <div><span class="badge llm">LLM Judge</span><span class="badge pass">P</span><span class="badge critical">关键项</span></div></div>
+  <p class="meta">PRD · 首轮 P/P · 双 Judge 一致</p>
+  <div class="grid"><section><h4>评分条件</h4><p>每项需求有与其直接对应、可观察且可判定的验收条件；断言业务结果，并覆盖该需求适用的权限、失败、兼容、幂等或恢复场景。</p></section>
+  <section><h4>最终判定</h4><p>R01—R20均附有直接编号的验收条件，断言可观察的业务状态和错误结果，并按适用性覆盖权限拒绝、兼容默认值、并发与幂等、部分成功、重试、迁移核对及恢复场景，具备明确判定基础。</p><p>Issue：<code>—</code></p></section></div>
+  <details><summary>证据 3 条</summary><div class="table"><table><thead><tr><th>路径</th><th>位置</th><th>摘录</th></tr></thead><tbody><tr><td><code>/candidate/sprint1/prd/prd.md</code></td><td>R06 验收条件 AC-06-5—AC-06-7</td><td>报价故障时保留其他合法方式；无方式时明确不可配送并可重试，不自动变成免费运费，也不无限续用过期报价。</td></tr><tr><td><code>/candidate/sprint1/prd/prd.md</code></td><td>R09 验收条件 AC-09-3—AC-09-4</td><td>重复提交、并发请求或异步重试使用同一幂等标识时返回原结果且不多退；取消订单不会隐式重复退款。</td></tr><tr><td><code>/candidate/sprint1/prd/prd.md</code></td><td>R20 验收条件 AC-20-5</td><td>迁移、历史权益核对、按币种资金对账、必要索引重建及 P0 验收完成后才开放流量；每项有结果或明确失败原因。</td></tr></tbody></table></div></details>
+</article>
+<article class="rubric" data-verdict="F" data-critical="false"
+ data-search="prd8 优先级与交付决策明确 优先级符合公开业务影响口径；依赖、风险、维护窗口和切换门槛足以支持交付决策，且不把计划写成已执行结果。 依赖、风险、维护窗口、外部证据及切换门槛总体充分，且未把计划写成已执行结果；但 r15 的五类 widget 和 r16 的四类应用故障状态都是公开委托明确要求的本轮主要能力，删除任一项都会使对应目标无法实现，而非仅让使用者增加正常操作。将两项标为 p1 不符合公开的业务影响优先级口径。">
+  <div class="rubric-head"><div><code>PRD8</code><h3>优先级与交付决策明确</h3></div>
+  <div><span class="badge llm">LLM Judge</span><span class="badge fail">F</span></div></div>
+  <p class="meta">PRD · 首轮 F/F · 双 Judge 一致</p>
+  <div class="grid"><section><h4>评分条件</h4><p>优先级符合公开业务影响口径；依赖、风险、维护窗口和切换门槛足以支持交付决策，且不把计划写成已执行结果。</p></section>
+  <section><h4>最终判定</h4><p>依赖、风险、维护窗口、外部证据及切换门槛总体充分，且未把计划写成已执行结果；但 R15 的五类 Widget 和 R16 的四类应用故障状态都是公开委托明确要求的本轮主要能力，删除任一项都会使对应目标无法实现，而非仅让使用者增加正常操作。将两项标为 P1 不符合公开的业务影响优先级口径。</p><p>Issue：<code>PRD8-PRIORITY-MISCLASSIFICATION</code></p></section></div>
+  <details><summary>证据 3 条</summary><div class="table"><table><thead><tr><th>路径</th><th>位置</th><th>摘录</th></tr></thead><tbody><tr><td><code>/candidate/sprint1/prd/prd.md</code></td><td>R15 标题区</td><td>### R15 · 补齐五类详情 Widget 并保持原生操作可用
+- 优先级：P1</td></tr><tr><td><code>/candidate/sprint1/prd/prd.md</code></td><td>R16 标题区</td><td>### R16 · 区分并解释应用故障状态
+- 优先级：P1</td></tr><tr><td><code>/public/query.md</code></td><td>本阶段任务与输出</td><td>去掉后目标无法实现或造成不可用、数据/安全问题为 P0；目标仍可达但具体使用者需增加正常操作为 P1。</td></tr></tbody></table></div></details>
+</article>
+<article class="rubric" data-verdict="P" data-critical="true"
+ data-search="tdd1 需求追踪与设计归属 r、fd、bd、i、bt 引用目标存在且归属一致；前端、后端和接口责任边界能够追踪到冻结 prd，不出现无人承担或重复定义。 前端与后端分别提供完整的 r→fd、r→bd 覆盖表，接口契约列出所属 bd、提供方和调用方，工程任务也回指 bd 并声明依赖。经营设置、资金、认证、widget、webhook 和迁移等责任可追踪至冻结 prd，未见明确需求无人承担或前后端对同一权威责任作冲突定义。">
+  <div class="rubric-head"><div><code>TDD1</code><h3>需求追踪与设计归属</h3></div>
+  <div><span class="badge llm">LLM Judge</span><span class="badge pass">P</span><span class="badge critical">关键项</span></div></div>
+  <p class="meta">技术设计 · 首轮 P/P · 所在组分歧，裁决轮复核</p>
+  <div class="grid"><section><h4>评分条件</h4><p>R、FD、BD、I、BT 引用目标存在且归属一致；前端、后端和接口责任边界能够追踪到冻结 PRD，不出现无人承担或重复定义。</p></section>
+  <section><h4>最终判定</h4><p>前端与后端分别提供完整的 R→FD、R→BD 覆盖表，接口契约列出所属 BD、提供方和调用方，工程任务也回指 BD 并声明依赖。经营设置、资金、认证、Widget、Webhook 和迁移等责任可追踪至冻结 PRD，未见明确需求无人承担或前后端对同一权威责任作冲突定义。</p><p>Issue：<code>—</code></p></section></div>
+  <details><summary>证据 4 条</summary><div class="table"><table><thead><tr><th>路径</th><th>位置</th><th>摘录</th></tr></thead><tbody><tr><td><code>/candidate/sprint1/tech-design/frontend-design.md</code></td><td>§2 需求覆盖</td><td>| R17、R18、R19 | FD10 |</td></tr><tr><td><code>/candidate/sprint1/tech-design/backend-design.md</code></td><td>§2 需求覆盖</td><td>| R17、R18、R19 | BD11 |</td></tr><tr><td><code>/candidate/sprint1/tech-design/backend-design.md</code></td><td>§5 BT16</td><td>覆盖设计单元：BD11</td></tr><tr><td><code>/candidate/sprint1/tech-design/interface-contract.md</code></td><td>§2 I11</td><td>调用方：Dashboard Webhook 编辑和投递详情（FD10）、外部接收端</td></tr></tbody></table></div></details>
+</article>
+<article class="rubric" data-verdict="P" data-critical="true"
+ data-search="tdd2 前端行为设计充分 前端覆盖其承担的用户入口、状态、交互、权限反馈和失败恢复；说明实际行为和限制，而非仅列需求编号或复述 prd。 前端设计逐域说明了页面入口、加载和终态、分区保存、权限下的隐藏或只读反馈、局部错误隔离、未知状态、草稿保留、部分成功及重试行为，并给出实际限制和组件落点，不是仅列需求编号或复述 prd。">
+  <div class="rubric-head"><div><code>TDD2</code><h3>前端行为设计充分</h3></div>
+  <div><span class="badge llm">LLM Judge</span><span class="badge pass">P</span><span class="badge critical">关键项</span></div></div>
+  <p class="meta">技术设计 · 首轮 P/P · 所在组分歧，裁决轮复核</p>
+  <div class="grid"><section><h4>评分条件</h4><p>前端覆盖其承担的用户入口、状态、交互、权限反馈和失败恢复；说明实际行为和限制，而非仅列需求编号或复述 PRD。</p></section>
+  <section><h4>最终判定</h4><p>前端设计逐域说明了页面入口、加载和终态、分区保存、权限下的隐藏或只读反馈、局部错误隔离、未知状态、草稿保留、部分成功及重试行为，并给出实际限制和组件落点，不是仅列需求编号或复述 PRD。</p><p>Issue：<code>—</code></p></section></div>
+  <details><summary>证据 4 条</summary><div class="table"><table><thead><tr><th>路径</th><th>位置</th><th>摘录</th></tr></thead><tbody><tr><td><code>/candidate/sprint1/tech-design/frontend-design.md</code></td><td>§3 FD05</td><td>响应按 allocation 展示 processing/succeeded/failed，部分成功不显示整体成功；重试只带失败项的新请求键并引用原结果。</td></tr><tr><td><code>/candidate/sprint1/tech-design/frontend-design.md</code></td><td>§3 FD07</td><td>策略 query 失败按最严格状态处理，不回退开放密码。</td></tr><tr><td><code>/candidate/sprint1/tech-design/frontend-design.md</code></td><td>§3 FD08</td><td>来源校验或 iframe 错误只替换自身卡片，不触发页面 error boundary、不阻断 Savebar。</td></tr><tr><td><code>/candidate/sprint1/tech-design/frontend-design.md</code></td><td>§3 FD10</td><td>失败保持有效服务端值和本地 draft。</td></tr></tbody></table></div></details>
+</article>
+<article class="rubric" data-verdict="P" data-critical="true"
+ data-search="tdd3 后端状态与数据设计充分 后端覆盖其承担的服务责任、数据身份、状态转换、持久化结果和异步边界；主流程能够收敛到明确业务结果。 后端设计覆盖模型身份、唯一约束、事务和锁顺序、持久状态、异步 outbox、任务检查点及恢复结果。礼品卡扣款、历史数字权益、搜索、退款、会话失效、通知和迁移等主流程均能收敛到可查询的成功、部分成功、失败或阻断状态。">
+  <div class="rubric-head"><div><code>TDD3</code><h3>后端状态与数据设计充分</h3></div>
+  <div><span class="badge llm">LLM Judge</span><span class="badge pass">P</span><span class="badge critical">关键项</span></div></div>
+  <p class="meta">技术设计 · 首轮 P/P · 所在组分歧，裁决轮复核</p>
+  <div class="grid"><section><h4>评分条件</h4><p>后端覆盖其承担的服务责任、数据身份、状态转换、持久化结果和异步边界；主流程能够收敛到明确业务结果。</p></section>
+  <section><h4>最终判定</h4><p>后端设计覆盖模型身份、唯一约束、事务和锁顺序、持久状态、异步 outbox、任务检查点及恢复结果。礼品卡扣款、历史数字权益、搜索、退款、会话失效、通知和迁移等主流程均能收敛到可查询的成功、部分成功、失败或阻断状态。</p><p>Issue：<code>—</code></p></section></div>
+  <details><summary>证据 4 条</summary><div class="table"><table><thead><tr><th>路径</th><th>位置</th><th>摘录</th></tr></thead><tbody><tr><td><code>/candidate/sprint1/tech-design/backend-design.md</code></td><td>§3 BD05</td><td>以 checkout+gift_card+charge kind 唯一键阻止重复；失败事务不留扣款。</td></tr><tr><td><code>/candidate/sprint1/tech-design/backend-design.md</code></td><td>§3 BD11</td><td>业务事务只写事实+outbox。dispatcher 用 `select_for_update(skip_locked)` 领取</td></tr><tr><td><code>/candidate/sprint1/tech-design/backend-design.md</code></td><td>§3 BD04</td><td>新增不可变 `DigitalAsset(file, filename, content_type, size, sha256)` 与 `DigitalDownloadGrant`</td></tr><tr><td><code>/candidate/sprint1/tech-design/backend-design.md</code></td><td>§3 BD12</td><td>每 job 有 checkpoint、batch ID、幂等唯一键、失败对象和重试报告。</td></tr></tbody></table></div></details>
+</article>
+<article class="rubric" data-verdict="F" data-critical="true"
+ data-search="tdd4 接口契约消除歧义 提供方、调用方、字段与可空语义、身份权限、错误、业务完成判定和兼容过渡相互一致，并区分接收请求与业务完成。 文档将未包含在固定证据包中的 target-schema.graphql 指定为完整字段和可空性的权威来源，同时明确正文片段不能替代它。可见契约例如 i07 引用了 transactionrefundallocationinput，却未给出该输入的完整字段、字段可空性和错误载体结构。因此无法仅凭证据核验所有提供方与调用方在字段、nullable、枚举、错误及兼容删除上的一致性；虽有业务完成判定说明，仍未满足契约整体消歧要求。">
+  <div class="rubric-head"><div><code>TDD4</code><h3>接口契约消除歧义</h3></div>
+  <div><span class="badge llm">LLM Judge</span><span class="badge fail">F</span><span class="badge critical">关键项</span></div></div>
+  <p class="meta">技术设计 · 首轮 F/F · 所在组分歧，裁决轮复核</p>
+  <div class="grid"><section><h4>评分条件</h4><p>提供方、调用方、字段与可空语义、身份权限、错误、业务完成判定和兼容过渡相互一致，并区分接收请求与业务完成。</p></section>
+  <section><h4>最终判定</h4><p>文档将未包含在固定证据包中的 target-schema.graphql 指定为完整字段和可空性的权威来源，同时明确正文片段不能替代它。可见契约例如 I07 引用了 TransactionRefundAllocationInput，却未给出该输入的完整字段、字段可空性和错误载体结构。因此无法仅凭证据核验所有提供方与调用方在字段、nullable、枚举、错误及兼容删除上的一致性；虽有业务完成判定说明，仍未满足契约整体消歧要求。</p><p>Issue：<code>TDD4_AUTHORITATIVE_SDL_UNAVAILABLE</code></p></section></div>
+  <details><summary>证据 3 条</summary><div class="table"><table><thead><tr><th>路径</th><th>位置</th><th>摘录</th></tr></thead><tbody><tr><td><code>/candidate/sprint1/tech-design/interface-contract.md</code></td><td>§1 通用约定</td><td>完整权威 SDL 为同目录 `target-schema.graphql`。下文片段只用于解释语义，不替代完整 SDL。</td></tr><tr><td><code>/candidate/sprint1/tech-design/interface-contract.md</code></td><td>§2 I07</td><td>allocations: [TransactionRefundAllocationInput!]!</td></tr><tr><td><code>/candidate/sprint1/tech-design/interface-contract.md</code></td><td>§3 其他</td><td>未能执行兼容的完整 SDL parser/type validation</td></tr></tbody></table></div></details>
+</article>
+<article class="rubric" data-verdict="F" data-critical="true"
+ data-search="tdd5 失败、并发与恢复机制闭环 适用的重复、并发、超时、部分失败、重试、幂等和补偿机制有明确责任、状态变化及终止条件，不停留在口号。 多数重复、并发和任务恢复机制已有具体设计，但外部退款的未知结果未闭环。设计只说明先置 pending/processing、调用外部应用以及回报后落账，没有定义调用超时、响应或回调丢失、外部已成功但本地落账失败时由谁探测，进入何种持久补偿或人工状态，如何凭外部幂等标识避免再次退款，以及 processing 的终止条件。工程任务中的“本地落账补偿”验证词不能替代机制设计。">
+  <div class="rubric-head"><div><code>TDD5</code><h3>失败、并发与恢复机制闭环</h3></div>
+  <div><span class="badge llm">LLM Judge</span><span class="badge fail">F</span><span class="badge critical">关键项</span></div></div>
+  <p class="meta">技术设计 · 首轮 F/F · 所在组分歧，裁决轮复核</p>
+  <div class="grid"><section><h4>评分条件</h4><p>适用的重复、并发、超时、部分失败、重试、幂等和补偿机制有明确责任、状态变化及终止条件，不停留在口号。</p></section>
+  <section><h4>最终判定</h4><p>多数重复、并发和任务恢复机制已有具体设计，但外部退款的未知结果未闭环。设计只说明先置 pending/processing、调用外部应用以及回报后落账，没有定义调用超时、响应或回调丢失、外部已成功但本地落账失败时由谁探测，进入何种持久补偿或人工状态，如何凭外部幂等标识避免再次退款，以及 processing 的终止条件。工程任务中的“本地落账补偿”验证词不能替代机制设计。</p><p>Issue：<code>TDD5_EXTERNAL_REFUND_RECOVERY_GAP</code></p></section></div>
+  <details><summary>证据 3 条</summary><div class="table"><table><thead><tr><th>路径</th><th>位置</th><th>摘录</th></tr></thead><tbody><tr><td><code>/candidate/sprint1/tech-design/backend-design.md</code></td><td>§3 BD05</td><td>外部项先写 `REFUND_REQUEST`/pending 后调用对应 transaction app，回报按现有 transaction event 幂等键落账。</td></tr><tr><td><code>/candidate/sprint1/tech-design/interface-contract.md</code></td><td>§2 I07</td><td>外部项可靠登记为 processing，回报后变为终态</td></tr><tr><td><code>/candidate/sprint1/prd/prd.md</code></td><td>R09 AC-09-4</td><td>外部成功而本地落账失败进入补偿或人工处理状态，不重复请求外部资金。</td></tr></tbody></table></div></details>
+</article>
+<article class="rubric" data-verdict="F" data-critical="true"
+ data-search="tdd6 安全与隐私边界可落实 身份、权限、渠道隔离、敏感数据写入与披露边界均有具体设计机制；失败日志、事件和接口响应不扩大数据可见范围。 候选对身份、渠道隔离、ssrf、token、卡码和日志脱敏提供了多项具体机制，但通知中的私有 metadata 边界与冻结 prd 冲突。prd 明确要求通知 payload 不包含私有 metadata；候选却允许具备领域权限且显式选择的应用接收它。该设计扩大了冻结要求下的敏感数据披露范围，因此安全与隐私边界不能判定为可落实。">
+  <div class="rubric-head"><div><code>TDD6</code><h3>安全与隐私边界可落实</h3></div>
+  <div><span class="badge llm">LLM Judge</span><span class="badge fail">F</span><span class="badge critical">关键项</span></div></div>
+  <p class="meta">技术设计 · 首轮 F/P · 单项分歧后裁决</p>
+  <div class="grid"><section><h4>评分条件</h4><p>身份、权限、渠道隔离、敏感数据写入与披露边界均有具体设计机制；失败日志、事件和接口响应不扩大数据可见范围。</p></section>
+  <section><h4>最终判定</h4><p>候选对身份、渠道隔离、SSRF、token、卡码和日志脱敏提供了多项具体机制，但通知中的私有 metadata 边界与冻结 PRD 冲突。PRD 明确要求通知 payload 不包含私有 metadata；候选却允许具备领域权限且显式选择的应用接收它。该设计扩大了冻结要求下的敏感数据披露范围，因此安全与隐私边界不能判定为可落实。</p><p>Issue：<code>TDD6_PRIVATE_METADATA_NOTIFICATION_EXPOSURE</code></p></section></div>
+  <details><summary>证据 3 条</summary><div class="table"><table><thead><tr><th>路径</th><th>位置</th><th>摘录</th></tr></thead><tbody><tr><td><code>/candidate/sprint1/tech-design/backend-design.md</code></td><td>§3 BD11</td><td>private metadata 由 subscription selection + App 领域权限双重决定。</td></tr><tr><td><code>/candidate/sprint1/tech-design/interface-contract.md</code></td><td>§2 I12 权限</td><td>私有 metadata 只有具备对应管理权限且 query 显式选择时可见。</td></tr><tr><td><code>/candidate/sprint1/prd/prd.md</code></td><td>R19 AC-19-2</td><td>payload 不包含订阅者无权字段、越权渠道、私有 metadata、无关员工信息、完整卡码、密码或凭证。</td></tr></tbody></table></div></details>
+</article>
+<article class="rubric" data-verdict="P" data-critical="false"
+ data-search="tdd7 性能与容量假设明确 任务适用的性能、容量和时限约束有明确口径、假设与应对机制；未知规模被列为待确认条件，不伪造运行结论。 文档给出分页、图片字节/像素/时限、运费 ttl、通知渠道数量和搜索本地时限等明确口径，并针对潜在大表采用并发索引、分批回填和 checkpoint。真实存量、维护窗口及外部路径被列为待确认条件，且本地目标没有被伪称为生产 sla 或运行结论。">
+  <div class="rubric-head"><div><code>TDD7</code><h3>性能与容量假设明确</h3></div>
+  <div><span class="badge llm">LLM Judge</span><span class="badge pass">P</span></div></div>
+  <p class="meta">技术设计 · 首轮 P/P · 所在组分歧，裁决轮复核</p>
+  <div class="grid"><section><h4>评分条件</h4><p>任务适用的性能、容量和时限约束有明确口径、假设与应对机制；未知规模被列为待确认条件，不伪造运行结论。</p></section>
+  <section><h4>最终判定</h4><p>文档给出分页、图片字节/像素/时限、运费 TTL、通知渠道数量和搜索本地时限等明确口径，并针对潜在大表采用并发索引、分批回填和 checkpoint。真实存量、维护窗口及外部路径被列为待确认条件，且本地目标没有被伪称为生产 SLA 或运行结论。</p><p>Issue：<code>—</code></p></section></div>
+  <details><summary>证据 4 条</summary><div class="table"><table><thead><tr><th>路径</th><th>位置</th><th>摘录</th></tr></thead><tbody><tr><td><code>/candidate/sprint1/tech-design/interface-contract.md</code></td><td>§1 通用约定</td><td>单页上限 100。</td></tr><tr><td><code>/candidate/sprint1/tech-design/backend-design.md</code></td><td>§3 BD02</td><td>默认 20 MiB 上限，总预算 20 秒，Pillow/magic bytes 验证真实格式、4000 万像素</td></tr><tr><td><code>/candidate/sprint1/tech-design/backend-design.md</code></td><td>§3 BD02</td><td>标准本地环境 60 秒目标由后续验证配置测量，不写成生产 SLA。</td></tr><tr><td><code>/candidate/sprint1/tech-design/backend-design.md</code></td><td>§6 其他</td><td>真实插件使用、消费者清单、历史证据、外部管理员登录、支付/履约路径、存量规模及维护窗口仍由 PRD §6 指定责任方补齐</td></tr></tbody></table></div></details>
+</article>
+<article class="rubric" data-verdict="P" data-critical="false"
+ data-search="tdd8 开发依赖与联调可执行 生产方、消费方、前后端联调和 bt 对 bd 的依赖关系完整且无循环；交付顺序与接口成熟度一致，阻塞条件明确。 接口清单和前端依赖表标明生产设计单元、消费设计单元及等待条件；联调顺序从 schema/codegen、mock 到 api、权限异常和 e2e，与契约成熟度一致。bt01—bt17 给出单向前置依赖，最终切换任务依赖关键领域任务，未见循环；目标 schema、外部路径和存量证据等阻塞条件也有明确标注。">
+  <div class="rubric-head"><div><code>TDD8</code><h3>开发依赖与联调可执行</h3></div>
+  <div><span class="badge llm">LLM Judge</span><span class="badge pass">P</span></div></div>
+  <p class="meta">技术设计 · 首轮 P/P · 所在组分歧，裁决轮复核</p>
+  <div class="grid"><section><h4>评分条件</h4><p>生产方、消费方、前后端联调和 BT 对 BD 的依赖关系完整且无循环；交付顺序与接口成熟度一致，阻塞条件明确。</p></section>
+  <section><h4>最终判定</h4><p>接口清单和前端依赖表标明生产设计单元、消费设计单元及等待条件；联调顺序从 schema/codegen、mock 到 API、权限异常和 E2E，与契约成熟度一致。BT01—BT17 给出单向前置依赖，最终切换任务依赖关键领域任务，未见循环；目标 schema、外部路径和存量证据等阻塞条件也有明确标注。</p><p>Issue：<code>—</code></p></section></div>
+  <details><summary>证据 4 条</summary><div class="table"><table><thead><tr><th>路径</th><th>位置</th><th>摘录</th></tr></thead><tbody><tr><td><code>/candidate/sprint1/tech-design/frontend-design.md</code></td><td>§4 依赖与联调</td><td>联调按“schema/codegen -&gt; mock contract -&gt; API integration -&gt; 权限/异常 -&gt; E2E”推进。</td></tr><tr><td><code>/candidate/sprint1/tech-design/frontend-design.md</code></td><td>§4 依赖与联调</td><td>| I05 | FD06 | R07 | 需等待目标 schema 后 codegen |</td></tr><tr><td><code>/candidate/sprint1/tech-design/backend-design.md</code></td><td>§5 BT16</td><td>依赖：BT01、BT02、BT09</td></tr><tr><td><code>/candidate/sprint1/tech-design/backend-design.md</code></td><td>§5 BT17</td><td>依赖：BT05、BT08、BT10、BT12、BT13、BT16</td></tr></tbody></table></div></details>
+</article>
+<article class="rubric" data-verdict="P" data-critical="true"
+ data-search="test1 需求追踪完整 每条测试用例能够追踪到有效 prd 验收条件，必要时关联 fd、bd 或 i；不存在无来源用例或有关键 ac 完全没有测试承接。 候选测试集按 r01 至 r20 的验收条件组织，覆盖列逐条关联 prd ac，并在适用处关联 fd、bd 和接口编号；证据中的用例从 ac-01-1 连续承接至 ac-20-7，未见无 ac 来源的用例或关键验收条件完全没有测试承接。">
+  <div class="rubric-head"><div><code>TEST1</code><h3>需求追踪完整</h3></div>
+  <div><span class="badge llm">LLM Judge</span><span class="badge pass">P</span><span class="badge critical">关键项</span></div></div>
+  <p class="meta">测试设计 · 首轮 P/P · 所在组分歧，裁决轮复核</p>
+  <div class="grid"><section><h4>评分条件</h4><p>每条测试用例能够追踪到有效 PRD 验收条件，必要时关联 FD、BD 或 I；不存在无来源用例或有关键 AC 完全没有测试承接。</p></section>
+  <section><h4>最终判定</h4><p>候选测试集按 R01 至 R20 的验收条件组织，覆盖列逐条关联 PRD AC，并在适用处关联 FD、BD 和接口编号；证据中的用例从 AC-01-1 连续承接至 AC-20-7，未见无 AC 来源的用例或关键验收条件完全没有测试承接。</p><p>Issue：<code>—</code></p></section></div>
+  <details><summary>证据 2 条</summary><div class="table"><table><thead><tr><th>路径</th><th>位置</th><th>摘录</th></tr></thead><tbody><tr><td><code>/candidate/sprint1/test-design/test-cases.v1.csv</code></td><td>TC001，覆盖列</td><td>AC-01-1;FD01;BD01;I01</td></tr><tr><td><code>/candidate/sprint1/test-design/test-cases.v1.csv</code></td><td>TC121，覆盖列</td><td>AC-20-7;FD11;BD12</td></tr></tbody></table></div></details>
+</article>
+<article class="rubric" data-verdict="P" data-critical="true"
+ data-search="test2 核心业务结果覆盖 核心正常流程和跨前后端契约均有用例；断言真实业务状态、数据或可见结果，而非仅检查请求成功、字段存在或页面出现。 核心经营、库存、运费、交易、退款、认证、订阅通知和迁移开放流程均有正常或关键交互场景。断言落到交易及事件、余额、真实库存、订单状态、部分成功事实和用户可见反馈，并联合核对 dashboard、graphql/http、持久数据和受控外部端，不是仅检查请求成功或字段存在。">
+  <div class="rubric-head"><div><code>TEST2</code><h3>核心业务结果覆盖</h3></div>
+  <div><span class="badge llm">LLM Judge</span><span class="badge pass">P</span><span class="badge critical">关键项</span></div></div>
+  <p class="meta">测试设计 · 首轮 P/P · 所在组分歧，裁决轮复核</p>
+  <div class="grid"><section><h4>评分条件</h4><p>核心正常流程和跨前后端契约均有用例；断言真实业务状态、数据或可见结果，而非仅检查请求成功、字段存在或页面出现。</p></section>
+  <section><h4>最终判定</h4><p>核心经营、库存、运费、交易、退款、认证、订阅通知和迁移开放流程均有正常或关键交互场景。断言落到交易及事件、余额、真实库存、订单状态、部分成功事实和用户可见反馈，并联合核对 Dashboard、GraphQL/HTTP、持久数据和受控外部端，不是仅检查请求成功或字段存在。</p><p>Issue：<code>—</code></p></section></div>
+  <details><summary>证据 3 条</summary><div class="table"><table><thead><tr><th>路径</th><th>位置</th><th>摘录</th></tr></thead><tbody><tr><td><code>/candidate/sprint1/test-design/test-cases.v1.csv</code></td><td>TC044，预期结果</td><td>成功后每张实际扣款卡各一 TransactionItem/CHARGE_SUCCESS。</td></tr><tr><td><code>/candidate/sprint1/test-design/test-cases.v1.csv</code></td><td>TC029，预期结果</td><td>最多一个成交，库存不按 Channel 复制。</td></tr><tr><td><code>/candidate/sprint1/test-design/test-cases.v1.csv</code></td><td>TC053，预期结果</td><td>总状态 PARTIALLY_SUCCEEDED，成功项事实不回滚。</td></tr></tbody></table></div></details>
+</article>
+<article class="rubric" data-verdict="P" data-critical="true"
+ data-search="test3 权限与安全场景覆盖 适用的不同身份、对象权限、渠道隔离、敏感数据写入与披露边界具有可判定用例，并验证拒绝后的业务状态。 测试覆盖匿名、员工、管理员、app、对象深链权限、渠道范围及支付、礼品卡、应用管理等权限组合，并检查 private metadata、完整卡码、密码、凭证等敏感数据边界。拒绝场景包含值不变、无局部写入、无事件或按不可见处理等业务状态断言。">
+  <div class="rubric-head"><div><code>TEST3</code><h3>权限与安全场景覆盖</h3></div>
+  <div><span class="badge llm">LLM Judge</span><span class="badge pass">P</span><span class="badge critical">关键项</span></div></div>
+  <p class="meta">测试设计 · 首轮 P/P · 所在组分歧，裁决轮复核</p>
+  <div class="grid"><section><h4>评分条件</h4><p>适用的不同身份、对象权限、渠道隔离、敏感数据写入与披露边界具有可判定用例，并验证拒绝后的业务状态。</p></section>
+  <section><h4>最终判定</h4><p>测试覆盖匿名、员工、管理员、App、对象深链权限、渠道范围及支付、礼品卡、应用管理等权限组合，并检查 private metadata、完整卡码、密码、凭证等敏感数据边界。拒绝场景包含值不变、无局部写入、无事件或按不可见处理等业务状态断言。</p><p>Issue：<code>—</code></p></section></div>
+  <details><summary>证据 3 条</summary><div class="table"><table><thead><tr><th>路径</th><th>位置</th><th>摘录</th></tr></thead><tbody><tr><td><code>/candidate/sprint1/test-design/test-cases.v1.csv</code></td><td>TC031，预期结果</td><td>无权调用被服务端拒绝且值不变。</td></tr><tr><td><code>/candidate/sprint1/test-design/test-cases.v1.csv</code></td><td>TC060，预期结果</td><td>三种读取只含有权 Channel，跨 Channel 按不可见处理。</td></tr><tr><td><code>/candidate/sprint1/test-design/test-cases.v1.csv</code></td><td>TC109，预期结果</td><td>合法payload无越权Channel和任何禁止敏感数据。</td></tr></tbody></table></div></details>
+</article>
+<article class="rubric" data-verdict="P" data-critical="true"
+ data-search="test4 异常与连续性场景覆盖 适用的失败、边界、兼容、迁移、幂等、部分成功、补偿和恢复行为均有可判定场景；明确哪些外部条件尚不能执行。 设计覆盖失败、超时、边界、并发、兼容、迁移续跑、幂等、部分成功、补偿、worker 崩溃、耗尽重试和恢复等连续性场景。tc115 还明确把未知规模及未验证外部路径标为未满足依赖，tc084、tc043 等通过预检阻断缺少验证的登录或履约路径，满足对尚不可执行外部条件的显式标注要求。">
+  <div class="rubric-head"><div><code>TEST4</code><h3>异常与连续性场景覆盖</h3></div>
+  <div><span class="badge llm">LLM Judge</span><span class="badge pass">P</span><span class="badge critical">关键项</span></div></div>
+  <p class="meta">测试设计 · 首轮 F/P · 单项分歧后裁决</p>
+  <div class="grid"><section><h4>评分条件</h4><p>适用的失败、边界、兼容、迁移、幂等、部分成功、补偿和恢复行为均有可判定场景；明确哪些外部条件尚不能执行。</p></section>
+  <section><h4>最终判定</h4><p>设计覆盖失败、超时、边界、并发、兼容、迁移续跑、幂等、部分成功、补偿、worker 崩溃、耗尽重试和恢复等连续性场景。TC115 还明确把未知规模及未验证外部路径标为未满足依赖，TC084、TC043 等通过预检阻断缺少验证的登录或履约路径，满足对尚不可执行外部条件的显式标注要求。</p><p>Issue：<code>—</code></p></section></div>
+  <details><summary>证据 3 条</summary><div class="table"><table><thead><tr><th>路径</th><th>位置</th><th>摘录</th></tr></thead><tbody><tr><td><code>/candidate/sprint1/test-design/test-cases.v1.csv</code></td><td>TC053，预期结果</td><td>重试仅处理失败项；外部已成功进入补偿且不再次请求。</td></tr><tr><td><code>/candidate/sprint1/test-design/test-cases.v1.csv</code></td><td>TC111，操作步骤与预期结果</td><td>逐点故障并运行scanner/有限重试直至耗尽，再授权retry。</td></tr><tr><td><code>/candidate/sprint1/test-design/test-cases.v1.csv</code></td><td>TC115，预期结果</td><td>未知规模和未验证路径标为未满足依赖，不显示通过。</td></tr></tbody></table></div></details>
+</article>
+<article class="rubric" data-verdict="F" data-critical="false"
+ data-search="test5 步骤与断言对应 前置条件、测试数据、操作步骤和预期结果逐项对应；成功和失败判定明确，不依赖测试者自行猜测隐含状态。 大量用例复用泛化的“逐项改变”“执行矩阵”和跨多层“核对结果”步骤，没有列明各子场景的具体输入值、graphql operation 或 http 路径、调用顺序以及对应的持久数据或外部端观察点。部分用例仅称“13个新增事件”等集合而未逐项展开，因此测试者仍需推断操作与断言如何对应，不满足无需猜测隐含状态的要求。">
+  <div class="rubric-head"><div><code>TEST5</code><h3>步骤与断言对应</h3></div>
+  <div><span class="badge llm">LLM Judge</span><span class="badge fail">F</span></div></div>
+  <p class="meta">测试设计 · 首轮 F/F · 所在组分歧，裁决轮复核</p>
+  <div class="grid"><section><h4>评分条件</h4><p>前置条件、测试数据、操作步骤和预期结果逐项对应；成功和失败判定明确，不依赖测试者自行猜测隐含状态。</p></section>
+  <section><h4>最终判定</h4><p>大量用例复用泛化的“逐项改变”“执行矩阵”和跨多层“核对结果”步骤，没有列明各子场景的具体输入值、GraphQL operation 或 HTTP 路径、调用顺序以及对应的持久数据或外部端观察点。部分用例仅称“13个新增事件”等集合而未逐项展开，因此测试者仍需推断操作与断言如何对应，不满足无需猜测隐含状态的要求。</p><p>Issue：<code>TEST5-STEPS-ASSERTIONS-UNDERSPECIFIED</code></p></section></div>
+  <details><summary>证据 3 条</summary><div class="table"><table><thead><tr><th>路径</th><th>位置</th><th>摘录</th></tr></thead><tbody><tr><td><code>/candidate/sprint1/test-design/test-cases.v1.csv</code></td><td>TC033，操作步骤</td><td>逐项改变地址、数量、金额、折扣、币种、query 字段、App与配置后请求。</td></tr><tr><td><code>/candidate/sprint1/test-design/test-cases.v1.csv</code></td><td>TC001，操作步骤</td><td>通过 Dashboard、GraphQL/HTTP、持久数据及受控外部端核对结果。</td></tr><tr><td><code>/candidate/sprint1/test-design/test-cases.v1.csv</code></td><td>TC107，操作步骤</td><td>对照Shop/订单/商品/变体/仓库/Channel/礼品卡旧事件和13个新增事件。</td></tr></tbody></table></div></details>
+</article>
+<article class="rubric" data-verdict="F" data-critical="false"
+ data-search="test6 可执行性与独立性 用例具有明确环境前提，数据可准备，步骤可复现，结果可判定；用例之间不依赖隐含顺序，无法执行的外部条件被显式标注。 虽然各行通常有独立前置条件，且 tc115 会标记真实外部依赖未满足，但测试设计未定义所谓标准环境的版本和配置值，也未说明受控 dns/公网端/psp、状态源、故障注入设施的搭建与控制方法、测试数据构造和清理复位方式。仅声明环境“明确配置”或“可注入”不足以让执行者据文档独立准备并重复执行，整体可复现性证据不足。">
+  <div class="rubric-head"><div><code>TEST6</code><h3>可执行性与独立性</h3></div>
+  <div><span class="badge llm">LLM Judge</span><span class="badge fail">F</span></div></div>
+  <p class="meta">测试设计 · 首轮 F/F · 所在组分歧，裁决轮复核</p>
+  <div class="grid"><section><h4>评分条件</h4><p>用例具有明确环境前提，数据可准备，步骤可复现，结果可判定；用例之间不依赖隐含顺序，无法执行的外部条件被显式标注。</p></section>
+  <section><h4>最终判定</h4><p>虽然各行通常有独立前置条件，且 TC115 会标记真实外部依赖未满足，但测试设计未定义所谓标准环境的版本和配置值，也未说明受控 DNS/公网端/PSP、状态源、故障注入设施的搭建与控制方法、测试数据构造和清理复位方式。仅声明环境“明确配置”或“可注入”不足以让执行者据文档独立准备并重复执行，整体可复现性证据不足。</p><p>Issue：<code>TEST6-ENVIRONMENT-DATA-NOT-REPRODUCIBLE</code></p></section></div>
+  <details><summary>证据 3 条</summary><div class="table"><table><thead><tr><th>路径</th><th>位置</th><th>摘录</th></tr></thead><tbody><tr><td><code>/candidate/sprint1/test-design/test-cases.v1.csv</code></td><td>TC019，前置条件</td><td>标准本地验收环境明确配置；准备商品、订单、顾客、礼品卡和交易测试对象。</td></tr><tr><td><code>/candidate/sprint1/test-design/test-cases.v1.csv</code></td><td>TC014，前置条件</td><td>受控 DNS 可解析到回环、私网、链路本地、metadata 地址，并准备重绑定及非 HTTP URL。</td></tr><tr><td><code>/candidate/sprint1/test-design/test-cases.v1.csv</code></td><td>TC111，前置条件</td><td>可在业务提交后、delivery创建后和enqueue后注入worker崩溃。</td></tr></tbody></table></div></details>
+</article></section>
+<footer class="muted">Evaluation SHA-256：<code>34b896a52d312c703ad62195bbd33fdba4713883c45a919f0bed6cd636561c86</code><br>Reward SHA-256：<code>95ea95ed156517b3168ee417f2513726a4b58cc369e76d7caf54a5237e515c8c</code></footer>
+</main><script>
+const buttons=[...document.querySelectorAll('button[data-filter]')],cards=[...document.querySelectorAll('.rubric')],search=document.getElementById('search');let filter='all';function apply(){const q=search.value.trim().toLowerCase();for(const c of cards){const f=filter==='all'||c.dataset.verdict===filter||(filter==='critical'&&c.dataset.critical==='true');c.classList.toggle('hidden',!(f&&(!q||c.dataset.search.includes(q))))}}buttons.forEach(b=>b.onclick=()=>{buttons.forEach(x=>x.classList.remove('active'));b.classList.add('active');filter=b.dataset.filter;apply()});search.oninput=apply;
+</script></body></html>
