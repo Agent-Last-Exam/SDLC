@@ -1,0 +1,42 @@
+{
+  "schema_version": "reverse-extraction-status-v1",
+  "case_id": "<stable-case-id>",
+  "run_id": "<unique-run-id>",
+  "delivery_status": "incomplete",
+  "archive_status": "pending",
+  "current_stage": "S0",
+  "stages": {
+    "S0": "pending",
+    "S1": "pending",
+    "S2": "pending",
+    "S3": "pending",
+    "S4": "pending",
+    "S5": "pending",
+    "S6": "pending"
+  },
+  "checks": {
+    "input_identity": "not_run",
+    "inventory_completeness": "not_run",
+    "forward_traceability": "not_run",
+    "reverse_traceability": "not_run",
+    "semantic_audit": "not_run",
+    "template_and_references": "not_run",
+    "artifact_identity": "not_run",
+    "archive_readiness": "not_run"
+  },
+  "counts": {
+    "changed_paths_total": null,
+    "change_units_total": null,
+    "unresolved_units": null,
+    "active_requirements": null,
+    "active_acs": null,
+    "blocking_findings": null,
+    "test_gaps": null
+  },
+  "findings": [],
+  "limitations": [],
+  "repair_rounds_completed": 0,
+  "last_checkpoint": null,
+  "resume_from": "S0",
+  "remaining_work": []
+}

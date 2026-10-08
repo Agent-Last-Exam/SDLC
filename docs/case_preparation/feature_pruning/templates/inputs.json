@@ -1,0 +1,88 @@
+{
+  "schema_version": "feature-pruning-input-v1",
+  "case_id": "<stable-case-id>",
+  "run_id": "<unique-pruning-run-id>",
+  "run_root": "<isolated-run-root>",
+  "parent_pruning_run": null,
+  "extraction_runs": [],
+  "original_package": null,
+  "repositories": [],
+  "scope_policy": {
+    "path": "<confirmed-scope-policy-path>",
+    "sha256": null,
+    "confirmed": false,
+    "decision_source": null
+  },
+  "apply_order_policy": {
+    "mode": "require_commutative",
+    "declared_orders": [
+      ["code", "test"],
+      ["test", "code"]
+    ],
+    "reason": null
+  },
+  "runtime": {
+    "environment_identity": null,
+    "tool_versions": [],
+    "network_mode": null,
+    "service_commands": [],
+    "seed_identity": null,
+    "reuse_method": null,
+    "commands": []
+  },
+  "evaluation": {
+    "composition": {
+      "c": "baseline+final_test_patch",
+      "d": "baseline+final_code_patch+final_test_patch",
+      "same_test_patch": true
+    },
+    "candidate_universe": {
+      "definition": null,
+      "source_paths": [],
+      "source_sha256": null,
+      "collection_commands": [],
+      "eligible_suites": [],
+      "excluded_categories": []
+    },
+    "existing_selection": null,
+    "adapters": [],
+    "exclusion_policy": {
+      "path": null,
+      "sha256": null,
+      "confirmed": false,
+      "auto_exclude_target_failures": false
+    },
+    "rerun_policy": null,
+    "missing_policy": {
+      "allow_classifiable_missing": false,
+      "required_evidence": []
+    },
+    "target_invariants": [],
+    "case_validity": null
+  },
+  "exporter": {
+    "tool_path": null,
+    "tool_sha256": null,
+    "version": null,
+    "harbor_schema": null,
+    "builder_root": "<isolated-builder-root>",
+    "output_root": "<final-harbor-task-root>",
+    "source_state_command": null,
+    "export_command": null,
+    "runtime_manifest_path": "manifest.json",
+    "evidence_attachment_method": "sidecar_manifest"
+  },
+  "archive": {
+    "required": true,
+    "run_path": "golden-docs/evidence/feature-pruning/<unique-pruning-run-id>",
+    "extraction_base_path": "golden-docs/evidence/reverse-extraction",
+    "retained_runs": []
+  },
+  "publication": {
+    "create_archive": false,
+    "git_commit": false,
+    "git_push": false,
+    "external_publish": false
+  },
+  "max_repair_rounds": 3
+}

@@ -1,0 +1,1 @@
+stage_id,decision_ids,depends_on,repo_ids,risk,parent_snapshot,output_snapshot,required_checks,rollback_method,status

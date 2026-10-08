@@ -1,0 +1,45 @@
+{
+  "schema_version": "feature-pruning-calibration-v1",
+  "case_id": "<stable-case-id>",
+  "run_id": "<unique-pruning-run-id>",
+  "composition": {
+    "c": "baseline+final_test_patch",
+    "d": "baseline+final_code_patch+final_test_patch",
+    "same_test_patch": true
+  },
+  "identity": null,
+  "universe": {
+    "definition": null,
+    "identity": null,
+    "candidate_count": null,
+    "classified_count": null,
+    "excluded_count": null,
+    "unresolved_count": null
+  },
+  "policies": {
+    "exclusion": null,
+    "missing": null,
+    "rerun": null,
+    "case_validity": null
+  },
+  "reports": [],
+  "excluded": [],
+  "unresolved": [],
+  "selection_identity": {
+    "source": null,
+    "exported": null,
+    "equivalence_check": "not_run"
+  },
+  "verification": {
+    "c_p2p_passed": null,
+    "c_f2p_passed": null,
+    "d_f2p_passed": null,
+    "d_p2p_passed": null,
+    "selected_missing": null,
+    "selected_skipped": null,
+    "parse_errors": null,
+    "target_invariants": "not_run",
+    "grader": null,
+    "status": "not_run"
+  }
+}

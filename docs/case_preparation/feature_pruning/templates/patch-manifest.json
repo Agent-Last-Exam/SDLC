@@ -1,0 +1,15 @@
+{
+  "schema_version": "feature-pruning-patches-v1",
+  "case_id": "<stable-case-id>",
+  "run_id": "<unique-pruning-run-id>",
+  "scope_decisions_identity": null,
+  "baseline_semantics": "upstream+environment_layers",
+  "evaluation_composition": {
+    "c": "baseline+final_test_patch",
+    "d": "baseline+final_code_patch+final_test_patch",
+    "same_test_patch": true
+  },
+  "apply_order_policy": "require_commutative",
+  "repos": [],
+  "limitations": []
+}

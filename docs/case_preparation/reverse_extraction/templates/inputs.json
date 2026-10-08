@@ -1,0 +1,68 @@
+{
+  "schema_version": "reverse-extraction-input-v1",
+  "case_id": "<stable-case-id>",
+  "run_id": "<unique-run-id>",
+  "run_root": "<isolated-run-root>",
+  "archive": {
+    "required": true,
+    "harbor_task_root": null,
+    "relative_path": "golden-docs/evidence/reverse-extraction/<unique-run-id>"
+  },
+  "parent_run": null,
+  "input_scope": "full_unpruned",
+  "business_sources": [],
+  "reference_documents": [],
+  "repositories": [
+    {
+      "repo_id": "<repo-id>",
+      "source_root": null,
+      "upstream_baseline": {
+        "commit": null,
+        "tree": null,
+        "content_sha256": null,
+        "declared_by": null,
+        "verified": false
+      },
+      "production_baseline": {
+        "commit": null,
+        "tree": null,
+        "content_sha256": null,
+        "declared_by": null,
+        "verified": false,
+        "included_layers": [],
+        "preparation_method": null
+      },
+      "full_target": {
+        "commit": null,
+        "tree": null,
+        "content_sha256": null,
+        "declared_by": null,
+        "verified": false,
+        "includes_tests": null
+      },
+      "layers": [],
+      "views": [],
+      "generated_artifacts": [],
+      "interface_adapters": [],
+      "test_adapters": []
+    }
+  ],
+  "repository_links": [],
+  "prd_template": {
+    "path": "<prd-template-path>",
+    "sha256": null
+  },
+  "priority_policy": null,
+  "preparation": {
+    "materialize": false,
+    "commands": []
+  },
+  "validation": {
+    "generate": false,
+    "run_tests": false,
+    "environment": null,
+    "commands": [],
+    "existing_reports": []
+  },
+  "max_repair_rounds": 3
+}

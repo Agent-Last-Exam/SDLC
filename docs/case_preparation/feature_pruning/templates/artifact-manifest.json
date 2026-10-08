@@ -1,0 +1,20 @@
+{
+  "schema_version": "feature-pruning-artifacts-v1",
+  "case_id": "<stable-case-id>",
+  "run_id": "<unique-pruning-run-id>",
+  "version": "<artifact-version>",
+  "parent_manifest": null,
+  "delivery_status": "incomplete",
+  "workflow_identity": null,
+  "extraction_refs": [],
+  "input_files": [],
+  "output_files": [],
+  "archived_sources": [],
+  "source_snapshots": [],
+  "archive": {
+    "required": true,
+    "run_path": "golden-docs/evidence/feature-pruning/<unique-pruning-run-id>",
+    "scope": "pruned_delivery"
+  },
+  "limitations": []
+}

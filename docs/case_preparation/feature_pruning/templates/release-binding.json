@@ -1,0 +1,55 @@
+{
+  "schema_version": "feature-pruning-release-binding-v1",
+  "case_id": "<stable-case-id>",
+  "release_id": "<unique-release-id>",
+  "status": "incomplete",
+  "manifests": {
+    "runtime": {
+      "path": "manifest.json",
+      "sha256": null,
+      "coverage": "exporter_managed_runtime_files"
+    },
+    "evidence": {
+      "path": "golden-docs/evidence/manifest.json",
+      "sha256": null,
+      "coverage": "workflow_evidence_and_active_prd"
+    },
+    "excluded_binding_files": ["release-binding.json"],
+    "external_binding_integrity": null
+  },
+  "active_prd": {
+    "path": "golden-docs/PRD/prd-golden.md",
+    "sha256": null
+  },
+  "scope_decisions": null,
+  "runs": [],
+  "implementation": {
+    "baseline": null,
+    "repos": [],
+    "environment": null,
+    "patch_manifest": null
+  },
+  "evaluation": {
+    "composition": {
+      "c": "baseline+final_test_patch",
+      "d": "baseline+final_code_patch+final_test_patch",
+      "same_test_patch": true
+    },
+    "selection": null,
+    "calibration": null,
+    "counts": null,
+    "verification": null,
+    "policies": null
+  },
+  "checks": {
+    "runtime_integrity": "not_run",
+    "actual_verifier": "not_run",
+    "scope_pairing": "not_run",
+    "evidence_archive": "not_run",
+    "portable_references": "not_run",
+    "visibility": "not_run",
+    "manifest_dependency": "not_run"
+  },
+  "visibility": null,
+  "limitations": []
+}

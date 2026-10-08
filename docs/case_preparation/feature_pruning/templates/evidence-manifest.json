@@ -1,0 +1,11 @@
+{
+  "schema_version": "feature-pruning-evidence-manifest-v1",
+  "case_id": "<stable-case-id>",
+  "release_id": "<unique-release-id>",
+  "path_base": "harbor_task_root",
+  "files": [],
+  "excluded_files": [
+    "golden-docs/evidence/manifest.json",
+    "release-binding.json"
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "schema_version": "case-workflow-evidence-index-v1",
+  "case_id": "<stable-case-id>",
+  "workflow_id": "<reverse-extraction-or-feature-pruning>",
+  "entries": []
+}

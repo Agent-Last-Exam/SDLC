@@ -1,0 +1,71 @@
+{
+  "schema_version": "golden-documents-input-v1",
+  "case_id": "<stable-case-id>",
+  "run_id": "<unique-document-run-id>",
+  "run_root": "<isolated-run-root>",
+  "parent_document_run": null,
+  "source_release": {
+    "package_root": "<paired-harbor-task-root>",
+    "release_id": null,
+    "release_binding": null,
+    "runtime_manifest": null,
+    "evidence_manifest": null,
+    "status": null
+  },
+  "active_prd": null,
+  "scope_decisions": null,
+  "repositories": [],
+  "evaluation_refs": {
+    "composition": {
+      "c": "baseline+final_test_patch",
+      "d": "baseline+final_code_patch+final_test_patch",
+      "same_test_patch": true
+    },
+    "selection": null,
+    "calibration": null,
+    "reports": [],
+    "invariants": [],
+    "limitations": []
+  },
+  "document_profile": {
+    "modules": [],
+    "interfaces": [],
+    "interface_contract_template": null,
+    "test_cases_template": null,
+    "test_cases_output": "artifacts/Test/test-cases.v1.csv",
+    "test_cases_columns": [
+      "用例编号", "一级模块", "二级模块", "用例标题", "覆盖",
+      "优先级", "前置条件", "操作步骤", "预期结果"
+    ],
+    "document_manifest_path": "golden-docs/manifest.json"
+  },
+  "preparation": {
+    "materialize": false,
+    "commands": []
+  },
+  "validation": {
+    "environment": null,
+    "generate": false,
+    "run_tests": false,
+    "commands": []
+  },
+  "audit_policy": {
+    "required_checks": [],
+    "required_automatic_coverage": [],
+    "allowed_limits": [],
+    "decision_source": null
+  },
+  "archive": {
+    "required": true,
+    "run_path": "golden-docs/evidence/golden-documents/<unique-document-run-id>",
+    "scope": "golden_documents",
+    "retained_runs": []
+  },
+  "publication": {
+    "create_archive": false,
+    "git_commit": false,
+    "git_push": false,
+    "external_publish": false
+  },
+  "max_repair_rounds": 3
+}

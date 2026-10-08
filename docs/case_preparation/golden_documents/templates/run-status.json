@@ -1,0 +1,39 @@
+{
+  "schema_version": "golden-documents-status-v1",
+  "case_id": "<stable-case-id>",
+  "run_id": "<unique-document-run-id>",
+  "delivery_status": "incomplete",
+  "document_status": "incomplete",
+  "archive_status": "pending",
+  "current_stage": "DOC0",
+  "stages": {
+    "DOC0": "pending", "DOC1": "pending", "DOC2": "pending",
+    "DOC3": "pending", "DOC4": "pending", "DOC5": "pending",
+    "DOC6": "pending", "DOC7": "pending", "DOC8": "pending"
+  },
+  "checks": {
+    "input_pairing": "not_run",
+    "template_applicability": "not_run",
+    "inventory_completeness": "not_run",
+    "design_traceability": "not_run",
+    "interface_consistency": "not_run",
+    "test_design_coverage": "not_run",
+    "automatic_test_audit": "not_run",
+    "semantic_consistency": "not_run",
+    "structure_and_references": "not_run",
+    "archive_readiness": "not_run"
+  },
+  "counts": {
+    "active_requirements": null, "active_acs": null, "design_units": null,
+    "interface_boundaries": null, "product_cases": null, "guard_cases": null,
+    "behavior_units": null, "test_units": null, "unresolved_units": null,
+    "automation_full_acs": null, "automation_partial_acs": null,
+    "automation_gap_acs": null, "automation_conflict_acs": null
+  },
+  "findings": [],
+  "limitations": [],
+  "repair_rounds_completed": 0,
+  "last_checkpoint": null,
+  "resume_from": "DOC0",
+  "remaining_work": []
+}

@@ -1,0 +1,37 @@
+{
+  "schema_version": "feature-pruning-status-v1",
+  "case_id": "<stable-case-id>",
+  "run_id": "<unique-pruning-run-id>",
+  "delivery_status": "incomplete",
+  "archive_status": "pending",
+  "current_stage": "P0",
+  "stages": {
+    "P0": "pending",
+    "P1": "pending",
+    "P2": "pending",
+    "P3": "pending",
+    "P4": "pending",
+    "P5": "pending",
+    "P6": "pending",
+    "P7": "pending",
+    "P8": "pending"
+  },
+  "checks": {
+    "input_pairing": "not_run",
+    "confirmed_scope": "not_run",
+    "stage_integrity": "not_run",
+    "final_scope_traceability": "not_run",
+    "patch_reconstruction": "not_run",
+    "generation_and_migration": "not_run",
+    "calibration": "not_run",
+    "frozen_selection": "not_run",
+    "exported_verifier": "not_run",
+    "archive_readiness": "not_run"
+  },
+  "accepted_stage_ids": [],
+  "findings": [],
+  "limitations": [],
+  "last_checkpoint": null,
+  "resume_from": "P0",
+  "remaining_work": []
+}

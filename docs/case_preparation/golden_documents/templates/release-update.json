@@ -1,0 +1,38 @@
+{
+  "schema_version": "golden-documents-release-update-v1",
+  "case_id": "<stable-case-id>",
+  "release_id": "<new-release-id>",
+  "status": "incomplete",
+  "parent_release": null,
+  "documentation": {
+    "document_set_id": "<unique-document-set-id>",
+    "document_status": "incomplete",
+    "golden_manifest": {
+      "path": "golden-docs/manifest.json",
+      "sha256": null
+    },
+    "run": null,
+    "packaging_audit": null,
+    "limitations": []
+  },
+  "preserved_runtime": {
+    "runtime_manifest": null,
+    "active_prd": null,
+    "implementation": null,
+    "evaluation": null
+  },
+  "new_evidence_manifest": {
+    "path": "golden-docs/evidence/manifest.json",
+    "sha256": null
+  },
+  "checks": {
+    "runtime_unchanged": "not_run",
+    "document_pairing": "not_run",
+    "document_integrity": "not_run",
+    "three_workflow_archives": "not_run",
+    "portable_references": "not_run",
+    "visibility": "not_run",
+    "manifest_dependency": "not_run"
+  },
+  "limitations": []
+}

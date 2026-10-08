@@ -1,0 +1,22 @@
+{
+  "schema_version": "golden-documents-set-v1",
+  "case_id": "<stable-case-id>",
+  "document_set_id": "<unique-document-set-id>",
+  "version": "<document-version>",
+  "document_status": "incomplete",
+  "active_prd": {
+    "path": "golden-docs/PRD/prd-golden.md",
+    "sha256": null
+  },
+  "source_release": {
+    "release_id": null,
+    "release_binding_snapshot": null,
+    "runtime_manifest": null,
+    "implementation": null,
+    "selection": null
+  },
+  "documents": [],
+  "coverage_summary": null,
+  "validation_summary": null,
+  "limitations": []
+}

@@ -1,0 +1,26 @@
+{
+  "schema_version": "feature-pruning-selection-v1",
+  "case_id": "<stable-case-id>",
+  "run_id": "<unique-pruning-run-id>",
+  "identity": {
+    "baseline": null,
+    "code_patches": [],
+    "test_patches": [],
+    "c_views": [],
+    "d_views": [],
+    "environment": null,
+    "universe": null,
+    "normalization": null,
+    "parser": null,
+    "scope": null
+  },
+  "sort_rule": "canonical_id_ascending",
+  "f2p": [],
+  "p2p": [],
+  "target_invariants": [],
+  "counts": {
+    "f2p": null,
+    "p2p": null,
+    "target_invariants": null
+  }
+}

@@ -4,5 +4,6 @@
 - [rollout-records.md](rollout-records.md)：运行报告、历史自审、日志、冻结输入和正式交付的对应关系。
 - [directory-layout.md](directory-layout.md)：2026-09-18 目录整理、旧路径到新路径、验证方法。
 - [workflow-runtime.md](workflow-runtime.md)：当前准备、编排、执行、部署、封存和记录的模块分工。
+- [case_preparation/](case_preparation/README.md)：通用 case 制作流程，包括未剪枝 PRD 反向提取、功能剪枝与标准 Harbor 包生成、其他 Golden 文档生成。
 
 开始使用请看 [项目 README](../README.md)，运行结论请看 [jobs 索引](../jobs/README.md)。

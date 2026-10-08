@@ -1,0 +1,27 @@
+{
+  "schema_version": "reverse-extraction-artifacts-v1",
+  "case_id": "<stable-case-id>",
+  "run_id": "<unique-run-id>",
+  "version": "<artifact-version>",
+  "parent_manifest": null,
+  "delivery_status": "incomplete",
+  "archive": {
+    "required": true,
+    "relative_path": "golden-docs/evidence/reverse-extraction/<unique-run-id>",
+    "scope": "full_unpruned"
+  },
+  "workflow_identity": {
+    "path": "<workflow-path>",
+    "sha256": null,
+    "data_contracts_sha256": null
+  },
+  "template_identity": {
+    "path": "<prd-template-path>",
+    "sha256": null
+  },
+  "input_files": [],
+  "archived_sources": [],
+  "source_snapshots": [],
+  "output_files": [],
+  "limitations": []
+}

@@ -1,0 +1,20 @@
+{
+  "schema_version": "golden-documents-artifacts-v1",
+  "case_id": "<stable-case-id>",
+  "run_id": "<unique-document-run-id>",
+  "version": "<artifact-version>",
+  "parent_manifest": null,
+  "delivery_status": "incomplete",
+  "document_status": "incomplete",
+  "workflow_identity": null,
+  "source_release_identity": null,
+  "input_files": [],
+  "output_files": [],
+  "archived_sources": [],
+  "archive": {
+    "required": true,
+    "run_path": "golden-docs/evidence/golden-documents/<unique-document-run-id>",
+    "scope": "golden_documents"
+  },
+  "limitations": []
+}
