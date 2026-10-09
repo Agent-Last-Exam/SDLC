@@ -7,9 +7,11 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from runtime.prepare_workflow import HERE, compile_workflow
+from runtime.prepare_workflow import CONTRACT, DEFAULTS, HERE, compile_workflow
+
+PRUNED = HERE / 'tasks/saleor-3.23-pruned'
 from runtime.workflow_controller import Controller, stage_routing
-from runtime.workflow_smoke import write_stage_fixture
+from runtime.workflow_smoke import SmokeBackend, write_stage_fixture
 from runtime.local_deployment import validate_manifest
 from runtime.workspace_snapshot import inventory
 from runtime.prepare_workflow import read_yaml
@@ -19,18 +21,26 @@ import yaml
 class LifecycleBackend:
     synthetic = True
 
-    def __init__(self, workspace, scenario='repair', bad_routing=False, bad_deploy=False, switch_session=False, freeform_prd=False):
+    def __init__(self, workspace, scenario='repair', bad_routing=False, bad_deploy=False,
+                 switch_session=False, freeform_prd=False, new_session_per_call=False,
+                 stage_cost=None):
         self.workspace, self.scenario = workspace, scenario
         self.bad_routing, self.bad_deploy = bad_routing, bad_deploy
         self.calls, self.reused, self.stops = [], [], 0
         self.stage_index = 0
         self.switch_session, self.freeform_prd = switch_session, freeform_prd
+        self.new_session_per_call = new_session_per_call
+        self.stage_cost = stage_cost
 
     async def activate(self, stage, session):
         pass
 
     async def execute(self, stage, prompt, instruction, session, stage_dir):
         self.calls.append((stage['stage_id'], session, prompt, instruction))
+        if self.stage_cost is not None:
+            (stage_dir / 'claude-code.jsonl').write_text(
+                json.dumps({'type': 'result', 'total_cost_usd': self.stage_cost}) + '\n'
+            )
         self.candidate = stage_dir / 'fixture'
         write_stage_fixture(self.candidate, stage, self.workspace, self.scenario)
         if self.bad_routing and stage['role'] == 'qa':
@@ -38,7 +48,13 @@ class LifecycleBackend:
         if self.freeform_prd and stage['role'] == 'pm':
             p = self.candidate / 'prd.md'
             p.write_text(p.read_text().replace('优先级：P0', '优先级：关键'))
-        return 'changed' if session and self.switch_session else session or 'single-native-session'
+        if session and self.switch_session:
+            return 'changed'
+        if session:
+            return session
+        if self.new_session_per_call:
+            return f'native-session-{len(self.calls)}'
+        return 'single-native-session'
 
     async def quiesce(self):
         pass
@@ -77,16 +93,95 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
         self.root = Path(self.temp.name)
         self.workspace = self.root / 'workspace'
         for name in ('templates', 'roles'):
-            shutil.copytree(HERE / 'tasks/standard' / name, self.workspace / name)
+            shutil.copytree(DEFAULTS / name, self.workspace / name)
         schema = self.workspace / 'repos/saleor/saleor/graphql/schema.graphql'
         schema.parent.mkdir(parents=True)
         schema.write_text('type Query { shop: Shop! }\ntype Shop { name: String! }\n')
-        self.config = compile_workflow(HERE / 'tasks/standard/workflows/single.yaml', verify_repos=False)
+        self.config = compile_workflow('single', PRUNED, verify_repos=False)
 
     async def run_case(self, **kwargs):
         backend = LifecycleBackend(self.workspace, **kwargs)
         controller = Controller(self.config, self.workspace, self.root / 'control', backend)
         return await controller.run(), backend
+
+    async def test_container_smoke_copies_repository_fixture_inside_container(self):
+        class Result:
+            return_code = 0
+            stdout = ''
+            stderr = ''
+
+        class Environment:
+            def __init__(self):
+                self.uploads = []
+                self.commands = []
+
+            async def upload_file(self, source, target):
+                self.uploads.append((source.name, target))
+
+            async def exec(self, command, **kwargs):
+                self.commands.append((command, kwargs))
+                return Result()
+
+        # docker_image preparations deliberately contain no host-side source
+        # tree; the Base repositories are materialized only in the container.
+        workspace = self.root / 'prepared-without-repositories'
+        workspace.mkdir()
+        environment = Environment()
+        real = type('RealBackend', (), {
+            'agent': None, 'environment': environment, 'context': None,
+            'workspace': workspace,
+        })()
+        backend = SmokeBackend(real)
+        backend.user = 'stage1211'
+        stage = {
+            'role': 'architect', 'round': 1,
+            'writable_directory': '/workspace/artifacts/sprint1/tech-design',
+        }
+
+        await backend.execute(stage, '', '', None, self.root / 'stage')
+
+        self.assertEqual(
+            {name for name, _ in environment.uploads},
+            {'frontend-design.md', 'backend-design.md', 'interface-contract.md'},
+        )
+        copy_commands = [command for command, _ in environment.commands
+                         if command.startswith('cp -- ')]
+        self.assertEqual(copy_commands, [
+            'cp -- /workspace/repos/saleor/saleor/graphql/schema.graphql '
+            '/workspace/artifacts/sprint1/tech-design/target-schema.graphql',
+        ])
+
+    async def test_cost_budget_stops_before_the_next_stage(self):
+        config = copy.deepcopy(self.config)
+        config['run']['execution']['max_cost_usd'] = 1.0
+        # Each Stage reports 0.6; the second crosses the ceiling.
+        backend = LifecycleBackend(self.workspace, stage_cost=0.6)
+        state = await Controller(
+            config, self.workspace, self.root / 'cost', backend
+        ).run()
+        self.assertEqual(state['status'], 'budget_exhausted')
+        self.assertFalse(state['delivery_complete'])
+        self.assertEqual(state['cost_usd'], 1.2)
+        # Two Stages ran and both kept their accepted outputs.
+        self.assertEqual(len(state['stages']), 2)
+        self.assertTrue(all(s['status'] == 'accepted' for s in state['stages']))
+        self.assertEqual(state['cursor'], 2)
+
+    async def test_run_without_reported_cost_is_not_charged(self):
+        config = copy.deepcopy(self.config)
+        config['run']['execution']['max_cost_usd'] = 0.01
+        state, _ = await self.run_case(scenario='pass')
+        self.assertEqual(state['cost_usd'], 0.0)
+        self.assertEqual(state['status'], 'complete')
+
+    def test_qa_rounds_are_derived_from_the_stage_graph(self):
+        controller = Controller(
+            self.config, self.workspace, self.root / 'rounds', LifecycleBackend(self.workspace)
+        )
+        self.assertEqual(controller.qa_rounds, 2)
+        # Nothing declares the count outside the graph.
+        self.assertNotIn('qa_rounds', self.config)
+        self.assertNotIn('max_qa_rounds', self.config['run']['execution'])
 
     async def test_explicit_boundary_stops_after_sealing_test_design(self):
         backend = LifecycleBackend(self.workspace)
@@ -347,34 +442,72 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
         with self.assertRaisesRegex(ValueError, 'replay'):
             Controller(self.config, self.workspace, self.root / 'control', LifecycleBackend(self.workspace))
 
-    def test_unsupported_modes_rejected(self):
-        for mode in ('flat', 'hierarchical'):
-            config = {**self.config, 'mode': mode}
-            with self.subTest(mode=mode), self.assertRaises(ValueError):
-                Controller(config, self.workspace, self.root / 'control', LifecycleBackend(self.workspace))
+    async def test_flat_uses_a_fresh_principal_session_per_executed_stage(self):
+        config = compile_workflow('flat', PRUNED, verify_repos=False)
+        backend = LifecycleBackend(
+            self.workspace, scenario='pass', new_session_per_call=True
+        )
+        state = await Controller(
+            config, self.workspace, self.root / 'flat-control', backend
+        ).run()
+        self.assertEqual(state['status'], 'complete')
+        self.assertNotIn('principal_session', state)
+        self.assertEqual(len(state['principal_sessions']), 6)
+        self.assertEqual(
+            [entry['session_id'] for entry in state['principal_sessions']],
+            [f'native-session-{number}' for number in range(1, 7)],
+        )
+        self.assertTrue(all(call[1] is None for call in backend.calls))
+        self.assertIn('全新的 Flat Stage 主会话', backend.calls[1][2])
+        self.assertIn('多个 subagent', backend.calls[1][2])
+        self.assertIn('等待所有 subagent 完成', backend.calls[1][2])
+        self.assertIn('禁止多个 Agent 同时修改同一文件', backend.calls[1][2])
+        self.assertIn('产品经理', backend.calls[0][2])
+        self.assertIn('Tech Owner', backend.calls[1][2])
+
+    async def test_flat_reused_stage_creates_no_principal_session(self):
+        config = compile_workflow('flat', PRUNED, verify_repos=False)
+        backend = LifecycleBackend(
+            self.workspace, scenario='repair-reuse', new_session_per_call=True
+        )
+        state = await Controller(
+            config, self.workspace, self.root / 'flat-reuse-control', backend
+        ).run()
+        self.assertEqual(state['status'], 'complete')
+        self.assertEqual(len(state['stages']), 11)
+        self.assertEqual(len(backend.calls), 10)
+        self.assertEqual(len(state['principal_sessions']), 10)
+        self.assertEqual(backend.reused, ['sprint2/tech-design'])
+        self.assertNotIn(
+            'sprint2/tech-design',
+            [entry['stage_id'] for entry in state['principal_sessions']],
+        )
+
+    async def test_flat_rejects_a_reused_principal_session(self):
+        config = compile_workflow('flat', PRUNED, verify_repos=False)
+        backend = LifecycleBackend(self.workspace, scenario='pass')
+        with self.assertRaisesRegex(RuntimeError, 'Flat Stage reused'):
+            await Controller(
+                config, self.workspace, self.root / 'flat-control', backend
+            ).run()
+        self.assertEqual(len(backend.calls), 2)
+
+    def test_hierarchical_mode_is_rejected(self):
+        config = {**self.config, 'mode': 'hierarchical'}
+        with self.assertRaises(ValueError):
+            Controller(config, self.workspace, self.root / 'control', LifecycleBackend(self.workspace))
 
     def test_unsafe_round_and_reuse_policies_fail_at_compile_time(self):
-        task = HERE / 'tasks/standard'
-        base = task / 'workflows'
-        run = read_yaml(base / 'single.yaml')
-        run.update(task_root=str(task), contract='contract.yaml')
-        config_path = self.root / 'single.yaml'
-        config_path.write_text(yaml.safe_dump(run))
-        original = read_yaml(base / 'lifecycle.yaml')
-        for group in ('roles', 'templates', 'inputs'):
-            original[group] = {
-                key: ({**value, 'source': str((base / value['source']).resolve())}
-                      if isinstance(value, dict) else str((base / value).resolve()))
-                for key, value in original[group].items()
-            }
+        original = read_yaml(CONTRACT)
+        contract_path = self.root / 'contract.yaml'
         for index, key, value in ((5, 'round', True), (5, 'round', 2),
                                   (5, 'write_repos', True), (8, 'capture_repos', False),
                                   (6, 'reuse_unless', 'design_changed'), (7, 'reuse_stage', 'sprint1/prd')):
             contract = copy.deepcopy(original)
             contract['stages'][index][key] = value
-            (self.root / 'contract.yaml').write_text(yaml.safe_dump(contract))
+            contract_path.write_text(yaml.safe_dump(contract))
             with self.subTest(index=index, key=key), self.assertRaises(ValueError):
-                compile_workflow(config_path, verify_repos=False)
+                compile_workflow('single', PRUNED, verify_repos=False, contract_path=contract_path)
 
     async def test_routing_uses_only_verdict_and_design_changed(self):
         backend = LifecycleBackend(self.workspace, scenario='fail')

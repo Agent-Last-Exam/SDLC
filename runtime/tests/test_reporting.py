@@ -128,6 +128,27 @@ class ReportingTests(unittest.TestCase):
         self.assertIn("`reward` | 0.75", text)
         self.assertIn("不评价代码、部署", text)
 
+    def test_hierarchical_report_summarizes_team_and_revision_bindings(self):
+        (self.trial / "workflow/state.json").write_text(json.dumps({
+            "status": "blocked", "mode": "hierarchical",
+            "lead_session": "lead-1", "finish_reason": "input decision needed",
+            "members": {"pm-1": {"id": "pm-1", "role": "pm"}},
+            "assignments": {
+                "prd-v1": {"id": "prd-v1", "stage_id": "sprint1/prd",
+                           "member_id": "pm-1", "status": "completed",
+                           "revision_id": "rev-0001"},
+            },
+            "revisions": {"rev-0001": {"id": "rev-0001", "status": "accepted"}},
+            "current_artifacts": {"artifact:sprint1/prd/prd": "rev-0001"},
+            "counters": {"members": 1, "assignments": 1, "revisions": 1,
+                         "peak_concurrency": 1, "reworks": 0},
+        }))
+        text = write_report(self.job).read_text()
+        self.assertIn("Hierarchical Lead 原生会话：lead-1", text)
+        self.assertIn("1 个不可变 revision", text)
+        self.assertIn("| prd-v1 | sprint1/prd | pm-1 | completed | rev-0001 |", text)
+        self.assertIn("artifact:sprint1/prd/prd → rev-0001", text)
+
 
 if __name__ == "__main__":
     unittest.main()

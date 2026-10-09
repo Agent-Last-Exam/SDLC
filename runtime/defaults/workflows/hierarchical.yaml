@@ -1,0 +1,17 @@
+schema_version: 1
+kind: workflow_run
+mode: hierarchical
+contract: lifecycle.yaml
+agent: {adapter: claude_code}
+execution:
+  # Enforced by TeamBroker on every Lead action; exhausting any one terminates
+  # the run as budget_exhausted rather than complete.
+  max_members: 10
+  max_concurrency: 4
+  max_lead_turns: 40
+  max_assignments: 64
+  max_revisions_per_stage: 8
+  max_actions_per_turn: 12
+  # Spend ceiling for the whole run, checked after every Lead turn.
+  max_cost_usd: 50.0
+# 共享 stages 是工作类别与交付契约；此模式不把它解释为固定游标。

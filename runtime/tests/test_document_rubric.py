@@ -270,21 +270,26 @@ class DocumentRubricTests(unittest.TestCase):
 
         root = Path(self.temp.name)
         task = root / "task"
-        source = Path(run_workflow.__file__).resolve().parents[1] / "tasks/standard"
-        for name in ("roles", "templates", "public", "workflows", "workflow-runtime"):
-            shutil.copytree(source / name, task / name)
-        repo = task / "environment/repos/fixture"
-        repo.mkdir(parents=True)
-        subprocess.run(["git", "init", "-q", str(repo)], check=True)
-        (repo / "README.md").write_text("fixture\n")
-        subprocess.run(["git", "-C", str(repo), "add", "."], check=True)
-        subprocess.run([
-            "git", "-C", str(repo), "-c", "user.name=Fixture",
-            "-c", "user.email=fixture@example.invalid", "-c", "commit.gpgsign=false",
-            "commit", "-qm", "fixture",
-        ], check=True)
-        sha = subprocess.check_output(["git", "-C", str(repo), "rev-parse", "HEAD"], text=True).strip()
-        (task / "environment/base-revisions.json").write_text(json.dumps({"fixture": {"commit": sha}}))
+        (task / "env").mkdir(parents=True)
+        (task / "instruction.md").write_text("Evaluate this fixture.\n")
+        (task / "task.toml").write_text('''schema_version = "1.3"
+
+[task]
+name = "bench/document-eval-fixture"
+
+[metadata]
+task_id = "document-eval-fixture"
+
+[environment]
+docker_image = "registry.invalid/document-eval-fixture:1"
+cpus = 1
+memory_mb = 1024
+storage_mb = 4096
+build_timeout_sec = 60.0
+''')
+        (task / "env/manifest.json").write_text(json.dumps({"repositories": {
+            "fixture": {"agent_baseline_commit": "a" * 40},
+        }}))
 
         runtime_home = root / "runtime-home"
         args = [

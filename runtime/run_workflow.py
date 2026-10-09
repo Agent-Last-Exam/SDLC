@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare and run task-owned workflows through local Harbor."""
+"""Prepare and run runtime-owned workflows against a task through Harbor."""
 import argparse
 from datetime import datetime
 import json
@@ -9,24 +9,22 @@ import re
 import shutil
 import subprocess
 import sys
-import tomllib
 import uuid
 
-from runtime.prepare_workflow import HERE, compile_workflow, prepare, resolve_config
+from runtime.prepare_workflow import HERE, compile_workflow, prepare
 from runtime.document_rubric import Manifest
 from runtime.environment import load_env
 from runtime.reporting import write_report, write_index
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--config", type=Path, help="Explicit task-owned workflow YAML")
-    parser.add_argument("--task", type=Path, help="Task directory; defaults to tasks/standard")
-    parser.add_argument("--mode", choices=["single", "flat", "hierarchical"])
+    parser.add_argument("--task", type=Path, required=True, help="Task package directory")
+    parser.add_argument("--mode", choices=["single", "flat", "hierarchical"], default="single")
     parser.add_argument("--model")
-    parser.add_argument("--use-local-codex-auth", action="store_true")
     parser.add_argument("--smoke", action="store_true", help="Synthetic executor, no model; clearly marked outputs")
     parser.add_argument("--smoke-scenario", choices=["pass", "repair", "repair-reuse", "fail"], default="repair")
-    parser.add_argument("--role-probe", action="store_true", help="Two minimal real model turns verifying same-session role activation")
+    parser.add_argument("--role-probe", action="store_true",
+                        help="Two minimal real model turns verifying mode-specific role activation")
     parser.add_argument("--prepare-only", action="store_true")
     parser.add_argument("--stop-after-stage", help="Stop successfully after this accepted lifecycle stage")
     parser.add_argument("--document-eval-manifest", type=Path,
@@ -60,35 +58,34 @@ def main():
     elif args.judge_model or args.judge_replicas:
         parser.error("Judge options require --document-eval-manifest")
     try:
-        compiled = compile_workflow(resolve_config(args.config, args.task, args.mode))
+        compiled = compile_workflow(args.mode, args.task)
     except (ValueError, KeyError, OSError) as exc:
         parser.error(str(exc))
-    if not compiled["execution_implemented"]:
-        parser.error(f"{compiled['mode']} execution is not implemented for the lifecycle; use --mode single")
-    if compiled["run"]["agent"]["adapter"] != "codex":
-        parser.error("This execution backend currently supports Codex only")
+    if compiled["mode"] == "hierarchical" and (args.smoke or args.role_probe):
+        parser.error("Hierarchical mode requires a real Lead-managed rollout; fixed-stage smoke and role probes do not apply")
+    if compiled["mode"] == "hierarchical" and args.stop_after_stage:
+        parser.error("Hierarchical mode stops through Lead finish_delivery, not --stop-after-stage")
+    if compiled["mode"] == "hierarchical" and evaluation_manifest is not None:
+        parser.error("Document boundary evaluation currently applies to Single or Flat mode")
     stage_ids = {stage["stage_id"] for stage in compiled["stages"]}
     if args.stop_after_stage and args.stop_after_stage not in stage_ids:
         parser.error(f"Unknown stop stage: {args.stop_after_stage}")
-    model = args.model or env.get("CODEX_MODEL")
-    if args.use_local_codex_auth:
-        codex_home = Path.home() / ".codex"
-        auth = codex_home / "auth.json"
-        if not auth.is_file():
-            parser.error("Local Codex auth.json is missing")
-        env["CODEX_AUTH_JSON_PATH"] = str(auth)
-        local = tomllib.loads((codex_home / "config.toml").read_text())
-        model = model or local.get("model")
-        if local.get("model_provider") not in (None, "openai"):
-            parser.error("Custom local model provider needs explicit adapter configuration")
+    model = args.model or env.get("CLAUDE_MODEL")
     if not args.smoke and not args.prepare_only:
         if not model:
-            parser.error("Configure CODEX_MODEL or pass --model")
-        if not (env.get("CODEX_AUTH_JSON_PATH") or env.get("OPENAI_API_KEY")):
-            parser.error("Configure auth or explicitly select --use-local-codex-auth")
+            parser.error("Configure CLAUDE_MODEL or pass --model")
+        direct_auth = any(env.get(name) for name in (
+            "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN",
+            "CLAUDE_CODE_OAUTH_TOKEN", "AWS_BEARER_TOKEN_BEDROCK",
+            "AWS_ACCESS_KEY_ID", "AWS_PROFILE", "CLAUDE_CODE_USE_BEDROCK",
+        ))
+        if not direct_auth:
+            parser.error(
+                "Configure Anthropic API/OAuth credentials or AWS Bedrock credentials"
+            )
     model = model or "synthetic-no-model"
-    if not re.fullmatch(r"[A-Za-z0-9_.:-]+", model):
-        parser.error("Codex needs a plain model ID without provider prefixes")
+    if not re.fullmatch(r"[A-Za-z0-9_./:-]+", model):
+        parser.error("Claude model ID contains unsupported characters")
     name = args.job_name or f"workflow-{'smoke' if args.smoke else compiled['mode']}-{datetime.now():%Y%m%d-%H%M%S}-{uuid.uuid4().hex[:6]}"
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]+", name):
         parser.error("Invalid job name")
@@ -121,7 +118,7 @@ def main():
         "job_name": name, "jobs_dir": str(HERE / "jobs"), "n_attempts": 1, "n_concurrent_trials": 1,
         "retry": {"max_retries": 0}, "environment": {"type": "docker", "delete": True},
         "verifier": verifier,
-        "agents": [{"import_path": "runtime.workflow_agent:WorkflowCodex", "model_name": model,
+        "agents": [{"import_path": "runtime.workflow_agent:WorkflowClaudeCode", "model_name": model,
                     "override_setup_timeout_sec": 600,
                     "kwargs": {"prepared_path": str(prepared), "smoke": args.smoke,
                                "smoke_scenario": args.smoke_scenario, "role_probe": args.role_probe,

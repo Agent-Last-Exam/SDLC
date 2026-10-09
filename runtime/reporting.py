@@ -101,10 +101,27 @@ def write_report(job):
             lines += [f"最后一轮 QA 结论：`{state['qa_verdict']}`（Agent 提交的结论，不是独立 verifier 评分）。"]
         if state.get("principal_session"):
             lines += [f"主原生会话：`{state['principal_session']}`。"]
+        if state.get("principal_sessions"):
+            lines += [f"Flat Stage 主原生会话：{len(state['principal_sessions'])} 个（每个实际执行 Stage 独立）。"]
+        if state.get("mode") == "hierarchical":
+            counters = state.get("counters", {})
+            lines += [
+                f"Hierarchical Lead 原生会话：" + (
+                    f"{state['lead_session']}。" if state.get("lead_session") else "尚未建立。"
+                ),
+                "团队执行统计："
+                f"{counters.get('members', len(state.get('members', {})))} 个成员，"
+                f"{counters.get('assignments', len(state.get('assignments', {})))} 个任务，"
+                f"{counters.get('revisions', len(state.get('revisions', {})))} 个不可变 revision，"
+                f"峰值并发 {counters.get('peak_concurrency', 0)}，"
+                f"返修 {counters.get('reworks', 0)} 次。",
+            ]
+            if state.get("finish_reason"):
+                lines += [f"Lead 终止说明：{state['finish_reason']}"]
         if state.get("continued_from"):
             source = Path(state["continued_from"])
             lines += ["续跑来源：" + link(str(source.parent.parent.name), source / "state.json", job) + "。前序已接受阶段沿用原记录，不是本 job 重新生成。"]
-        for rel in ("workflow/state.json", "workflow/baseline.json", "workflow/events.jsonl", "agent/codex.txt", "agent/sessions", "agent/trajectory.json", "result.json", "exception.txt"):
+        for rel in ("workflow/state.json", "workflow/baseline.json", "workflow/events.jsonl", "agent/claude-code.txt", "agent/sessions", "agent/trajectory.json", "result.json", "exception.txt"):
             target = trial / rel
             if target.exists():
                 lines.append("- " + link(rel, target, job))
@@ -168,6 +185,31 @@ def write_report(job):
             for target in sorted([*(trial / "workflow/stages").glob("*/*/deployment-evidence.json"),
                                   *(trial / "workflow/attempts").glob("*/*/*/deployment-evidence.json")]):
                 lines += ["", "部署健康检查：" + link(str(target.relative_to(trial / "workflow")), target, job)]
+        if state.get("mode") == "hierarchical" and state.get("assignments"):
+            lines += ["", "### 层级团队记录", "",
+                      "| 任务 | Stage | 成员 | 状态 | Revision |", "| --- | --- | --- | --- | --- |"]
+            for task in state["assignments"].values():
+                lines.append(
+                    f"| {task['id']} | {task['stage_id']} | {task['member_id']} | "
+                    f"{task['status']} | {task.get('revision_id', '—')} |"
+                )
+            lines += ["", "当前接受的 revision 绑定：", ""]
+            if state.get("current_artifacts"):
+                lines.extend(
+                    f"- {ref} → {revision}"
+                    for ref, revision in sorted(state["current_artifacts"].items())
+                )
+            else:
+                lines.append("- 尚无")
+            stale = [revision["id"] for revision in state.get("revisions", {}).values()
+                     if revision.get("status") == "stale"]
+            if stale:
+                lines += ["", "已失效 revision：" + ", ".join(stale) + "。"]
+            for target in sorted((trial / "workflow/revisions").glob(
+                    "*/deployment/deployment-evidence.json")):
+                lines += ["", "层级部署健康检查：" + link(
+                    str(target.relative_to(trial / "workflow")), target, job
+                )]
         if state.get("role_probe"):
             lines += ["", "### 原生角色探针", "", "| 角色 | 会话 | 回复 |", "| --- | --- | --- |"]
             for record in state.get("records", []):

@@ -1,0 +1,31 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "round",
+    "design_changed",
+    "defects",
+    "summary"
+  ],
+  "properties": {
+    "round": {
+      "const": 2,
+      "type": "integer"
+    },
+    "design_changed": {
+      "type": "boolean"
+    },
+    "defects": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^D[0-9]{2,}$"
+      },
+      "minItems": 1
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}
