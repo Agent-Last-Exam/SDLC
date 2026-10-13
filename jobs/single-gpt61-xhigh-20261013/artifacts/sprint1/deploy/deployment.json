@@ -1,0 +1,134 @@
+{
+  "prepare": [
+    {
+      "cwd": "/workspace/deployment",
+      "argv": [
+        "python",
+        "-c",
+        "import os,json,secrets,textwrap\nfrom pathlib import Path\nfrom cryptography.hazmat.primitives.asymmetric import rsa\nfrom cryptography.hazmat.primitives import serialization\nroot=Path.cwd()\nfor name in ['state','state/postgres','state/valkey','state/mailpit','state/tmp','state/home','.runtime-logs']:\n (root/name).mkdir(parents=True,exist_ok=True)\nkey=rsa.generate_private_key(public_exponent=65537,key_size=2048).private_bytes(serialization.Encoding.PEM,serialization.PrivateFormat.PKCS8,serialization.NoEncryption()).decode()\nenv={'HOME':str(root/'state/home'),'TMPDIR':str(root/'state/tmp'),'PYTHONDONTWRITEBYTECODE':'1','COREPACK_ENABLE_NETWORK':'0','DJANGO_SETTINGS_MODULE':'saleor.settings','DEBUG':'True','SECRET_KEY':secrets.token_urlsafe(48),'RSA_PRIVATE_KEY':key,'DATABASE_URL':'postgres://saleor@127.0.0.1:5432/saleor','DATABASE_URL_REPLICA':'postgres://saleor@127.0.0.1:5432/saleor','CACHE_URL':'redis://127.0.0.1:6379/1','CELERY_BROKER_URL':'redis://127.0.0.1:6379/0','CELERY_RESULT_BACKEND':'redis://127.0.0.1:6379/2','EMAIL_URL':'smtp://127.0.0.1:1025','USER_EMAIL_URL':'smtp://127.0.0.1:1025','PUBLIC_URL':'http://127.0.0.1:8000/','ALLOWED_HOSTS':'localhost,127.0.0.1','ALLOWED_CLIENT_HOSTS':'localhost,127.0.0.1','ALLOWED_GRAPHQL_ORIGINS':'http://127.0.0.1:9000,http://localhost:9000','GRAPHQL_MUTATION_COUNT_LIMIT':'4','API_URL':'http://127.0.0.1:8000/graphql/','APP_MOUNT_URI':'/','STATIC_URL':'/static/','SKIP_SOURCEMAPS':'true','NODE_OPTIONS':'--max-old-space-size=4096','SENTRY_DSN':'','SENTRY_AUTH_TOKEN':'[REDACTED]','SENTRY_ORG':'','SENTRY_PROJECT':''}\n(root/'state/env.json').write_text(json.dumps(env)); (root/'state/env.json').chmod(0o600)\n(root/'run.py').write_text(\"import os,json,sys\\nfrom pathlib import Path\\nroot=Path(__file__).resolve().parent\\nos.environ.update(json.loads((root/'state/env.json').read_text()))\\nos.execvp(sys.argv[1],sys.argv[1:])\\n\")\n(root/'repos/saleor-dashboard/deploy.vite.config.mjs').write_text((root/'repos/saleor-dashboard/vite.config.js').read_text().replace('sentryVitePlugin({', 'sentryVitePlugin({ disable: true, telemetry: false,'))\n(root/'nginx.conf').write_text(f'''pid {root}/state/nginx.pid;\nerror_log stderr;\nworker_processes 1;\nevents {{ worker_connections 512; }}\nhttp {{\n include /etc/nginx/mime.types;\n default_type application/octet-stream;\n access_log /dev/stdout;\n client_body_temp_path {root}/state/tmp/client;\n proxy_temp_path {root}/state/tmp/proxy;\n fastcgi_temp_path {root}/state/tmp/fastcgi;\n uwsgi_temp_path {root}/state/tmp/uwsgi;\n scgi_temp_path {root}/state/tmp/scgi;\n server {{\n listen 127.0.0.1:9000;\n server_name localhost;\n root {root}/repos/saleor-dashboard/build/dashboard;\n location / {{ try_files $uri $uri/ /index.html; }}\n }}\n server {{\n listen 127.0.0.1:8000;\n server_name localhost;\n client_max_body_size 32m;\n location /media/ {{ alias {root}/repos/saleor/media/; }}\n location /static/ {{ alias {root}/repos/saleor/static/; }}\n location / {{ proxy_pass http://127.0.0.1:8001; proxy_set_header Host $http_host; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; }}\n }}\n}}\n''')\nprint('Generated isolated runtime config; secrets stay in state/env.json')\n"
+      ]
+    },
+    {
+      "cwd": "/workspace/deployment",
+      "argv": [
+        "python",
+        "-c",
+        "import os,subprocess,time\nfrom pathlib import Path\nroot=Path.cwd();pg='/usr/lib/postgresql/15/bin/'; data=root/'state/postgres'\ndef run(args,**kwargs): return subprocess.run(args,check=True,**kwargs)\nrun([pg+'initdb','-D',str(data),'-U','saleor','--auth-local=trust','--auth-host=trust','--encoding=UTF8','--no-locale','--no-instructions'])\nrun([pg+'pg_ctl','-D',str(data),'-l',str(root/'.runtime-logs/postgres-prepare.log'),'-o',f'-c listen_addresses=127.0.0.1 -p 5432 -k {root}/state','-w','start'])\ncachelog=(root/'.runtime-logs/valkey-prepare.log').open('wb')\ncache=subprocess.Popen(['valkey-server','--bind','127.0.0.1','--port','6379','--dir',str(root/'state/valkey'),'--appendonly','yes','--daemonize','no'],stdout=cachelog,stderr=subprocess.STDOUT)\ntry:\n for _ in range(60):\n  if subprocess.run(['valkey-cli','-h','127.0.0.1','ping'],stdout=subprocess.PIPE).stdout.strip()==b'PONG':break\n  if cache.poll() is not None:raise RuntimeError('Valkey exited')\n  time.sleep(1)\n else:raise RuntimeError('Valkey readiness timeout')\n run([pg+'createdb','-h','127.0.0.1','-p','5432','-U','saleor','saleor'])\n core=root/'repos/saleor'; wrapper=str(root/'run.py')\n for argv in [['manage.py','migrate','--noinput'],['manage.py','check'],['manage.py','collectstatic','--noinput'],['manage.py','populatedb','--createsuperuser','--withoutimages']]:\n  run(['python',wrapper,'python',*argv],cwd=core)\n run(['python',wrapper,'python','manage.py','migrate','--check'],cwd=core)\nfinally:\n subprocess.run(['valkey-cli','-h','127.0.0.1','shutdown','save'])\n try:cache.wait(timeout=15)\n except subprocess.TimeoutExpired:cache.kill();cache.wait()\n cachelog.close()\n run([pg+'pg_ctl','-D',str(data),'-m','fast','-w','stop'])\n"
+      ]
+    },
+    {
+      "cwd": "/workspace/deployment/repos/saleor-dashboard",
+      "argv": [
+        "python",
+        "/workspace/deployment/run.py",
+        "env",
+        "STATIC_URL=/",
+        "node",
+        "node_modules/vite/bin/vite.js",
+        "build",
+        "--config",
+        "deploy.vite.config.mjs"
+      ]
+    }
+  ],
+  "services": [
+    {
+      "name": "postgres",
+      "cwd": "/workspace/deployment",
+      "argv": [
+        "/usr/lib/postgresql/15/bin/postgres",
+        "-D",
+        "/workspace/deployment/state/postgres",
+        "-c",
+        "listen_addresses=127.0.0.1",
+        "-p",
+        "5432",
+        "-k",
+        "/workspace/deployment/state"
+      ]
+    },
+    {
+      "name": "valkey",
+      "cwd": "/workspace/deployment",
+      "argv": [
+        "valkey-server",
+        "--bind",
+        "127.0.0.1",
+        "--port",
+        "6379",
+        "--dir",
+        "/workspace/deployment/state/valkey",
+        "--appendonly",
+        "yes",
+        "--daemonize",
+        "no"
+      ]
+    },
+    {
+      "name": "mailpit",
+      "cwd": "/workspace/deployment",
+      "argv": [
+        "mailpit",
+        "--listen",
+        "127.0.0.1:8025",
+        "--smtp",
+        "127.0.0.1:1025",
+        "--database",
+        "/workspace/deployment/state/mailpit/mailpit.db"
+      ]
+    },
+    {
+      "name": "api",
+      "cwd": "/workspace/deployment/repos/saleor",
+      "argv": [
+        "python",
+        "/workspace/deployment/run.py",
+        "python",
+        "-m",
+        "uvicorn",
+        "saleor.asgi:application",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "8001"
+      ]
+    },
+    {
+      "name": "celery",
+      "cwd": "/workspace/deployment/repos/saleor",
+      "argv": [
+        "python",
+        "/workspace/deployment/run.py",
+        "python",
+        "-m",
+        "celery",
+        "-A",
+        "saleor.celeryconf:app",
+        "worker",
+        "--loglevel=info",
+        "--concurrency=1",
+        "-B",
+        "--schedule",
+        "/workspace/deployment/state/celerybeat-schedule"
+      ]
+    },
+    {
+      "name": "nginx",
+      "cwd": "/workspace/deployment",
+      "argv": [
+        "nginx",
+        "-c",
+        "/workspace/deployment/nginx.conf",
+        "-p",
+        "/workspace/deployment/",
+        "-g",
+        "daemon off;"
+      ]
+    }
+  ],
+  "healthchecks": [
+    "http://127.0.0.1:8000/health/",
+    "http://127.0.0.1:9000/",
+    "http://127.0.0.1:8025/"
+  ]
+}

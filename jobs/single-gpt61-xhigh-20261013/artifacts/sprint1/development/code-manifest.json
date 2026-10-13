@@ -1,0 +1,79 @@
+{
+  "stage": "sprint1/development",
+  "round": 1,
+  "version": "3.23.0",
+  "repositories": [
+    {
+      "repository": "/workspace/repos/saleor",
+      "branch": "sprint1-development",
+      "baseCommit": "c864e66b8e537d30732ddba62d3a4c47e49e4a3e",
+      "workingDiffSha256": "7fcdd8e1e22ee6a7c749cab841e3e7bad832b97c86478a4ad52157028bff77f6",
+      "changedFiles": {
+        ".release-it.json": "3df4faa05b6e049effa31cb7e5f8bbeb4fadca3bc2e5979d08748766d2172646",
+        "package-lock.json": "2dd93acf517296e7d9df41494aaee744bad5c285fa48f465086f99dd66ae956b",
+        "package.json": "c4681462b2fcf670ec3b390e64585c6f7f8a7a189d05345147a06da8a341c958",
+        "pyproject.toml": "198943b357095934f48546ba9b123c25a5506c83cb2e6e8e8b0ee95ee97a4c98",
+        "saleor/__init__.py": "97c83af2abd36df8b8c418b0199f968aaf694b048016112e07ab735872549763",
+        "saleor/graphql/app/types.py": "713125aa9f6c80bef813bc41940d3a447fe85feac221629e3651260b559bdd76",
+        "saleor/graphql/schema.graphql": "4377b7768999187d64a660f1afccf733d647e3b1e0e1bd89e25e2400eb725bd4",
+        "uv.lock": "84e842b4e1cc803c1f2bab2f2d32b1a26243ccd613be30bb4d349d842040d556"
+      },
+      "untracked": []
+    },
+    {
+      "repository": "/workspace/repos/saleor-dashboard",
+      "branch": "sprint1-development",
+      "baseCommit": "aebb2401b5079fbbb8c60150289d1896c108feca",
+      "workingDiffSha256": "00dbc6921189984723f8e26c360602c73ee94f959c4d642b843f61a4220d13c1",
+      "changedFiles": {
+        ".github/workflows/main.yml": "1cb35469676870a479136e63bc29093973bebb7085166f8171f4541db81ea475",
+        "Dockerfile": "9bfa267bbaacf5e3ed7fbe54a49712a0d0d92e0feeae38808306c61a4d18fb07",
+        "eslint.config.mjs": "28da7536320f311bc26699da7787666b7085404106bbe4f408b10a81ee16fc7f",
+        "locale/defaultMessages.json": "f3bb7e92d61e2c679c32d36d2ef2cc3de081b667cc35d4f90d3934be0b54f267",
+        "package.json": "589b9c768b66e8690d1295c7e017a1f24a8d3d901c2bcae92cfdf813ade5510f",
+        "schema.graphql": "4377b7768999187d64a660f1afccf733d647e3b1e0e1bd89e25e2400eb725bd4",
+        "src/channels/views/ChannelCreate/ChannelCreate.tsx": "e20b1dd0a611012225bf56f550aef8e891d7c6f883da7814a909b2607672136a",
+        "src/channels/views/ChannelCreate/useSaveChannel.ts": "6de5ee319ee6b8db4b21202e17bae25c5cbebfe5ca2d2c4ff5a4a39cd0de73ac",
+        "src/channels/views/ChannelDetails/ChannelDetails.tsx": "9ef9b09b8fb8b1bbc8524071e3a2f755b37b5c5bde0f3fdc25e2970d86cde4c5",
+        "src/components/Datagrid/Datagrid.tsx": "8053a8910a3a354f3611e5d8ada3fe18c913cad430fa5be447abce5439d76a7e",
+        "src/discounts/views/VoucherCreate/handlers.ts": "8fde8ba8a3726def915f0865ad41ac764b071d384f05045a8311c7e6772f4e49",
+        "src/extensions/hooks/useExtensions.ts": "ff16738eb633392537b6ea8d7f805a34b695e6792028edca0e184774b29356a5",
+        "src/graphql/hooks.generated.ts": "78774d527674f03d3c99dd52be9b5460640a26071ea55dc7a61ff71b96c15f01",
+        "src/graphql/types.generated.ts": "d81f7aa26d60fbaaa02f02c99e0c5c4b25085da4fe12d1f286d6ccfafed3fa04",
+        "src/misc.ts": "f6a43687eeaf41cb48c398d5ec1bc251329301c657184fafd97b804a1fcd5b7e",
+        "src/orders/components/OrderReturnPage/components/TransactionSubmitCard/RefundShipmentCheckbox.tsx": "f0889f183081d58a9bb8cc224ed593ec15d73210e3fe0297ad2fb466c59adaa1",
+        "src/orders/mutations.ts": "6ade1dbe878b4c25a0cf8c2b13d0c538d712391598a9bcae962e087016fbe600",
+        "src/orders/views/OrderDetails/OrderDetailsMessages.tsx": "1b62a6cd57100b3bcf189f035c0c22f5df4b4588f9b33ed873df7ca66a76cfe1",
+        "src/orders/views/OrderDetails/OrderDraftDetails/index.tsx": "3174df374e89ecd8c1224e7012c279024fcec6b9135d7c047b46174948f50901",
+        "src/orders/views/OrderDraftList/OrderDraftList.tsx": "c71271cf5d8f50f9a87e4a564381f5d437d14c2098d0a0d2b46558298d581c2a",
+        "src/orders/views/OrderRefund/OrderRefund.tsx": "38cdb4c015afeb9e96c4a86b4e10045fa1185830a97b629b33a88396855cfac9",
+        "src/orders/views/OrderTransactionRefundCreate/handlers.ts": "1427ed5a572b7e40e912d8c7d9e4aea74db7d73b66ff70204670c8562064087e",
+        "src/orders/views/OrderTransactionRefundEdit/OrderTransactionRefundEdit.tsx": "8cea7f5900aafa94f20d2afc671cf4d23a928ff4f44e99c37d374f9129a004fe",
+        "src/orders/views/OrderTransactionRefundEdit/handlers.ts": "29b4fa1974c86decef30fd37b92542e9e8d1c2be9198c52733bf5fbadb0c4e14",
+        "src/orders/views/OrderTransactionRefundEdit/messages.ts": "bb1124678df5f0b57ab5b99e7e1d032fb201cbeca061784de176c020feafc28e",
+        "src/products/mutations.ts": "0f7875cf8162da7b6bfb0265c1f84f662c5d2bee28c524c66cbfd0f50a4dc1ed",
+        "src/products/views/ProductCreate/ProductCreate.tsx": "981f6a1f1f9bfc49129712cc468f73df1bb3b456cffe29705d7b9c3b982fddb2",
+        "src/products/views/ProductCreate/handlers.ts": "afd9c46d6859854cbbfdfda258d9a6cdc7beb9c687daad56a7383a3dc4e9e4e3",
+        "src/products/views/ProductUpdate/handlers/useProductUpdateHandler.ts": "0305bda598a61c0f287a5c28906a56fd0347b27f1f2ea65e5a016f5309195a03",
+        "src/products/views/ProductVariant/ProductVariant.tsx": "aeb42af3dc4465dae6918a997a0bb192cf77d97fcbb606803968edd2a575be85",
+        "src/products/views/ProductVariant/useSubmitChannels.ts": "ce01c0335d08a9a9a1b9480ce31ed581b269f1cbbb7e89068856131fe7285eda",
+        "src/products/views/ProductVariantCreate.tsx": "549a6f9c4512202bc02d2ea643664233074146cb5643472ac39f1133517ccdd0",
+        "src/utils/handlers/metadataCreateHandler.ts": "548e846563ad9b0f566de69241381e5773d26261cb06801815e3e5ef3cccbdc9",
+        "src/utils/handlers/metadataUpdateHandler.ts": "d533d080ff297a157401a0f321ed37e55a6d1aee5e33d6bd05e83db7a7f76b8f",
+        "tsconfig.json": "141723659633977dc00b069323caab1dff5b569db377ce970ef72bc2311e2a7e",
+        "vite.config.js": "14f7941289ff1e3940ebcc909feb6e33114f271dcba09940742629ac75cabc7f"
+      },
+      "untracked": []
+    }
+  ],
+  "frozenMaterials": {
+    "/workspace/instruction.md": "c30e2fe79894ef93307b98475882226b301f63255c0b62e7c1bf6d0f0436b2f5",
+    "/workspace/artifacts/sprint1/prd/prd.md": "02a77a745d70336edac9b301a6ddbc87104167eba2c2c12c277ba3d4bf86f123",
+    "/workspace/artifacts/sprint1/test-design/test-cases.v1.csv": "3e0eaee98c790c293e3c1ea8a05ea55450126a2971c0216899e42222a5693e18",
+    "/workspace/artifacts/sprint1/tech-design/frontend-design.md": "b4aee409c11a59ce1b74da878fb95884a9f137e80f65753f577a0d16fa36a6fe",
+    "/workspace/artifacts/sprint1/tech-design/backend-design.md": "c33085576a2fda1e0965b2d6a65969519af3790764ae53dcad2254330f18db2c",
+    "/workspace/artifacts/sprint1/tech-design/interface-contract.md": "d5008fa6949c788eda5bc20d3353853e500d868b09d4c1c532bcf958a02c3144",
+    "/workspace/artifacts/sprint1/tech-design/target-schema.graphql": "7ab4230561a99a672c646aa200834376221a64120e5d21a4cf1b2164dd77cccc"
+  },
+  "schemaSha256": "4377b7768999187d64a660f1afccf733d647e3b1e0e1bd89e25e2400eb725bd4"
+}

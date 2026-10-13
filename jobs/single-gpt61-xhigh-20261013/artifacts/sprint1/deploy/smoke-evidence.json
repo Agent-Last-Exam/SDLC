@@ -1,0 +1,293 @@
+{
+  "http://127.0.0.1:8000/health/": 200,
+  "http://127.0.0.1:9000/": 200,
+  "http://127.0.0.1:8025/": 200,
+  "login": {
+    "email": "[EMAIL_REDACTED]",
+    "isStaff": true
+  },
+  "versionAndSampleRead": {
+    "shop": {
+      "version": "3.23.0"
+    },
+    "channels": [
+      {
+        "id": "Q2hhbm5lbDoy",
+        "slug": "channel-pln",
+        "name": "Channel-PLN"
+      },
+      {
+        "id": "Q2hhbm5lbDox",
+        "slug": "default-channel",
+        "name": "Default Channel"
+      }
+    ],
+    "products": {
+      "edges": [
+        {
+          "node": {
+            "id": "UHJvZHVjdDoxNTI=",
+            "name": "Apple Juice"
+          }
+        }
+      ]
+    }
+  },
+  "extensionFields": {
+    "installed": {
+      "fields": [
+        {
+          "name": "id",
+          "isDeprecated": false,
+          "type": {
+            "kind": "NON_NULL",
+            "name": null,
+            "ofType": {
+              "kind": "SCALAR",
+              "name": "ID"
+            }
+          }
+        },
+        {
+          "name": "permissions",
+          "isDeprecated": false,
+          "type": {
+            "kind": "NON_NULL",
+            "name": null,
+            "ofType": {
+              "kind": "LIST",
+              "name": null
+            }
+          }
+        },
+        {
+          "name": "label",
+          "isDeprecated": false,
+          "type": {
+            "kind": "NON_NULL",
+            "name": null,
+            "ofType": {
+              "kind": "SCALAR",
+              "name": "String"
+            }
+          }
+        },
+        {
+          "name": "url",
+          "isDeprecated": false,
+          "type": {
+            "kind": "NON_NULL",
+            "name": null,
+            "ofType": {
+              "kind": "SCALAR",
+              "name": "String"
+            }
+          }
+        },
+        {
+          "name": "mount",
+          "isDeprecated": true,
+          "type": {
+            "kind": "NON_NULL",
+            "name": null,
+            "ofType": {
+              "kind": "ENUM",
+              "name": "AppExtensionMountEnum"
+            }
+          }
+        },
+        {
+          "name": "target",
+          "isDeprecated": true,
+          "type": {
+            "kind": "NON_NULL",
+            "name": null,
+            "ofType": {
+              "kind": "ENUM",
+              "name": "AppExtensionTargetEnum"
+            }
+          }
+        },
+        {
+          "name": "mountName",
+          "isDeprecated": false,
+          "type": {
+            "kind": "NON_NULL",
+            "name": null,
+            "ofType": {
+              "kind": "SCALAR",
+              "name": "String"
+            }
+          }
+        },
+        {
+          "name": "targetName",
+          "isDeprecated": false,
+          "type": {
+            "kind": "NON_NULL",
+            "name": null,
+            "ofType": {
+              "kind": "SCALAR",
+              "name": "String"
+            }
+          }
+        },
+        {
+          "name": "settings",
+          "isDeprecated": false,
+          "type": {
+            "kind": "NON_NULL",
+            "name": null,
+            "ofType": {
+              "kind": "SCALAR",
+              "name": "JSON"
+            }
+          }
+        },
+        {
+          "name": "app",
+          "isDeprecated": false,
+          "type": {
+            "kind": "NON_NULL",
+            "name": null,
+            "ofType": {
+              "kind": "OBJECT",
+              "name": "App"
+            }
+          }
+        },
+        {
+          "name": "accessToken",
+          "isDeprecated": false,
+          "type": {
+            "kind": "SCALAR",
+            "name": "String",
+            "ofType": null
+          }
+        },
+        {
+          "name": "options",
+          "isDeprecated": true,
+          "type": {
+            "kind": "UNION",
+            "name": "AppExtensionPossibleOptions",
+            "ofType": null
+          }
+        }
+      ]
+    },
+    "preview": {
+      "fields": [
+        {
+          "name": "permissions",
+          "isDeprecated": false,
+          "type": {
+            "kind": "NON_NULL",
+            "name": null,
+            "ofType": {
+              "kind": "LIST",
+              "name": null
+            }
+          }
+        },
+        {
+          "name": "label",
+          "isDeprecated": false,
+          "type": {
+            "kind": "NON_NULL",
+            "name": null,
+            "ofType": {
+              "kind": "SCALAR",
+              "name": "String"
+            }
+          }
+        },
+        {
+          "name": "url",
+          "isDeprecated": false,
+          "type": {
+            "kind": "NON_NULL",
+            "name": null,
+            "ofType": {
+              "kind": "SCALAR",
+              "name": "String"
+            }
+          }
+        },
+        {
+          "name": "mount",
+          "isDeprecated": true,
+          "type": {
+            "kind": "NON_NULL",
+            "name": null,
+            "ofType": {
+              "kind": "ENUM",
+              "name": "AppExtensionMountEnum"
+            }
+          }
+        },
+        {
+          "name": "target",
+          "isDeprecated": true,
+          "type": {
+            "kind": "NON_NULL",
+            "name": null,
+            "ofType": {
+              "kind": "ENUM",
+              "name": "AppExtensionTargetEnum"
+            }
+          }
+        },
+        {
+          "name": "mountName",
+          "isDeprecated": false,
+          "type": {
+            "kind": "NON_NULL",
+            "name": null,
+            "ofType": {
+              "kind": "SCALAR",
+              "name": "String"
+            }
+          }
+        },
+        {
+          "name": "targetName",
+          "isDeprecated": false,
+          "type": {
+            "kind": "NON_NULL",
+            "name": null,
+            "ofType": {
+              "kind": "SCALAR",
+              "name": "String"
+            }
+          }
+        },
+        {
+          "name": "settings",
+          "isDeprecated": false,
+          "type": {
+            "kind": "NON_NULL",
+            "name": null,
+            "ofType": {
+              "kind": "SCALAR",
+              "name": "JSON"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "channelCreate": {
+    "id": "Q2hhbm5lbDoz",
+    "slug": "deploy-smoke-1791892088",
+    "name": "Deploy Smoke"
+  },
+  "persistentRead": {
+    "id": "Q2hhbm5lbDoz",
+    "slug": "deploy-smoke-1791892088",
+    "name": "Deploy Smoke",
+    "isActive": false
+  },
+  "anonymousDenied": true,
+  "spaRoute": 200
+}

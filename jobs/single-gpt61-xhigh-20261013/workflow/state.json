@@ -1,0 +1,143 @@
+{
+  "mode": "single",
+  "status": "failed",
+  "cursor": 5,
+  "stages": [
+    {
+      "id": "sprint1/prd",
+      "role": "pm",
+      "status": "accepted",
+      "execution_started": true,
+      "session_id": "698eb0d9-137b-4ea7-8127-3f12f57c75c7",
+      "prd_input_sha256": null,
+      "input_sha256": {},
+      "missing_inputs": [],
+      "outputs": {
+        "prd.md": "02a77a745d70336edac9b301a6ddbc87104167eba2c2c12c277ba3d4bf86f123"
+      },
+      "missing_outputs": [],
+      "delivery_complete": true,
+      "cost_usd": 2.445886
+    },
+    {
+      "id": "sprint1/tech-design",
+      "role": "architect",
+      "status": "accepted",
+      "execution_started": true,
+      "session_id": "698eb0d9-137b-4ea7-8127-3f12f57c75c7",
+      "prd_input_sha256": "02a77a745d70336edac9b301a6ddbc87104167eba2c2c12c277ba3d4bf86f123",
+      "input_sha256": {
+        "artifact:sprint1/prd/prd": "02a77a745d70336edac9b301a6ddbc87104167eba2c2c12c277ba3d4bf86f123"
+      },
+      "missing_inputs": [],
+      "outputs": {
+        "backend-design.md": "c33085576a2fda1e0965b2d6a65969519af3790764ae53dcad2254330f18db2c",
+        "frontend-design.md": "b4aee409c11a59ce1b74da878fb95884a9f137e80f65753f577a0d16fa36a6fe",
+        "interface-contract.md": "d5008fa6949c788eda5bc20d3353853e500d868b09d4c1c532bcf958a02c3144",
+        "target-schema.graphql": "7ab4230561a99a672c646aa200834376221a64120e5d21a4cf1b2164dd77cccc"
+      },
+      "missing_outputs": [],
+      "delivery_complete": true,
+      "cost_usd": 8.319974
+    },
+    {
+      "id": "sprint1/test-design",
+      "role": "qa-design",
+      "status": "accepted",
+      "execution_started": true,
+      "session_id": "698eb0d9-137b-4ea7-8127-3f12f57c75c7",
+      "prd_input_sha256": "02a77a745d70336edac9b301a6ddbc87104167eba2c2c12c277ba3d4bf86f123",
+      "input_sha256": {
+        "artifact:sprint1/prd/prd": "02a77a745d70336edac9b301a6ddbc87104167eba2c2c12c277ba3d4bf86f123",
+        "artifact:sprint1/tech-design/frontend_design": "b4aee409c11a59ce1b74da878fb95884a9f137e80f65753f577a0d16fa36a6fe",
+        "artifact:sprint1/tech-design/backend_design": "c33085576a2fda1e0965b2d6a65969519af3790764ae53dcad2254330f18db2c",
+        "artifact:sprint1/tech-design/interface_contract": "d5008fa6949c788eda5bc20d3353853e500d868b09d4c1c532bcf958a02c3144",
+        "artifact:sprint1/tech-design/target_schema": "7ab4230561a99a672c646aa200834376221a64120e5d21a4cf1b2164dd77cccc"
+      },
+      "missing_inputs": [],
+      "outputs": {
+        "test-cases.v1.csv": "3e0eaee98c790c293e3c1ea8a05ea55450126a2971c0216899e42222a5693e18"
+      },
+      "missing_outputs": [],
+      "delivery_complete": true,
+      "cost_usd": 11.794381
+    },
+    {
+      "id": "sprint1/development",
+      "role": "developer",
+      "status": "accepted",
+      "execution_started": true,
+      "session_id": "698eb0d9-137b-4ea7-8127-3f12f57c75c7",
+      "prd_input_sha256": "02a77a745d70336edac9b301a6ddbc87104167eba2c2c12c277ba3d4bf86f123",
+      "input_sha256": {
+        "artifact:sprint1/prd/prd": "02a77a745d70336edac9b301a6ddbc87104167eba2c2c12c277ba3d4bf86f123",
+        "artifact:sprint1/tech-design/frontend_design": "b4aee409c11a59ce1b74da878fb95884a9f137e80f65753f577a0d16fa36a6fe",
+        "artifact:sprint1/tech-design/backend_design": "c33085576a2fda1e0965b2d6a65969519af3790764ae53dcad2254330f18db2c",
+        "artifact:sprint1/tech-design/interface_contract": "d5008fa6949c788eda5bc20d3353853e500d868b09d4c1c532bcf958a02c3144",
+        "artifact:sprint1/tech-design/target_schema": "7ab4230561a99a672c646aa200834376221a64120e5d21a4cf1b2164dd77cccc"
+      },
+      "missing_inputs": [],
+      "candidate": {
+        "sha256": "6e29648d34103e5bcd6f39174d66e981b72e8212610e820104ad75aea0e0876a",
+        "archive_sha256": "673ccf46dc10bfe8a0fd9c05b49599866402373e507d402c0e060fd578a1848c"
+      },
+      "outputs": {
+        "code-manifest.json": "254e25e0e404a618ac5dead70ba56255dbbb9a49caeeec61b4cfcfd77ffdddc5",
+        "test-handoff.md": "cebe7f8a43f06169d0c3f36254fb6e08a7612ecedac5f1257d5ea6f684188394"
+      },
+      "missing_outputs": [],
+      "delivery_complete": true,
+      "cost_usd": 34.955604
+    },
+    {
+      "id": "sprint1/deploy",
+      "role": "deployer",
+      "status": "accepted",
+      "execution_started": true,
+      "session_id": "698eb0d9-137b-4ea7-8127-3f12f57c75c7",
+      "prd_input_sha256": "02a77a745d70336edac9b301a6ddbc87104167eba2c2c12c277ba3d4bf86f123",
+      "input_sha256": {
+        "artifact:sprint1/prd/prd": "02a77a745d70336edac9b301a6ddbc87104167eba2c2c12c277ba3d4bf86f123",
+        "artifact:sprint1/development/handoff": "cebe7f8a43f06169d0c3f36254fb6e08a7612ecedac5f1257d5ea6f684188394"
+      },
+      "missing_inputs": [],
+      "outputs": {
+        "deployment.json": "9d17df1c9b4a8a6fec062b749e58ad154f6b7598bd3e5aaa88baaf4b877133e1",
+        "health-rehearsal.json": "656525bb32b1f5e9067c343339c8fc2b9e95467fc0bd7740a4b0e17623513872",
+        "smoke-evidence.json": "cf8d544bca7c0b05dfcfa2f9016042e677dbb1dc6f78737c7077ac152c178a96",
+        "test-handoff.md": "a3a695ece2fd9a807e664997f39d4802236b18b5944ecfd10da56edd4acbc1af",
+        "verification.json": "1636ef042309150a4998ef551c34d3e5c6a3e3e24ec37b9bbb7af5a1c83519a8"
+      },
+      "missing_outputs": [],
+      "delivery_complete": true,
+      "cost_usd": 40.938186
+    },
+    {
+      "id": "sprint1/qa",
+      "role": "qa",
+      "status": "failed",
+      "execution_started": true,
+      "session_id": "698eb0d9-137b-4ea7-8127-3f12f57c75c7",
+      "prd_input_sha256": "02a77a745d70336edac9b301a6ddbc87104167eba2c2c12c277ba3d4bf86f123",
+      "input_sha256": {
+        "artifact:sprint1/prd/prd": "02a77a745d70336edac9b301a6ddbc87104167eba2c2c12c277ba3d4bf86f123",
+        "artifact:sprint1/tech-design/frontend_design": "b4aee409c11a59ce1b74da878fb95884a9f137e80f65753f577a0d16fa36a6fe",
+        "artifact:sprint1/tech-design/backend_design": "c33085576a2fda1e0965b2d6a65969519af3790764ae53dcad2254330f18db2c",
+        "artifact:sprint1/tech-design/interface_contract": "d5008fa6949c788eda5bc20d3353853e500d868b09d4c1c532bcf958a02c3144",
+        "artifact:sprint1/tech-design/target_schema": "7ab4230561a99a672c646aa200834376221a64120e5d21a4cf1b2164dd77cccc",
+        "artifact:sprint1/test-design/test_cases": "3e0eaee98c790c293e3c1ea8a05ea55450126a2971c0216899e42222a5693e18",
+        "artifact:sprint1/deploy/handoff": "a3a695ece2fd9a807e664997f39d4802236b18b5944ecfd10da56edd4acbc1af"
+      },
+      "missing_inputs": []
+    }
+  ],
+  "model_called": true,
+  "synthetic": false,
+  "missing_output_policy": "fail",
+  "delivery_complete": true,
+  "max_cost_usd": 50.0,
+  "cost_usd": 40.938186,
+  "principal_session": "698eb0d9-137b-4ea7-8127-3f12f57c75c7",
+  "baseline_sha256": "c53ed333a5e9f48a44538855b87649118bdc15b39e92ddb4123fa14a1602cdcd",
+  "error": "[Errno 7] Argument list too long: 'docker'"
+}

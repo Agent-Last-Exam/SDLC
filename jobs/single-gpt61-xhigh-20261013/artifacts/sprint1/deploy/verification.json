@@ -1,0 +1,19 @@
+{
+  "kind": "nonroot-scratch-fresh-rehearsal-not-final-service-user-deployment",
+  "sourceInventory": {
+    "sha256": "6e29648d34103e5bcd6f39174d66e981b72e8212610e820104ad75aea0e0876a",
+    "entryCount": 122420
+  },
+  "deploymentManifestSha256": "9d17df1c9b4a8a6fec062b749e58ad154f6b7598bd3e5aaa88baaf4b877133e1",
+  "prepareCount": 3,
+  "serviceCount": 6,
+  "prepareResult": "all commands exit 0 on fresh copy",
+  "build": "Vite built in 41.04s",
+  "healthchecks": {
+    "http://127.0.0.1:8000/health/": 200,
+    "http://127.0.0.1:9000/": 200,
+    "http://127.0.0.1:8025/": 200
+  },
+  "smoke": "HTTP login/version/sample reads/extension introspection/channel write and reread/permission denial/SPA all passed",
+  "checkedAtUnix": 1791892088.517205
+}

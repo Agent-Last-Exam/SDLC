@@ -1,0 +1,438 @@
+用例编号,一级模块,二级模块,用例标题,覆盖,优先级,前置条件,操作步骤,预期结果
+TC001,需求条目,R01 · 两端统一目标版本并实现已确认的目标行为,Core所有发布元数据及派生版本统一为3.23,AC-01-1;BD01;I01,P0,实施后交付源码与锁文件可读；Python3.12本地环境可用。,"1. 检查saleor/__init__.py、pyproject.toml、uv.lock的本项目saleor条目、Core package.json及package-lock.json根项目版本。
+2. 以正常入口导入版本源并检查schema_version及user_agent_version，不加载评估测试模块。","1. 本项目版本均为3.23.0，未误改第三方包自身版本。
+2. 运行时__version__=3.23.0、schema_version=3.23、user_agent_version=Saleor/3.23，值由真实元数据派生。"
+TC002,需求条目,R01 · 两端统一目标版本并实现已确认的目标行为,授权员工和App读取真实商店版本,AC-01-1;BD01;I01,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。有有效staff账户及有效App token。,"1. 分别用员工和App发送query {shop {version schemaVersion}}。
+2. 检查响应与Core源码/部署版本。","1. 两种身份均获得version=3.23.0、schemaVersion=3.23，无顶层错误。
+2. 响应与实际运行源一致，不通过固定测试输出伪造目标版本。"
+TC003,需求条目,R01 · 两端统一目标版本并实现已确认的目标行为,Dashboard包版本构建标记和展示不保留旧版覆盖,AC-01-1;FD01;I01,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。批准运行配置可读；CUSTOM_VERSION可在隔离配置副本中设置。,"1. 检查Dashboard package.json.version、config.saleor.schemaVersion及生效锁/构建配置。
+2. 不设置CUSTOM_VERSION启动批准的构建，查看APP_VERSION和RELEASE_NAME。
+3. 检查批准环境中CUSTOM_VERSION是否覆盖成3.22.9等旧版本。","1. 版本=3.23.0、schemaVersion=3.23，脚本不把3.22远程SDL作为目标权威。
+2. APP_VERSION使用v3.23.0，RELEASE_NAME与真实包版本一致。
+3. 合法自定义展示保留，但批准环境不得伪示为旧版；旧版覆盖应报告配置不一致，不能宣称AC通过。"
+TC004,需求条目,R01 · 两端统一目标版本并实现已确认的目标行为,已知扩展变更在无测试桩生产路径上可用,AC-01-2;AC-01-3;BD02;FD03;I02,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。有合法已安装POPUP扩展，mount=product_overview_create；采用自建非官方数据。,"1. 在不加载pytest/Jest评估模块的服务查询appExtensions的新三字段。
+2. 更换对象ID、label与用户后再次读取，并在Dashboard打开扩展。","1. 生产resolver返回PRODUCT_OVERVIEW_CREATE、POPUP及对象{}，不是测试fixture条件分支。
+2. 结果随真实数据/权限变化且界面正常消费；证明已知兼容范围，不据此推断完整3.23已验收。"
+TC005,需求条目,R01 · 两端统一目标版本并实现已确认的目标行为,目标行为清单缺失时保持完整验收受阻,AC-01-2;BD06;FD09,P0,PRD Q01/Q02尚无维护者确认的完整差异规格；当前只有技术设计六字段适配。,"1. 核对需求确认记录与目标行为逐项映射，不用版本号或已有流程填补未确认项。
+2. 检查范围和验收结论；若后来获得确认，只对照确认记录审核现有用例覆盖，不修改本冻结CSV。","1. 缺少完整旧/新行为、权限、异常及契约依据时明确记录Q01/Q02阻塞。
+2. 报告仅声明已知范围；未知项不能标记通过，覆盖不足记录缺口并交维护者决策，不臆造规格或改冻结用例。"
+TC006,需求条目,R02 · GraphQL 契约与实际后端行为一致,运行时导出的完整schema与仓库及目标契约一致,AC-02-1;BD06;FD02,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。实施后Core生产定义可导出；有只写测试输出的许可。,"1. 正常执行python manage.py get_graphql_schema，将完整输出保存至批准临时目录。
+2. 与Core交付schema、tech-design/target-schema.graphql及Dashboard输入做规范化语义比较。","1. 导出完成且语法、类型引用有效，不加载测试专用schema。
+2. 类型/字段/参数/enum/默认值/可空性一致，全部Base未变更定义保留；新增范围为两类型六字段及规定deprecated提示，无未登记差异。"
+TC007,需求条目,R02 · GraphQL 契约与实际后端行为一致,旧扩展字段和过滤器在新增字段后仍合法,AC-02-1;AC-02-2;BD02;I02;I03,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。NEW_TAB扩展method=POST，另有POPUP扩展。,"1. 用旧Enum filter.mount及filter.target查询mount/target/options，options通过旧union fragment读取newTabTarget.method。
+2. 查询新三字段并检查schema中旧字段、Enum、union、filter及弃用原因。","1. 旧请求仍合法，过滤结果和旧options行为保持；NEW_TAB方法为POST。
+2. 新旧值对应，旧mount/target和AppExtension.options仅弃用不删除；未额外改变旧options子类型。"
+TC008,需求条目,R02 · GraphQL 契约与实际后端行为一致,全部在用操作和fragments可验证目标schema,AC-02-2;BD06;FD02,P0,实施后Core完整生产SDL及Dashboard codegen.ts输入文件可读；只使用本地解析工具。,"1. 按src/**/queries.ts、src/**/mutations.ts、src/**/fragments/*.ts、src/searches/*.ts提取源documents。
+2. 同名相同fragment合并，同名内容冲突则报错；对全部操作按目标及生产SDL校验。","1. 完整提取范围包含ExtensionList和AppManifest，不以少数手选操作代表全部。
+2. 无未知字段/类型、重复冲突、错误变量或enum；允许排除聚合场景NoUnusedFragmentsRule但不跳过其他错误；重复冲突不能伪称通过。"
+TC009,需求条目,R02 · GraphQL 契约与实际后端行为一致,匿名身份不能读取受保护版本或扩展,AC-02-4;BD01;BD02;I01;I02,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。移除全部认证凭据，记录合法已安装扩展ID。,"1. 匿名分别查询shop.version及appExtensions的新字段。
+2. 单独查询shop.schemaVersion，观察错误与可见性。","1. 受保护字段顶层权限拒绝，不泄露版本/扩展对象；非空字段允许向父传播null，不要求仅version=null。
+2. schemaVersion沿用Base公共字段语义，不错误加MANAGE_SETTINGS限制；不将其成功等同version可匿名读取。"
+TC010,需求条目,R02 · GraphQL 契约与实际后端行为一致,无商品权限写入被拒绝且目标对象不变,AC-02-4;BD03;FD04;I05,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。受限staff无MANAGE_PRODUCTS；商品名称Before、库存5已存在。,"1. 以受限staff尝试将该商品/变体名称改为After并库存改为9。
+2. 授权管理员重新查询该对象及库存，检查响应。","1. 顶层PermissionDenied，不能仅因payload errors空误判成功。
+2. 名称仍Before、库存仍5，未发生受限写入；允许既有安全审计不算业务变更。"
+TC011,需求条目,R02 · GraphQL 契约与实际后端行为一致,已安装POPUP扩展method为null时派生正确配置,AC-02-3;BD02;FD03;I02,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。员工已认证；允许用自有隔离测试数据准备模型。,"1. 准备有效AppExtension，存储mount=product_overview_create、target=popup、http_target_method=null，记录ID。
+2. 按ID仅查询mount/target/mountName/targetName/settings；记录读取前后模型值。旧options深层查询在独立兼容用例检查。","1. 准备对象合法，ID来自真实模型。
+2. mount/mountName均为PRODUCT_OVERVIEW_CREATE，target/targetName均为POPUP，settings严格等于JSON对象{}且非字符串；读取不改method/模型。"
+TC012,需求条目,R02 · GraphQL 契约与实际后端行为一致,已安装APP_PAGE扩展method为null时派生正确配置,AC-02-3;BD02;FD03;I02,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。员工已认证；允许用自有隔离测试数据准备模型。,"1. 准备有效AppExtension，存储mount=product_details_more_actions、target=app_page、http_target_method=null，记录ID。
+2. 按ID仅查询mount/target/mountName/targetName/settings；记录读取前后模型值。旧options深层查询在独立兼容用例检查。","1. 准备对象合法，ID来自真实模型。
+2. mount/mountName均为PRODUCT_DETAILS_MORE_ACTIONS，target/targetName均为APP_PAGE，settings严格等于JSON对象{}且非字符串；读取不改method/模型。"
+TC013,需求条目,R02 · GraphQL 契约与实际后端行为一致,已安装NEW_TAB扩展method为GET时派生正确配置,AC-02-3;BD02;FD03;I02,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。员工已认证；允许用自有隔离测试数据准备模型。,"1. 准备有效AppExtension，存储mount=product_details_more_actions、target=new_tab、http_target_method=GET，记录ID。
+2. 按ID仅查询mount/target/mountName/targetName/settings；记录读取前后模型值。旧options深层查询在独立兼容用例检查。","1. 准备对象合法，ID来自真实模型。
+2. mount/mountName均为PRODUCT_DETAILS_MORE_ACTIONS，target/targetName均为NEW_TAB，settings严格等于JSON对象{""newTabTarget"":{""method"":""GET""}}且非字符串；读取不改method/模型。"
+TC014,需求条目,R02 · GraphQL 契约与实际后端行为一致,已安装NEW_TAB扩展method为POST时派生正确配置,AC-02-3;BD02;FD03;I02,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。员工已认证；允许用自有隔离测试数据准备模型。,"1. 准备有效AppExtension，存储mount=product_details_more_actions、target=new_tab、http_target_method=POST，记录ID。
+2. 按ID仅查询mount/target/mountName/targetName/settings；记录读取前后模型值。旧options深层查询在独立兼容用例检查。","1. 准备对象合法，ID来自真实模型。
+2. mount/mountName均为PRODUCT_DETAILS_MORE_ACTIONS，target/targetName均为NEW_TAB，settings严格等于JSON对象{""newTabTarget"":{""method"":""POST""}}且非字符串；读取不改method/模型。"
+TC015,需求条目,R02 · GraphQL 契约与实际后端行为一致,已安装WIDGET扩展method为GET时派生正确配置,AC-02-3;BD02;FD03;I02,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。员工已认证；允许用自有隔离测试数据准备模型。,"1. 准备有效AppExtension，存储mount=product_details_widgets、target=widget、http_target_method=GET，记录ID。
+2. 按ID仅查询mount/target/mountName/targetName/settings；记录读取前后模型值。旧options深层查询在独立兼容用例检查。","1. 准备对象合法，ID来自真实模型。
+2. mount/mountName均为PRODUCT_DETAILS_WIDGETS，target/targetName均为WIDGET，settings严格等于JSON对象{""widgetTarget"":{""method"":""GET""}}且非字符串；读取不改method/模型。"
+TC016,需求条目,R02 · GraphQL 契约与实际后端行为一致,已安装WIDGET扩展method为POST时派生正确配置,AC-02-3;BD02;FD03;I02,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。员工已认证；允许用自有隔离测试数据准备模型。,"1. 准备有效AppExtension，存储mount=product_details_widgets、target=widget、http_target_method=POST，记录ID。
+2. 按ID仅查询mount/target/mountName/targetName/settings；记录读取前后模型值。旧options深层查询在独立兼容用例检查。","1. 准备对象合法，ID来自真实模型。
+2. mount/mountName均为PRODUCT_DETAILS_WIDGETS，target/targetName均为WIDGET，settings严格等于JSON对象{""widgetTarget"":{""method"":""POST""}}且非字符串；读取不改method/模型。"
+TC017,需求条目,R02 · GraphQL 契约与实际后端行为一致,已安装NEW_TAB扩展method为null时派生正确配置,AC-02-3;BD02;FD03;I02,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。员工已认证；允许用自有隔离测试数据准备模型。,"1. 准备有效AppExtension，存储mount=product_details_more_actions、target=new_tab、http_target_method=null，记录ID。
+2. 按ID仅查询mount/target/mountName/targetName/settings；记录读取前后模型值。旧options深层查询在独立兼容用例检查。","1. 准备对象合法，ID来自真实模型。
+2. mount/mountName均为PRODUCT_DETAILS_MORE_ACTIONS，target/targetName均为NEW_TAB，settings严格等于JSON对象{}且非字符串；读取不改method/模型。"
+TC018,需求条目,R02 · GraphQL 契约与实际后端行为一致,已安装WIDGET扩展method为null时派生正确配置,AC-02-3;BD02;FD03;I02,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。员工已认证；允许用自有隔离测试数据准备模型。,"1. 准备有效AppExtension，存储mount=product_details_widgets、target=widget、http_target_method=null，记录ID。
+2. 按ID仅查询mount/target/mountName/targetName/settings；记录读取前后模型值。旧options深层查询在独立兼容用例检查。","1. 准备对象合法，ID来自真实模型。
+2. mount/mountName均为PRODUCT_DETAILS_WIDGETS，target/targetName均为WIDGET，settings严格等于JSON对象{}且非字符串；读取不改method/模型。"
+TC019,需求条目,R02 · GraphQL 契约与实际后端行为一致,全部现有挂载点能输出对应大写名称,AC-02-3;BD02;I02,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。从冻结目标SDL取得完整AppExtensionMountEnum列表，使用有效target/mount组合。,"1. 逐个现有Enum准备对应小写mount存储，普通挂载点配POPUP，widget挂载点配WIDGET，无method。
+2. 分别读新旧mount与settings，统计被检查的Enum集合。","1. 数据只使用SDL现有挂载点，不额外发明自由字符串位置。
+2. 每一Enum均被覆盖，mountName与旧mount完全一致且非空，settings={}；不遗漏枚举或放宽有效值范围。"
+TC020,需求条目,R02 · GraphQL 契约与实际后端行为一致,空扩展集合和未知对象保持合法可空边界,AC-02-3;BD02;I02,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。有已认证员工；查询范围内无扩展；准备不存在但类型合法的AppExtension Node ID。,"1. 查询空范围appExtensions。
+2. 按不存在ID查询appExtension。","1. 正常空集合edges=[]，不是缺字段/null假成功，pageInfo符合Base。
+2. 不存在对象沿用Base的可空/错误行为，不构造假实体；不会以新增非空字段强制生成扩展。"
+TC021,需求条目,R02 · GraphQL 契约与实际后端行为一致,旧扩展过滤枚举的错误值不会被当作自由字符串接受,AC-02-3;BD02;I02,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。有已认证员工；使用变量filter而非字符串拼接。,"1. 发送filter.mount=[""UNKNOWN_MOUNT""]。
+2. 发送filter.mount=[null]及filter.target=""UNKNOWN_TARGET""，每次独立请求。","1. GraphQL变量Enum校验拒绝，不进入业务查询或猜测默认挂载。
+2. 列表项null和未知target均被类型层拒绝，新String输出字段不改变旧输入约束。"
+TC022,需求条目,R02 · GraphQL 契约与实际后端行为一致,扩展分页保持最大数量和cursor规则,AC-02-3;BD02;I02,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。授权员工可查询101个合法扩展，数据每个有唯一ID。,"1. 查询first:100，再用最后cursor查询after及first:1。
+2. 查询first:101并对照Base最大分页规则。","1. 第一页不超过100且第二页cursor衔接，无跨页重复或丢项，新增字段均有值。
+2. 仍按Base限制拒绝或限制超额，不放宽为任意数量；结果与已有分页回归预期一致。"
+TC023,需求条目,R02 · GraphQL 契约与实际后端行为一致,扩展读取不透传token或私有metadata到settings,AC-02-3;AC-02-4;BD02;I02,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。扩展要求MANAGE_PRODUCTS；staff A有权限、B仅有其他有效权限，App具有对应既有权限。,"1. 分别用A和B读取同一扩展accessToken及settings。
+2. 检查settings键和值及读取前后业务数据/事件记录。","1. A按Base可得到合法token，B权限不足时token=null；新增字段不绕过token生成规则。
+2. settings仅规定配置形状，无accessToken/私有metadata/未授权权限；读取无业务写入或新增webhook。"
+TC024,需求条目,R02 · GraphQL 契约与实际后端行为一致,App读取自身与他人parent App保持对象边界,AC-02-4;BD02;I02,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。App A和B均有合法扩展，使用A有效token，无MANAGE_APPS扩大权限。,"1. 查询A扩展的新三字段与parent app。
+2. 查询B扩展的parent app并与Base对象权限结果比较。","1. 自身parent与配置可正常解析。
+2. 不突破Base parent解析边界；未授权他人App对象不泄露，非空app错误可传播null，不能要求所有列表节点完整返回。"
+TC025,需求条目,R02 · GraphQL 契约与实际后端行为一致,Manifest预览省略目标及无options转换正确,AC-02-3;BD02;I03,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。拥有MANAGE_APPS的staff；本地授权manifest服务提供完整合法基础manifest（id/name/version/appUrl/tokenTargetUrl等依Base），每例独立URL，不使用外网。,"1. 在完整manifest放入一个extension：label=QA，url=/qa，mount=PRODUCT_OVERVIEW_CREATE，target=省略，省略options；省略项不传null。
+2. 发送appFetchManifest(manifestUrl:本地URL)，读取errors及extensions新旧字段；比较数据库安装记录数量。","1. 本地服务响应合法JSON；使用Base原始manifest枚举格式而非数据库小写格式。
+2. errors=[]且manifest有效，mountName/旧mount=PRODUCT_OVERVIEW_CREATE、targetName/旧target=POPUP、settings为对象{}；只有预览无安装写入。"
+TC026,需求条目,R02 · GraphQL 契约与实际后端行为一致,Manifest预览POPUP目标及无options转换正确,AC-02-3;BD02;I03,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。拥有MANAGE_APPS的staff；本地授权manifest服务提供完整合法基础manifest（id/name/version/appUrl/tokenTargetUrl等依Base），每例独立URL，不使用外网。,"1. 在完整manifest放入一个extension：label=QA，url=/qa，mount=PRODUCT_OVERVIEW_CREATE，target=POPUP，省略options；省略项不传null。
+2. 发送appFetchManifest(manifestUrl:本地URL)，读取errors及extensions新旧字段；比较数据库安装记录数量。","1. 本地服务响应合法JSON；使用Base原始manifest枚举格式而非数据库小写格式。
+2. errors=[]且manifest有效，mountName/旧mount=PRODUCT_OVERVIEW_CREATE、targetName/旧target=POPUP、settings为对象{}；只有预览无安装写入。"
+TC027,需求条目,R02 · GraphQL 契约与实际后端行为一致,Manifest预览APP_PAGE目标及无options转换正确,AC-02-3;BD02;I03,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。拥有MANAGE_APPS的staff；本地授权manifest服务提供完整合法基础manifest（id/name/version/appUrl/tokenTargetUrl等依Base），每例独立URL，不使用外网。,"1. 在完整manifest放入一个extension：label=QA，url=/qa，mount=PRODUCT_DETAILS_MORE_ACTIONS，target=APP_PAGE，省略options；省略项不传null。
+2. 发送appFetchManifest(manifestUrl:本地URL)，读取errors及extensions新旧字段；比较数据库安装记录数量。","1. 本地服务响应合法JSON；使用Base原始manifest枚举格式而非数据库小写格式。
+2. errors=[]且manifest有效，mountName/旧mount=PRODUCT_DETAILS_MORE_ACTIONS、targetName/旧target=APP_PAGE、settings为对象{}；只有预览无安装写入。"
+TC028,需求条目,R02 · GraphQL 契约与实际后端行为一致,Manifest预览NEW_TAB目标及GET转换正确,AC-02-3;BD02;I03,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。拥有MANAGE_APPS的staff；本地授权manifest服务提供完整合法基础manifest（id/name/version/appUrl/tokenTargetUrl等依Base），每例独立URL，不使用外网。,"1. 在完整manifest放入一个extension：label=QA，url=/qa，mount=PRODUCT_DETAILS_MORE_ACTIONS，target=NEW_TAB，options.newTabTarget.method=GET；省略项不传null。
+2. 发送appFetchManifest(manifestUrl:本地URL)，读取errors及extensions新旧字段；比较数据库安装记录数量。","1. 本地服务响应合法JSON；使用Base原始manifest枚举格式而非数据库小写格式。
+2. errors=[]且manifest有效，mountName/旧mount=PRODUCT_DETAILS_MORE_ACTIONS、targetName/旧target=NEW_TAB、settings为对象{""newTabTarget"":{""method"":""GET""}}；只有预览无安装写入。"
+TC029,需求条目,R02 · GraphQL 契约与实际后端行为一致,Manifest预览NEW_TAB目标及POST转换正确,AC-02-3;BD02;I03,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。拥有MANAGE_APPS的staff；本地授权manifest服务提供完整合法基础manifest（id/name/version/appUrl/tokenTargetUrl等依Base），每例独立URL，不使用外网。,"1. 在完整manifest放入一个extension：label=QA，url=/qa，mount=PRODUCT_DETAILS_MORE_ACTIONS，target=NEW_TAB，options.newTabTarget.method=POST；省略项不传null。
+2. 发送appFetchManifest(manifestUrl:本地URL)，读取errors及extensions新旧字段；比较数据库安装记录数量。","1. 本地服务响应合法JSON；使用Base原始manifest枚举格式而非数据库小写格式。
+2. errors=[]且manifest有效，mountName/旧mount=PRODUCT_DETAILS_MORE_ACTIONS、targetName/旧target=NEW_TAB、settings为对象{""newTabTarget"":{""method"":""POST""}}；只有预览无安装写入。"
+TC030,需求条目,R02 · GraphQL 契约与实际后端行为一致,Manifest预览WIDGET目标及GET转换正确,AC-02-3;BD02;I03,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。拥有MANAGE_APPS的staff；本地授权manifest服务提供完整合法基础manifest（id/name/version/appUrl/tokenTargetUrl等依Base），每例独立URL，不使用外网。,"1. 在完整manifest放入一个extension：label=QA，url=/qa，mount=PRODUCT_DETAILS_WIDGETS，target=WIDGET，options.widgetTarget.method=GET；省略项不传null。
+2. 发送appFetchManifest(manifestUrl:本地URL)，读取errors及extensions新旧字段；比较数据库安装记录数量。","1. 本地服务响应合法JSON；使用Base原始manifest枚举格式而非数据库小写格式。
+2. errors=[]且manifest有效，mountName/旧mount=PRODUCT_DETAILS_WIDGETS、targetName/旧target=WIDGET、settings为对象{""widgetTarget"":{""method"":""GET""}}；只有预览无安装写入。"
+TC031,需求条目,R02 · GraphQL 契约与实际后端行为一致,Manifest预览WIDGET目标及POST转换正确,AC-02-3;BD02;I03,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。拥有MANAGE_APPS的staff；本地授权manifest服务提供完整合法基础manifest（id/name/version/appUrl/tokenTargetUrl等依Base），每例独立URL，不使用外网。,"1. 在完整manifest放入一个extension：label=QA，url=/qa，mount=PRODUCT_DETAILS_WIDGETS，target=WIDGET，options.widgetTarget.method=POST；省略项不传null。
+2. 发送appFetchManifest(manifestUrl:本地URL)，读取errors及extensions新旧字段；比较数据库安装记录数量。","1. 本地服务响应合法JSON；使用Base原始manifest枚举格式而非数据库小写格式。
+2. errors=[]且manifest有效，mountName/旧mount=PRODUCT_DETAILS_WIDGETS、targetName/旧target=WIDGET、settings为对象{""widgetTarget"":{""method"":""POST""}}；只有预览无安装写入。"
+TC032,需求条目,R02 · GraphQL 契约与实际后端行为一致,Manifest的未知挂载点保持校验拒绝,AC-02-3;BD02;I03,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。拥有MANAGE_APPS的staff；本地授权manifest服务提供完整合法基础manifest（id/name/version/appUrl/tokenTargetUrl等依Base），每例独立URL，不使用外网。,"1. 复制合法manifest，仅把extension改为mount=""UNKNOWN_MOUNT""，其余字段不变。
+2. 发送appFetchManifest并查看typed errors、manifest及安装记录。","1. 无效值由本地服务按原始JSON提供，不修改生产校验器。
+2. AppError非空或规定的校验错误，不能当正常预览/安装；未安装、不猜默认合法值；错误码沿用Base，不预设虚构码。"
+TC033,需求条目,R02 · GraphQL 契约与实际后端行为一致,Manifest的未知打开方式保持校验拒绝,AC-02-3;BD02;I03,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。拥有MANAGE_APPS的staff；本地授权manifest服务提供完整合法基础manifest（id/name/version/appUrl/tokenTargetUrl等依Base），每例独立URL，不使用外网。,"1. 复制合法manifest，仅把extension改为target=""UNKNOWN_TARGET""，其余字段不变。
+2. 发送appFetchManifest并查看typed errors、manifest及安装记录。","1. 无效值由本地服务按原始JSON提供，不修改生产校验器。
+2. AppError非空或规定的校验错误，不能当正常预览/安装；未安装、不猜默认合法值；错误码沿用Base，不预设虚构码。"
+TC034,需求条目,R02 · GraphQL 契约与实际后端行为一致,Manifest的非法HTTP方法保持校验拒绝,AC-02-3;BD02;I03,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。拥有MANAGE_APPS的staff；本地授权manifest服务提供完整合法基础manifest（id/name/version/appUrl/tokenTargetUrl等依Base），每例独立URL，不使用外网。,"1. 复制合法manifest，仅把extension改为target=""NEW_TAB""且options.newTabTarget.method=""PATCH""，其余字段不变。
+2. 发送appFetchManifest并查看typed errors、manifest及安装记录。","1. 无效值由本地服务按原始JSON提供，不修改生产校验器。
+2. AppError非空或规定的校验错误，不能当正常预览/安装；未安装、不猜默认合法值；错误码沿用Base，不预设虚构码。"
+TC035,需求条目,R02 · GraphQL 契约与实际后端行为一致,Manifest的两种target options同时提供保持校验拒绝,AC-02-3;BD02;I03,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。拥有MANAGE_APPS的staff；本地授权manifest服务提供完整合法基础manifest（id/name/version/appUrl/tokenTargetUrl等依Base），每例独立URL，不使用外网。,"1. 复制合法manifest，仅把extension改为options同时有newTabTarget.method=""GET""和widgetTarget.method=""POST""，其余字段不变。
+2. 发送appFetchManifest并查看typed errors、manifest及安装记录。","1. 无效值由本地服务按原始JSON提供，不修改生产校验器。
+2. AppError非空或规定的校验错误，不能当正常预览/安装；未安装、不猜默认合法值；错误码沿用Base，不预设虚构码。"
+TC036,需求条目,R02 · GraphQL 契约与实际后端行为一致,Manifest获取失败和无效JSON不误报预览成功,AC-02-3;BD02;FD03;I03,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。拥有MANAGE_APPS的staff；本地授权manifest服务提供完整合法基础manifest（id/name/version/appUrl/tokenTargetUrl等依Base），每例独立URL，不使用外网。,"1. 分别准备本地URL返回404、超时、非JSON文本及缺必要字段JSON。
+2. 逐个发起预览并观察页面、payload及数据库。","1. 错误条件可复现，未访问外网。
+2. 均显示获取/验证失败，不用空manifest成功或启用安装；保留输入以便重试，无安装对象创建。"
+TC037,需求条目,R02 · GraphQL 契约与实际后端行为一致,无MANAGE_APPS不能预览或安装扩展,AC-02-4;BD02;FD03;I03;I04,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。拥有MANAGE_APPS的staff；本地授权manifest服务提供完整合法基础manifest（id/name/version/appUrl/tokenTargetUrl等依Base），每例独立URL，不使用外网。另有无MANAGE_APPS的有效staff及普通App token。,"1. 分别用受限staff调用appFetchManifest和appInstall，用App尝试appInstall。
+2. 管理员查询appsInstallations及已安装App数量。","1. 按各入口权限顶层拒绝，普通扩展读取权限不等于安装权限。
+2. 未产生受限安装写入；页面不提示成功，不空对象导航。"
+TC038,需求条目,R02 · GraphQL 契约与实际后端行为一致,Manifest版本约束不因版本升级无条件满足,AC-02-3;BD01;BD02;I03,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。拥有MANAGE_APPS的staff；本地授权manifest服务提供完整合法基础manifest（id/name/version/appUrl/tokenTargetUrl等依Base），每例独立URL，不使用外网。,"1. 分别用requiredSaleorVersion约束包含3.23.0及排除3.23.0的合法完整manifest进行预览。
+2. 检查returned requiredSaleorVersion.satisfied与安装页的既有处理。","1. 语义版本按真实3.23.0计算，满足/不满足结果不同，不硬编码true。
+2. 沿用Base预览/安装策略，不把不满足约束伪装满足；若策略涉及未确认目标变化，记录Q01/Q02而不改CSV。"
+TC039,需求条目,R02 · GraphQL 契约与实际后端行为一致,Manifest预览配置与安装后扩展保持一致,AC-02-3;BD02;FD03;I02;I03;I04,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。拥有MANAGE_APPS的staff；本地授权manifest服务提供完整合法基础manifest（id/name/version/appUrl/tokenTargetUrl等依Base），每例独立URL，不使用外网。本地token endpoint有效，worker可受控推进；manifest为NEW_TAB/POST。,"1. 预览并记录PRODUCT_DETAILS_MORE_ACTIONS、NEW_TAB及newTabTarget.method=POST。
+2. 以appInstall提交并按经维护者澄清的安装完成条件读取安装扩展的新旧配置；I04要求SUCCESS，而Base成功后删除installation，两者冲突未解决前该步骤受阻。","1. 预览不持久化，返回JSON对象POST配置。
+2. 安装后method持久化，I02输出与预览对应；无snake_case残留或独立settings双写漂移。"
+TC040,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,App安装被接受不等于异步安装完成,AC-04-3;FD03;BD02;I04,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。拥有MANAGE_APPS的staff；本地授权manifest服务提供完整合法基础manifest（id/name/version/appUrl/tokenTargetUrl等依Base），每例独立URL，不使用外网。本地安装worker暂缓处理，随后允许执行。,"1. 提交appInstall并记录installation.id，在worker未完成时查看页面与appsInstallations。
+2. 执行本地任务并刷新App与扩展列表；完成条件以维护者澄清I04与Base差异后的决定为准。","1. errors=[]及有效id只表示受理，状态待处理时不显示最终安装成功。
+2. 记录材料冲突：I04要求status=SUCCESS，Base任务成功删除installation并标记App已安装；未澄清则最终判定受阻，不永久等待虚构SUCCESS，也不自行放宽冻结契约。澄清后按获准条件及App/扩展重读判断完成。"
+TC041,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,安装失败使用原任务重试且不重复创建App,AC-04-3;FD03;BD02;I04,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。拥有MANAGE_APPS的staff；本地授权manifest服务提供完整合法基础manifest（id/name/version/appUrl/tokenTargetUrl等依Base），每例独立URL，不使用外网。本地token endpoint第一次失败、第二次有效；有失败installation。,"1. 观察安装FAILED及message，恢复本地endpoint。
+2. 用原installation.id调用appRetryInstall，不传activateAfterInstallation以检查默认true；等待完成并统计App。","1. 任务失败可见，mutation早期成功不掩盖失败，页面不无限appInstall。
+2. 按原任务重试，默认激活语义不变，无无限重建或重复App；I04 SUCCESS与Base成功删除任务冲突未澄清前，最终完成判定受阻，不能臆造状态。"
+TC042,需求条目,R03 · Dashboard schema、生成客户端产物与生产界面同步,离线生成四类客户端产物不依赖远程schema,AC-03-1;FD02;BD06,P0,实施后配对Core最终SDL已交付；Node24/pnpm10、生成依赖和授权测试副本可用；禁外网。,"1. 核对codegen.ts唯一schema输入与完整documents范围，同步本地生产SDL至授权副本schema.graphql。
+2. 在授权副本执行pnpm run generate，记录命令/网络及输出路径。","1. 来源是配对Core，不是旧3.22远程或未知staging schema；配置引用文件均存在。
+2. 四个fragmentTypes/typePolicies/types/hooks.generated.ts均生成成功，无网络fetch；重复fragment真实生成若失败须报告，不能用静态去重通过替代。"
+TC043,需求条目,R03 · Dashboard schema、生成客户端产物与生产界面同步,同输入重复生成不丢失手改字段或产生漂移,AC-03-2;FD02,P0,上一生成用例完成；使用授权副本，输入与工具版本固定。,"1. 记录四产物摘要并再次生成；按语义及规范化文本比较。
+2. 核对新字段类型/选择、hooks导入及Base操作生成结果。","1. 相同输入生成无非预期差异，没有第一次手写字段第二次消失。
+2. 新字段由源schema/操作生成；没有删除Base操作或手改生成类型掩盖服务端缺字段。"
+TC044,需求条目,R03 · Dashboard schema、生成客户端产物与生产界面同步,类型检查生产构建及真实扩展查询一致,AC-03-3;FD01;FD02;FD03,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。本地最终生成产物齐全；允许在测试副本构建。,"1. 执行pnpm run check-types:src、pnpm run check-types:playwright及pnpm run build，记录独立结果。
+2. 使用此构建连接真实Core读取ExtensionList并访问有效扩展。","1. 源码/Playwright类型和build全部成功；任何失败不由已有build文件存在掩盖。
+2. 实际请求含正确三字段，无未知字段/类型/enum错误；运行结果不只是在编译阶段通过。"
+TC045,需求条目,R03 · Dashboard schema、生成客户端产物与生产界面同步,App扩展数据缓存按原ID更新且不混淆实例,AC-03-3;FD02;FD03;I02,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。两扩展有不同ID但相同label；一个NEW_TAB GET。,"1. 页面读取并缓存两扩展，通过合法测试准备把第一个method改POST后明确refetch。
+2. 观察该扩展设置与第二个扩展并检查possibleTypes/cache配置使用。","1. 初始两实例不因label相同合并。
+2. 重读后第一项为POST，第二项不变；保持原Node ID归一化，生成policy类型不被当自动运行策略。"
+TC046,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,POPUP扩展按原目标方式打开且保持上下文,AC-04-1;FD03;BD02;I02,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 浏览器连接真实Core；允许在自有测试层控制响应/网络错误，不改生产代码或冻结fixtures；故障注入仅证明前端处理，不作为真实API通过证据。真实合法App扩展，本地可访问扩展页面；有相应员工权限。,"1. 准备target=POPUP、method=null，WIDGET挂PRODUCT_DETAILS_WIDGETS，其余使用有效商品挂载点。
+2. 进入商品页并打开/渲染该扩展，记录本地HTTP请求、参数及UI状态。","1. I02配置有效且新旧值一致，无未定义自由挂载点。
+2. 打开原AppDialog并携带商品上下文；未采用另一method，不访问外网，不把widget当普通action。"
+TC047,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,APP_PAGE扩展按原目标方式打开且保持上下文,AC-04-1;FD03;BD02;I02,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 浏览器连接真实Core；允许在自有测试层控制响应/网络错误，不改生产代码或冻结fixtures；故障注入仅证明前端处理，不作为真实API通过证据。真实合法App扩展，本地可访问扩展页面；有相应员工权限。,"1. 准备target=APP_PAGE、method=null，WIDGET挂PRODUCT_DETAILS_WIDGETS，其余使用有效商品挂载点。
+2. 进入商品页并打开/渲染该扩展，记录本地HTTP请求、参数及UI状态。","1. I02配置有效且新旧值一致，无未定义自由挂载点。
+2. 进入原App deep URL并携带商品上下文；未采用另一method，不访问外网，不把widget当普通action。"
+TC048,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,NEW_TAB扩展按GET方式打开且保持上下文,AC-04-1;FD03;BD02;I02,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 浏览器连接真实Core；允许在自有测试层控制响应/网络错误，不改生产代码或冻结fixtures；故障注入仅证明前端处理，不作为真实API通过证据。真实合法App扩展，本地可访问扩展页面；有相应员工权限。,"1. 准备target=NEW_TAB、method=GET，WIDGET挂PRODUCT_DETAILS_WIDGETS，其余使用有效商品挂载点。
+2. 进入商品页并打开/渲染该扩展，记录本地HTTP请求、参数及UI状态。","1. I02配置有效且新旧值一致，无未定义自由挂载点。
+2. 使用GET新标签并保留既有query上下文；未采用另一method，不访问外网，不把widget当普通action。"
+TC049,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,NEW_TAB扩展按POST方式打开且保持上下文,AC-04-1;FD03;BD02;I02,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 浏览器连接真实Core；允许在自有测试层控制响应/网络错误，不改生产代码或冻结fixtures；故障注入仅证明前端处理，不作为真实API通过证据。真实合法App扩展，本地可访问扩展页面；有相应员工权限。,"1. 准备target=NEW_TAB、method=POST，WIDGET挂PRODUCT_DETAILS_WIDGETS，其余使用有效商品挂载点。
+2. 进入商品页并打开/渲染该扩展，记录本地HTTP请求、参数及UI状态。","1. I02配置有效且新旧值一致，无未定义自由挂载点。
+2. 使用POST新标签及原有表单参数/token上下文；未采用另一method，不访问外网，不把widget当普通action。"
+TC050,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,WIDGET扩展按GET方式打开且保持上下文,AC-04-1;FD03;BD02;I02,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 浏览器连接真实Core；允许在自有测试层控制响应/网络错误，不改生产代码或冻结fixtures；故障注入仅证明前端处理，不作为真实API通过证据。真实合法App扩展，本地可访问扩展页面；有相应员工权限。,"1. 准备target=WIDGET、method=GET，WIDGET挂PRODUCT_DETAILS_WIDGETS，其余使用有效商品挂载点。
+2. 进入商品页并打开/渲染该扩展，记录本地HTTP请求、参数及UI状态。","1. I02配置有效且新旧值一致，无未定义自由挂载点。
+2. 使用AppFrame按GET渲染widget而不执行普通open action；未采用另一method，不访问外网，不把widget当普通action。"
+TC051,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,WIDGET扩展按POST方式打开且保持上下文,AC-04-1;FD03;BD02;I02,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 浏览器连接真实Core；允许在自有测试层控制响应/网络错误，不改生产代码或冻结fixtures；故障注入仅证明前端处理，不作为真实API通过证据。真实合法App扩展，本地可访问扩展页面；有相应员工权限。,"1. 准备target=WIDGET、method=POST，WIDGET挂PRODUCT_DETAILS_WIDGETS，其余使用有效商品挂载点。
+2. 进入商品页并打开/渲染该扩展，记录本地HTTP请求、参数及UI状态。","1. I02配置有效且新旧值一致，无未定义自由挂载点。
+2. 使用IframePost按POST渲染widget而不执行普通open action；未采用另一method，不访问外网，不把widget当普通action。"
+TC052,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,无method扩展按安全GET默认打开,AC-04-1;FD03;I02,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 浏览器连接真实Core；允许在自有测试层控制响应/网络错误，不改生产代码或冻结fixtures；故障注入仅证明前端处理，不作为真实API通过证据。NEW_TAB及WIDGET合法扩展method=null，Core返回settings={}。,"1. 分别进入两个扩展的有效挂载页面。
+2. 打开NEW_TAB并渲染WIDGET，记录本地请求。","1. 对象{}通过现有options结构校验，没有method:null。
+2. 两种默认均GET，无POST误调用或页面崩溃。"
+TC053,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,单个扩展非法mountName不会使有效扩展或页面失效,AC-04-1;FD03;I02,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 浏览器连接真实Core；允许在自有测试层控制响应/网络错误，不改生产代码或冻结fixtures；故障注入仅证明前端处理，不作为真实API通过证据。组件/响应控制自有用例；列表同时含一个合法POPUP扩展和一个故障项。,"1. 仅对故障项注入mountName=""UNKNOWN_MOUNT""，合法项保持有效完整数据。
+2. 查看页面并尝试打开两项，记录请求。","1. 注入只影响自有测试响应，不修改生产schema或官方fixture；null仅验证前端异常边界，不宣称合法服务端输出。
+2. 故障项局部错误/诊断且不可执行；合法项仍可用，页面不崩溃，不猜默认mount/target、不将JSON字符串容错当对象。"
+TC054,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,单个扩展非法targetName不会使有效扩展或页面失效,AC-04-1;FD03;I02,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 浏览器连接真实Core；允许在自有测试层控制响应/网络错误，不改生产代码或冻结fixtures；故障注入仅证明前端处理，不作为真实API通过证据。组件/响应控制自有用例；列表同时含一个合法POPUP扩展和一个故障项。,"1. 仅对故障项注入targetName=""UNKNOWN_TARGET""，合法项保持有效完整数据。
+2. 查看页面并尝试打开两项，记录请求。","1. 注入只影响自有测试响应，不修改生产schema或官方fixture；null仅验证前端异常边界，不宣称合法服务端输出。
+2. 故障项局部错误/诊断且不可执行；合法项仍可用，页面不崩溃，不猜默认mount/target、不将JSON字符串容错当对象。"
+TC055,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,单个扩展JSON字符串settings不会使有效扩展或页面失效,AC-04-1;FD03;I02,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 浏览器连接真实Core；允许在自有测试层控制响应/网络错误，不改生产代码或冻结fixtures；故障注入仅证明前端处理，不作为真实API通过证据。组件/响应控制自有用例；列表同时含一个合法POPUP扩展和一个故障项。,"1. 仅对故障项注入settings=""{}""，合法项保持有效完整数据。
+2. 查看页面并尝试打开两项，记录请求。","1. 注入只影响自有测试响应，不修改生产schema或官方fixture；null仅验证前端异常边界，不宣称合法服务端输出。
+2. 故障项局部错误/诊断且不可执行；合法项仍可用，页面不崩溃，不猜默认mount/target、不将JSON字符串容错当对象。"
+TC056,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,单个扩展null配置不会使有效扩展或页面失效,AC-04-1;FD03;I02,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 浏览器连接真实Core；允许在自有测试层控制响应/网络错误，不改生产代码或冻结fixtures；故障注入仅证明前端处理，不作为真实API通过证据。组件/响应控制自有用例；列表同时含一个合法POPUP扩展和一个故障项。,"1. 仅对故障项注入settings=null，合法项保持有效完整数据。
+2. 查看页面并尝试打开两项，记录请求。","1. 注入只影响自有测试响应，不修改生产schema或官方fixture；null仅验证前端异常边界，不宣称合法服务端输出。
+2. 故障项局部错误/诊断且不可执行；合法项仍可用，页面不崩溃，不猜默认mount/target、不将JSON字符串容错当对象。"
+TC057,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,单个扩展两配置并存不会使有效扩展或页面失效,AC-04-1;FD03;I02,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 浏览器连接真实Core；允许在自有测试层控制响应/网络错误，不改生产代码或冻结fixtures；故障注入仅证明前端处理，不作为真实API通过证据。组件/响应控制自有用例；列表同时含一个合法POPUP扩展和一个故障项。,"1. 仅对故障项注入settings={newTabTarget:{method:""GET""},widgetTarget:{method:""POST""}}，合法项保持有效完整数据。
+2. 查看页面并尝试打开两项，记录请求。","1. 注入只影响自有测试响应，不修改生产schema或官方fixture；null仅验证前端异常边界，不宣称合法服务端输出。
+2. 故障项局部错误/诊断且不可执行；合法项仍可用，页面不崩溃，不猜默认mount/target、不将JSON字符串容错当对象。"
+TC058,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,非法扩展URL不会触发导航或执行,AC-04-1;FD03;I02,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 浏览器连接真实Core；允许在自有测试层控制响应/网络错误，不改生产代码或冻结fixtures；故障注入仅证明前端处理，不作为真实API通过证据。自有组件测试包含合法扩展与故障URL扩展。,"1. 依次注入javascript:alert(1)、data:text/html及无效相对/基础URL组合，触发open。
+2. 同页打开合法http://localhost扩展。","1. 非http/https及无法解析URL不执行/不导航，显示局部诊断；无脚本执行或错误成功状态。
+2. 有效本地http扩展仍按合法目标打开，不因坏项使页面崩溃。"
+TC059,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,提交出现网络失败时不显示成功或错误导航,AC-04-1;AC-04-2;FD04;FD05;FD06,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 浏览器连接真实Core；允许在自有测试层控制响应/网络错误，不改生产代码或冻结fixtures；故障注入仅证明前端处理，不作为真实API通过证据。自有页面/组件用例覆盖商品变体及草稿创建；错误数据使用对应域合法错误类型。,"1. 填写有效表单并提交，对本次响应控制为网络断开/连接拒绝，Apollo error且无data；草稿用对应OrderError/order字段。
+2. 观察按钮、错误提示、导航及表单输入，释放loading后再次检查。","1. 请求进入submitting，错误不是onCompleted或无data的success。
+2. 结束pending并显示失败，保留输入，不成功toast、不访问空id、不进入不存在对象；HTTP200/空errors不能替代实体成功。"
+TC060,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,提交出现HTTP200顶层权限错误时不显示成功或错误导航,AC-04-1;AC-04-2;FD04;FD05;FD06,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 浏览器连接真实Core；允许在自有测试层控制响应/网络错误，不改生产代码或冻结fixtures；故障注入仅证明前端处理，不作为真实API通过证据。自有页面/组件用例覆盖商品变体及草稿创建；错误数据使用对应域合法错误类型。,"1. 填写有效表单并提交，对本次响应控制为HTTP200返回顶层PermissionDenied且无有效payload；草稿用对应OrderError/order字段。
+2. 观察按钮、错误提示、导航及表单输入，释放loading后再次检查。","1. 请求进入submitting，错误不是onCompleted或无data的success。
+2. 结束pending并显示失败，保留输入，不成功toast、不访问空id、不进入不存在对象；HTTP200/空errors不能替代实体成功。"
+TC061,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,提交出现typed业务错误时不显示成功或错误导航,AC-04-1;AC-04-2;FD04;FD05;FD06,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 浏览器连接真实Core；允许在自有测试层控制响应/网络错误，不改生产代码或冻结fixtures；故障注入仅证明前端处理，不作为真实API通过证据。自有页面/组件用例覆盖商品变体及草稿创建；错误数据使用对应域合法错误类型。,"1. 填写有效表单并提交，对本次响应控制为有效payload.errors=[{field:""name"",code:""INVALID"",message:""QA error""}]；草稿用对应OrderError/order字段。
+2. 观察按钮、错误提示、导航及表单输入，释放loading后再次检查。","1. 请求进入submitting，错误不是onCompleted或无data的success。
+2. 结束pending并显示失败，保留输入，不成功toast、不访问空id、不进入不存在对象；HTTP200/空errors不能替代实体成功。"
+TC062,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,提交出现payload缺失时不显示成功或错误导航,AC-04-1;AC-04-2;FD04;FD05;FD06,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 浏览器连接真实Core；允许在自有测试层控制响应/网络错误，不改生产代码或冻结fixtures；故障注入仅证明前端处理，不作为真实API通过证据。自有页面/组件用例覆盖商品变体及草稿创建；错误数据使用对应域合法错误类型。,"1. 填写有效表单并提交，对本次响应控制为data=null或mutation根为空；草稿用对应OrderError/order字段。
+2. 观察按钮、错误提示、导航及表单输入，释放loading后再次检查。","1. 请求进入submitting，错误不是onCompleted或无data的success。
+2. 结束pending并显示失败，保留输入，不成功toast、不访问空id、不进入不存在对象；HTTP200/空errors不能替代实体成功。"
+TC063,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,提交出现必要实体缺失时不显示成功或错误导航,AC-04-1;AC-04-2;FD04;FD05;FD06,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 浏览器连接真实Core；允许在自有测试层控制响应/网络错误，不改生产代码或冻结fixtures；故障注入仅证明前端处理，不作为真实API通过证据。自有页面/组件用例覆盖商品变体及草稿创建；错误数据使用对应域合法错误类型。,"1. 填写有效表单并提交，对本次响应控制为errors=[]但productVariant=null；草稿用对应OrderError/order字段。
+2. 观察按钮、错误提示、导航及表单输入，释放loading后再次检查。","1. 请求进入submitting，错误不是onCompleted或无data的success。
+2. 结束pending并显示失败，保留输入，不成功toast、不访问空id、不进入不存在对象；HTTP200/空errors不能替代实体成功。"
+TC064,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,提交pending期间重复点击不会重复创建,AC-04-1;AC-04-2;FD04;FD05;FD06,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 浏览器连接真实Core；允许在自有测试层控制响应/网络错误，不改生产代码或冻结fixtures；故障注入仅证明前端处理，不作为真实API通过证据。商品变体/草稿创建各自可延迟一次有效响应。,"1. 提交后延迟响应，连续点击保存三次。
+2. 释放成功响应并重读创建实体，记录Mutation次数。","1. 按钮禁用或去重交互，仅一个创建请求，无提前成功。
+2. 完成后只有一个实体和一次有效成功提示；前端不虚构服务器幂等键。"
+TC065,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,提交成功但重读失败时不重发写入,AC-04-1;AC-04-2;FD04,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 浏览器连接真实Core；允许在自有测试层控制响应/网络错误，不改生产代码或冻结fixtures；故障注入仅证明前端处理，不作为真实API通过证据。写入正常提交，后续对象查询可单次网络失败。,"1. 保存有效变体或订单后仅阻断refetch。
+2. 观察提示、请求次数及恢复网络后的刷新结果。","1. 写入结果保存，但验证状态明确失败/需刷新，不误报全部验证成功。
+2. 不自动再次创建/付款/完成；刷新仅查询并显示已提交对象。"
+TC066,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,JWT失效和退出清缓存防止用户间数据复用,AC-04-3;FD04,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 浏览器连接真实Core；允许在自有测试层控制响应/网络错误，不改生产代码或冻结fixtures；故障注入仅证明前端处理，不作为真实API通过证据。staff A有商品/订单权限，B无相应权限；浏览器同会话。,"1. A登录并缓存受保护对象，触发JWT失效，观察sessionExpired/logout。
+2. 退出后登录B并访问A曾访问的URL。","1. 会话过期按既有策略处理，不把鉴权失败当保存成功。
+2. Apollo store已清，B不显示A缓存或执行受限写入；服务器仍拒绝未授权操作。"
+TC067,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,权限未加载和无权限入口不短暂泄露内容,AC-04-3;FD04,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 浏览器连接真实Core；允许在自有测试层控制响应/网络错误，不改生产代码或冻结fixtures；故障注入仅证明前端处理，不作为真实API通过证据。用户详情请求可延迟，另有非staff和无MANAGE_ORDERS用户。,"1. 延迟me/user加载期间访问商品/订单路由。
+2. 分别使用非staff及无订单权限身份登录/访问订单页。","1. 用户未知时SectionRoute不渲染受保护内容，无权限闪现。
+2. 认证/路由沿用Base拒绝规则，不能仅隐藏按钮但仍显示受保护对象。"
+TC068,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,带顶层错误的partial data不被当作完整成功,AC-04-1;AC-04-2;FD04,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 浏览器连接真实Core；允许在自有测试层控制响应/网络错误，不改生产代码或冻结fixtures；故障注入仅证明前端处理，不作为真实API通过证据。自有组件可提供data与GraphQL errors并存响应。,"1. 返回一部分合法订单/商品字段，同时对必需字段返回顶层错误。
+2. 尝试查看/提交依赖该字段的操作。","1. 允许受控展示有效部分，但错误可见，不补造缺字段。
+2. 缺关键数据时不执行/不宣称整体成功，错误不被cache-and-network或errorPolicy:all吞掉。"
+TC069,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,商品变体创建完整保存属性库存和渠道价格,AC-04-1;FD05;BD03;I05,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。有MANAGE_PRODUCTS员工、渠道main/CNY、仓库W、简单商品类型无必填属性；原商品无变体。,"1. Dashboard创建商品QA-P和变体SKU=QA-SKU，attributes=[]、W库存=5、main价格=12.34、metadata.qa=one。
+2. 等待全部必要请求结束，刷新页面并由授权API读取变体/stock/listing/metadata。","1. 创建根及渠道/metadata均无transport/top-level/typed错误，有真实ID，成功通知在全部步骤后。
+2. SKU、库存5、价格12.34 CNY及metadata一致，无只显示toast但数据未保存。"
+TC070,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,变体编辑同文档库存和属性金额均正确持久化,AC-04-1;FD05;BD03;I05,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。现有QA-SKU、仓库W库存5、main价格12.34。,"1. 编辑SKU=QA-SKU-2，库存=8、main价格=19.99，并完成有效属性/media/metadata变更。
+2. 等待所有root及后续请求，刷新并读回。","1. 所有必要根的errors=[]，后续请求已完成才整体success。
+2. 各字段与输入一致且币种正确，Decimal未被浮点累计错误改变；media/metadata按提交结果持久化。"
+TC071,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,变体多步骤库存root失败保持部分成功且不误报整体保存,AC-04-1;FD04;FD05;I05,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 浏览器连接真实Core；允许在自有测试层控制响应/网络错误，不改生产代码或冻结fixtures；故障注入仅证明前端处理，不作为真实API通过证据。有效现有商品/变体，允许自有测试层单点故障；每种fault独立数据。,"1. 提交有效变体表单并控制VariantUpdate的stockUpdate.errors非空，但productVariantUpdate.errors=[]，记录各步返回ID/错误。
+2. 检查toast、导航、输入及实际可重读字段；恢复后只重试失败步骤。","1. 等待真实步骤完成，所有相关root错误均被收集，不只检查productVariantUpdate。
+2. 显示具体失败/已保存部分，不整体成功、不重复创建变体；恢复按同实体修复，不能假装跨请求回滚。"
+TC072,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,变体多步骤删除渠道listing失败保持部分成功且不误报整体保存,AC-04-1;FD04;FD05;I05,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 浏览器连接真实Core；允许在自有测试层控制响应/网络错误，不改生产代码或冻结fixtures；故障注入仅证明前端处理，不作为真实API通过证据。有效现有商品/变体，允许自有测试层单点故障；每种fault独立数据。,"1. 提交有效变体表单并控制productChannelListingUpdate.errors非空，其他写入成功，记录各步返回ID/错误。
+2. 检查toast、导航、输入及实际可重读字段；恢复后只重试失败步骤。","1. 等待真实步骤完成，所有相关root错误均被收集，不只检查productVariantUpdate。
+2. 显示具体失败/已保存部分，不整体成功、不重复创建变体；恢复按同实体修复，不能假装跨请求回滚。"
+TC073,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,变体多步骤渠道价格第二步失败保持部分成功且不误报整体保存,AC-04-1;FD04;FD05;I05,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 浏览器连接真实Core；允许在自有测试层控制响应/网络错误，不改生产代码或冻结fixtures；故障注入仅证明前端处理，不作为真实API通过证据。有效现有商品/变体，允许自有测试层单点故障；每种fault独立数据。,"1. 提交有效变体表单并控制productVariantCreate成功，productVariantChannelListingUpdate.errors非空，记录各步返回ID/错误。
+2. 检查toast、导航、输入及实际可重读字段；恢复后只重试失败步骤。","1. 等待真实步骤完成，所有相关root错误均被收集，不只检查productVariantUpdate。
+2. 显示具体失败/已保存部分，不整体成功、不重复创建变体；恢复按同实体修复，不能假装跨请求回滚。"
+TC074,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,变体多步骤metadata后续失败保持部分成功且不误报整体保存,AC-04-1;FD04;FD05;I05,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 浏览器连接真实Core；允许在自有测试层控制响应/网络错误，不改生产代码或冻结fixtures；故障注入仅证明前端处理，不作为真实API通过证据。有效现有商品/变体，允许自有测试层单点故障；每种fault独立数据。,"1. 提交有效变体表单并控制变体和渠道成功，但metadata处理失败，记录各步返回ID/错误。
+2. 检查toast、导航、输入及实际可重读字段；恢复后只重试失败步骤。","1. 等待真实步骤完成，所有相关root错误均被收集，不只检查productVariantUpdate。
+2. 显示具体失败/已保存部分，不整体成功、不重复创建变体；恢复按同实体修复，不能假装跨请求回滚。"
+TC075,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,变体SKU重复和必填属性缺失保持业务校验,AC-04-1;BD03;FD05;I05,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。已有SKU=EXISTING，另有要求属性Color的商品类型。,"1. 创建另一个相同SKU变体；独立请求省略/空Color但其他输入有效。
+2. 检查ProductError及重读变体数量与数据。","1. 两种情况均按Base业务规则拒绝，attributes/field等错误定位保留。
+2. 无重复SKU成功或缺必填属性伪实体；已有实体不变，页面不成功导航。"
+TC076,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,空attributes仅在无必填属性类型合法且缺变量仍被拒绝,AC-04-1;AC-02-3;BD03;I05,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。一个无必填variant属性商品及一个有必填属性商品。,"1. 对前者传attributes=[]，后者也传[]。
+2. 独立请求省略attributes或传null。","1. 前者可正常创建，后者业务拒绝；非空列表不错误要求至少一项也不绕过业务必填。
+2. 省略/null在GraphQL变量层拒绝，业务未执行，不能伪返回空成功。"
+TC077,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,变体旧URL重定向保留对象ID和query参数,AC-04-1;FD05,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 浏览器连接真实Core；允许在自有测试层控制响应/网络错误，不改生产代码或冻结fixtures；故障注入仅证明前端处理，不作为真实API通过证据。已存在商品/变体，Q05未批准删除旧URL。,"1. 访问旧/products/<productId>/variant/<variantId>并附?dialog=qa&action=edit&query=a%26b。
+2. 检查最终pathname/search及对象详情，与新URL直接访问比较。","1. 使用实际编码ID，旧路由匹配在泛化商品路由前。
+2. 转新/products/variant/<variantId>且原query完整保留，显示同一对象，无ID/编码丢失或错误NotFound。"
+TC078,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,草稿订单编辑完成后金额客户配送和状态一致,AC-04-2;FD06;BD03;I06,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。员工有MANAGE_ORDERS及main渠道访问；main允许已知完成状态，商品单价10 CNY、库存10、配送2 CNY，无税折扣。,"1. 创建草稿，添加商品数量2、有效客户/地址及配送，保存所有编辑。
+2. 完成草稿并刷新API/UI读取订单lines/customer/address/shipping/total/status。","1. 草稿有真实ID、金额22 CNY，所有必要编辑已完成，失败不能继续假complete。
+2. 完成成功对象可读，金额22 CNY及客户/配送一致，状态与该Base配置回归预期一致；不硬编码为已付款。"
+TC079,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,草稿缺库存时完成失败不分配超量库存,AC-04-2;FD06;BD03;I06,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。库存1、草稿行数量2，允许准备但完成时库存校验生效。,"1. 调用draftOrderComplete并查询errors/order。
+2. 刷新草稿状态、stock allocation及页面。","1. typed OrderError指出库存问题，未当作正常完成。
+2. 仍未成功完成且无超量分配，页面保留错误；不要求税价刷新之外绝对零写入。"
+TC080,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,非草稿重复完成返回INVALID而非幂等成功,AC-04-2;FD06;BD03;I06,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。一已完成且非DRAFT订单。,"1. 以该Order ID再次调用draftOrderComplete。
+2. 查询订单、库存及事件并观察UI处理。","1. 返回id/INVALID，不返回第二次正常完成。
+2. 无重复完成/新增分配，前端不自动重复该mutation、不误报finalized。"
+TC081,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,受限渠道员工不能完成其他渠道草稿,AC-04-3;AC-02-4;BD03;FD06;I06,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。staff有MANAGE_ORDERS但只访问A；草稿在B，状态DRAFT。,"1. 以该staff完成B草稿。
+2. 管理员重读B订单与库存。","1. 沿用显式渠道授权拒绝，无受限完成。
+2. 仍DRAFT，无该完成导致的库存分配/状态变更；不把UI accessibleChannels代替服务器检查。"
+TC082,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,草稿编辑失败或空对象不触发完成与成功导航,AC-04-2;FD04;FD06;I06,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 浏览器连接真实Core；允许在自有测试层控制响应/网络错误，不改生产代码或冻结fixtures；故障注入仅证明前端处理，不作为真实API通过证据。自有测试可延迟编辑和注入typed错误/空order。,"1. 提交草稿编辑并在响应前点击完成，随后让必要编辑失败。
+2. 独立创建请求返回errors=[]但order=null，检查导航。","1. pending时不提前finalize；编辑失败不触发正常完成、不提示已完成。
+2. 不访问order.id或跳转空URL，保留输入并显示失败。"
+TC083,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,授予退款保存金额理由和关联交易但不自动转款,AC-04-2;FD07;BD03;I07,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。main/CNY订单O有归属本单transaction T，chargedAmount=100.00、尚无退款/授予；staff按用例有MANAGE_ORDERS或HANDLE_PAYMENTS；实际Node ID已记录。,"1. 用MANAGE_ORDERS提交orderGrantRefundCreate(id:O,input:{transactionId:T,amount:30.00,reason:""QA reason""})。
+2. 刷新grantedRefund及订单/transaction状态并查看Dashboard文案。","1. errors=[]，有有效grantedRefund.id，保存30.00 CNY、理由及本单T关联。
+2. 显示草稿/授予已保存而非已到账；没有因create自动发资金请求。"
+TC084,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,授予退款金额100.00正确处理chargedAmount边界,AC-04-2;BD03;FD07;I07,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。main/CNY订单O有归属本单transaction T，chargedAmount=100.00、尚无退款/授予；staff按用例有MANAGE_ORDERS或HANDLE_PAYMENTS；实际Node ID已记录。每例用独立未退款订单。,"1. 传transactionId:T及amount:100.00调用granted create。
+2. 查询errors、granted实体及订单金额。","1. 金额输入使用Decimal值且没有二进制浮点四舍五入掩盖边界。
+2. 金额100.00允许且持久化正确。"
+TC085,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,授予退款金额100.01正确处理chargedAmount边界,AC-04-2;BD03;FD07;I07,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。main/CNY订单O有归属本单transaction T，chargedAmount=100.00、尚无退款/授予；staff按用例有MANAGE_ORDERS或HANDLE_PAYMENTS；实际Node ID已记录。每例用独立未退款订单。,"1. 传transactionId:T及amount:100.01调用granted create。
+2. 查询errors、granted实体及订单金额。","1. 金额输入使用Decimal值且没有二进制浮点四舍五入掩盖边界。
+2. 100.01拒绝AMOUNT_GREATER_THAN_AVAILABLE，无超额授予；已有charged金额不变。"
+TC086,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,授予退款缺必填transaction与缺金额条件分层报错,AC-04-2;AC-02-3;BD03;I07,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。main/CNY订单O有归属本单transaction T，chargedAmount=100.00、尚无退款/授予；staff按用例有MANAGE_ORDERS或HANDLE_PAYMENTS；实际Node ID已记录。,"1. 独立请求省略必填transactionId。
+2. 传transactionId:T但不传amount/lines/shipping，独立调用。","1. GraphQL输入类型层失败，不产生授予记录。
+2. 业务REQUIRED错误，不用amount=null自动生成任意退款；未创建有效grantedRefund。"
+TC087,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,授予退款不能关联其他订单交易,AC-04-2;AC-02-4;BD03;I07,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。main/CNY订单O有归属本单transaction T，chargedAmount=100.00、尚无退款/授予；staff按用例有MANAGE_ORDERS或HANDLE_PAYMENTS；实际Node ID已记录。另有订单O2/transaction T2。,"1. 为O提交amount:10.00但transactionId:T2。
+2. 读回O与O2交易和granted记录。","1. 按Base关联校验拒绝，不能把任意全局transaction绑定到O。
+2. 两订单交易/退款关系未发生该项写入，不创建伪授予。"
+TC088,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,退款订单行数量和运费不能被重复超额授予,AC-04-2;BD03;I07,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。main/CNY订单O有归属本单transaction T，chargedAmount=100.00、尚无退款/授予；staff按用例有MANAGE_ORDERS或HANDLE_PAYMENTS；实际Node ID已记录。O有一行数量2，已授予该行1件及运费；准备对应OrderLine ID。,"1. 再次授予该行数量2。
+2. 独立请求再授予已经授予的shipping。","1. line错误QUANTITY_GREATER_THAN_AVAILABLE且lineId对应，不把退款行ID代入OrderLine。
+2. SHIPPING_COSTS_ALREADY_GRANTED，既有记录保持且无超量/重复运费写入。"
+TC089,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,授予退款update使用退款对象和退款行ID且保持字段可空,AC-04-2;AC-02-3;BD03;FD07;I07,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。main/CNY订单O有归属本单transaction T，chargedAmount=100.00、尚无退款/授予；staff按用例有MANAGE_ORDERS或HANDLE_PAYMENTS；实际Node ID已记录。有NONE状态granted G含退款行GL及对应OrderLine OL，均ID不同。,"1. 用G ID更新reason并省略transactionId；正常移除GL时传removeLines:[GL]。
+2. 独立用OL代替GL或O代替G，尝试更新。","1. nullable update.transactionId不被强制要求；合法reason更新/退款行操作按Base保存。
+2. 错误实体类型/行归属被拒绝，不误删订单行；不能拿create与update的id意义混用。"
+TC090,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,PENDING和SUCCESS授予记录仅允许规定的reason更新,AC-04-2;BD03;FD07;I07,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。main/CNY订单O有归属本单transaction T，chargedAmount=100.00、尚无退款/授予；staff按用例有MANAGE_ORDERS或HANDLE_PAYMENTS；实际Node ID已记录。各独立G处于PENDING或SUCCESS。,"1. 对每个G仅传reason:""QA edited""。
+2. 独立传reason并amount:10.00，另测空input。","1. 严格仅reason更新沿用Base可用，金额/关联状态保持。
+2. 附加金额被INVALID拒绝，空input为REQUIRED；不据reasonReference可空推断其单独更新总成功。"
+TC091,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,资金请求接受pending与最终成功失败分开显示,AC-04-2;BD03;FD07;I07,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。main/CNY订单O有归属本单transaction T，chargedAmount=100.00、尚无退款/授予；staff按用例有MANAGE_ORDERS或HANDLE_PAYMENTS；实际Node ID已记录。有效granted G=30.00，staff有HANDLE_PAYMENTS，本地获准支付测试服务可推进事件。,"1. 发transactionRequestRefundForGrantedRefund，先只接受请求保持PENDING。
+2. 分别在独立数据分支推进到FAILURE或SUCCESS并刷新订单退款表与transaction事件。","1. errors=[]及transaction对象只显示请求发送/待处理，不显示已到账。
+2. 页面与API实际状态及金额一致；FAILURE明确失败，SUCCESS仅按已有最终结果展示，无过早成功或请求重复。"
+TC092,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,授予和资金请求保持各自不同权限,AC-04-3;AC-02-4;BD03;FD07;I07,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。main/CNY订单O有归属本单transaction T，chargedAmount=100.00、尚无退款/授予；staff按用例有MANAGE_ORDERS或HANDLE_PAYMENTS；实际Node ID已记录。staff A仅MANAGE_ORDERS，B仅HANDLE_PAYMENTS，C两者均无。,"1. A执行合法授予后尝试资金请求；B尝试授予并对已有G请求退款。
+2. C分别尝试两类操作，读回交易与授予记录。","1. 授予需MANAGE_ORDERS、资金请求需HANDLE_PAYMENTS，不能把其中任一权限泛化为全部；错误顶层分层显示。
+2. 无相应权限的写入拒绝，无受限记录或资金请求；不凭空为granted追加未设计的渠道规则。"
+TC093,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,legacy订单退款维持正金额可退款支付校验,AC-04-2;BD03;FD07;I07,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。独立legacy Payment订单：一可退100 CNY，一无付款，一不可退/礼品卡场景；获准本地网关。,"1. 对可退订单退款20.00；独立请求amount=0。
+2. 对无付款和不可退订单退款20.00。","1. 合法退款沿Base网关处理，0拒绝（ZERO_QUANTITY或输入层错误按Base）；不会自动转transaction授予路径。
+2. 无付款PAYMENT_MISSING、不可退CANNOT_REFUND等Base错误，不假成功；不要求失败审计绝对零写入。"
+TC094,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,退款网络超时不自动再次发起资金动作,AC-04-2;FD04;FD07;I07,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 浏览器连接真实Core；允许在自有测试层控制响应/网络错误，不改生产代码或冻结fixtures；故障注入仅证明前端处理，不作为真实API通过证据。本地legacy或transaction资金请求可能已接受但客户端响应丢失；每路径独立数据。,"1. 提交一次有效退款，令响应超时后恢复网络。
+2. 观察pending时长、请求次数与后续订单/transaction重读；用户未明确再次操作。","1. 提交Promise覆盖实际请求，不因miscellaneous缺return提前结束或成功。
+2. 未知结果不自动再次退款，先读交易/记录；页面显示可核对状态，资金请求计数不增加。"
+TC095,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,granted返回空对象及手工记录不被当作资金到账,AC-04-2;FD07;I07,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 浏览器连接真实Core；允许在自有测试层控制响应/网络错误，不改生产代码或冻结fixtures；故障注入仅证明前端处理，不作为真实API通过证据。自有granted响应可注入空对象；另有有效手工transaction退款记录流程。,"1. granted create响应errors=[]但grantedRefund=null。
+2. 合法创建手工退款记录并刷新详情。","1. 显示失败，不用空字符串id导航，不宣称草稿保存。
+2. 显示记录创建及真实金额/状态，不声称外部支付资金自动到账；沿原transactionCreate契约。"
+TC096,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,渠道创建设置与仓库顺序全部保存后成功,AC-04-3;FD08;BD03;I08,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。MANAGE_CHANNELS员工，仓库W1/W2，独立唯一渠道slug=qa-channel，币种CNY。,"1. Dashboard创建渠道，设有效支付/订单/结算配置并指定仓库顺序W2,W1。
+2. 等待create/reorder/refetchUser后重新进入详情并API读取。","1. 各请求无错误后才完整成功，channel.id有效，pending不提前导航成功。
+2. slug/CNY、设置与顺序W2,W1持久化，accessibleChannels已更新且员工可访问新对象。"
+TC097,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,渠道更新设置和关联刷新后与输入一致,AC-04-3;FD08;BD03;I08,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。有既有渠道、两个仓库及有效shipping zone。,"1. 更改允许未付款订单、支付流程等有效既有开关、仓库顺序和shipping关联后保存。
+2. 刷新页面并读取channel/payment/order/checkout/stock设置。","1. update及必要reorder都完成后才成功。
+2. 每项开关/顺序/关联与保存值一致，不因部分请求成功而保留假UI状态。"
+TC098,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,渠道reorder失败时保留部分成功且不重复创建,AC-04-3;FD04;FD08;I08,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 浏览器连接真实Core；允许在自有测试层控制响应/网络错误，不改生产代码或冻结fixtures；故障注入仅证明前端处理，不作为真实API通过证据。create或update合法成功，仓库排序自有响应故障。,"1. 提交创建/修改并仅让reorder返回ChannelError。
+2. 查看整体返回错误及对象ID，恢复后只重试排序并重读。","1. 整体不显示完全成功，明确渠道已保存但排序失败，保留channel.id。
+2. 不重建渠道、不假装回滚已保存设置；恢复后顺序正确，异常root纳入整体结果。"
+TC099,需求条目,R02 · GraphQL 契约与实际后端行为一致,单一渠道settings更新保留各字段权限例外,AC-02-4;BD03;I08,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。三staff分别仅MANAGE_ORDERS、MANAGE_CHECKOUTS、HANDLE_PAYMENTS；有合法Channel ID和有效setting数据。,"1. 分别仅更新orderSettings、checkoutSettings、paymentSettings中的合法字段。
+2. 每个staff再提交本setting加name的混合更新，管理员重读。","1. 单一setting按对应Base例外允许，不一律要求MANAGE_CHANNELS。
+2. 混合写入仍需一般权限而拒绝，无name等受限变更；不能扩大例外到全部channel。"
+TC100,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,渠道激活停用和删除错误不会伪更新界面,AC-04-3;FD08;BD03;I08,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。一个无订单可操作渠道，一个有订单渠道；删除转移规则沿Base准备有效/无效目标。,"1. 合法激活/停用空渠道并刷新。
+2. 尝试以Base禁止的目标/货币配置删除有订单渠道，观察typed错误和重读。","1. isActive与真实状态一致，正常操作不退化。
+2. 删除限制保持，失败不导航为已删除、不丢失订单关联；错误不是成功toast。"
+TC101,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,游客实物下单保持地址配送付款和库存结果,AC-04-4;BD03;I09,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。使用自有结算数据和获准本地支付测试工具，正常生产checkoutComplete；具体插件支持不足则记录环境阻塞，不写生产桩。main活跃，无税折扣；实物单价10 CNY、库存5、运费2 CNY；有效email/地址，支付覆盖22.00。,"1. 匿名创建数量2的checkout，先查未填地址配送，再填有效地址选择运费2。
+2. 覆盖22.00付款后checkoutComplete(id:真实ID)，随后读订单/stock/payment。","1. 配送规则与Base一致，地址后可选正确配送；不要求MANAGE_ORDERS登录。
+2. errors=[]、confirmationNeeded=false、有订单，总额22 CNY/数量2/配送正确，库存分配2且付款对应；后续异步通知独立观察。"
+TC102,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,结算缺email时不生成错误订单,AC-04-4;BD03;I09,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。使用自有结算数据和获准本地支付测试工具，正常生产checkoutComplete；具体插件支持不足则记录环境阻塞，不写生产桩。其余结算条件有效，独立checkout，无unpaid例外或确认中间态。,"1. 在有效checkout仅清除email并调用checkoutComplete。
+2. 检查CheckoutError与订单/库存变化。","1. 业务校验按Base拒绝，不一律返回成功空值。
+2. 没有该次错误成功订单或超量分配，错误fields/lines/variants等定位保留；允许已有合法审计/地址规范化，不承诺所有失败全回滚。"
+TC103,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,结算空行时不生成错误订单,AC-04-4;BD03;I09,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。使用自有结算数据和获准本地支付测试工具，正常生产checkoutComplete；具体插件支持不足则记录环境阻塞，不写生产桩。其余结算条件有效，独立checkout，无unpaid例外或确认中间态。,"1. 在有效checkout仅移除全部checkout lines并调用checkoutComplete。
+2. 检查CheckoutError与订单/库存变化。","1. 业务校验按Base拒绝，不一律返回成功空值。
+2. 没有该次错误成功订单或超量分配，错误fields/lines/variants等定位保留；允许已有合法审计/地址规范化，不承诺所有失败全回滚。"
+TC104,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,结算缺地址时不生成错误订单,AC-04-4;BD03;I09,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。使用自有结算数据和获准本地支付测试工具，正常生产checkoutComplete；具体插件支持不足则记录环境阻塞，不写生产桩。其余结算条件有效，独立checkout，无unpaid例外或确认中间态。,"1. 在有效checkout仅清除必需shipping地址并调用checkoutComplete。
+2. 检查CheckoutError与订单/库存变化。","1. 业务校验按Base拒绝，不一律返回成功空值。
+2. 没有该次错误成功订单或超量分配，错误fields/lines/variants等定位保留；允许已有合法审计/地址规范化，不承诺所有失败全回滚。"
+TC105,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,结算未发布商品时不生成错误订单,AC-04-4;BD03;I09,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。使用自有结算数据和获准本地支付测试工具，正常生产checkoutComplete；具体插件支持不足则记录环境阻塞，不写生产桩。其余结算条件有效，独立checkout，无unpaid例外或确认中间态。,"1. 在有效checkout仅把商品在该渠道设为不可用并调用checkoutComplete。
+2. 检查CheckoutError与订单/库存变化。","1. 业务校验按Base拒绝，不一律返回成功空值。
+2. 没有该次错误成功订单或超量分配，错误fields/lines/variants等定位保留；允许已有合法审计/地址规范化，不承诺所有失败全回滚。"
+TC106,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,结算库存不足时不生成错误订单,AC-04-4;BD03;I09,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。使用自有结算数据和获准本地支付测试工具，正常生产checkoutComplete；具体插件支持不足则记录环境阻塞，不写生产桩。其余结算条件有效，独立checkout，无unpaid例外或确认中间态。,"1. 在有效checkout仅要求数量2但可用库存1并调用checkoutComplete。
+2. 检查CheckoutError与订单/库存变化。","1. 业务校验按Base拒绝，不一律返回成功空值。
+2. 没有该次错误成功订单或超量分配，错误fields/lines/variants等定位保留；允许已有合法审计/地址规范化，不承诺所有失败全回滚。"
+TC107,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,支付确认中间态不提前建单且确认重入正常,AC-04-4;BD03;I09,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。使用自有结算数据和获准本地支付测试工具，正常生产checkoutComplete；具体插件支持不足则记录环境阻塞，不写生产桩。legacy Payment本地工具支持需二次确认流程，金额覆盖，记录checkout ID/token。,"1. 首次checkoutComplete触发需确认支付。
+2. 按返回confirmationData完成获准本地确认，再对同checkout调用。","1. confirmationNeeded=true、order=null是合法中间态，不能显示订单已完成。
+2. 最终只创建一订单且付款/库存正确，不把二次确认误作重复无条件扣款。"
+TC108,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,已完成结算重入返回同一订单且不重复库存事件,AC-04-4;BD03;I09,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。使用自有结算数据和获准本地支付测试工具，正常生产checkoutComplete；具体插件支持不足则记录环境阻塞，不写生产桩。checkout已成功完成、渠道仍active，记录原ID/token与订单ID。,"1. 用同一原checkout标识再complete并记录返回。
+2. 对照订单数量、库存分配及建单事件。","1. 沿Base重入返回原订单，不新增不同订单。
+2. 没有第二次建单/重复分配；不将去重错误归因checkout_token唯一约束或泛化到其他mutation。"
+TC109,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,完成后渠道失活时重入拒绝CHANNEL_INACTIVE,AC-04-4;BD03;I09,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。使用自有结算数据和获准本地支付测试工具，正常生产checkoutComplete；具体插件支持不足则记录环境阻塞，不写生产桩。已完成checkout原订单可读，完成后将渠道设inactive。,"1. 再用原checkout标识complete。
+2. 读回原订单及库存。","1. 返回CHANNEL_INACTIVE，不绕过失活渠道校验。
+2. 不创建新订单，原订单保留且无再次分配；不强行返回正常成功。"
+TC110,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,结算标识恰好一个且旧标识兼容保留,AC-04-4;BD03;I09,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。使用自有结算数据和获准本地支付测试工具，正常生产checkoutComplete；具体插件支持不足则记录环境阻塞，不写生产桩。分别使用独立有效checkout供id/checkoutId/token测试。,"1. 分别不传标识及同时传id和token调用。
+2. 对独立合法数据分别只传id、checkoutId、token调用。","1. 业务拒绝零个或多个标识，不能因SDL可空误认为均省略合法。
+2. 每个单标识沿Base有效，旧弃用参数仍可用；不删除旧checkout字段。"
+TC111,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,未付款订单按渠道允许开关决定而不一律建单,AC-04-4;BD03;I09,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。使用自有结算数据和获准本地支付测试工具，正常生产checkoutComplete；具体插件支持不足则记录环境阻塞，不写生产桩。两个独立有效checkout未付款，渠道分别allowUnpaidOrders=false/true，无其他失败条件。,"1. 分别对两checkout完成。
+2. 对照errors、order及付款状态。","1. false场景付款校验失败，true场景按Base可创建未付款订单。
+2. 结果对应实际开关，不用假付款/固定成功绕过；true创建的订单不得显示已付款。"
+TC112,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,支付失败保留审计但不能假装下单成功,AC-04-4;BD03;I09,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。使用自有结算数据和获准本地支付测试工具，正常生产checkoutComplete；具体插件支持不足则记录环境阻塞，不写生产桩。本地支付工具返回已知网关失败；库存足、地址与付款输入结构合法。,"1. 调用checkoutComplete并记录支付错误。
+2. 检查订单、付款/预留/审计及后续查询。","1. 错误分层明确，无错误成功订单。
+2. 保留的合法失败记录/预留按Base处理不误判为必须全回滚；无法确认的资金状态不自动重发。"
+TC113,需求条目,R05 · 数据库迁移支撑目标模型且保留既有业务数据,3.22存量库升级保留对象金额关系及扩展方法,AC-05-1;BD04,P0,后续执行需许可隔离数据库副本；原3.22副本包含用户、商品/变体、订单、渠道、App扩展GET/POST/null；记录各PK/Node ID、关系和金额。Q03完整模型变化未确认时仅验证已知范围。,"1. 备份摘要后，在副本按实施迁移链执行migrate，不重填官方fixture或清库。
+2. 比较原对象ID/外键/金额/状态/库存，读取旧扩展及新settings。","1. 迁移正常，无人工补表或删除数据替代升级。
+2. 原数据不变量保留或按已确认规则转换，method的null未被批量改GET；新增派生读取正确。未知Q03转换不能标记通过。"
+TC114,需求条目,R05 · 数据库迁移支撑目标模型且保留既有业务数据,空库完整迁移后可执行目标及回归操作,AC-05-2;BD04,P0,后续有获准新隔离数据库和最终实施migration链，不影响原库；本地服务可用。,"1. 在空库应用完整migrate链并启动Core。
+2. 用自有数据准备用户、商品/订单/App后执行已知目标六字段及基本读写。","1. 无缺依赖migration/缺表列，启动完成，不需要人工DDL。
+2. 操作可用，不依赖存量人工补丁；不据此声称未知3.23模型全部完成。"
+TC115,需求条目,R05 · 数据库迁移支撑目标模型且保留既有业务数据,重复迁移与模型差异检查不存在漏migration,AC-05-3;BD04,P0,隔离库已执行完整迁移；模型和migration为交付源码。,"1. 再次执行migrate并检查showmigrations/plan。
+2. 执行makemigrations --check --dry-run，将结果保存在报告。","1. 无必要待执行migration，重复执行不新增业务数据或丢失记录。
+2. 无模型变化未被migration覆盖，失败则记录；六字段派生方案不添加空迁移、不替换Base链。"
+TC116,需求条目,R05 · 数据库迁移支撑目标模型且保留既有业务数据,非法扩展存量数据被识别而非静默猜默认,AC-05-1;AC-05-3;BD04;BD02,P0,自有隔离数据审计样本含未知mount/target及method=PATCH；不改官方fixture；只在测试副本准备。,"1. 按BD04在升级前审计choice与method合法性。
+2. 检查问题处理记录及迁移/部署放行决定，不自行批量修改这些对象。","1. 定位具体对象/非法值，识别新增非空读取风险。
+2. 记录完整性阻塞/经确认的修复决定；不猜mount/target、不批量改数据或把未知情况通过；本设计未规定自动修复规则。"
+TC117,需求条目,R06 · 依赖、锁文件和构建声明形成一致的离线交付,后端声明锁文件与离线生产导入启动一致,AC-06-1;BD05;BD01,P0,实施后Python3.12与本地已安装依赖可用，有隔离检查环境；禁联网安装。,"1. 核对pyproject.toml与uv.lock项目版本/依赖范围及实际生产import，包括pillow_avif入口。
+2. 用预装环境正常启动Core及schema导出，记录缺包/版本冲突。","1. 依赖有声明锁定依据，保留实际需要Base-only包或有真实重构，不盲覆盖target清单。
+2. 无缺失导入或声明冲突；缺包须环境/交付阻塞，不在线补装或只改sys.path掩盖。"
+TC118,需求条目,R06 · 依赖、锁文件和构建声明形成一致的离线交付,前端声明工具链与脚本在离线环境可运行,AC-06-2;FD01;FD02,P0,实施后的package/锁/workspace脚本可读；Node24/pnpm10及依赖预装；授权测试副本。,"1. 核对packageManager/engines、pnpm-lock.yaml、onlyBuiltDependencies和脚本引用文件。
+2. 执行批准的离线generate、types、build并记录所有独立结果。","1. 声明与实际工具一致，无引用不存在codegen-main/staging配置或未知schema。
+2. 全部成功且无未声明生产依赖；不能凭已有build文件、预装额外包或部分通过判整体通过。"
+TC119,需求条目,R06 · 依赖、锁文件和构建声明形成一致的离线交付,批准发布入口使用真实版本字段和统一工具链,AC-06-1;AC-06-2;BD01;BD05;FD01,P0,Q06提供书面批准的Docker/CI/发布入口范围；仅静态/dry-run于授权副本，不提交推送发布；若Q06未确认记录受阻。,"1. 检查Core release bumper指向[project].version，核对Python/uv；检查范围内Dashboard Docker/CI的Node24/pnpm/锁文件路径。
+2. 在不发布、不联网的前提检查配置或获准dry-run，记录物料缺失。","1. 入口与真实版本/声明一致，不保留tool.poetry.version或Node20/npm ci矛盾路径而称完成。
+2. 获准且物料齐备才确认对应入口；无镜像/缓存或范围未知则阻塞，不把本地build通过泛化为所有入口。"
+TC120,需求条目,R06 · 依赖、锁文件和构建声明形成一致的离线交付,执行记录不存在联网获取目标源或安装包,AC-06-3;BD05;FD01;FD02,P0,迁移/生成/构建日志和命令记录完整可审计；本地依赖manifest只读。,"1. 逐项审查源码获取、依赖安装、schema同步及镜像记录。
+2. 对离线缺材料的记录检查处理方式。","1. 没有fetch目标源/schema、在线包安装或拉目标镜像；schema来源配对本地Core。
+2. 缺材料明确阻塞，没有通过联网绕过、隐式远程fallback或伪造成功。"
+TC121,需求条目,R07 · 交付真实源代码差异并保护评估与冻结材料,仅普通仓库diff即可重建已知生产功能,AC-07-1;BD05;BD06;FD09,P0,有两个固定agent baseline和实施最终diff；允许在授权测试副本应用diff，不写原材料仓库。,"1. 对照固定baseline导出两个仓库生产差异，检查resolver、SDL、生成产物、锁及必要migration都包含。
+2. 仅在副本应用diff，用允许的预装环境启动并验证I01/I02和已知商家流程。","1. 变化是普通源文件，无关键功能仅藏scratch/运行时monkey patch/未导出环境改动。
+2. 已知功能可复现，不依赖测试标识或仓外补丁；没有目标实现仍缺失却因环境桩显示通过。"
+TC122,需求条目,R07 · 交付真实源代码差异并保护评估与冻结材料,冻结需求用例与评估材料内容路径保持不变,AC-07-2;BD06;FD09,P0,执行前已记录冻结PRD、本CSV、官方tests/fixtures/verifier/scoring的路径和摘要；后续实施结果可读。,"1. 比较实施前后这些材料内容/路径与删除重命名情况。
+2. 审查启动配置和运行时覆盖，查看发现问题的报告落点。","1. 无修改/删除/替换；允许新增自有生产实现不改变冻结材料。
+2. 无运行时篡改评估含义；问题仅写当前允许报告，修复复测不更新本CSV。"
+TC123,需求条目,R07 · 交付真实源代码差异并保护评估与冻结材料,非上游字节一致不会代替行为与回归判定,AC-07-3;BD06;FD09,P0,维护者确认目标契约/行为及正式测试结果可用；没有取得上游源码，不联网取源码做比较。,"1. 审核交付与确认契约、生产运行和选定测试的证据。
+2. 对实现结构/命名不同但行为满足的情况及行为缺失情况分别检查结论。","1. 依据可确认行为/协议/回归，不强制未知上游文件hash一致。
+2. 仅内部实现不同不判失败，但协议/功能/回归缺失仍不通过，不以非字节一致许可豁免目标要求。"
+TC124,需求条目,R08 · 分层验证并按冻结清单判定最终验收,四个请求套件均有实际运行及可追溯结果,AC-08-1;BD06;FD09,P0,后续执行阶段已获运行授权；本地数据库/其他服务可用，官方材料或合法本地套件已装载；attempt取唯一qa-v1-01。,"1. 执行/opt/runtime/run-suite.sh qa-v1-01 core-unit core-e2e dash-unit dash-e2e。
+2. 按suite核对命令、收集、实际用例、结果文件和日志，区分服务health记录。","1. 运行器执行所有请求suite并停止runtime，每suite有独立实际执行证据。
+2. 四套件均有结果，不用health成功/退出码/已有结果文件代替本次用例执行；任何未运行或收集错误明确失败/阻塞。"
+TC125,需求条目,R08 · 分层验证并按冻结清单判定最终验收,正式F2P逐用例由前失败变为后通过,AC-08-2;BD06;FD09,P0,Q04已获维护者接受及清单冻结，有同一评估条件下迁移前后官方结果；未冻结则本用例受阻。,"1. 按冻结F2P ID集合逐项匹配迁移前/后结果并核对环境与测试版本。
+2. 检查失败、缺失、skip、xfail/未执行及collection状态。","1. 每个选定ID前失败、后实际pass，无候选ID替代正式ID。
+2. 任何selected缺失/未执行/收集错误/非实际pass均不能算通过，完整性不足报告受阻/未通过。"
+TC126,需求条目,R08 · 分层验证并按冻结清单判定最终验收,正式P2P逐用例保持实际通过,AC-08-3;BD06;FD09,P0,Q04已冻结P2P清单，迁移前/后官方结果同测试版本/配置；否则受阻。,"1. 按冻结ID逐项比较前后结果并记录新增回归。
+2. 检查全部选定项均有本次运行结果。","1. 每个P2P迁移前后均实际pass，不因F2P修复而退化。
+2. 没有缺失或用skip替代；任一fail导致对应验收未通过，不用总体通过百分比掩盖。"
+TC127,需求条目,R08 · 分层验证并按冻结清单判定最终验收,清单尚未接受冻结时只报告候选验证,AC-08-4;BD06;FD09,P0,PRD Q04仍待维护者接受与冻结；当前可有本地验证结果但无正式评分授权。,"1. 检查测试/验收报告对清单状态和结果范围的标记。
+2. 审核是否宣称正式评分、benchmark已发布或完整3.23通过。","1. 明确candidate/local性质、正式评分关闭及未冻结前提。
+2. 不存在未经授权的正式验收声明；材料规格Q01—Q03缺口同时保留，不改冻结文件消除阻塞。"
+TC128,需求条目,R08 · 分层验证并按冻结清单判定最终验收,收集失败和缺失选定结果不被计为通过,AC-08-5;BD06;FD09,P0,有自有报告判定样本，不改verifier/评分配置或官方结果：选定ID A/B/C。,"1. 用报告审查样本分别表示A=pass、B缺失、C收集失败；另有suite退出码0/health成功样本。
+2. 执行人工结果完整性审查并对照汇总判定规则。","1. 样本只用于校验报告判定，不伪造官方执行结果或实际测试运行。
+2. B/C明确缺口及失败/阻塞，不能由A pass、退出码0或health补成全部通过。"
+TC129,需求条目,R08 · 分层验证并按冻结清单判定最终验收,环境失败与业务失败均如实记录且不能替代pass,AC-08-1;AC-08-5;BD06;FD09,P0,后续有实际执行日志或自有审查样本：数据库不可用与断言失败两种，未修改官方套件。,"1. 分别核对两种失败的命令、收集/运行数量和具体错误。
+2. 检查报告是否区分根因但保留相关套件未通过及未覆盖范围。","1. 环境错误与业务断言错误分开记录，不凭health或安装成功说测试成功。
+2. 两者都不是pass，明确受影响用例/套件；修复后需按冻结用例复测，不修改CSV。"
+TC130,需求条目,R02 · GraphQL 契约与实际后端行为一致,缺method的旧options深层查询不被错误断言为默认GET,AC-02-3;BD02;I02,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。独立NEW_TAB/WIDGET扩展http_target_method=null；BD02要求旧resolver保持，旧options子类型method为非空。,"1. 先仅查询新三字段，再独立查询旧options对应target.method。
+2. 比较旧查询的GraphQL errors与null传播位置，核对维护者对合法存量兼容缺口的澄清。","1. 新settings为{}且不改存量method；当前Base旧深层查询可能非空错误至nullable target，不假定整个options/列表都为空。
+2. 记录BD02“旧resolver不变”与无method旧深层兼容的规格缺口；未明确新验收规则时旧兼容结论受阻，不能臆造GET或把新字段通过当旧查询通过。"
+TC131,需求条目,R02 · GraphQL 契约与实际后端行为一致,新增非空字段错误按GraphQL边界传播而非伪默认,AC-02-3;BD02;I02,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。在自有Core单元测试数据中单项非法mount，不改官方fixture；正常项另有一个。,"1. 查询坏项appExtension的新三字段，并查询含坏项的appExtensions。
+2. 检查GraphQL errors、null传播及报告。","1. 定位坏项数据完整性问题，不输出猜测挂载或空字符串假合法。
+2. 按SDL传播null，连接可能因非空edge/node失效，不能断言服务端自动逐项隔离；局部隔离UI用例只在合法partial响应可到达时适用，阻断放行直到确认数据修复。"
+TC132,需求条目,R02 · GraphQL 契约与实际后端行为一致,Manifest小写枚举是业务INVALID而非合法自动转换,AC-02-3;BD02;I03,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。拥有MANAGE_APPS的staff；本地授权manifest服务提供完整合法基础manifest（id/name/version/appUrl/tokenTargetUrl等依Base），每例独立URL，不使用外网。,"1. 用合法manifest分别传mount=""product_details_more_actions""和target=""new_tab""，每次仅改一个字段。
+2. 分别预览并查询typed errors和manifest。","1. 输入是manifest JSON，不是GraphQL枚举变量；安装存储小写不改变外部大写格式。
+2. manifest=null，errors含field=extensions/code=INVALID，不自动大写接受，无安装。"
+TC133,需求条目,R02 · GraphQL 契约与实际后端行为一致,Manifest的空extensions是合法非空列表,AC-02-3;BD02;I03,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。拥有MANAGE_APPS的staff；本地授权manifest服务提供完整合法基础manifest（id/name/version/appUrl/tokenTargetUrl等依Base），每例独立URL，不使用外网。,"1. 将合法基础manifest的extensions设[]，预览新旧字段。
+2. 查询安装记录数量与返回列表类型。","1. errors=[]、manifest非空、extensions=[]；[Item!]!不隐含至少一项。
+2. 列表不是null/缺失，无预览持久化；无需伪造空扩展。"
+TC134,需求条目,R02 · GraphQL 契约与实际后端行为一致,Manifest NEW_TAB和WIDGET的省略options输出空配置,AC-02-3;BD02;I03,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。拥有MANAGE_APPS的staff；本地授权manifest服务提供完整合法基础manifest（id/name/version/appUrl/tokenTargetUrl等依Base），每例独立URL，不使用外网。,"1. 分别用NEW_TAB/MORE_ACTIONS及WIDGET/PRODUCT_DETAILS_WIDGETS合法组合，省略options；仅读取新三字段及旧mount/target。
+2. 预览并比较settings与内部method来源，不深读旧options.method。","1. 两种输入均合法，无配置不表示显式method=GET。
+2. settings={}，无method:null、字符串或伪POST；目标默认GET是前端行为，存量method仍null，旧深层兼容另列缺口。"
+TC135,需求条目,R02 · GraphQL 契约与实际后端行为一致,Manifest NEW_TAB和WIDGET的空options对象输出空配置,AC-02-3;BD02;I03,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。拥有MANAGE_APPS的staff；本地授权manifest服务提供完整合法基础manifest（id/name/version/appUrl/tokenTargetUrl等依Base），每例独立URL，不使用外网。,"1. 分别用NEW_TAB/MORE_ACTIONS及WIDGET/PRODUCT_DETAILS_WIDGETS合法组合，options={}；仅读取新三字段及旧mount/target。
+2. 预览并比较settings与内部method来源，不深读旧options.method。","1. 两种输入均合法，无配置不表示显式method=GET。
+2. settings={}，无method:null、字符串或伪POST；目标默认GET是前端行为，存量method仍null，旧深层兼容另列缺口。"
+TC136,需求条目,R02 · GraphQL 契约与实际后端行为一致,Manifest存在target配置但method缺失必须拒绝,AC-02-3;BD02;I03,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。拥有MANAGE_APPS的staff；本地授权manifest服务提供完整合法基础manifest（id/name/version/appUrl/tokenTargetUrl等依Base），每例独立URL，不使用外网。,"1. 合法NEW_TAB扩展options={""newTabTarget"":{}}，其余字段不变。
+2. 预览并查询errors与manifest。","1. 子对象存在与整个options省略不同，不解释为默认GET。
+2. manifest=null、field=extensions/code=INVALID，无安装；不统一把外部null当合法派生存储null。"
+TC137,需求条目,R02 · GraphQL 契约与实际后端行为一致,Manifest存在target配置但method显式null必须拒绝,AC-02-3;BD02;I03,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。拥有MANAGE_APPS的staff；本地授权manifest服务提供完整合法基础manifest（id/name/version/appUrl/tokenTargetUrl等依Base），每例独立URL，不使用外网。,"1. 合法NEW_TAB扩展options={""newTabTarget"":{""method"":null}}，其余字段不变。
+2. 预览并查询errors与manifest。","1. 子对象存在与整个options省略不同，不解释为默认GET。
+2. manifest=null、field=extensions/code=INVALID，无安装；不统一把外部null当合法派生存储null。"
+TC138,需求条目,R02 · GraphQL 契约与实际后端行为一致,Manifest存在target配置但method小写必须拒绝,AC-02-3;BD02;I03,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。拥有MANAGE_APPS的staff；本地授权manifest服务提供完整合法基础manifest（id/name/version/appUrl/tokenTargetUrl等依Base），每例独立URL，不使用外网。,"1. 合法NEW_TAB扩展options={""newTabTarget"":{""method"":""get""}}，其余字段不变。
+2. 预览并查询errors与manifest。","1. 子对象存在与整个options省略不同，不解释为默认GET。
+2. manifest=null、field=extensions/code=INVALID，无安装；不统一把外部null当合法派生存储null。"
+TC139,需求条目,R02 · GraphQL 契约与实际后端行为一致,Manifest错误target配置被拒绝而未知key不透传,AC-02-3;BD02;I03,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。拥有MANAGE_APPS的staff；本地授权manifest服务提供完整合法基础manifest（id/name/version/appUrl/tokenTargetUrl等依Base），每例独立URL，不使用外网。I03“不接受任意新增manifest key”与Base忽略未知options文字含义须澄清。,"1. NEW_TAB配置widgetTarget.method=GET，预览。
+2. 独立NEW_TAB传options={""new_tab_target"":{""method"":""POST""},""unknown"":""x""}，预览新settings。","1. 明确target配置不匹配返回extensions/INVALID，无成功安装。
+2. Base会忽略未知/snake_case键并输出settings={}，不配置POST；若I03意指所有未知键都拒绝则与BD02保持Base冲突，未澄清判定受阻，不能擅自加强校验或透传未知字段。"
+TC140,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,PENDING安装任务不能再次重试且不清空失败信息假成功,AC-04-3;BD02;FD03;I04,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。拥有MANAGE_APPS的staff；本地授权manifest服务提供完整合法基础manifest（id/name/version/appUrl/tokenTargetUrl等依Base），每例独立URL，不使用外网。有FAILED installation J及message，重试worker暂缓。,"1. 用原J调用appRetryInstall，记录ID/status/message。
+2. 未处理时再次retry同一J。","1. 返回同J、PENDING且errors=[]，允许保留旧message；不是最终完成。
+2. 返回field=id/code=INVALID_STATUS，无新增安装；不要求源码未实现的message清空。"
+TC141,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,NEW_TAB POST配置的跨hostnameURL仍被拒绝,AC-04-1;BD02;FD03;I03,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。拥有MANAGE_APPS的staff；本地授权manifest服务提供完整合法基础manifest（id/name/version/appUrl/tokenTargetUrl等依Base），每例独立URL，不使用外网。tokenTargetUrl=http://localhost:8765/register。,"1. NEW_TAB POST合法配置分别提供同hostname http://localhost:8765/qa和不同hostname http://127.0.0.1:8765/qa。
+2. 预览并观察errors/manifest及安装按钮。","1. 同hostname按Base URL规则可通过，其余输入均合法。
+2. 不同hostname沿Base安全校验拒绝，不通过新增settings绕过；不启用安装/声称成功。"
+TC142,需求条目,R02 · GraphQL 契约与实际后端行为一致,无MANAGE_CHANNELS不能排序仓库或混用字段例外,AC-02-4;BD03;I08,P0,"实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。staff仅有MANAGE_ORDERS；channel C仓库顺序W1,W2。","1. 请求channelReorderWarehouses调整为W2,W1。
+2. 管理员重读顺序及同staff合法仅orderSettings更新结果。","1. 排序顶层权限拒绝，无受限顺序写入。
+2. 顺序仍W1,W2；合法setting例外不放开reorder，不等同给员工全部渠道权限。"
+TC143,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,bulk结果单项错误进入整体失败判定,AC-04-1;FD04;FD05;I05,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 浏览器连接真实Core；允许在自有测试层控制响应/网络错误，不改生产代码或冻结fixtures；故障注入仅证明前端处理，不作为真实API通过证据。自有公共判定组件/函数用例；bulk数据依实际被调用的SDL结果类型构造，两个项分别合法和失败。,"1. 提供一项成功ID、一项typed errors非空的bulk结果，顶层payload存在；让公共提交判定处理。
+2. 检查整体状态及逐项展示，重读合法已提交部分。","1. 完整检查项级错误，不因顶层errors为空跳过bulk result。
+2. 整体partial-failure且可定位失败项，成功部分不伪回滚、不重复创建，正常全项成功样本仍success。"
+TC144,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,Transaction结算付款和建单保持原路径而非legacy桩替代,AC-04-4;BD03;I09,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。使用自有结算数据和获准本地支付测试工具，正常生产checkoutComplete；具体插件支持不足则记录环境阻塞，不写生产桩。独立checkout明确采用Transaction路径；main active、有效结算数据、总额22.00 CNY；获准支付App实际本地事件可查询。,"1. 准备本单Transaction付款/授权满足该渠道Base完成条件，调用checkoutComplete。
+2. 查询订单、原transaction关联、金额/库存及异步建单事件。","1. 正常生产Transaction路径成功，订单非空且confirmationNeeded=false，不以legacy dummy payment替代。
+2. 总额/货币22.00 CNY、交易归属与库存分配正确；事件按提交后机制完成，无重复建单；通知不可用单独环境阻塞。"
+TC145,需求条目,R04 · 保持商家日常操作与已有业务规则的回归行为,订单履约和商品退款仍沿独立既有链路持久化,AC-04-2;BD03;FD07;I07,P0,实施完成后在获准的隔离测试环境执行；Core与Dashboard配对运行，本地数据库/任务服务可用；不得访问外网或修改冻结评估测试/fixtures。本阶段仅设计、不执行。PRD无独立业务域分组，一级模块原文采用其第3节标题“需求条目”。 使用正常生产/graphql/，请求及响应留存；Node ID由实际创建/查询取得，不使用虚构ID。员工MANAGE_ORDERS及渠道访问；订单实物2件单价10 CNY、有效legacy Payment和本地网关；现有回归要求支持履约与商品退款。,"1. 在Dashboard按既有履约操作履约2件，刷新订单/fulfillment及库存状态。
+2. 选该履约行退款1件且不退运费，用原orderFulfillmentRefundProducts链路，查询结果/退款金额。","1. 履约数量2及订单实际状态与Base一致，不把按钮成功当持久化。
+2. 商品退款处理1件/10 CNY，记录与金额对应，不归并为手工授予或宣称未确认资金已到账；失败typed错误不显示成功，网关能力缺失报告环境阻塞。"
