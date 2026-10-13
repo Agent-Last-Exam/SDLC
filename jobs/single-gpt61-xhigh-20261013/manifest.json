@@ -12,8 +12,32 @@
     "sha256": "f64dd74bdef11cd846d4dd8d2c3ceb7702640214512ba18b605771bb0deb437b"
   },
   "README.md": {
-    "bytes": 1634,
-    "sha256": "532ad95ee6b0c9e4e5907881ffd395b2651b643635c50ce98c860f1548f26122"
+    "bytes": 1829,
+    "sha256": "82c303807dfcb6bb60e4f34cef7a0f397c967395eb833403b091ebccfa11a49b"
+  },
+  "coding/saleor.model.patch": {
+    "bytes": 24278,
+    "sha256": "2c23c805160417fa735e66c80ca1a2ed14986611ea36f555666d7300b50e1201"
+  },
+  "coding/saleor-dashboard.model.patch": {
+    "bytes": 108254,
+    "sha256": "a81187ffb96c497a98ffd1bd2ac8009c5ee863e94b21d188a04c9c830ad093fc"
+  },
+  "coding/saleor-dashboard.files.json": {
+    "bytes": 646579,
+    "sha256": "063a95da8831bed888ffd75bd7c5f6983ac936d065dfd446c515d568330966d8"
+  },
+  "coding/evaluation-input.json": {
+    "bytes": 3429,
+    "sha256": "eccaf3185e7ba685d78db942e86699f108723a6e35d9ccf0ec688ab7444924bb"
+  },
+  "coding/saleor.files.json": {
+    "bytes": 771051,
+    "sha256": "32e24483634c383bc1eced901eec1c54dc7bfa18d5d17b2a46733970745d12f9"
+  },
+  "coding/README.md": {
+    "bytes": 2574,
+    "sha256": "5cea3a11824517d90af02b8cf82264120a13d6b0dc59745445a1fe52dffee5c9"
   },
   "agent/trajectory.json.gz": {
     "bytes": 3043719,

@@ -1,0 +1,378 @@
+diff --git a/.release-it.json b/.release-it.json
+index 1bf35aab00ac6ece22af16a2491a2c534f0e2f42..4da896154cfbc12576d3a666fd11d3ac021b342b 100644
+--- a/.release-it.json
++++ b/.release-it.json
+@@ -15,7 +15,7 @@
+       "out": [
+         {
+           "file": "pyproject.toml",
+-          "path": "tool.poetry.version"
++          "path": "project.version"
+         },
+         {
+           "file": "./saleor/__init__.py",
+diff --git a/package-lock.json b/package-lock.json
+index 02a2a73e0d7d55edadcab6660a4ba655503dac74..eb66d5ba92849c9d7930de005048ffd9ad9c03e3 100644
+GIT binary patch
+delta 25
+hcmZo!#ND!pdxAQn@kEUZM&rhXtqU2qE@Vo+004DN35Ngx
+
+delta 25
+hcmZo!#ND!pdxAQn(L{|3Mx(}stqU2qE@Vo+004C{355Uv
+
+diff --git a/package.json b/package.json
+index 01fbbf8c3d95eea75dbf31a9343ad6f1faba7931..52e06b4c8c4527fa86ae330b2e6f957711d53354 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "saleor",
+-  "version": "3.22.0",
++  "version": "3.23.0",
+   "engines": {
+     "node": ">=20 <22",
+     "npm": ">=7"
+diff --git a/pyproject.toml b/pyproject.toml
+index c5d579438c84a90a68e797618fbb71d5972679bd..7252b670a51e977d7ffaeba1ab7b2ceb9e205c24 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
+ 
+ [project]
+ name = "saleor"
+-version = "3.22.0"
++version = "3.23.0"
+ description = "A modular, high performance, headless e-commerce platform built with Python, GraphQL, Django, and React."
+ authors = [{ name = "Saleor Commerce", email = "hello@saleor.io" }]
+ requires-python = ">=3.12,<3.13"
+@@ -81,9 +81,13 @@ dependencies = [
+     "opentelemetry-semantic-conventions>=0.53b1,<0.54",
+     "opentelemetry-distro[otlp]>=0.53b1,<0.54",
+     "celery[redis, sqs]>=4.4.5,<6.0.0",
++    "kombu[sqs]>=4.6.11,<6.0.0",
+     "django-storages[google]~=1.11",
+     "python-magic>=0.4.27,<0.5 ; sys_platform != 'win32'",
+     "python-magic-bin>=0.4.14,<0.5 ; sys_platform == 'win32'",
++    "nh3>=0.2.20",
++    "idna>=3.10",
++    "orjson>=3.11.4",
+ ]
+ 
+ [project.urls]
+diff --git a/saleor/__init__.py b/saleor/__init__.py
+index b2592608b85a83a2464b2d2e50148ff79c37923d..38ef7dd198ec1f6913d9202f910f291d69f30f52 100644
+--- a/saleor/__init__.py
++++ b/saleor/__init__.py
+@@ -3,7 +3,7 @@ import pillow_avif  # noqa: F401 # imported for side effects
+ from .celeryconf import app as celery_app
+ 
+ __all__ = ["celery_app"]
+-__version__ = "3.22.0"
++__version__ = "3.23.0"
+ 
+ 
+ class PatchedSubscriberExecutionContext:
+diff --git a/saleor/graphql/app/types.py b/saleor/graphql/app/types.py
+index 34fee0e7fe985b9bd8b02b1046b8e2ecbe5ccacb..4ef91b01807243f2af3a4e21a25f446c09096fa2 100644
+--- a/saleor/graphql/app/types.py
++++ b/saleor/graphql/app/types.py
+@@ -30,7 +30,7 @@ from ..core.dataloaders import DataLoader
+ from ..core.descriptions import ADDED_IN_319, ADDED_IN_321, ADDED_IN_322
+ from ..core.doc_category import DOC_CATEGORY_APPS
+ from ..core.federation import federated_entity, resolve_federation_references
+-from ..core.scalars import DateTime
++from ..core.scalars import JSON, DateTime
+ from ..core.types import (
+     BaseEnum,
+     BaseObjectType,
+@@ -105,6 +105,18 @@ def has_access_to_app_public_meta(root, info: ResolveInfo, app) -> bool:
+     return requester.has_perm(AppPermission.MANAGE_APPS)
+ 
+ 
++def normalize_extension_settings(target, http_method):
++    """Derive JSON settings from the existing target and HTTP method."""
++    target = AppExtensionTargetEnum.get(getattr(target, "value", target)).value
++    settings_key = {
++        AppExtensionTarget.NEW_TAB: "newTabTarget",
++        AppExtensionTarget.WIDGET: "widgetTarget",
++    }.get(target)
++    if settings_key is None or http_method is None:
++        return {}
++    return {settings_key: {"method": HttpMethod.get(http_method).value}}
++
++
+ class AppManifestExtension(BaseObjectType):
+     permissions = NonNullList(
+         Permission,
+@@ -120,14 +132,51 @@ class AppManifestExtension(BaseObjectType):
+     mount = AppExtensionMountEnum(
+         description="Place where given extension will be mounted.",
+         required=True,
++        deprecation_reason="Use `mountName` instead.",
+     )
+     target = AppExtensionTargetEnum(
+-        description="Type of way how app extension will be opened.", required=True
++        description="Type of way how app extension will be opened.",
++        required=True,
++        deprecation_reason="Use `targetName` instead.",
++    )
++    mount_name = graphene.String(
++        description="Name of the existing mount enum; available mounts are unchanged.",
++        required=True,
++    )
++    target_name = graphene.String(
++        description="Name of the existing target enum; available targets are unchanged.",
++        required=True,
++    )
++    settings = JSON(
++        description="App extension settings as a JSON object, derived from options; empty when unconfigured.",
++        required=True,
+     )
+ 
+     class Meta:
+         doc_category = DOC_CATEGORY_APPS
+ 
++    @staticmethod
++    def resolve_mount_name(root, _info: ResolveInfo):
++        mount = root["mount"]
++        return AppExtensionMountEnum.get(getattr(mount, "value", mount)).name
++
++    @staticmethod
++    def resolve_target_name(root, info: ResolveInfo):
++        target = AppManifestExtension.resolve_target(root, info)
++        return AppExtensionTargetEnum.get(getattr(target, "value", target)).name
++
++    @staticmethod
++    def resolve_settings(root, info: ResolveInfo):
++        target = AppManifestExtension.resolve_target(root, info)
++        target = AppExtensionTargetEnum.get(getattr(target, "value", target)).value
++        options_key = {
++            AppExtensionTarget.NEW_TAB: "new_tab_target",
++            AppExtensionTarget.WIDGET: "widget_target",
++        }.get(target)
++        options = root.get("options") or {}
++        target_options = options.get(options_key) or {}
++        return normalize_extension_settings(target, target_options.get("method"))
++
+     @staticmethod
+     def resolve_target(root, _info: ResolveInfo):
+         return root.get("target") or AppExtensionTarget.POPUP
+@@ -209,6 +258,7 @@ class AppExtension(AppManifestExtension, ModelObjectType[models.AppExtension]):
+     options = graphene.Field(
+         AppExtensionPossibleOptions,
+         description="App extension options." + ADDED_IN_322,
++        deprecation_reason="Use `settings` field instead.",
+     )
+ 
+     class Meta:
+@@ -229,6 +279,18 @@ class AppExtension(AppManifestExtension, ModelObjectType[models.AppExtension]):
+             )
+         )
+ 
++    @staticmethod
++    def resolve_mount_name(root: models.AppExtension, _info: ResolveInfo):
++        return AppExtensionMountEnum.get(root.mount).name
++
++    @staticmethod
++    def resolve_target_name(root: models.AppExtension, _info: ResolveInfo):
++        return AppExtensionTargetEnum.get(root.target).name
++
++    @staticmethod
++    def resolve_settings(root: models.AppExtension, _info: ResolveInfo):
++        return normalize_extension_settings(root.target, root.http_target_method)
++
+     @staticmethod
+     def resolve_target(root, _info: ResolveInfo):
+         return root.target
+diff --git a/saleor/graphql/schema.graphql b/saleor/graphql/schema.graphql
+index 592d171eac54cf46e81fb6045c4193fff9c7f080..6602757dba8bab42518e8131be9cfd27ebbe4313 100644
+--- a/saleor/graphql/schema.graphql
++++ b/saleor/graphql/schema.graphql
+@@ -3026,10 +3026,21 @@ type AppExtension implements Node @doc(category: "Apps") {
+   url: String!
+ 
+   """Place where given extension will be mounted."""
+-  mount: AppExtensionMountEnum!
++  mount: AppExtensionMountEnum! @deprecated(reason: "Use `mountName` instead.")
+ 
+   """Type of way how app extension will be opened."""
+-  target: AppExtensionTargetEnum!
++  target: AppExtensionTargetEnum! @deprecated(reason: "Use `targetName` instead.")
++
++  """Name of the existing mount enum; available mounts are unchanged."""
++  mountName: String!
++
++  """Name of the existing target enum; available targets are unchanged."""
++  targetName: String!
++
++  """
++  App extension settings as a JSON object, derived from options; empty when unconfigured.
++  """
++  settings: JSON!
+ 
+   """The app assigned to app extension."""
+   app: App!
+@@ -3042,7 +3053,7 @@ type AppExtension implements Node @doc(category: "Apps") {
+   
+   Added in Saleor 3.22.
+   """
+-  options: AppExtensionPossibleOptions
++  options: AppExtensionPossibleOptions @deprecated(reason: "Use `settings` field instead.")
+ }
+ 
+ """All places where app extension can be mounted."""
+@@ -3111,6 +3122,8 @@ enum AppExtensionTargetEnum @doc(category: "Apps") {
+   WIDGET
+ }
+ 
++scalar JSON
++
+ union AppExtensionPossibleOptions = AppExtensionOptionsWidget | AppExtensionOptionsNewTab
+ 
+ """Represents the options for an app extension."""
+@@ -12701,8 +12714,6 @@ enum TokenizedPaymentFlowEnum @doc(category: "Payments") {
+   INTERACTIVE
+ }
+ 
+-scalar JSON
+-
+ """Represents an problem in the checkout."""
+ union CheckoutProblem = CheckoutLineProblemInsufficientStock | CheckoutLineProblemVariantNotAvailable
+ 
+@@ -29843,10 +29854,21 @@ type AppManifestExtension @doc(category: "Apps") {
+   url: String!
+ 
+   """Place where given extension will be mounted."""
+-  mount: AppExtensionMountEnum!
++  mount: AppExtensionMountEnum! @deprecated(reason: "Use `mountName` instead.")
+ 
+   """Type of way how app extension will be opened."""
+-  target: AppExtensionTargetEnum!
++  target: AppExtensionTargetEnum! @deprecated(reason: "Use `targetName` instead.")
++
++  """Name of the existing mount enum; available mounts are unchanged."""
++  mountName: String!
++
++  """Name of the existing target enum; available targets are unchanged."""
++  targetName: String!
++
++  """
++  App extension settings as a JSON object, derived from options; empty when unconfigured.
++  """
++  settings: JSON!
+ }
+ 
+ type AppManifestWebhook @doc(category: "Apps") {
+diff --git a/uv.lock b/uv.lock
+index 1a24d908705a29dd8e255f81ea4a2f94b44731a9..d69747e6bbbb4e78da0f9ce97a1e2d385e1c6c0b 100644
+--- a/uv.lock
++++ b/uv.lock
+@@ -1520,6 +1520,29 @@ wheels = [
+     { url = "https://files.pythonhosted.org/packages/79/7b/2c79738432f5c924bef5071f933bcc9efd0473bac3b4aa584a6f7c1c8df8/mypy_extensions-1.1.0-py3-none-any.whl", hash = "sha256:1be4cccdb0f2482337c4743e60421de3a356cd97508abadd57d47403e94f5505", size = 4963, upload-time = "2025-04-22T14:54:22.983Z" },
+ ]
+ 
++[[package]]
++name = "nh3"
++version = "0.3.2"
++source = { registry = "https://pypi.org/simple" }
++sdist = { url = "https://files.pythonhosted.org/packages/ca/a5/34c26015d3a434409f4d2a1cd8821a06c05238703f49283ffeb937bef093/nh3-0.3.2.tar.gz", hash = "sha256:f394759a06df8b685a4ebfb1874fb67a9cbfd58c64fc5ed587a663c0e63ec376", size = 19288, upload-time = "2025-10-30T11:17:45.948Z" }
++wheels = [
++    { url = "https://files.pythonhosted.org/packages/b6/3e/f5a5cc2885c24be13e9b937441bd16a012ac34a657fe05e58927e8af8b7a/nh3-0.3.2-cp38-abi3-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl", hash = "sha256:7064ccf5ace75825bd7bf57859daaaf16ed28660c1c6b306b649a9eda4b54b1e", size = 1431980, upload-time = "2025-10-30T11:17:25.457Z" },
++    { url = "https://files.pythonhosted.org/packages/7f/f7/529a99324d7ef055de88b690858f4189379708abae92ace799365a797b7f/nh3-0.3.2-cp38-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c8745454cdd28bbbc90861b80a0111a195b0e3961b9fa2e672be89eb199fa5d8", size = 820805, upload-time = "2025-10-30T11:17:26.98Z" },
++    { url = "https://files.pythonhosted.org/packages/3d/62/19b7c50ccd1fa7d0764822d2cea8f2a320f2fd77474c7a1805cb22cf69b0/nh3-0.3.2-cp38-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:72d67c25a84579f4a432c065e8b4274e53b7cf1df8f792cf846abfe2c3090866", size = 803527, upload-time = "2025-10-30T11:17:28.284Z" },
++    { url = "https://files.pythonhosted.org/packages/4a/ca/f022273bab5440abff6302731a49410c5ef66b1a9502ba3fbb2df998d9ff/nh3-0.3.2-cp38-abi3-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:13398e676a14d6233f372c75f52d5ae74f98210172991f7a3142a736bd92b131", size = 1051674, upload-time = "2025-10-30T11:17:29.909Z" },
++    { url = "https://files.pythonhosted.org/packages/fa/f7/5728e3b32a11daf5bd21cf71d91c463f74305938bc3eb9e0ac1ce141646e/nh3-0.3.2-cp38-abi3-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:03d617e5c8aa7331bd2659c654e021caf9bba704b109e7b2b28b039a00949fe5", size = 1004737, upload-time = "2025-10-30T11:17:31.205Z" },
++    { url = "https://files.pythonhosted.org/packages/53/7f/f17e0dba0a99cee29e6cee6d4d52340ef9cb1f8a06946d3a01eb7ec2fb01/nh3-0.3.2-cp38-abi3-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:f2f55c4d2d5a207e74eefe4d828067bbb01300e06e2a7436142f915c5928de07", size = 911745, upload-time = "2025-10-30T11:17:32.945Z" },
++    { url = "https://files.pythonhosted.org/packages/42/0f/c76bf3dba22c73c38e9b1113b017cf163f7696f50e003404ec5ecdb1e8a6/nh3-0.3.2-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:7bb18403f02b655a1bbe4e3a4696c2ae1d6ae8f5991f7cacb684b1ae27e6c9f7", size = 797184, upload-time = "2025-10-30T11:17:34.226Z" },
++    { url = "https://files.pythonhosted.org/packages/08/a1/73d8250f888fb0ddf1b119b139c382f8903d8bb0c5bd1f64afc7e38dad1d/nh3-0.3.2-cp38-abi3-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:6d66f41672eb4060cf87c037f760bdbc6847852ca9ef8e9c5a5da18f090abf87", size = 838556, upload-time = "2025-10-30T11:17:35.875Z" },
++    { url = "https://files.pythonhosted.org/packages/d1/09/deb57f1fb656a7a5192497f4a287b0ade5a2ff6b5d5de4736d13ef6d2c1f/nh3-0.3.2-cp38-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:f97f8b25cb2681d25e2338148159447e4d689aafdccfcf19e61ff7db3905768a", size = 1006695, upload-time = "2025-10-30T11:17:37.071Z" },
++    { url = "https://files.pythonhosted.org/packages/b6/61/8f4d41c4ccdac30e4b1a4fa7be4b0f9914d8314a5058472f84c8e101a418/nh3-0.3.2-cp38-abi3-musllinux_1_2_armv7l.whl", hash = "sha256:2ab70e8c6c7d2ce953d2a58102eefa90c2d0a5ed7aa40c7e29a487bc5e613131", size = 1075471, upload-time = "2025-10-30T11:17:38.225Z" },
++    { url = "https://files.pythonhosted.org/packages/b0/c6/966aec0cb4705e69f6c3580422c239205d5d4d0e50fac380b21e87b6cf1b/nh3-0.3.2-cp38-abi3-musllinux_1_2_i686.whl", hash = "sha256:1710f3901cd6440ca92494ba2eb6dc260f829fa8d9196b659fa10de825610ce0", size = 1002439, upload-time = "2025-10-30T11:17:39.553Z" },
++    { url = "https://files.pythonhosted.org/packages/e2/c8/97a2d5f7a314cce2c5c49f30c6f161b7f3617960ade4bfc2fd1ee092cb20/nh3-0.3.2-cp38-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:91e9b001101fb4500a2aafe3e7c92928d85242d38bf5ac0aba0b7480da0a4cd6", size = 987439, upload-time = "2025-10-30T11:17:40.81Z" },
++    { url = "https://files.pythonhosted.org/packages/0d/95/2d6fc6461687d7a171f087995247dec33e8749a562bfadd85fb5dbf37a11/nh3-0.3.2-cp38-abi3-win32.whl", hash = "sha256:169db03df90da63286e0560ea0efa9b6f3b59844a9735514a1d47e6bb2c8c61b", size = 589826, upload-time = "2025-10-30T11:17:42.239Z" },
++    { url = "https://files.pythonhosted.org/packages/64/9a/1a1c154f10a575d20dd634e5697805e589bbdb7673a0ad00e8da90044ba7/nh3-0.3.2-cp38-abi3-win_amd64.whl", hash = "sha256:562da3dca7a17f9077593214a9781a94b8d76de4f158f8c895e62f09573945fe", size = 596406, upload-time = "2025-10-30T11:17:43.773Z" },
++    { url = "https://files.pythonhosted.org/packages/9e/7e/a96255f63b7aef032cbee8fc4d6e37def72e3aaedc1f72759235e8f13cb1/nh3-0.3.2-cp38-abi3-win_arm64.whl", hash = "sha256:cf5964d54edd405e68583114a7cba929468bcd7db5e676ae38ee954de1cfc104", size = 584162, upload-time = "2025-10-30T11:17:44.96Z" },
++]
++
+ [[package]]
+ name = "nodeenv"
+ version = "1.9.1"
+@@ -1697,6 +1720,29 @@ wheels = [
+     { url = "https://files.pythonhosted.org/packages/27/6b/a8fb94760ef8da5ec283e488eb43235eac3ae7514385a51b6accf881e671/opentelemetry_semantic_conventions-0.53b1-py3-none-any.whl", hash = "sha256:21df3ed13f035f8f3ea42d07cbebae37020367a53b47f1ebee3b10a381a00208", size = 188443, upload-time = "2025-04-15T16:02:10.095Z" },
+ ]
+ 
++[[package]]
++name = "orjson"
++version = "3.11.7"
++source = { registry = "https://pypi.org/simple" }
++sdist = { url = "https://files.pythonhosted.org/packages/53/45/b268004f745ede84e5798b48ee12b05129d19235d0e15267aa57dcdb400b/orjson-3.11.7.tar.gz", hash = "sha256:9b1a67243945819ce55d24a30b59d6a168e86220452d2c96f4d1f093e71c0c49", size = 6144992, upload-time = "2026-02-02T15:38:49.29Z" }
++wheels = [
++    { url = "https://files.pythonhosted.org/packages/80/bf/76f4f1665f6983385938f0e2a5d7efa12a58171b8456c252f3bae8a4cf75/orjson-3.11.7-cp312-cp312-macosx_10_15_x86_64.macosx_11_0_arm64.macosx_10_15_universal2.whl", hash = "sha256:bd03ea7606833655048dab1a00734a2875e3e86c276e1d772b2a02556f0d895f", size = 228545, upload-time = "2026-02-02T15:37:46.376Z" },
++    { url = "https://files.pythonhosted.org/packages/79/53/6c72c002cb13b5a978a068add59b25a8bdf2800ac1c9c8ecdb26d6d97064/orjson-3.11.7-cp312-cp312-macosx_15_0_arm64.whl", hash = "sha256:89e440ebc74ce8ab5c7bc4ce6757b4a6b1041becb127df818f6997b5c71aa60b", size = 125224, upload-time = "2026-02-02T15:37:47.697Z" },
++    { url = "https://files.pythonhosted.org/packages/2c/83/10e48852865e5dd151bdfe652c06f7da484578ed02c5fca938e3632cb0b8/orjson-3.11.7-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:5ede977b5fe5ac91b1dffc0a517ca4542d2ec8a6a4ff7b2652d94f640796342a", size = 128154, upload-time = "2026-02-02T15:37:48.954Z" },
++    { url = "https://files.pythonhosted.org/packages/6e/52/a66e22a2b9abaa374b4a081d410edab6d1e30024707b87eab7c734afe28d/orjson-3.11.7-cp312-cp312-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:b7b1dae39230a393df353827c855a5f176271c23434cfd2db74e0e424e693e10", size = 123548, upload-time = "2026-02-02T15:37:50.187Z" },
++    { url = "https://files.pythonhosted.org/packages/de/38/605d371417021359f4910c496f764c48ceb8997605f8c25bf1dfe58c0ebe/orjson-3.11.7-cp312-cp312-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:ed46f17096e28fb28d2975834836a639af7278aa87c84f68ab08fbe5b8bd75fa", size = 129000, upload-time = "2026-02-02T15:37:51.426Z" },
++    { url = "https://files.pythonhosted.org/packages/44/98/af32e842b0ffd2335c89714d48ca4e3917b42f5d6ee5537832e069a4b3ac/orjson-3.11.7-cp312-cp312-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:3726be79e36e526e3d9c1aceaadbfb4a04ee80a72ab47b3f3c17fefb9812e7b8", size = 141686, upload-time = "2026-02-02T15:37:52.607Z" },
++    { url = "https://files.pythonhosted.org/packages/96/0b/fc793858dfa54be6feee940c1463370ece34b3c39c1ca0aa3845f5ba9892/orjson-3.11.7-cp312-cp312-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:0724e265bc548af1dedebd9cb3d24b4e1c1e685a343be43e87ba922a5c5fff2f", size = 130812, upload-time = "2026-02-02T15:37:53.944Z" },
++    { url = "https://files.pythonhosted.org/packages/dc/91/98a52415059db3f374757d0b7f0f16e3b5cd5976c90d1c2b56acaea039e6/orjson-3.11.7-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e7745312efa9e11c17fbd3cb3097262d079da26930ae9ae7ba28fb738367cbad", size = 133440, upload-time = "2026-02-02T15:37:55.615Z" },
++    { url = "https://files.pythonhosted.org/packages/dc/b6/cb540117bda61791f46381f8c26c8f93e802892830a6055748d3bb1925ab/orjson-3.11.7-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:f904c24bdeabd4298f7a977ef14ca2a022ca921ed670b92ecd16ab6f3d01f867", size = 138386, upload-time = "2026-02-02T15:37:56.814Z" },
++    { url = "https://files.pythonhosted.org/packages/63/1a/50a3201c334a7f17c231eee5f841342190723794e3b06293f26e7cf87d31/orjson-3.11.7-cp312-cp312-musllinux_1_2_armv7l.whl", hash = "sha256:b9fc4d0f81f394689e0814617aadc4f2ea0e8025f38c226cbf22d3b5ddbf025d", size = 408853, upload-time = "2026-02-02T15:37:58.291Z" },
++    { url = "https://files.pythonhosted.org/packages/87/cd/8de1c67d0be44fdc22701e5989c0d015a2adf391498ad42c4dc589cd3013/orjson-3.11.7-cp312-cp312-musllinux_1_2_i686.whl", hash = "sha256:849e38203e5be40b776ed2718e587faf204d184fc9a008ae441f9442320c0cab", size = 144130, upload-time = "2026-02-02T15:38:00.163Z" },
++    { url = "https://files.pythonhosted.org/packages/0f/fe/d605d700c35dd55f51710d159fc54516a280923cd1b7e47508982fbb387d/orjson-3.11.7-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:4682d1db3bcebd2b64757e0ddf9e87ae5f00d29d16c5cdf3a62f561d08cc3dd2", size = 134818, upload-time = "2026-02-02T15:38:01.507Z" },
++    { url = "https://files.pythonhosted.org/packages/e4/e4/15ecc67edb3ddb3e2f46ae04475f2d294e8b60c1825fbe28a428b93b3fbd/orjson-3.11.7-cp312-cp312-win32.whl", hash = "sha256:f4f7c956b5215d949a1f65334cf9d7612dde38f20a95f2315deef167def91a6f", size = 127923, upload-time = "2026-02-02T15:38:02.75Z" },
++    { url = "https://files.pythonhosted.org/packages/34/70/2e0855361f76198a3965273048c8e50a9695d88cd75811a5b46444895845/orjson-3.11.7-cp312-cp312-win_amd64.whl", hash = "sha256:bf742e149121dc5648ba0a08ea0871e87b660467ef168a3a5e53bc1fbd64bb74", size = 125007, upload-time = "2026-02-02T15:38:04.032Z" },
++    { url = "https://files.pythonhosted.org/packages/68/40/c2051bd19fc467610fed469dc29e43ac65891571138f476834ca192bc290/orjson-3.11.7-cp312-cp312-win_arm64.whl", hash = "sha256:26c3b9132f783b7d7903bf1efb095fed8d4a3a85ec0d334ee8beff3d7a4749d5", size = 126089, upload-time = "2026-02-02T15:38:05.297Z" },
++]
++
+ [[package]]
+ name = "packaging"
+ version = "25.0"
+@@ -2529,7 +2575,7 @@ wheels = [
+ 
+ [[package]]
+ name = "saleor"
+-version = "3.22.0"
++version = "3.23.0"
+ source = { virtual = "." }
+ dependencies = [
+     { name = "adyen", marker = "platform_python_implementation != 'PyPy'" },
+@@ -2566,15 +2612,19 @@ dependencies = [
+     { name = "graphql-core", marker = "platform_python_implementation != 'PyPy'" },
+     { name = "graphql-relay", marker = "platform_python_implementation != 'PyPy'" },
+     { name = "html-to-draftjs", marker = "platform_python_implementation != 'PyPy'" },
++    { name = "idna", marker = "platform_python_implementation != 'PyPy'" },
++    { name = "kombu", extra = ["sqs"], marker = "platform_python_implementation != 'PyPy'" },
+     { name = "lxml", marker = "platform_python_implementation != 'PyPy'" },
+     { name = "markdown", marker = "platform_python_implementation != 'PyPy'" },
+     { name = "measurement", marker = "platform_python_implementation != 'PyPy'" },
+     { name = "micawber", marker = "platform_python_implementation != 'PyPy'" },
++    { name = "nh3", marker = "platform_python_implementation != 'PyPy'" },
+     { name = "oauthlib", marker = "platform_python_implementation != 'PyPy'" },
+     { name = "opentelemetry-api", marker = "platform_python_implementation != 'PyPy'" },
+     { name = "opentelemetry-distro", extra = ["otlp"], marker = "platform_python_implementation != 'PyPy'" },
+     { name = "opentelemetry-sdk", marker = "platform_python_implementation != 'PyPy'" },
+     { name = "opentelemetry-semantic-conventions", marker = "platform_python_implementation != 'PyPy'" },
++    { name = "orjson", marker = "platform_python_implementation != 'PyPy'" },
+     { name = "petl", marker = "platform_python_implementation != 'PyPy'" },
+     { name = "phonenumberslite", marker = "platform_python_implementation != 'PyPy'" },
+     { name = "pillow", marker = "platform_python_implementation != 'PyPy'" },
+@@ -2679,15 +2729,19 @@ requires-dist = [
+     { name = "graphql-core", specifier = ">=2.3.2,<3" },
+     { name = "graphql-relay", specifier = ">=2.0.1,<3" },
+     { name = "html-to-draftjs", specifier = ">=1.0.1,<2" },
++    { name = "idna", specifier = ">=3.10" },
++    { name = "kombu", extras = ["sqs"], specifier = ">=4.6.11,<6.0.0" },
+     { name = "lxml", specifier = ">=4.9.3,<5" },
+     { name = "markdown", specifier = ">=3.1.1,<4" },
+     { name = "measurement", specifier = ">=3.2.2,<4" },
+     { name = "micawber", specifier = ">=0.5.5,<0.6" },
++    { name = "nh3", specifier = ">=0.2.20" },
+     { name = "oauthlib", specifier = "~=3.1" },
+     { name = "opentelemetry-api", specifier = ">=1.32.1,<2" },
+     { name = "opentelemetry-distro", extras = ["otlp"], specifier = ">=0.53b1,<0.54" },
+     { name = "opentelemetry-sdk", specifier = ">=1.32.1,<2" },
+     { name = "opentelemetry-semantic-conventions", specifier = ">=0.53b1,<0.54" },
++    { name = "orjson", specifier = ">=3.11.4" },
+     { name = "petl", specifier = "==1.7.17" },
+     { name = "phonenumberslite", specifier = ">=9.0.7,<10" },
+     { name = "pillow", specifier = ">=12.1.1,<13" },
