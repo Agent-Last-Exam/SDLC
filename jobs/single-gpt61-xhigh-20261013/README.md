@@ -18,4 +18,8 @@
 
 ## Coding 产物
 
-[coding/README.md](coding/README.md) 提供 Core、Dashboard 的原样代码补丁、固定基线和重建校验，供后续代码评测。官方评分尚未运行。
+[coding/README.md](coding/README.md) 提供 Core、Dashboard 的原样代码补丁、固定基线和重建校验，供后续代码评测。随后已执行独立代码评测，结果见下方。
+
+## 后续代码评测
+
+[coding-evaluation/README.md](coding-evaluation/README.md)：本次候选 F2P 95/5182、P2P 15009/15012、reward=0；含参考 Oracle 对照及逐项 CSV。原 rollout 的 verifier 关闭与原始失败记录保持不变。

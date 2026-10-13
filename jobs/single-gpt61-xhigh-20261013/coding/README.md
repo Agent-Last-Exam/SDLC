@@ -20,3 +20,5 @@
 题包 `tasks/saleor-3.23-pruned` 的 `task.toml` 使用独立 verifier 环境；`tests/prepare.py post` 读取 `/logs/artifacts/saleor.model.patch` 与 `/logs/artifacts/saleor-dashboard.model.patch`。本目录使用同样命名，基线 commit 与该题包的 patch manifest 一致。准备评分时将两份文件放入 verifier 的 `/logs/artifacts/`，沿用题包冻结测试层和原环境；pre 测原始基线，post 测应用候选补丁后的代码。
 
 不能直接对空仓库应用，也不能把 Saleor 的补丁应用到本 SDLC 仓库。若用另一评测 profile，应先确认同样的 baseline commit/tree 和补丁输入约定。本次只准备代码输入，没有启动官方测试或模型。原完整题包的评分 JSON 格式及浏览器 F2P 校准问题仍需按既有报告处理；补丁可重建不表示题包正式校准或代码测试通过。
+
+后续独立评测已完成，见 [代码评测报告](../coding-evaluation/report.md)。以上补丁提取和重建验证记录仍描述当时的准备步骤。
