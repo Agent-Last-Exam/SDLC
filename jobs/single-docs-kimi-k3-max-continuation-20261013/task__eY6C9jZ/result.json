@@ -1,0 +1,131 @@
+{
+    "id": "da258124-e4d8-49fd-85b8-66a89834c850",
+    "task_name": "sdlcbench/saleor-3.23-single-workflow",
+    "trial_name": "task__eY6C9jZ",
+    "trial_uri": "file:///home/iriszeng18_gmail_com/software-last-exam/jobs/single-docs-kimi-k3-max-continuation-20261013/task__eY6C9jZ",
+    "task_id": {
+        "path": "/home/iriszeng18_gmail_com/software-last-exam/.prepared/single-docs-kimi-k3-max-20261013/task"
+    },
+    "source": null,
+    "task_checksum": "16fa383b7dc9c66a876cee7085d4fce03993af6d9339de416ddb69869e5cbd66",
+    "config": {
+        "task": {
+            "path": "/home/iriszeng18_gmail_com/software-last-exam/.prepared/single-docs-kimi-k3-max-20261013/task",
+            "git_url": null,
+            "git_commit_id": null,
+            "name": null,
+            "ref": null,
+            "overwrite": false,
+            "download_dir": null,
+            "source": null
+        },
+        "trial_name": "task__eY6C9jZ",
+        "trials_dir": "/home/iriszeng18_gmail_com/software-last-exam/jobs/single-docs-kimi-k3-max-continuation-20261013",
+        "install_only": false,
+        "timeout_multiplier": 1.0,
+        "agent_timeout_multiplier": null,
+        "verifier_timeout_multiplier": null,
+        "agent_setup_timeout_multiplier": null,
+        "environment_build_timeout_multiplier": null,
+        "agent": {
+            "name": null,
+            "import_path": "runtime.document_recovery:DocumentContinuation",
+            "model_name": "moonshotai/kimi-k3",
+            "n_concurrent": null,
+            "concurrency_group": null,
+            "skills": [],
+            "override_timeout_sec": 2076.1892931461334,
+            "override_setup_timeout_sec": 600.0,
+            "max_timeout_sec": null,
+            "resume_trajectory": false,
+            "load_trajectory": null,
+            "extra_allowed_hosts": [],
+            "kwargs": {
+                "prepared_path": "/home/iriszeng18_gmail_com/software-last-exam/.prepared/single-docs-kimi-k3-max-20261013",
+                "smoke": false,
+                "reasoning_effort": "max",
+                "max_runtime_sec": 2016.1892948150635,
+                "request_profile": true,
+                "smoke_scenario": "repair",
+                "role_probe": false,
+                "stop_after_stage": "sprint1/test-design",
+                "missing_output_policy": "fail",
+                "client_version": "2.1.280",
+                "recovery_source": "/home/iriszeng18_gmail_com/software-last-exam/jobs/single-docs-kimi-k3-max-20261013/task__HHz96Rh"
+            },
+            "mcp_servers": []
+        },
+        "user_agent": null,
+        "environment": {
+            "type": "docker",
+            "import_path": null,
+            "force_build": false,
+            "delete": true,
+            "stream": false,
+            "cpu_enforcement_policy": "auto",
+            "memory_enforcement_policy": "auto",
+            "override_cpus": null,
+            "override_memory_mb": null,
+            "override_storage_mb": null,
+            "override_gpus": null,
+            "override_tpu": null,
+            "mounts": null,
+            "extra_docker_compose": [],
+            "kwargs": {},
+            "extra_allowed_hosts": []
+        },
+        "verifier": {
+            "override_timeout_sec": null,
+            "max_timeout_sec": null,
+            "disable": true
+        },
+        "artifacts": [],
+        "extra_instruction_paths": [],
+        "extra_instructions": [],
+        "job_id": "c1cd7a57-7407-4845-a1fd-b56f7450a744",
+        "source_trial": null
+    },
+    "agent_info": {
+        "name": "sdlc-workflow-claude-code",
+        "version": "2.1.280",
+        "model_info": {
+            "name": "kimi-k3",
+            "provider": "moonshotai"
+        }
+    },
+    "agent_result": {
+        "n_input_tokens": 7219273,
+        "n_cache_tokens": 3490560,
+        "n_output_tokens": 46672,
+        "cost_usd": 47.03166600000001,
+        "model_usage": {
+            "moonshotai/kimi-k3": {
+                "n_input_tokens": 7219273,
+                "n_cache_tokens": 3490560,
+                "n_output_tokens": 46672,
+                "cost_usd": null
+            }
+        },
+        "rollout_details": null,
+        "metadata": null
+    },
+    "verifier_result": null,
+    "verifier_environment_mode": "separate",
+    "exception_info": null,
+    "started_at": "2026-10-13T18:14:53.935401Z",
+    "finished_at": "2026-10-13T18:17:52.047746Z",
+    "environment_setup": {
+        "started_at": "2026-10-13T18:14:53.965722Z",
+        "finished_at": "2026-10-13T18:14:56.584380Z"
+    },
+    "agent_setup": {
+        "started_at": "2026-10-13T18:14:56.584444Z",
+        "finished_at": "2026-10-13T18:15:24.642879Z"
+    },
+    "agent_execution": {
+        "started_at": "2026-10-13T18:15:24.643039Z",
+        "finished_at": "2026-10-13T18:17:36.924187Z"
+    },
+    "verifier": null,
+    "step_results": null
+}

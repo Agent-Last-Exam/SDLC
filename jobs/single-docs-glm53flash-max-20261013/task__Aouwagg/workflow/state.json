@@ -1,0 +1,37 @@
+{
+  "mode": "single",
+  "status": "timed_out",
+  "cursor": 1,
+  "stages": [
+    {
+      "id": "sprint1/prd",
+      "role": "pm",
+      "status": "accepted",
+      "execution_started": true,
+      "session_id": "66d2827e-46f7-429d-86aa-d790cab0b780",
+      "prd_input_sha256": null,
+      "input_sha256": {},
+      "missing_inputs": [],
+      "outputs": {
+        "prd.md": "43374a7aceea98478902ef12101d8400fa5be9219b1097977d2061e7c62db114"
+      },
+      "missing_outputs": [],
+      "delivery_complete": true,
+      "cost_usd": 48.502294
+    },
+    {
+      "id": "sprint1/tech-design",
+      "role": "architect",
+      "status": "failed",
+      "execution_started": true
+    }
+  ],
+  "model_called": true,
+  "synthetic": false,
+  "missing_output_policy": "fail",
+  "delivery_complete": true,
+  "max_cost_usd": 50.0,
+  "cost_usd": 48.502294,
+  "principal_session": "66d2827e-46f7-429d-86aa-d790cab0b780",
+  "error": "Total model execution wall time exhausted"
+}

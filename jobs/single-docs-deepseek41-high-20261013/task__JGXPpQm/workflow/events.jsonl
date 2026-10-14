@@ -1,0 +1,11 @@
+{"time": 1791912286.7484584, "event": "run_started"}
+{"time": 1791912286.7491584, "event": "stage_started", "stage": "sprint1/prd", "resume_session": null, "role_sha256": "08ca77a00383eed67358affa92954023f39ee1d0e5f3ee76885c377f1f4035cd", "prd_input_sha256": null, "missing_inputs": []}
+{"time": 1791912309.7109184, "event": "stage_execution_started", "stage": "sprint1/prd"}
+{"time": 1791912655.0988226, "event": "stage_accepted", "stage": "sprint1/prd", "hashes": {"prd.md": "87d5c1cddc352536ab90ff0089f474c494831ad124cea623d213c6252c15563e"}, "missing_outputs": [], "cost_usd": 3.175392}
+{"time": 1791912655.3829446, "event": "stage_started", "stage": "sprint1/tech-design", "resume_session": "413212fb-3773-477b-8287-aeabb5bd0c7b", "role_sha256": "1bbeac97331ac12182de3e0d4cf69dc05f8e097ebb0478580755fa2b24c5544a", "prd_input_sha256": "87d5c1cddc352536ab90ff0089f474c494831ad124cea623d213c6252c15563e", "missing_inputs": []}
+{"time": 1791912657.8119774, "event": "stage_execution_started", "stage": "sprint1/tech-design"}
+{"time": 1791913173.5138147, "event": "stage_accepted", "stage": "sprint1/tech-design", "hashes": {"backend-design.md": "6707122f4475b0500602be81cc6acfa439672bd6713190ad28fb941b9aae84d5", "frontend-design.md": "ef08519b0c219a256f9c9dd7a7324386c1b9822f7da4da488f478d47db8f827e", "interface-contract.md": "ca632b3fd68df208090c7c015fbcf82d3655f090b48139a7803fccfd936431fb", "target-schema.graphql": "65ccb1157fcd8ddcf4c526793cd701a8b215199b51caa2bad7d3cdb0277fb1b4"}, "missing_outputs": [], "cost_usd": 13.238745}
+{"time": 1791913173.7847536, "event": "stage_started", "stage": "sprint1/test-design", "resume_session": "413212fb-3773-477b-8287-aeabb5bd0c7b", "role_sha256": "a58b72ce82ae5b916e817eebdb8d55770e1723e6488fb2d4e601dee7a9fb0f65", "prd_input_sha256": "87d5c1cddc352536ab90ff0089f474c494831ad124cea623d213c6252c15563e", "missing_inputs": []}
+{"time": 1791913176.228225, "event": "stage_execution_started", "stage": "sprint1/test-design"}
+{"time": 1791913383.5820744, "event": "stage_accepted", "stage": "sprint1/test-design", "hashes": {"test-cases.v1.csv": "c4582b0d0ed3aaf2ceeef1e67bb4e231d0f6753a21de2e2af267662acf2dccac"}, "missing_outputs": [], "cost_usd": 25.346143}
+{"time": 1791913383.5829136, "event": "run_stopped_at_boundary", "stage": "sprint1/test-design"}

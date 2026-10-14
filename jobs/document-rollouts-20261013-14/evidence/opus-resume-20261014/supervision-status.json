@@ -1,0 +1,35 @@
+{
+  "status": "finished",
+  "results": [
+    {
+      "job_name": "single-docs-opus55-xhigh-resume-20261014",
+      "model": "anthropic/claude-opus-5.5",
+      "effort": "xhigh",
+      "exit_code": 0,
+      "elapsed_including_setup_sec": 5546.23,
+      "status": "failed",
+      "stages": [
+        {
+          "id": "sprint1/prd",
+          "role": "pm",
+          "status": "failed",
+          "execution_started": true
+        }
+      ],
+      "audited_requests": 132,
+      "request_profile_verified": true,
+      "usage": {
+        "requests": 132,
+        "requests_with_usage": 132,
+        "input_tokens_including_cache": 10498838,
+        "output_tokens": 519904,
+        "cache_read_input_tokens": 9999663,
+        "cache_creation_input_tokens": 252723,
+        "gateway_reported_cost_usd": 14.2187716,
+        "requests_with_gateway_cost": 131,
+        "gateway_cost_complete": false
+      }
+    }
+  ],
+  "active": null
+}

@@ -1,0 +1,108 @@
+[
+  {
+    "principal_session": "fb166191-9969-4060-9b85-e10a648499c2",
+    "recovery_source": null,
+    "test_case_count": 35,
+    "model": "z-ai/glm-5.3-flash",
+    "effort": "max",
+    "label": "glm53flash-max-retry",
+    "status": "stopped_at_boundary",
+    "error": null,
+    "accepted_stages": 3,
+    "runtime_from_first_stage_execution_sec": 5225.3,
+    "max_runtime_sec": null,
+    "request_profile_verified": true,
+    "usage": {
+      "requests": 525,
+      "requests_with_usage": 525,
+      "input_tokens_including_cache": 43388739,
+      "output_tokens": 136176,
+      "cache_read_input_tokens": 42919168,
+      "cache_creation_input_tokens": 0,
+      "gateway_reported_cost_usd": null,
+      "requests_with_gateway_cost": 0,
+      "gateway_cost_complete": false
+    },
+    "outputs": [
+      {
+        "stage": "sprint1/prd",
+        "file": "prd.md",
+        "status": "accepted",
+        "sha256": "96dcf52d5a834c7dc0c14d795fc57508931c7765a01249d3748d07ddbc84a120"
+      },
+      {
+        "stage": "sprint1/tech-design",
+        "file": "frontend-design.md",
+        "status": "accepted",
+        "sha256": "1403ed237a63c833a8f11886382c7ef0e0447b6b499e76aa6c92d8f85a34ba44"
+      },
+      {
+        "stage": "sprint1/tech-design",
+        "file": "backend-design.md",
+        "status": "accepted",
+        "sha256": "f38f21eec6a0a90faacf624bf660acd33212c167f5a664c2e54bc48b4a448237"
+      },
+      {
+        "stage": "sprint1/tech-design",
+        "file": "interface-contract.md",
+        "status": "accepted",
+        "sha256": "56eac2246b472f902005ec7348a0272f51f2f14dfc14e756b5e7c4a4167ae75b"
+      },
+      {
+        "stage": "sprint1/tech-design",
+        "file": "target-schema.graphql",
+        "status": "accepted",
+        "sha256": "4fa23faa263234ed2283f1d6daea4c20c22d4f3df39ffd850ecad1e4ecbfdef8"
+      },
+      {
+        "stage": "sprint1/test-design",
+        "file": "test-cases.v1.csv",
+        "status": "accepted",
+        "sha256": "19d63c9ff93c71bac9fd4be3198890077479082e63e5fe3c55964f9983168bba"
+      }
+    ],
+    "native": [
+      {
+        "stage": "sprint1/prd",
+        "model": "z-ai/glm-5.3-flash",
+        "version": "2.1.280",
+        "subagent_tool_available": false
+      },
+      {
+        "stage": "sprint1/tech-design",
+        "model": "z-ai/glm-5.3-flash",
+        "version": "2.1.280",
+        "subagent_tool_available": false
+      },
+      {
+        "stage": "sprint1/test-design",
+        "model": "z-ai/glm-5.3-flash",
+        "version": "2.1.280",
+        "subagent_tool_available": false
+      }
+    ],
+    "client_results": [
+      {
+        "stage": "sprint1/prd",
+        "stop_reason": "end_turn",
+        "is_error": false,
+        "terminal_reason": "completed",
+        "subagents_spawned": 0
+      },
+      {
+        "stage": "sprint1/tech-design",
+        "stop_reason": "end_turn",
+        "is_error": false,
+        "terminal_reason": "completed",
+        "subagents_spawned": 0
+      },
+      {
+        "stage": "sprint1/test-design",
+        "stop_reason": "end_turn",
+        "is_error": false,
+        "terminal_reason": "completed",
+        "subagents_spawned": 0
+      }
+    ]
+  }
+]

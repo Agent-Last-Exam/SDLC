@@ -1,0 +1,42 @@
+[
+  {
+    "model": "anthropic/claude-opus-5.5",
+    "effort": "xhigh",
+    "label": "opus55-xhigh",
+    "status": "failed",
+    "error": "Missing regular output: /workspace/artifacts/sprint1/prd/prd.md",
+    "accepted_stages": 0,
+    "runtime_from_first_stage_execution_sec": 153.12,
+    "max_runtime_sec": 3600,
+    "request_profile_verified": true,
+    "usage": {
+      "requests": 15,
+      "requests_with_usage": 15,
+      "input_tokens_including_cache": 809174,
+      "output_tokens": 9662,
+      "cache_read_input_tokens": 726482,
+      "cache_creation_input_tokens": 82662,
+      "gateway_reported_cost_usd": 0.7198124,
+      "requests_with_gateway_cost": 15,
+      "gateway_cost_complete": true
+    },
+    "outputs": [],
+    "native": [
+      {
+        "stage": "sprint1/prd",
+        "model": "anthropic/claude-opus-5.5",
+        "version": "2.1.280",
+        "subagent_tool_available": false
+      }
+    ],
+    "client_results": [
+      {
+        "stage": "sprint1/prd",
+        "stop_reason": "error",
+        "is_error": false,
+        "terminal_reason": "completed",
+        "subagents_spawned": 0
+      }
+    ]
+  }
+]

@@ -1,0 +1,105 @@
+[
+  {
+    "model": "deepseek/deepseek-v4.1-flash",
+    "effort": "high",
+    "label": "deepseek41-high",
+    "status": "stopped_at_boundary",
+    "error": null,
+    "accepted_stages": 3,
+    "runtime_from_first_stage_execution_sec": 1073.87,
+    "max_runtime_sec": 3600,
+    "request_profile_verified": true,
+    "usage": {
+      "requests": 149,
+      "requests_with_usage": 149,
+      "input_tokens_including_cache": 13160105,
+      "output_tokens": 133857,
+      "cache_read_input_tokens": 12675456,
+      "cache_creation_input_tokens": 0,
+      "gateway_reported_cost_usd": null,
+      "requests_with_gateway_cost": 0,
+      "gateway_cost_complete": false
+    },
+    "outputs": [
+      {
+        "stage": "sprint1/prd",
+        "file": "prd.md",
+        "status": "accepted",
+        "sha256": "87d5c1cddc352536ab90ff0089f474c494831ad124cea623d213c6252c15563e"
+      },
+      {
+        "stage": "sprint1/tech-design",
+        "file": "frontend-design.md",
+        "status": "accepted",
+        "sha256": "ef08519b0c219a256f9c9dd7a7324386c1b9822f7da4da488f478d47db8f827e"
+      },
+      {
+        "stage": "sprint1/tech-design",
+        "file": "backend-design.md",
+        "status": "accepted",
+        "sha256": "6707122f4475b0500602be81cc6acfa439672bd6713190ad28fb941b9aae84d5"
+      },
+      {
+        "stage": "sprint1/tech-design",
+        "file": "interface-contract.md",
+        "status": "accepted",
+        "sha256": "ca632b3fd68df208090c7c015fbcf82d3655f090b48139a7803fccfd936431fb"
+      },
+      {
+        "stage": "sprint1/tech-design",
+        "file": "target-schema.graphql",
+        "status": "accepted",
+        "sha256": "65ccb1157fcd8ddcf4c526793cd701a8b215199b51caa2bad7d3cdb0277fb1b4"
+      },
+      {
+        "stage": "sprint1/test-design",
+        "file": "test-cases.v1.csv",
+        "status": "accepted",
+        "sha256": "c4582b0d0ed3aaf2ceeef1e67bb4e231d0f6753a21de2e2af267662acf2dccac"
+      }
+    ],
+    "native": [
+      {
+        "stage": "sprint1/prd",
+        "model": "deepseek/deepseek-v4.1-flash",
+        "version": "2.1.280",
+        "subagent_tool_available": false
+      },
+      {
+        "stage": "sprint1/tech-design",
+        "model": "deepseek/deepseek-v4.1-flash",
+        "version": "2.1.280",
+        "subagent_tool_available": false
+      },
+      {
+        "stage": "sprint1/test-design",
+        "model": "deepseek/deepseek-v4.1-flash",
+        "version": "2.1.280",
+        "subagent_tool_available": false
+      }
+    ],
+    "client_results": [
+      {
+        "stage": "sprint1/prd",
+        "stop_reason": "end_turn",
+        "is_error": false,
+        "terminal_reason": "completed",
+        "subagents_spawned": 0
+      },
+      {
+        "stage": "sprint1/tech-design",
+        "stop_reason": "end_turn",
+        "is_error": false,
+        "terminal_reason": "completed",
+        "subagents_spawned": 0
+      },
+      {
+        "stage": "sprint1/test-design",
+        "stop_reason": "end_turn",
+        "is_error": false,
+        "terminal_reason": "completed",
+        "subagents_spawned": 0
+      }
+    ]
+  }
+]

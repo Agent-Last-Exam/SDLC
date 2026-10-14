@@ -1,0 +1,33 @@
+{
+    "id": "c1cd7a57-7407-4845-a1fd-b56f7450a744",
+    "started_at": "2026-10-13T18:14:53.902987",
+    "updated_at": "2026-10-13T18:17:52.052308",
+    "finished_at": "2026-10-13T18:17:52.052308",
+    "n_total_trials": 1,
+    "stats": {
+        "n_completed_trials": 1,
+        "n_errored_trials": 0,
+        "n_running_trials": 0,
+        "n_pending_trials": 0,
+        "n_cancelled_trials": 0,
+        "n_retries": 0,
+        "evals": {
+            "sdlc-workflow-claude-code__kimi-k3__adhoc": {
+                "n_trials": 0,
+                "n_errors": 0,
+                "metrics": [
+                    {
+                        "mean": 0.0
+                    }
+                ],
+                "pass_at_k": {},
+                "reward_stats": {},
+                "exception_stats": {}
+            }
+        },
+        "n_input_tokens": 7219273,
+        "n_cache_tokens": 3490560,
+        "n_output_tokens": 46672,
+        "cost_usd": 47.03166600000001
+    }
+}

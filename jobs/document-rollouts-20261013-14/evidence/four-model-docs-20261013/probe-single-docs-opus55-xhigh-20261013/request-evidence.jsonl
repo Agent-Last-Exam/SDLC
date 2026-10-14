@@ -1,0 +1,4 @@
+{"kind": "request", "id": "67f4666b014d4ca28d6ca7423c8fa331", "model": "anthropic/claude-opus-5.5", "effort": "xhigh", "thinking": {"type": "adaptive"}, "cache_breakpoints": 3, "stream": true, "messages": 2, "tool_results": 0, "time": "2026-10-13T17:07:51.049984+00:00"}
+{"kind": "response", "id": "67f4666b014d4ca28d6ca7423c8fa331", "http_status": 400, "time": "2026-10-13T17:07:51.569270+00:00"}
+{"kind": "request", "id": "a34ddd681ccf43848d6b0e16a536ea2f", "model": "anthropic/claude-opus-5.5", "effort": "xhigh", "thinking": {"type": "adaptive"}, "cache_breakpoints": 3, "stream": true, "messages": 2, "tool_results": 0, "time": "2026-10-13T17:07:51.590339+00:00"}
+{"kind": "response", "id": "a34ddd681ccf43848d6b0e16a536ea2f", "http_status": 400, "time": "2026-10-13T17:07:52.032042+00:00"}

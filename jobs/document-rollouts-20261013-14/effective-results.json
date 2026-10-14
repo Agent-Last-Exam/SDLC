@@ -1,0 +1,590 @@
+{
+  "initial-four-models": [
+    {
+      "recovery_source": null,
+      "test_case_count": null,
+      "model": "anthropic/claude-opus-5.5",
+      "effort": "xhigh",
+      "label": "opus55-xhigh",
+      "status": "failed",
+      "error": "Missing regular output: /workspace/artifacts/sprint1/prd/prd.md",
+      "accepted_stages": 0,
+      "runtime_from_first_stage_execution_sec": 153.12,
+      "max_runtime_sec": 3600,
+      "request_profile_verified": true,
+      "usage": {
+        "requests": 15,
+        "requests_with_usage": 15,
+        "input_tokens_including_cache": 809174,
+        "output_tokens": 9662,
+        "cache_read_input_tokens": 726482,
+        "cache_creation_input_tokens": 82662,
+        "gateway_reported_cost_usd": 0.7198124,
+        "requests_with_gateway_cost": 15,
+        "gateway_cost_complete": true
+      },
+      "outputs": [],
+      "native": [
+        {
+          "stage": "sprint1/prd",
+          "model": "anthropic/claude-opus-5.5",
+          "version": "2.1.280",
+          "subagent_tool_available": false
+        }
+      ],
+      "client_results": [
+        {
+          "stage": "sprint1/prd",
+          "stop_reason": "error",
+          "is_error": false,
+          "terminal_reason": "completed",
+          "subagents_spawned": 0
+        }
+      ]
+    },
+    {
+      "recovery_source": null,
+      "test_case_count": 80,
+      "model": "deepseek/deepseek-v4.1-flash",
+      "effort": "high",
+      "label": "deepseek41-high",
+      "status": "stopped_at_boundary",
+      "error": null,
+      "accepted_stages": 3,
+      "runtime_from_first_stage_execution_sec": 1073.87,
+      "max_runtime_sec": 3600,
+      "request_profile_verified": true,
+      "usage": {
+        "requests": 149,
+        "requests_with_usage": 149,
+        "input_tokens_including_cache": 13160105,
+        "output_tokens": 133857,
+        "cache_read_input_tokens": 12675456,
+        "cache_creation_input_tokens": 0,
+        "gateway_reported_cost_usd": null,
+        "requests_with_gateway_cost": 0,
+        "gateway_cost_complete": false
+      },
+      "outputs": [
+        {
+          "stage": "sprint1/prd",
+          "file": "prd.md",
+          "status": "accepted",
+          "sha256": "87d5c1cddc352536ab90ff0089f474c494831ad124cea623d213c6252c15563e"
+        },
+        {
+          "stage": "sprint1/tech-design",
+          "file": "frontend-design.md",
+          "status": "accepted",
+          "sha256": "ef08519b0c219a256f9c9dd7a7324386c1b9822f7da4da488f478d47db8f827e"
+        },
+        {
+          "stage": "sprint1/tech-design",
+          "file": "backend-design.md",
+          "status": "accepted",
+          "sha256": "6707122f4475b0500602be81cc6acfa439672bd6713190ad28fb941b9aae84d5"
+        },
+        {
+          "stage": "sprint1/tech-design",
+          "file": "interface-contract.md",
+          "status": "accepted",
+          "sha256": "ca632b3fd68df208090c7c015fbcf82d3655f090b48139a7803fccfd936431fb"
+        },
+        {
+          "stage": "sprint1/tech-design",
+          "file": "target-schema.graphql",
+          "status": "accepted",
+          "sha256": "65ccb1157fcd8ddcf4c526793cd701a8b215199b51caa2bad7d3cdb0277fb1b4"
+        },
+        {
+          "stage": "sprint1/test-design",
+          "file": "test-cases.v1.csv",
+          "status": "accepted",
+          "sha256": "c4582b0d0ed3aaf2ceeef1e67bb4e231d0f6753a21de2e2af267662acf2dccac"
+        }
+      ],
+      "native": [
+        {
+          "stage": "sprint1/prd",
+          "model": "deepseek/deepseek-v4.1-flash",
+          "version": "2.1.280",
+          "subagent_tool_available": false
+        },
+        {
+          "stage": "sprint1/tech-design",
+          "model": "deepseek/deepseek-v4.1-flash",
+          "version": "2.1.280",
+          "subagent_tool_available": false
+        },
+        {
+          "stage": "sprint1/test-design",
+          "model": "deepseek/deepseek-v4.1-flash",
+          "version": "2.1.280",
+          "subagent_tool_available": false
+        }
+      ],
+      "client_results": [
+        {
+          "stage": "sprint1/prd",
+          "stop_reason": "end_turn",
+          "is_error": false,
+          "terminal_reason": "completed",
+          "subagents_spawned": 0
+        },
+        {
+          "stage": "sprint1/tech-design",
+          "stop_reason": "end_turn",
+          "is_error": false,
+          "terminal_reason": "completed",
+          "subagents_spawned": 0
+        },
+        {
+          "stage": "sprint1/test-design",
+          "stop_reason": "end_turn",
+          "is_error": false,
+          "terminal_reason": "completed",
+          "subagents_spawned": 0
+        }
+      ]
+    },
+    {
+      "recovery_source": "/home/iriszeng18_gmail_com/software-last-exam/jobs/single-docs-kimi-k3-max-20261013/task__HHz96Rh",
+      "test_case_count": 41,
+      "model": "moonshotai/kimi-k3",
+      "effort": "max",
+      "label": "kimi-k3-max",
+      "status": "stopped_at_boundary",
+      "error": null,
+      "accepted_stages": 3,
+      "runtime_from_first_stage_execution_sec": 1931.81,
+      "max_runtime_sec": 3600,
+      "request_profile_verified": true,
+      "usage": {
+        "requests": 81,
+        "requests_with_usage": 81,
+        "input_tokens_including_cache": 3813387,
+        "output_tokens": 55131,
+        "cache_read_input_tokens": 3573504,
+        "cache_creation_input_tokens": 0,
+        "gateway_reported_cost_usd": 2.84351808,
+        "requests_with_gateway_cost": 81,
+        "gateway_cost_complete": true
+      },
+      "outputs": [
+        {
+          "stage": "sprint1/prd",
+          "file": "prd.md",
+          "status": "accepted",
+          "sha256": "3ac1073c623840ea611384759eb79026e4395551bf9f332858baef3fe0848bd2"
+        },
+        {
+          "stage": "sprint1/tech-design",
+          "file": "frontend-design.md",
+          "status": "accepted",
+          "sha256": "0f824ecd978d7a52600f417401be0c1dbc4667bceb488159a5e938395cd9fa49"
+        },
+        {
+          "stage": "sprint1/tech-design",
+          "file": "backend-design.md",
+          "status": "accepted",
+          "sha256": "95a8d2e4bd6ebdb28e4a97b758c7cd1b5cf9201d59fad478e0ff7ba5248fcecc"
+        },
+        {
+          "stage": "sprint1/tech-design",
+          "file": "interface-contract.md",
+          "status": "accepted",
+          "sha256": "e86ffe2d1d2d3335fcb861d53e8fff32438cf90ae645299ac6f4d72eada6cb79"
+        },
+        {
+          "stage": "sprint1/tech-design",
+          "file": "target-schema.graphql",
+          "status": "accepted",
+          "sha256": "4fa23faa263234ed2283f1d6daea4c20c22d4f3df39ffd850ecad1e4ecbfdef8"
+        },
+        {
+          "stage": "sprint1/test-design",
+          "file": "test-cases.v1.csv",
+          "status": "accepted",
+          "sha256": "88b6e29c5b5bf0127dcf0501e356ff66ffc260cdcfdf50efa6516ddfe6a651ba"
+        }
+      ],
+      "native": [
+        {
+          "stage": "sprint1/prd",
+          "model": "moonshotai/kimi-k3",
+          "version": "2.1.280",
+          "subagent_tool_available": false
+        },
+        {
+          "stage": "sprint1/tech-design",
+          "model": "moonshotai/kimi-k3",
+          "version": "2.1.280",
+          "subagent_tool_available": false
+        },
+        {
+          "stage": "sprint1/test-design",
+          "model": "moonshotai/kimi-k3",
+          "version": "2.1.280",
+          "subagent_tool_available": false
+        }
+      ],
+      "client_results": [
+        {
+          "stage": "sprint1/prd",
+          "stop_reason": "end_turn",
+          "is_error": false,
+          "terminal_reason": "completed",
+          "subagents_spawned": 0
+        },
+        {
+          "stage": "sprint1/tech-design",
+          "stop_reason": "end_turn",
+          "is_error": false,
+          "terminal_reason": "completed",
+          "subagents_spawned": 0
+        },
+        {
+          "stage": "sprint1/test-design",
+          "stop_reason": "end_turn",
+          "is_error": false,
+          "terminal_reason": "completed",
+          "subagents_spawned": 0
+        }
+      ]
+    },
+    {
+      "recovery_source": null,
+      "test_case_count": null,
+      "model": "z-ai/glm-5.3-flash",
+      "effort": "max",
+      "label": "glm53flash-max",
+      "status": "timed_out",
+      "error": "Total model execution wall time exhausted",
+      "accepted_stages": 1,
+      "runtime_from_first_stage_execution_sec": 3601.4,
+      "max_runtime_sec": 3600,
+      "request_profile_verified": true,
+      "usage": {
+        "requests": 306,
+        "requests_with_usage": 306,
+        "input_tokens_including_cache": 18192686,
+        "output_tokens": 102549,
+        "cache_read_input_tokens": 17735424,
+        "cache_creation_input_tokens": 0,
+        "gateway_reported_cost_usd": null,
+        "requests_with_gateway_cost": 0,
+        "gateway_cost_complete": false
+      },
+      "outputs": [
+        {
+          "stage": "sprint1/prd",
+          "file": "prd.md",
+          "status": "accepted",
+          "sha256": "43374a7aceea98478902ef12101d8400fa5be9219b1097977d2061e7c62db114"
+        }
+      ],
+      "native": [
+        {
+          "stage": "sprint1/prd",
+          "model": "z-ai/glm-5.3-flash",
+          "version": "2.1.280",
+          "subagent_tool_available": false
+        },
+        {
+          "stage": "sprint1/tech-design",
+          "model": "z-ai/glm-5.3-flash",
+          "version": "2.1.280",
+          "subagent_tool_available": false
+        }
+      ],
+      "client_results": [
+        {
+          "stage": "sprint1/prd",
+          "stop_reason": "end_turn",
+          "is_error": false,
+          "terminal_reason": "completed",
+          "subagents_spawned": 0
+        }
+      ]
+    }
+  ],
+  "glm-retry": [
+    {
+      "principal_session": "fb166191-9969-4060-9b85-e10a648499c2",
+      "recovery_source": null,
+      "test_case_count": 35,
+      "model": "z-ai/glm-5.3-flash",
+      "effort": "max",
+      "label": "glm53flash-max-retry",
+      "status": "stopped_at_boundary",
+      "error": null,
+      "accepted_stages": 3,
+      "runtime_from_first_stage_execution_sec": 5225.3,
+      "max_runtime_sec": null,
+      "request_profile_verified": true,
+      "usage": {
+        "requests": 525,
+        "requests_with_usage": 525,
+        "input_tokens_including_cache": 43388739,
+        "output_tokens": 136176,
+        "cache_read_input_tokens": 42919168,
+        "cache_creation_input_tokens": 0,
+        "gateway_reported_cost_usd": null,
+        "requests_with_gateway_cost": 0,
+        "gateway_cost_complete": false
+      },
+      "outputs": [
+        {
+          "stage": "sprint1/prd",
+          "file": "prd.md",
+          "status": "accepted",
+          "sha256": "96dcf52d5a834c7dc0c14d795fc57508931c7765a01249d3748d07ddbc84a120"
+        },
+        {
+          "stage": "sprint1/tech-design",
+          "file": "frontend-design.md",
+          "status": "accepted",
+          "sha256": "1403ed237a63c833a8f11886382c7ef0e0447b6b499e76aa6c92d8f85a34ba44"
+        },
+        {
+          "stage": "sprint1/tech-design",
+          "file": "backend-design.md",
+          "status": "accepted",
+          "sha256": "f38f21eec6a0a90faacf624bf660acd33212c167f5a664c2e54bc48b4a448237"
+        },
+        {
+          "stage": "sprint1/tech-design",
+          "file": "interface-contract.md",
+          "status": "accepted",
+          "sha256": "56eac2246b472f902005ec7348a0272f51f2f14dfc14e756b5e7c4a4167ae75b"
+        },
+        {
+          "stage": "sprint1/tech-design",
+          "file": "target-schema.graphql",
+          "status": "accepted",
+          "sha256": "4fa23faa263234ed2283f1d6daea4c20c22d4f3df39ffd850ecad1e4ecbfdef8"
+        },
+        {
+          "stage": "sprint1/test-design",
+          "file": "test-cases.v1.csv",
+          "status": "accepted",
+          "sha256": "19d63c9ff93c71bac9fd4be3198890077479082e63e5fe3c55964f9983168bba"
+        }
+      ],
+      "native": [
+        {
+          "stage": "sprint1/prd",
+          "model": "z-ai/glm-5.3-flash",
+          "version": "2.1.280",
+          "subagent_tool_available": false
+        },
+        {
+          "stage": "sprint1/tech-design",
+          "model": "z-ai/glm-5.3-flash",
+          "version": "2.1.280",
+          "subagent_tool_available": false
+        },
+        {
+          "stage": "sprint1/test-design",
+          "model": "z-ai/glm-5.3-flash",
+          "version": "2.1.280",
+          "subagent_tool_available": false
+        }
+      ],
+      "client_results": [
+        {
+          "stage": "sprint1/prd",
+          "stop_reason": "end_turn",
+          "is_error": false,
+          "terminal_reason": "completed",
+          "subagents_spawned": 0
+        },
+        {
+          "stage": "sprint1/tech-design",
+          "stop_reason": "end_turn",
+          "is_error": false,
+          "terminal_reason": "completed",
+          "subagents_spawned": 0
+        },
+        {
+          "stage": "sprint1/test-design",
+          "stop_reason": "end_turn",
+          "is_error": false,
+          "terminal_reason": "completed",
+          "subagents_spawned": 0
+        }
+      ]
+    }
+  ],
+  "opus-xhigh-stopped": {
+    "status": "user_stopped",
+    "model": "anthropic/claude-opus-5.5",
+    "effort": "xhigh",
+    "thinking": {
+      "type": "adaptive"
+    },
+    "principal_session": "5dbaeee0-a251-4942-bd3b-23aa420ddc5d",
+    "completed_stages": 0,
+    "formal_documents": 0,
+    "parts": [
+      {
+        "job_name": "single-docs-opus55-xhigh-retry-20261014",
+        "captured_execution_interval_sec": 1364.52,
+        "usage": {
+          "requests": 49,
+          "requests_with_usage": 49,
+          "input_tokens_including_cache": 4564127,
+          "output_tokens": 131405,
+          "cache_read_input_tokens": 4276581,
+          "cache_creation_input_tokens": 144179,
+          "gateway_reported_cost_usd": 4.2046952,
+          "requests_with_gateway_cost": 48,
+          "gateway_cost_complete": false
+        },
+        "raw_state_status": "failed"
+      },
+      {
+        "job_name": "single-docs-opus55-xhigh-resume-20261014",
+        "captured_execution_interval_sec": 5404.28,
+        "usage": {
+          "requests": 132,
+          "requests_with_usage": 132,
+          "input_tokens_including_cache": 10498838,
+          "output_tokens": 519904,
+          "cache_read_input_tokens": 9999663,
+          "cache_creation_input_tokens": 252723,
+          "gateway_reported_cost_usd": 14.2187716,
+          "requests_with_gateway_cost": 131,
+          "gateway_cost_complete": false
+        },
+        "raw_state_status": "failed"
+      }
+    ],
+    "usage": {
+      "requests": 181,
+      "requests_with_usage": 181,
+      "input_tokens_including_cache": 15062965,
+      "output_tokens": 651309,
+      "cache_read_input_tokens": 14276244,
+      "cache_creation_input_tokens": 396902,
+      "gateway_reported_cost_usd": 18.4234668,
+      "requests_with_gateway_cost": 179,
+      "gateway_cost_complete": false
+    },
+    "notes": [
+      "人工中断以取消限时后，原会话续做；此轮受干预。",
+      "最后由用户要求停止；原始运行器 failed/exit143 记录保留，表示客户端中断，不冒充正常完成。",
+      "token 使用按每请求最后已捕获快照合并；两次中断请求可能缺少最终 usage 或费用。",
+      "缓存包含在输入总量中，不重复加总。",
+      "网关响应报告费用不是后台账单对账值。"
+    ]
+  },
+  "opus-high-completed": [
+    {
+      "principal_session": "99fa9cb2-5403-45c0-a655-947213c9a0a2",
+      "recovery_source": "/home/iriszeng18_gmail_com/software-last-exam/jobs/single-docs-opus55-high-20261014/task__vMvSwRQ",
+      "test_case_count": 144,
+      "model": "anthropic/claude-opus-5.5",
+      "effort": "high",
+      "label": "opus55-high-continuation",
+      "status": "stopped_at_boundary",
+      "error": null,
+      "accepted_stages": 3,
+      "runtime_from_first_stage_execution_sec": 17040.13,
+      "max_runtime_sec": null,
+      "request_profile_verified": true,
+      "usage": {
+        "requests": 553,
+        "requests_with_usage": 553,
+        "input_tokens_including_cache": 58637449,
+        "output_tokens": 1648079,
+        "cache_read_input_tokens": 56217045,
+        "cache_creation_input_tokens": 1176042,
+        "gateway_reported_cost_usd": 53.918911,
+        "requests_with_gateway_cost": 551,
+        "gateway_cost_complete": false
+      },
+      "outputs": [
+        {
+          "stage": "sprint1/prd",
+          "file": "prd.md",
+          "status": "accepted",
+          "sha256": "c0abf99fc5af86e0e22da3a70ddf91d5972819a30e75494720c620a4d4f999e8"
+        },
+        {
+          "stage": "sprint1/tech-design",
+          "file": "frontend-design.md",
+          "status": "accepted",
+          "sha256": "5bbe824ab92c68c307f4c7a135ae9c9463e1474d4810e25dc1d47bfb7eed7fc3"
+        },
+        {
+          "stage": "sprint1/tech-design",
+          "file": "backend-design.md",
+          "status": "accepted",
+          "sha256": "2e2e0718deced7ca34d20a94dd971a8b8a1e9cc9aabf8445016a98c0091f147b"
+        },
+        {
+          "stage": "sprint1/tech-design",
+          "file": "interface-contract.md",
+          "status": "accepted",
+          "sha256": "5052cc9f617a397e3ce83debf477a5921d0da6b24bacdda776ab0b8f219c7115"
+        },
+        {
+          "stage": "sprint1/tech-design",
+          "file": "target-schema.graphql",
+          "status": "accepted",
+          "sha256": "4fa23faa263234ed2283f1d6daea4c20c22d4f3df39ffd850ecad1e4ecbfdef8"
+        },
+        {
+          "stage": "sprint1/test-design",
+          "file": "test-cases.v1.csv",
+          "status": "accepted",
+          "sha256": "4e6b5b4954bf43735be29c9458af3a1d3e829f0cb1e06370b3ba825d74aeabf2"
+        }
+      ],
+      "native": [
+        {
+          "stage": "sprint1/prd",
+          "model": "anthropic/claude-opus-5.5",
+          "version": "2.1.280",
+          "subagent_tool_available": false
+        },
+        {
+          "stage": "sprint1/tech-design",
+          "model": "anthropic/claude-opus-5.5",
+          "version": "2.1.280",
+          "subagent_tool_available": false
+        },
+        {
+          "stage": "sprint1/test-design",
+          "model": "anthropic/claude-opus-5.5",
+          "version": "2.1.280",
+          "subagent_tool_available": false
+        }
+      ],
+      "client_results": [
+        {
+          "stage": "sprint1/prd",
+          "stop_reason": "end_turn",
+          "is_error": false,
+          "terminal_reason": "completed",
+          "subagents_spawned": 0
+        },
+        {
+          "stage": "sprint1/tech-design",
+          "stop_reason": "end_turn",
+          "is_error": false,
+          "terminal_reason": "completed",
+          "subagents_spawned": 0
+        },
+        {
+          "stage": "sprint1/test-design",
+          "stop_reason": "end_turn",
+          "is_error": false,
+          "terminal_reason": "completed",
+          "subagents_spawned": 0
+        }
+      ]
+    }
+  ]
+}

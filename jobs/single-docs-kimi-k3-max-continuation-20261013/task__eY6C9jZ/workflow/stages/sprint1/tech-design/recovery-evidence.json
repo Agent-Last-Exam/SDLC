@@ -1,0 +1,10 @@
+{
+  "session_id": "d0b9d926-dbc7-4a69-ba56-4a5afa8ce1d8",
+  "active_role": "architect",
+  "stage_id": "sprint1/tech-design",
+  "native_user_activation_verified": true,
+  "role_activations_recorded": 2,
+  "transport": "claude-code-jsonl",
+  "role_prompt_sha256": "1bbeac97331ac12182de3e0d4cf69dc05f8e097ebb0478580755fa2b24c5544a",
+  "recovery_reason": "ignore SDK compaction summary as role activation"
+}

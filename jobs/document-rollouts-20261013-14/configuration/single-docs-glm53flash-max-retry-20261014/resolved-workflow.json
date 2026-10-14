@@ -1,0 +1,467 @@
+{
+  "schema_version": 1,
+  "mode": "single",
+  "run": {
+    "schema_version": 1,
+    "kind": "workflow_run",
+    "mode": "single",
+    "contract": "lifecycle.yaml",
+    "agent": {
+      "adapter": "claude_code"
+    },
+    "execution": {
+      "subagents": {
+        "enabled": false
+      },
+      "max_cost_usd": 50.0
+    }
+  },
+  "contract": {
+    "schema_version": 1,
+    "kind": "delivery_contract",
+    "name": "saleor-sdlc-lifecycle",
+    "scope": "local_sdlc",
+    "roles": {
+      "workflow": "defaults:workflow.system.md",
+      "lead": "defaults:lead.system.md",
+      "member": "defaults:member.system.md",
+      "reviewer": "defaults:reviewer.system.md",
+      "pm": "defaults:pm.system.md",
+      "architect": "defaults:architect.system.md",
+      "qa-design": "defaults:qa-design.system.md",
+      "developer": "defaults:developer.system.md",
+      "deployer": "defaults:deployer.system.md",
+      "qa": "defaults:qa.system.md",
+      "triage": "defaults:triage.system.md"
+    },
+    "inputs": {
+      "instruction": {
+        "source": "task:instruction.md",
+        "workspace": "instruction.md"
+      },
+      "base_revisions": {
+        "source": "derive:env/manifest.json",
+        "workspace": "base-revisions.json"
+      },
+      "repos": {
+        "source": "task:environment/repos",
+        "workspace": "repos"
+      }
+    },
+    "templates": {
+      "prd": "defaults:prd.md",
+      "frontend_design": "defaults:frontend-design.md",
+      "backend_design": "defaults:backend-design.md",
+      "interface_contract": "defaults:interface-contract.md",
+      "target_interface": "defaults:target-interface.md",
+      "test_cases": "defaults:test-cases.md",
+      "test_handoff": "defaults:test-handoff.md",
+      "test_results": "defaults:test-results.md",
+      "test_report": "defaults:test-report.md",
+      "test_verify_schema_json": "defaults:test-verify.schema.json",
+      "repair_plan_schema_json": "defaults:repair-plan.schema.json",
+      "deployment_schema_json": "defaults:deployment.schema.json"
+    },
+    "stages": [
+      {
+        "id": "sprint1/prd",
+        "role": "pm",
+        "inputs": [
+          "input:instruction",
+          "input:repos",
+          "template:prd"
+        ],
+        "outputs": {
+          "prd": "artifacts/sprint1/prd/prd.md"
+        }
+      },
+      {
+        "id": "sprint1/tech-design",
+        "role": "architect",
+        "inputs": [
+          "input:instruction",
+          "input:repos",
+          "artifact:sprint1/prd/prd",
+          "template:frontend_design",
+          "template:backend_design",
+          "template:interface_contract",
+          "template:target_interface"
+        ],
+        "activities": [
+          "design"
+        ],
+        "outputs": {
+          "frontend_design": "artifacts/sprint1/tech-design/frontend-design.md",
+          "backend_design": "artifacts/sprint1/tech-design/backend-design.md",
+          "interface_contract": "artifacts/sprint1/tech-design/interface-contract.md",
+          "target_schema": "artifacts/sprint1/tech-design/target-schema.graphql"
+        },
+        "additional_outputs": {
+          "directory": "artifacts/sprint1/tech-design/interfaces",
+          "purpose": "other_changed_protocol_boundaries"
+        }
+      },
+      {
+        "id": "sprint1/test-design",
+        "role": "qa-design",
+        "inputs": [
+          "input:instruction",
+          "input:repos",
+          "artifact:sprint1/prd/prd",
+          "artifact:sprint1/tech-design/frontend_design",
+          "artifact:sprint1/tech-design/backend_design",
+          "artifact:sprint1/tech-design/interface_contract",
+          "artifact:sprint1/tech-design/target_schema",
+          "template:test_cases"
+        ],
+        "outputs": {
+          "test_cases": "artifacts/sprint1/test-design/test-cases.v1.csv"
+        },
+        "round": 1
+      },
+      {
+        "id": "sprint1/development",
+        "role": "developer",
+        "inputs": [
+          "input:instruction",
+          "input:repos",
+          "artifact:sprint1/prd/prd",
+          "artifact:sprint1/tech-design/frontend_design",
+          "artifact:sprint1/tech-design/backend_design",
+          "artifact:sprint1/tech-design/interface_contract",
+          "artifact:sprint1/tech-design/target_schema",
+          "template:test_handoff"
+        ],
+        "outputs": {
+          "handoff": "artifacts/sprint1/development/test-handoff.md"
+        },
+        "round": 1,
+        "write_repos": true,
+        "capture_repos": true
+      },
+      {
+        "id": "sprint1/deploy",
+        "role": "deployer",
+        "inputs": [
+          "input:instruction",
+          "input:repos",
+          "artifact:sprint1/prd/prd",
+          "artifact:sprint1/development/handoff",
+          "template:test_handoff",
+          "template:deployment_schema_json"
+        ],
+        "outputs": {
+          "handoff": "artifacts/sprint1/deploy/test-handoff.md",
+          "deployment": "artifacts/sprint1/deploy/deployment.json"
+        },
+        "round": 1
+      },
+      {
+        "id": "sprint1/qa",
+        "role": "qa",
+        "inputs": [
+          "input:instruction",
+          "input:repos",
+          "artifact:sprint1/prd/prd",
+          "artifact:sprint1/tech-design/frontend_design",
+          "artifact:sprint1/tech-design/backend_design",
+          "artifact:sprint1/tech-design/interface_contract",
+          "artifact:sprint1/tech-design/target_schema",
+          "artifact:sprint1/test-design/test_cases",
+          "artifact:sprint1/deploy/handoff",
+          "template:test_results",
+          "template:test_report",
+          "template:test_verify_schema_json"
+        ],
+        "outputs": {
+          "results": "artifacts/sprint1/qa/test-results.1.csv",
+          "report": "artifacts/sprint1/qa/test-report.1.md",
+          "verdict": "artifacts/sprint1/qa/test-verify.json"
+        },
+        "round": 1
+      },
+      {
+        "id": "sprint2/triage",
+        "role": "triage",
+        "inputs": [
+          "input:instruction",
+          "input:repos",
+          "artifact:sprint1/prd/prd",
+          "artifact:sprint1/tech-design/frontend_design",
+          "artifact:sprint1/tech-design/backend_design",
+          "artifact:sprint1/tech-design/interface_contract",
+          "artifact:sprint1/tech-design/target_schema",
+          "artifact:sprint1/test-design/test_cases",
+          "artifact:sprint1/qa/report",
+          "artifact:sprint1/qa/results",
+          "template:repair_plan_schema_json"
+        ],
+        "outputs": {
+          "repair_plan": "artifacts/sprint2/triage/repair-plan.json"
+        },
+        "round": 2
+      },
+      {
+        "activities": [
+          "design"
+        ],
+        "additional_outputs": {
+          "directory": "artifacts/sprint2/tech-design/interfaces",
+          "purpose": "other_changed_protocol_boundaries"
+        },
+        "id": "sprint2/tech-design",
+        "inputs": [
+          "input:instruction",
+          "input:repos",
+          "artifact:sprint1/prd/prd",
+          "template:frontend_design",
+          "template:backend_design",
+          "template:interface_contract",
+          "template:target_interface",
+          "artifact:sprint1/tech-design/frontend_design",
+          "artifact:sprint1/tech-design/backend_design",
+          "artifact:sprint1/tech-design/interface_contract",
+          "artifact:sprint1/tech-design/target_schema",
+          "artifact:sprint2/triage/repair_plan"
+        ],
+        "outputs": {
+          "backend_design": "artifacts/sprint2/tech-design/backend-design.md",
+          "frontend_design": "artifacts/sprint2/tech-design/frontend-design.md",
+          "interface_contract": "artifacts/sprint2/tech-design/interface-contract.md",
+          "target_schema": "artifacts/sprint2/tech-design/target-schema.graphql"
+        },
+        "role": "architect",
+        "round": 2,
+        "reuse_unless": "design_changed",
+        "reuse_stage": "sprint1/tech-design"
+      },
+      {
+        "id": "sprint2/development",
+        "role": "developer",
+        "inputs": [
+          "input:instruction",
+          "input:repos",
+          "artifact:sprint1/prd/prd",
+          "artifact:sprint2/tech-design/frontend_design",
+          "artifact:sprint2/tech-design/backend_design",
+          "artifact:sprint2/tech-design/interface_contract",
+          "artifact:sprint2/tech-design/target_schema",
+          "template:test_handoff",
+          "artifact:sprint2/triage/repair_plan",
+          "artifact:sprint1/qa/report",
+          "artifact:sprint1/qa/results"
+        ],
+        "outputs": {
+          "handoff": "artifacts/sprint2/development/test-handoff.md"
+        },
+        "round": 2,
+        "write_repos": true,
+        "capture_repos": true
+      },
+      {
+        "id": "sprint2/deploy",
+        "role": "deployer",
+        "inputs": [
+          "input:instruction",
+          "input:repos",
+          "artifact:sprint1/prd/prd",
+          "artifact:sprint2/development/handoff",
+          "template:test_handoff",
+          "template:deployment_schema_json"
+        ],
+        "outputs": {
+          "handoff": "artifacts/sprint2/deploy/test-handoff.md",
+          "deployment": "artifacts/sprint2/deploy/deployment.json"
+        },
+        "round": 2
+      },
+      {
+        "id": "sprint2/qa",
+        "role": "qa",
+        "inputs": [
+          "input:instruction",
+          "input:repos",
+          "artifact:sprint1/prd/prd",
+          "artifact:sprint2/tech-design/frontend_design",
+          "artifact:sprint2/tech-design/backend_design",
+          "artifact:sprint2/tech-design/interface_contract",
+          "artifact:sprint2/tech-design/target_schema",
+          "artifact:sprint1/test-design/test_cases",
+          "artifact:sprint2/deploy/handoff",
+          "template:test_results",
+          "template:test_report",
+          "template:test_verify_schema_json",
+          "artifact:sprint1/qa/report"
+        ],
+        "outputs": {
+          "results": "artifacts/sprint2/qa/test-results.2.csv",
+          "report": "artifacts/sprint2/qa/test-report.2.md",
+          "verdict": "artifacts/sprint2/qa/test-verify.json"
+        },
+        "round": 2
+      }
+    ],
+    "delivery": {
+      "required": [
+        "artifact:sprint1/prd/prd",
+        "artifact:sprint1/tech-design/frontend_design",
+        "artifact:sprint1/tech-design/backend_design",
+        "artifact:sprint1/tech-design/interface_contract",
+        "artifact:sprint1/tech-design/target_schema",
+        "artifact:sprint1/test-design/test_cases",
+        "artifact:sprint1/development/handoff",
+        "artifact:sprint1/deploy/handoff",
+        "artifact:sprint1/deploy/deployment",
+        "artifact:sprint1/qa/results",
+        "artifact:sprint1/qa/report",
+        "artifact:sprint1/qa/verdict"
+      ],
+      "stop_after": "sprint2/qa"
+    }
+  },
+  "task": "/home/iriszeng18_gmail_com/software-last-exam/tasks/saleor-3.23-pruned",
+  "harbor_sources": {},
+  "harbor_generated": {
+    "task.toml": "schema_version = \"1.3\"\n\n[task]\nname = \"sdlcbench/saleor-3.23-single-workflow\"\ndescription = \"Single Agent SDLC workflow sidecar for saleor-3.23\"\n\n[metadata]\ncategory = \"software-development\"\nsource_task = \"saleor-3.23\"\nscope = \"Workflow rollout; benchmark verifier remains owned by the source task\"\n\n[agent]\ntimeout_sec = 10800.0\nnetwork_mode = \"public\"\nuser = \"root\"\n\n[environment]\nbuild_timeout_sec = 7200.0\ncpus = 8\nmemory_mb = 16384\nstorage_mb = 40960\nworkdir = \"/workspace\"\n\n[verifier]\nenvironment_mode = \"separate\"\nnetwork_mode = \"public\"\ntimeout_sec = 7200.0\n",
+    "Dockerfile": "FROM sdlcbench/saleor-3.23-env:build-0a5d5bc656cb\n\n# Keep the benchmark's preinstalled application dependencies, and add only the\n# tools required by the workflow Agent. Network is needed while building this\n# thin overlay and for model API calls, not for fetching target application code.\nRUN apt-get update \\\n    && apt-get install -y --no-install-recommends ripgrep jq procps less \\\n    && rm -rf /var/lib/apt/lists/* \\\n    && npm install -g @anthropic-ai/claude-code@2.1.273 \\\n    && npm cache clean --force \\\n    && claude --version\n\n# Relocate the image's repositories to the workspace layout the runtime owns, and\n# keep the original paths as links so the image's own test runtime still resolves.\nRUN mkdir -p /workspace/repos \\\n    && test \"$(git -C /workspace/saleor rev-parse HEAD)\" = \"c864e66b8e537d30732ddba62d3a4c47e49e4a3e\" && mv /workspace/saleor /workspace/repos/saleor \\\n    && test \"$(git -C /workspace/saleor-dashboard rev-parse HEAD)\" = \"aebb2401b5079fbbb8c60150289d1896c108feca\" && mv /workspace/saleor-dashboard /workspace/repos/saleor-dashboard \\\n    && ln -s /workspace/repos/saleor /workspace/saleor \\\n    && ln -s /workspace/repos/saleor-dashboard /workspace/saleor-dashboard\n\nCOPY workspace/ /workspace/\nRUN chown -R root:root /workspace \\\n    && chmod -R a-w /workspace \\\n    && rm -rf /workspace/artifacts \\\n    && mkdir -p /logs/artifacts /logs/agent \\\n    && ln -s /logs/artifacts /workspace/artifacts\n\nWORKDIR /workspace\nENTRYPOINT []\nCMD [\"sleep\", \"infinity\"]\n"
+  },
+  "generated_inputs": {
+    "base_revisions": "{\n  \"saleor\": {\n    \"version\": \"agent-baseline\",\n    \"commit\": \"c864e66b8e537d30732ddba62d3a4c47e49e4a3e\"\n  },\n  \"saleor-dashboard\": {\n    \"version\": \"agent-baseline\",\n    \"commit\": \"aebb2401b5079fbbb8c60150289d1896c108feca\"\n  }\n}\n"
+  },
+  "repos_source": "image",
+  "sources": {
+    "roles": {
+      "workflow": "/home/iriszeng18_gmail_com/software-last-exam/runtime/defaults/roles/workflow.system.md",
+      "lead": "/home/iriszeng18_gmail_com/software-last-exam/runtime/defaults/roles/lead.system.md",
+      "member": "/home/iriszeng18_gmail_com/software-last-exam/runtime/defaults/roles/member.system.md",
+      "reviewer": "/home/iriszeng18_gmail_com/software-last-exam/runtime/defaults/roles/reviewer.system.md",
+      "pm": "/home/iriszeng18_gmail_com/software-last-exam/runtime/defaults/roles/pm.system.md",
+      "architect": "/home/iriszeng18_gmail_com/software-last-exam/runtime/defaults/roles/architect.system.md",
+      "qa-design": "/home/iriszeng18_gmail_com/software-last-exam/runtime/defaults/roles/qa-design.system.md",
+      "developer": "/home/iriszeng18_gmail_com/software-last-exam/runtime/defaults/roles/developer.system.md",
+      "deployer": "/home/iriszeng18_gmail_com/software-last-exam/runtime/defaults/roles/deployer.system.md",
+      "qa": "/home/iriszeng18_gmail_com/software-last-exam/runtime/defaults/roles/qa.system.md",
+      "triage": "/home/iriszeng18_gmail_com/software-last-exam/runtime/defaults/roles/triage.system.md"
+    },
+    "templates": {
+      "prd": "/home/iriszeng18_gmail_com/software-last-exam/runtime/defaults/templates/prd.md",
+      "frontend_design": "/home/iriszeng18_gmail_com/software-last-exam/runtime/defaults/templates/frontend-design.md",
+      "backend_design": "/home/iriszeng18_gmail_com/software-last-exam/runtime/defaults/templates/backend-design.md",
+      "interface_contract": "/home/iriszeng18_gmail_com/software-last-exam/runtime/defaults/templates/interface-contract.md",
+      "target_interface": "/home/iriszeng18_gmail_com/software-last-exam/runtime/defaults/templates/target-interface.md",
+      "test_cases": "/home/iriszeng18_gmail_com/software-last-exam/runtime/defaults/templates/test-cases.md",
+      "test_handoff": "/home/iriszeng18_gmail_com/software-last-exam/runtime/defaults/templates/test-handoff.md",
+      "test_results": "/home/iriszeng18_gmail_com/software-last-exam/runtime/defaults/templates/test-results.md",
+      "test_report": "/home/iriszeng18_gmail_com/software-last-exam/runtime/defaults/templates/test-report.md",
+      "test_verify_schema_json": "/home/iriszeng18_gmail_com/software-last-exam/runtime/defaults/templates/test-verify.schema.json",
+      "repair_plan_schema_json": "/home/iriszeng18_gmail_com/software-last-exam/runtime/defaults/templates/repair-plan.schema.json",
+      "deployment_schema_json": "/home/iriszeng18_gmail_com/software-last-exam/runtime/defaults/templates/deployment.schema.json"
+    },
+    "inputs": {
+      "instruction": "/home/iriszeng18_gmail_com/software-last-exam/tasks/saleor-3.23-pruned/instruction.md",
+      "base_revisions": "/home/iriszeng18_gmail_com/software-last-exam/tasks/saleor-3.23-pruned/env/manifest.json",
+      "repos": "/home/iriszeng18_gmail_com/software-last-exam/tasks/saleor-3.23-pruned/environment/repos"
+    }
+  },
+  "stages": [
+    {
+      "stage_id": "sprint1/prd",
+      "role": "pm",
+      "role_path": "/workspace/roles/pm.system.md",
+      "inputs": {
+        "input:instruction": "/workspace/instruction.md",
+        "input:repos": "/workspace/repos",
+        "template:prd": "/workspace/templates/prd.md"
+      },
+      "outputs": {
+        "artifact:sprint1/prd/prd": "/workspace/artifacts/sprint1/prd/prd.md"
+      },
+      "writable_directory": "/workspace/artifacts/sprint1/prd",
+      "scratch": "/workspace/scratch"
+    },
+    {
+      "stage_id": "sprint1/tech-design",
+      "role": "architect",
+      "role_path": "/workspace/roles/architect.system.md",
+      "inputs": {
+        "input:instruction": "/workspace/instruction.md",
+        "input:repos": "/workspace/repos",
+        "artifact:sprint1/prd/prd": "/workspace/artifacts/sprint1/prd/prd.md",
+        "template:frontend_design": "/workspace/templates/frontend-design.md",
+        "template:backend_design": "/workspace/templates/backend-design.md",
+        "template:interface_contract": "/workspace/templates/interface-contract.md",
+        "template:target_interface": "/workspace/templates/target-interface.md"
+      },
+      "outputs": {
+        "artifact:sprint1/tech-design/frontend_design": "/workspace/artifacts/sprint1/tech-design/frontend-design.md",
+        "artifact:sprint1/tech-design/backend_design": "/workspace/artifacts/sprint1/tech-design/backend-design.md",
+        "artifact:sprint1/tech-design/interface_contract": "/workspace/artifacts/sprint1/tech-design/interface-contract.md",
+        "artifact:sprint1/tech-design/target_schema": "/workspace/artifacts/sprint1/tech-design/target-schema.graphql"
+      },
+      "writable_directory": "/workspace/artifacts/sprint1/tech-design",
+      "scratch": "/workspace/scratch",
+      "additional_output_directory": "/workspace/artifacts/sprint1/tech-design/interfaces"
+    },
+    {
+      "stage_id": "sprint1/test-design",
+      "role": "qa-design",
+      "role_path": "/workspace/roles/qa-design.system.md",
+      "inputs": {
+        "input:instruction": "/workspace/instruction.md",
+        "input:repos": "/workspace/repos",
+        "artifact:sprint1/prd/prd": "/workspace/artifacts/sprint1/prd/prd.md",
+        "artifact:sprint1/tech-design/frontend_design": "/workspace/artifacts/sprint1/tech-design/frontend-design.md",
+        "artifact:sprint1/tech-design/backend_design": "/workspace/artifacts/sprint1/tech-design/backend-design.md",
+        "artifact:sprint1/tech-design/interface_contract": "/workspace/artifacts/sprint1/tech-design/interface-contract.md",
+        "artifact:sprint1/tech-design/target_schema": "/workspace/artifacts/sprint1/tech-design/target-schema.graphql",
+        "template:test_cases": "/workspace/templates/test-cases.md"
+      },
+      "outputs": {
+        "artifact:sprint1/test-design/test_cases": "/workspace/artifacts/sprint1/test-design/test-cases.v1.csv"
+      },
+      "writable_directory": "/workspace/artifacts/sprint1/test-design",
+      "scratch": "/workspace/scratch",
+      "round": 1
+    }
+  ],
+  "workspace_paths": {
+    "input:instruction": "instruction.md",
+    "input:base_revisions": "base-revisions.json",
+    "input:repos": "repos",
+    "template:prd": "templates/prd.md",
+    "template:frontend_design": "templates/frontend-design.md",
+    "template:backend_design": "templates/backend-design.md",
+    "template:interface_contract": "templates/interface-contract.md",
+    "template:target_interface": "templates/target-interface.md",
+    "template:test_cases": "templates/test-cases.md",
+    "template:test_handoff": "templates/test-handoff.md",
+    "template:test_results": "templates/test-results.md",
+    "template:test_report": "templates/test-report.md",
+    "template:test_verify_schema_json": "templates/test-verify.schema.json",
+    "template:repair_plan_schema_json": "templates/repair-plan.schema.json",
+    "template:deployment_schema_json": "templates/deployment.schema.json",
+    "artifact:sprint1/prd/prd": "artifacts/sprint1/prd/prd.md",
+    "artifact:sprint1/tech-design/frontend_design": "artifacts/sprint1/tech-design/frontend-design.md",
+    "artifact:sprint1/tech-design/backend_design": "artifacts/sprint1/tech-design/backend-design.md",
+    "artifact:sprint1/tech-design/interface_contract": "artifacts/sprint1/tech-design/interface-contract.md",
+    "artifact:sprint1/tech-design/target_schema": "artifacts/sprint1/tech-design/target-schema.graphql",
+    "artifact:sprint1/test-design/test_cases": "artifacts/sprint1/test-design/test-cases.v1.csv",
+    "artifact:sprint1/development/handoff": "artifacts/sprint1/development/test-handoff.md",
+    "artifact:sprint1/deploy/handoff": "artifacts/sprint1/deploy/test-handoff.md",
+    "artifact:sprint1/deploy/deployment": "artifacts/sprint1/deploy/deployment.json",
+    "artifact:sprint1/qa/results": "artifacts/sprint1/qa/test-results.1.csv",
+    "artifact:sprint1/qa/report": "artifacts/sprint1/qa/test-report.1.md",
+    "artifact:sprint1/qa/verdict": "artifacts/sprint1/qa/test-verify.json",
+    "artifact:sprint2/triage/repair_plan": "artifacts/sprint2/triage/repair-plan.json",
+    "artifact:sprint2/tech-design/backend_design": "artifacts/sprint2/tech-design/backend-design.md",
+    "artifact:sprint2/tech-design/frontend_design": "artifacts/sprint2/tech-design/frontend-design.md",
+    "artifact:sprint2/tech-design/interface_contract": "artifacts/sprint2/tech-design/interface-contract.md",
+    "artifact:sprint2/tech-design/target_schema": "artifacts/sprint2/tech-design/target-schema.graphql",
+    "artifact:sprint2/development/handoff": "artifacts/sprint2/development/test-handoff.md",
+    "artifact:sprint2/deploy/handoff": "artifacts/sprint2/deploy/test-handoff.md",
+    "artifact:sprint2/deploy/deployment": "artifacts/sprint2/deploy/deployment.json",
+    "artifact:sprint2/qa/results": "artifacts/sprint2/qa/test-results.2.csv",
+    "artifact:sprint2/qa/report": "artifacts/sprint2/qa/test-report.2.md",
+    "artifact:sprint2/qa/verdict": "artifacts/sprint2/qa/test-verify.json"
+  }
+}

@@ -1,0 +1,613 @@
+用例编号,一级模块,二级模块,用例标题,覆盖,优先级,前置条件,操作步骤,预期结果
+TC001,A. 版本标识,R01 · 两端版本号与 schema 版本统一为 3.23,staff 查询 shop.version 与 schemaVersion 返回 3.23.0 / 3.23,AC-01-1;BD01;I05,P0,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 以 admin@example.com / admin 调用 `mutation { tokenCreate(email: ""admin@example.com"", password: ""admin"") { token errors { code } } }` 获取 staff token（下称 TOKEN）
+2. 以 `Authorization: Bearer TOKEN` 向 http://localhost:8000/graphql/ 发送 `{ shop { version schemaVersion } }`","1. tokenCreate 返回非空 token，errors 为 []
+2. HTTP 200，无顶层 errors；data.shop.version = ""3.23.0""，data.shop.schemaVersion = ""3.23"""
+TC002,A. 版本标识,R01 · 两端版本号与 schema 版本统一为 3.23,匿名查询 schemaVersion 返回 3.23，匿名查询 version 仍为字段级 PermissionDenied,AC-01-1;I05,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 不带任何鉴权头发送 `{ shop { schemaVersion } }`
+2. 不带鉴权头发送 `{ shop { version } }`","1. HTTP 200，无 errors，data.shop.schemaVersion = ""3.23""
+2. HTTP 200，顶层 errors[0].extensions.exception.code = ""PermissionDenied""，path 指向 shop.version；行为与 3.22 相同"
+TC003,A. 版本标识,R01 · 两端版本号与 schema 版本统一为 3.23,Core 包版本、派生 schema_version/user_agent_version 与清单版本均为 3.23,AC-01-2;BD01,P0,Core 源码已更新到待测版本；Python 虚拟环境可用,"1. 在 /workspace/repos/saleor 执行 `python -c ""import saleor; print(saleor.__version__, saleor.schema_version, saleor.user_agent_version)""`
+2. 执行 `python -c ""import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])""`
+3. 执行 `node -p ""require('./package.json').version""`","1. 输出 `3.23.0 3.23 Saleor/3.23`
+2. 输出 `3.23.0`
+3. 输出 `3.23.0`"
+TC004,A. 版本标识,R01 · 两端版本号与 schema 版本统一为 3.23,descriptions 模块提供 ADDED_IN_323，格式与 ADDED_IN_322 一致,AC-01-3;BD01,P0,Core 源码已更新到待测版本,"1. 在 /workspace/repos/saleor 执行 `python -c ""from saleor.graphql.core.descriptions import ADDED_IN_322, ADDED_IN_323; print(repr(ADDED_IN_323)); print(ADDED_IN_323.replace('3.23','3.22') == ADDED_IN_322)""`",1. 导入成功；第一行输出 `'\n\nAdded in Saleor 3.23.'`，第二行输出 `True`
+TC005,A. 版本标识,R01 · 两端版本号与 schema 版本统一为 3.23,Dashboard package.json 的 version 为 3.23.0、config.saleor.schemaVersion 为 3.23,AC-01-4;FD01,P0,Dashboard 源码已更新到待测版本,"1. 在 /workspace/repos/saleor-dashboard 执行 `node -p ""const p=require('./package.json'); p.version + ' ' + p.config.saleor.schemaVersion""`",1. 输出 `3.23.0 3.23`
+TC006,A. 版本标识,R01 · 两端版本号与 schema 版本统一为 3.23,未设置 CUSTOM_VERSION 构建后配置页显示 dashboard v3.23.0 与 core v3.23.0,AC-01-4;FD01;I05,P0,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 确认构建环境未设置 CUSTOM_VERSION（`env | grep CUSTOM_VERSION` 无输出），按运行时方式构建 Dashboard（API_URL=http://localhost:8000/graphql/ APP_MOUNT_URI=/ STATIC_URL=/ pnpm run build）
+2. 浏览器打开 http://localhost:9000/ ，以 admin@example.com / admin 登录，打开 http://localhost:9000/configuration/
+3. 查看页面底部的版本信息区域（VersionInfo）","1. 构建成功，退出码 0
+2. 配置页正常加载
+3. 显示文本 `dashboard v3.23.0` 与 `core v3.23.0`"
+TC007,A. 版本标识,R01 · 两端版本号与 schema 版本统一为 3.23,设置 CUSTOM_VERSION 时构建产物显示自定义版本号,AC-01-4;FD01,P2,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 以 `CUSTOM_VERSION=qa-custom-1 API_URL=http://localhost:8000/graphql/ APP_MOUNT_URI=/ STATIC_URL=/ pnpm run build` 构建到临时目录（构建后恢复运行时产物）
+2. 用该产物登录并打开 /configuration/ 查看版本信息","1. 构建成功
+2. 显示 `dashboard qa-custom-1`，说明 APP_VERSION 仍按 CUSTOM_VERSION || v${version} 规则取值"
+TC008,B. Core 依赖与生产代码,R02 · Core 依赖声明与 3.23.0 目标清单一致,pyproject.toml 依赖、版本、dependency-groups 与 tool.deptry 与目标清单逐项一致,AC-02-1;BD02,P0,Core 源码已更新到待测版本；目标清单 /opt/environment/dependencies/target/saleor/ 可读,"1. 执行 Python 脚本：用 tomllib 分别加载 /workspace/repos/saleor/pyproject.toml 与 /opt/environment/dependencies/target/saleor/pyproject.toml
+2. 比较 set(project.dependencies)、project.version、dependency-groups、tool.deptry 四项
+3. 检查依赖集合中移除项与新增项","1. 两份文件均成功解析
+2. 四项比较结果全部相等（依赖不考虑顺序），差集为空
+3. 不含 `Adyen>=4.0.0,<5`、`draftjs-sanitizer>=1.0.0,<2`、`html-to-draftjs>=1.0.1,<2`、`pillow-avif-plugin>=1.5.2,<2`、`posuto>=2025.1.0,<2026`；含 `kombu[sqs]>=4.6.11,<6.0.0`、`nh3>=0.2.20`、`idna>=3.10`、`orjson>=3.11.4`"
+TC009,B. Core 依赖与生产代码,R02 · Core 依赖声明与 3.23.0 目标清单一致,uv.lock 不含已移除包、含 nh3/orjson，saleor 条目版本为 3.23.0,AC-02-2;BD02,P0,Core 源码已更新到待测版本,"1. 用 tomllib 加载 /workspace/repos/saleor/uv.lock，收集所有 [[package]] 的 name→version
+2. 检查名称 adyen、beautifulsoup4、draftjs-sanitizer、html-to-draftjs、pillow-avif-plugin、posuto、soupsieve
+3. 检查名称 nh3、orjson、saleor
+4. 将当前 uv.lock 与 /opt/environment/dependencies/target/saleor/uv.lock 做 `diff`","1. 文件可解析
+2. 以上 7 个包均不存在
+3. nh3、orjson 存在；saleor 的 version = ""3.23.0""
+4. 无差异（或仅有与目标锁文件等价的格式差异）"
+TC010,B. Core 依赖与生产代码,R02 · Core 依赖声明与 3.23.0 目标清单一致,离线运行 deptry 无依赖问题,AC-02-3;BD02,P0,Core 源码已更新到待测版本；deptry 已预装,"1. 断开外网（或在离线沙箱中），在 /workspace/repos/saleor 根目录执行 `deptry .`
+2. 检查输出中的规则编号","1. 命令退出码 0，输出包含 `No dependency issues found`
+2. 不出现 DEP001、DEP002、DEP003 任何一项"
+TC011,B. Core 依赖与生产代码,R02 · Core 依赖声明与 3.23.0 目标清单一致,生产代码中不再导入已移除的第三方包,AC-02-4;BD02;BD05,P0,Core 源码已更新到待测版本,"1. 在 /workspace/repos/saleor 执行 `grep -rnE ""import Adyen|draftjs_sanitizer|html_to_draftjs|pillow_avif|posuto"" saleor --include=*.py | grep -v ""/tests/""`
+2. 执行 `ls saleor/payment/gateways/`","1. 无任何输出
+2. 列表中不存在 adyen 与 np_atobarai 目录"
+TC012,B. Core 依赖与生产代码,R02 · Core 依赖声明与 3.23.0 目标清单一致,orjson 用于同步 webhook 响应解析，合法与非法 JSON 的处理与原行为一致,AC-02-3;BD02,P1,Core 源码已更新到待测版本；测试数据库可用,"1. 在 /workspace/repos/saleor 执行 `grep -n ""orjson"" saleor/webhook/transport/synchronous/transport.py`
+2. 运行现有用例 `pytest saleor/webhook/transport/synchronous/tests -q`
+3. 在 scratch 中用 `python -c ""import orjson, json; print(issubclass(orjson.JSONDecodeError, json.JSONDecodeError), orjson.loads(b'{\""a\"": 12345678901234567890}'))""` 校验异常类型与大整数","1. 可看到 `orjson.loads(response.content)` 调用（原 json.loads 已替换）
+2. 全部通过，无 JSONDecodeError 相关失败
+3. 输出 `True {'a': 12345678901234567890}`"
+TC013,B. Core 依赖与生产代码,R02 · Core 依赖声明与 3.23.0 目标清单一致,idna 用于 OIDC 员工域名匹配，Unicode 与 punycode 写法等价、ASCII 域名结果不变,AC-02-3;BD02,P1,Core 源码已更新到待测版本,"1. 在 /workspace/repos/saleor 的 Django shell 中执行 `from saleor.plugins.openid_connect.utils import get_domain_from_email; print(get_domain_from_email('Anna@Bücher.Example'), get_domain_from_email('anna@xn--bcher-kva.example'), get_domain_from_email('john@Example.COM'))`
+2. 构造配置 `staff_user_domains="" Bücher.example , Example.COM""` 调用 `get_staff_user_domains(config)`
+3. 运行 `pytest saleor/plugins/openid_connect/tests -q`","1. 前两个结果相同，均为 `xn--bcher-kva.example`；第三个为 `example.com`
+2. 返回 `['xn--bcher-kva.example', 'example.com']`
+3. 全部通过"
+TC014,B. Core 依赖与生产代码,R02 · Core 依赖声明与 3.23.0 目标清单一致,kombu 解析 SQS broker 地址并设置传输选项，非 SQS broker 不受影响,AC-02-3;BD02,P1,Core 源码已更新到待测版本,"1. 以 `CELERY_BROKER_URL=sqs://AKIAQA:secretQA@ CELERY_SQS_REGION=eu-west-1 CELERY_SQS_VISIBILITY_TIMEOUT=3600` 执行 `python -c ""from django.conf import settings; import django; django.setup(); print(settings.CELERY_BROKER_TRANSPORT_OPTIONS)""`（DJANGO_SETTINGS_MODULE=saleor.settings）
+2. 以 `CELERY_BROKER_URL=redis://localhost:6379/1` 重复上一步
+3. 检查 celery worker 启动日志中的 broker 地址","1. 输出包含 `'region': 'eu-west-1'` 与 `'visibility_timeout': 3600`
+2. 不设置 SQS 专用选项（与 3.22 行为一致），celery 可正常连接 valkey
+3. 日志中的凭据被脱敏，不出现 `secretQA` 明文"
+TC015,B. Core 依赖与生产代码,R03 · 移除 `pillow-avif-plugin` 后 AVIF 缩略图能力不变,屏蔽 pillow_avif 后 import saleor 与 manage.py check 均成功,AC-03-1;BD03,P0,Core 源码已更新到待测版本,"1. 在 /workspace/repos/saleor 执行 `grep -n pillow_avif saleor/__init__.py`
+2. 执行 `python -c ""import sys; sys.modules['pillow_avif']=None; import saleor; print('ok')""`
+3. 执行 `python -c ""import PIL.features as f; print(f.check('avif'))""`
+4. 执行 `python -c ""import sys; sys.modules['pillow_avif']=None; import runpy, sys as s; s.argv=['manage.py','check']; runpy.run_path('manage.py', run_name='__main__')""`","1. 无输出
+2. 输出 `ok`，无 ImportError
+3. 输出 `True`
+4. 输出 `System check identified no issues (0 silenced).`"
+TC016,B. Core 依赖与生产代码,R03 · 移除 `pillow-avif-plugin` 后 AVIF 缩略图能力不变,对已有商品图片请求 128 尺寸 AVIF 缩略图，生成文件为 AVIF 且 Thumbnail.format 为 avif,AC-03-2;BD03,P0,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 发送 `{ product(id: ""UHJvZHVjdDoxMjc="", channel: ""default-channel"") { media { id url(size: 128, format: AVIF) } thumbnail(size: 128, format: AVIF) { url } } }`（Product:127 White Plimsolls）
+2. 对返回的 thumbnail.url 发起 GET（跟随重定向），保存响应体为 /workspace/scratch/t128.avif
+3. 执行 `python -c ""from PIL import Image; im=Image.open('/workspace/scratch/t128.avif'); print(im.format, max(im.size))""`
+4. Django shell 执行 `from saleor.thumbnail.models import Thumbnail; print(list(Thumbnail.objects.filter(product_media__product_id=127, size=128).values_list('format', flat=True)))`","1. HTTP 200，无 errors，url 指向 /thumbnail/<id>/128/avif/ 或已生成的缩略图文件
+2. HTTP 200（首次请求经 /thumbnail/ 视图生成后返回文件），响应体非空
+3. 输出 `AVIF 128`
+4. 列表中包含 `'avif'`"
+TC017,B. Core 依赖与生产代码,R03 · 移除 `pillow-avif-plugin` 后 AVIF 缩略图能力不变,WEBP 缩略图不受影响，不支持的格式返回 404,AC-03-2;BD03,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 对 Product:127 的第一个 media 请求 `url(size: 128, format: WEBP)` 并下载
+2. 用 Pillow 打开下载文件
+3. 直接 GET http://localhost:8000/thumbnail/<media 的 id>/128/gif/","1. 返回 URL 正常
+2. format 为 `WEBP`
+3. HTTP 404，响应体为 `Unsupported image format.`"
+TC018,B. Core 依赖与生产代码,R03 · 移除 `pillow-avif-plugin` 后 AVIF 缩略图能力不变,上传 image/avif 商品媒体成功,AC-03-3;BD03,P0,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 执行 `python -c ""from PIL import Image; Image.new('RGB',(64,64),'red').save('/workspace/scratch/red.avif','AVIF')""` 生成测试图片
+2. 以 admin@example.com / admin 调用 `mutation { tokenCreate(email: ""admin@example.com"", password: ""admin"") { token errors { code } } }` 获取 staff token（下称 TOKEN）
+3. 按 GraphQL multipart 规范上传：operations=`{""query"":""mutation($img: Upload!){ productMediaCreate(input:{product:\""UHJvZHVjdDoxMjc=\"", image:$img, alt:\""qa avif\""}){ media { id url } errors { field code message } } }"",""variables"":{""img"":null}}`，map=`{""0"":[""variables.img""]}`，文件 0 = red.avif，Content-Type image/avif
+4. 对返回的 media 请求 `url(size: 128, format: AVIF)` 并下载","1. 生成文件 red.avif，Pillow 识别为 AVIF
+2. 获得 TOKEN
+3. HTTP 200，productMediaCreate.errors 为 []，media.id 非空，不出现 `Invalid file type.`
+4. 缩略图可生成，Pillow 打开 format 为 AVIF"
+TC019,B. Core 依赖与生产代码,R03 · 移除 `pillow-avif-plugin` 后 AVIF 缩略图能力不变,上传非图片文件作为商品媒体仍被拒绝,AC-03-3;BD03,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 生成文本文件 /workspace/scratch/fake.avif，内容 `not an image`，以 Content-Type text/plain 按上例 multipart 上传到 Product:127
+2. 以 Content-Type image/avif 上传同一文本文件","1. productMediaCreate.errors[0] 为 field=image、code=INVALID、message=`Invalid file type.`
+2. 返回 errors（code=INVALID），媒体未创建；API 无 500"
+TC020,B. Core 依赖与生产代码,R04 · 移除 Draft.js 相关依赖后，富文本 JSON 安全输出与历史迁移仍可用,HTMLSafeJSON 输出不含字面量 < > &，且可往返解析,AC-04-1;BD04,P0,Core 源码已更新到待测版本,"1. 在 /workspace/repos/saleor 执行 `python -c ""import json; from saleor.core.utils.json_serializer import HTMLSafeJSON as E; o={'a': \""<script>alert('x')</script>&\""}; s=json.dumps(o, cls=E); print(s); print(any(c in s for c in '<>&')); print(json.loads(s)==o)""`
+2. 检查 HTMLSafeJSON 的基类：`python -c ""from saleor.core.utils.json_serializer import HTMLSafeJSON; print([c.__name__ for c in HTMLSafeJSON.__mro__])""`","1. 第一行中 `<`、`>`、`&` 分别以 `\u003c`、`\u003e`、`\u0026` 形式出现；第二行 `False`；第三行 `True`
+2. MRO 中包含 `DjangoJSONEncoder`，不包含来自 draftjs_sanitizer 的类"
+TC021,B. Core 依赖与生产代码,R04 · 移除 Draft.js 相关依赖后，富文本 JSON 安全输出与历史迁移仍可用,HTMLSafeJSON 对单引号、控制字符、字典键与嵌套结构同样转义且语义不变,AC-04-1;BD04,P1,Core 源码已更新到待测版本,"1. 对对象 `{""<k>"": [""it's"", ""line1\nline2\t"", {""x"": ""</div>""}], ""n"": None}` 执行 `json.dumps(o, cls=HTMLSafeJSON)`
+2. 对同一对象执行 `json.dumps(o, cls=HTMLSafeJSON, indent=2, sort_keys=True)`
+3. 分别 `json.loads` 两个输出并与原对象比较","1. 输出中无字面量 `<`、`>`、`&`、`'`；换行与制表符为 `\n`、`\t`；`None` 输出为 `null`
+2. 输出带缩进且键已排序，同样无上述字面量
+3. 两次解析结果均与原对象相等"
+TC022,B. Core 依赖与生产代码,R04 · 移除 Draft.js 相关依赖后，富文本 JSON 安全输出与历史迁移仍可用,HTMLSafeJSON 序列化 Decimal、datetime、UUID 与 DjangoJSONEncoder 结果一致,AC-04-2;BD04,P0,Core 源码已更新到待测版本,"1. 构造对象 `o={""d"": Decimal(""12.50""), ""t"": datetime(2025,1,2,3,4,5,678000, tzinfo=timezone.utc), ""day"": date(2025,1,2), ""u"": UUID(""12345678-1234-5678-1234-567812345678"")}`
+2. 分别执行 `json.dumps(o, cls=HTMLSafeJSON)` 与 `json.dumps(o, cls=DjangoJSONEncoder)` 并比较
+3. 对一个无法序列化的对象 `object()` 调用 `json.dumps(object(), cls=HTMLSafeJSON)`","1. 对象构造成功
+2. 两者字符串完全相同：`""12.50""`、`""2025-01-02T03:04:05.678Z""`、`""2025-01-02""`、`""12345678-1234-5678-1234-567812345678""`
+3. 抛出 TypeError，与 DjangoJSONEncoder 行为一致"
+TC023,B. Core 依赖与生产代码,R04 · 移除 Draft.js 相关依赖后，富文本 JSON 安全输出与历史迁移仍可用,空库 migrate 成功，含 product.0096_raw_html_to_json 与 page.0008_raw_html_to_json,AC-04-3;BD04;BD10,P0,本地 PostgreSQL :5432 可用（账号以运行时为准）；Core 源码已更新到待测版本,"1. 创建空库：`createdb -h localhost -U saleor saleor_qa_empty`
+2. 在 /workspace/repos/saleor 以 `DATABASE_URL=postgres://saleor:saleor@localhost:5432/saleor_qa_empty python manage.py migrate` 执行迁移，并保存日志
+3. 执行 `python manage.py showmigrations product page`（同一 DATABASE_URL）","1. 空库创建成功
+2. 退出码 0；日志包含 `Applying product.0096_raw_html_to_json... OK` 与 `Applying page.0008_raw_html_to_json... OK`；无 ImportError / ModuleNotFoundError
+3. product 0096_raw_html_to_json、0100_merge_20190719_0803 与 page 0008_raw_html_to_json、0009_auto_20191108_0402 均为 [X]"
+TC024,B. Core 依赖与生产代码,R04 · 移除 Draft.js 相关依赖后，富文本 JSON 安全输出与历史迁移仍可用,屏蔽 draftjs 相关包后两条历史迁移模块仍可导入，迁移图依赖不变,AC-04-3;BD04,P0,Core 源码已更新到待测版本,"1. 执行 `python -c ""import sys; [sys.modules.__setitem__(m, None) for m in ('draftjs_sanitizer','html_to_draftjs')]; import django, os; os.environ['DJANGO_SETTINGS_MODULE']='saleor.settings'; django.setup(); import importlib; importlib.import_module('saleor.product.migrations.0096_raw_html_to_json'); importlib.import_module('saleor.page.migrations.0008_raw_html_to_json'); print('ok')""`
+2. 用 MigrationLoader 读取 ('product','0100_merge_20190719_0803') 与 ('page','0009_auto_20191108_0402') 的 dependencies，与 3.22 基线源码中的同名迁移比较","1. 输出 `ok`，无 ImportError
+2. 两者依赖列表与基线一致"
+TC025,B. Core 依赖与生产代码,R04 · 移除 Draft.js 相关依赖后，富文本 JSON 安全输出与历史迁移仍可用,迁移内的本地 html_to_draftjs / clean_draft_js 能安全转换 HTML 且不抛错,AC-04-3;BD04,P1,Core 源码已更新到待测版本,"1. 导入 product 0096 迁移模块 m，执行 `m.html_to_draftjs('<p>Hello <b>world</b></p><script>alert(1)</script><p>Second &amp; line</p>')`
+2. 执行 `m.html_to_draftjs('')`
+3. 执行 `m.clean_draft_js({'blocks':[{'key':'a1b2c','text':'<img src=x onerror=alert(1)>ok','type':'unstyled','depth':0,'inlineStyleRanges':[],'entityRanges':[],'data':{}}],'entityMap':{}})` 与 `m.clean_draft_js(None)`
+4. 对 page 0008 迁移模块重复步骤 1–3","1. 返回 DraftJS 结构，blocks 文本依次为 `Hello world`、`Second & line`；任何 block 中不含 `<script>` 或 `alert(1)` 标签内容；entityMap 为 {}
+2. 返回只有 1 个空 text 块的结构
+3. 第一个调用返回的 text 中不含 `<img` 和 `onerror`，结构字段保持；第二个调用原样返回 None
+4. 结果与 product 迁移一致"
+TC026,B. Core 依赖与生产代码,R04 · 移除 Draft.js 相关依赖后，富文本 JSON 安全输出与历史迁移仍可用,makemigrations --check --dry-run 报告无变化,AC-04-4;BD04,P0,Core 源码已更新到待测版本；数据库可连接,1. 在 /workspace/repos/saleor 执行 `python manage.py makemigrations --check --dry-run`,1. 退出码 0，输出 `No changes detected`
+TC027,B. Core 依赖与生产代码,R05 · 移除 Adyen 与 NP Atobarai 内置支付插件，存量数据不受影响,屏蔽 Adyen、posuto 后 check 与 API 启动成功，BUILTIN_PLUGINS 不含两个插件,AC-05-1;BD05;I07,P0,Core 源码已更新到待测版本,"1. 在 scratch 中创建 sitecustomize.py：`import sys; sys.modules['Adyen']=None; sys.modules['posuto']=None`，并设 PYTHONPATH=/workspace/scratch/block
+2. 在 /workspace/repos/saleor 执行 `python manage.py check`
+3. 以同一 PYTHONPATH 执行 `uvicorn saleor.asgi:application --port 8002`，再 `curl -s -XPOST localhost:8002/graphql/ -H 'Content-Type: application/json' -d '{""query"":""{ shop { schemaVersion } }""}'`
+4. 执行 `python -c ""import django,os; os.environ['DJANGO_SETTINGS_MODULE']='saleor.settings'; django.setup(); from django.conf import settings; print([p for p in settings.BUILTIN_PLUGINS if 'adyen' in p or 'np_atobarai' in p])""`","1. `python -c 'import Adyen'` 在该环境下抛 ImportError，证明屏蔽生效
+2. 输出 `System check identified no issues (0 silenced).`
+3. API 启动无异常，返回 `{""data"":{""shop"":{""schemaVersion"":""3.23""}}}`
+4. 输出 `[]`"
+TC028,B. Core 依赖与生产代码,R05 · 移除 Adyen 与 NP Atobarai 内置支付插件，存量数据不受影响,残留 Adyen / NP Atobarai 的 PluginConfiguration 不影响 plugins 查询,AC-05-2;BD05;I07,P0,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. Django shell 执行 `from saleor.plugins.models import PluginConfiguration as P; P.objects.create(identifier='mirumee.payments.adyen', name='Adyen', active=True, configuration=[{'name':'merchant-account','value':'QA'}]); P.objects.create(identifier='saleor.payments.np-atobarai', name='NP Atobarai', active=True, configuration=[])`
+2. 以 admin@example.com / admin 调用 `mutation { tokenCreate(email: ""admin@example.com"", password: ""admin"") { token errors { code } } }` 获取 staff token（下称 TOKEN）（admin 具备 MANAGE_PLUGINS）
+3. 发送 `{ plugins(first: 100) { edges { node { id name } } } }`","1. 两条记录写入成功
+2. 获得 TOKEN
+3. HTTP 200，无顶层 errors；结果 id 中不含 `mirumee.payments.adyen` 与 `saleor.payments.np-atobarai`；`mirumee.payments.dummy` 等其他插件正常返回"
+TC029,B. Core 依赖与生产代码,R05 · 移除 Adyen 与 NP Atobarai 内置支付插件，存量数据不受影响,已移除插件的单项查询返回 null，pluginUpdate 返回 NOT_FOUND,AC-05-2;I07,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 沿用上一用例的残留配置与 TOKEN，发送 `{ plugin(id: ""mirumee.payments.adyen"") { id } }`
+2. 发送 `mutation { pluginUpdate(id: ""mirumee.payments.adyen"", input: { active: false }) { plugin { id } errors { field code message } } }`
+3. Django shell 查询 `PluginConfiguration.objects.filter(identifier='mirumee.payments.adyen').values('active')`","1. HTTP 200，data.plugin = null，无 500
+2. errors[0].code = `NOT_FOUND`，message = `Plugin doesn't exist.`，plugin 为 null
+3. 残留记录仍在且 active 仍为 True（未被修改或删除）"
+TC030,B. Core 依赖与生产代码,R05 · 移除 Adyen 与 NP Atobarai 内置支付插件，存量数据不受影响,其余内置插件列表与 3.22 相比只少 Adyen 与 NP Atobarai,AC-05-2;BD05;I07,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 以 TOKEN 发送 `{ plugins(first: 100) { edges { node { id } } } }`，收集 id 集合
+2. 在 3.22 基线环境执行同一查询（或读取基线 settings.BUILTIN_PLUGINS 推导的 PLUGIN_ID 列表），求差集","1. 集合包含 `mirumee.payments.dummy`、`mirumee.payments.dummy_credit_card`、`saleor.payments.stripe`、`mirumee.payments.braintree`、`mirumee.payments.razorpay`、`mirumee.payments.authorize_net`、`mirumee.taxes.avalara`、`mirumee.webhooks`、`mirumee.notifications.sendgrid_email`、`mirumee.notifications.user_email`、`mirumee.notifications.admin_email`、`mirumee.authentication.openidconnect`
+2. 基线减当前 = {`mirumee.payments.adyen`, `saleor.payments.np-atobarai`}；当前减基线 = 空集"
+TC031,B. Core 依赖与生产代码,R05 · 移除 Adyen 与 NP Atobarai 内置支付插件，存量数据不受影响,gateway 为 mirumee.payments.adyen 的历史支付记录可通过订单查询读取,AC-05-3;BD05;I07,P0,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. Django shell 取任意一个 populatedb 生成的订单 `o = Order.objects.first()`，执行 `Payment.objects.create(order=o, gateway='mirumee.payments.adyen', total=Decimal('10.00'), captured_amount=Decimal('10.00'), currency=o.currency, charge_status='fully-charged', psp_reference='QA-ADYEN-1', legacy_adyen_plugin_result_code='Authorised', legacy_adyen_plugin_payment_method='visa')`，记录 o.id 的 Relay ID（base64 ""Order:<uuid>""）
+2. 以 admin@example.com / admin 调用 `mutation { tokenCreate(email: ""admin@example.com"", password: ""admin"") { token errors { code } } }` 获取 staff token（下称 TOKEN）（admin 具备 MANAGE_ORDERS）
+3. 发送 `{ order(id: ""<上面的 Order ID>"") { payments { gateway pspReference total { amount currency } } } }`","1. 支付记录创建成功
+2. 获得 TOKEN
+3. HTTP 200，无 errors；payments 中存在一项 gateway = `mirumee.payments.adyen`、pspReference = `QA-ADYEN-1`、total.amount = 10.0"
+TC032,B. Core 依赖与生产代码,R05 · 移除 Adyen 与 NP Atobarai 内置支付插件，存量数据不受影响,Dashboard 订单详情页可正常展示 Adyen 历史支付,AC-05-3;BD05,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；已执行上一用例创建的 Adyen 支付记录,"1. 浏览器打开 http://localhost:9000/ ，以 admin@example.com / admin 登录，打开上一用例订单的详情页 http://localhost:9000/orders/<Order ID>
+2. 查看支付卡片，并打开浏览器控制台","1. 页面正常渲染，无错误通知
+2. 支付信息显示金额 10.00，控制台无 GraphQL 错误"
+TC033,B. Core 依赖与生产代码,R05 · 移除 Adyen 与 NP Atobarai 内置支付插件，存量数据不受影响,使用 Dummy 网关完成一次 checkoutComplete，返回订单且无错误,AC-05-4;BD05,P0,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 查询可售变体：`{ products(first: 5, channel: ""default-channel"", filter: { stockAvailability: IN_STOCK }) { edges { node { variants { id quantityAvailable } } } } }`，取第一个 quantityAvailable>0 的变体 ID（下称 VID）
+2. `mutation { checkoutCreate(input: { channel: ""default-channel"", email: ""qa.checkout@example.com"", lines: [{ quantity: 1, variantId: ""VID"" }], shippingAddress: { firstName: ""John"", lastName: ""Doe"", streetAddress1: ""1600 Amphitheatre Pkwy"", city: ""Mountain View"", postalCode: ""94043"", countryArea: ""CA"", country: US }, billingAddress: { firstName: ""John"", lastName: ""Doe"", streetAddress1: ""1600 Amphitheatre Pkwy"", city: ""Mountain View"", postalCode: ""94043"", countryArea: ""CA"", country: US } }) { checkout { id shippingMethods { id } availablePaymentGateways { id } totalPrice { gross { amount } } } errors { field code } } }`
+3. `checkoutDeliveryMethodUpdate(id: <checkout id>, deliveryMethodId: <第一个 shippingMethods.id>)`，再次查询 totalPrice.gross.amount（下称 AMT）
+4. `checkoutPaymentCreate(id: <checkout id>, input: { gateway: ""mirumee.payments.dummy"", token: ""fully-charged"", amount: AMT })`
+5. `mutation { checkoutComplete(id: <checkout id>) { order { id number status paymentStatus } errors { field code message } } }`","1. 获得 VID
+2. errors 为 []；availablePaymentGateways 含 `mirumee.payments.dummy`，不含 `mirumee.payments.adyen`
+3. errors 为 []，AMT > 0
+4. errors 为 []，payment 创建成功
+5. errors 为 []，order.id 非空，paymentStatus 为 FULLY_CHARGED，流程与 3.22 一致"
+TC034,B. Core 依赖与生产代码,R05 · 移除 Adyen 与 NP Atobarai 内置支付插件，存量数据不受影响,Dashboard 插件列表不再显示 Adyen，旧插件详情地址给出未找到提示,AC-05-2;I07,P2,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；已执行 TC028 的残留配置,"1. 浏览器打开 http://localhost:9000/ ，以 admin@example.com / admin 登录，打开 http://localhost:9000/extensions/installed 并查看插件/内置扩展列表
+2. 直接访问 http://localhost:9000/extensions/plugin/mirumee.payments.adyen","1. 列表中无 `Adyen` 与 `NP Atobarai`，其余插件正常显示
+2. 页面显示未找到状态，无白屏或未捕获异常"
+TC035,C. GraphQL 契约与生成产物,R06 · Core 提供 App 扩展的 `mountName`、`targetName`、`settings` 字段,NEW_TAB + POST 扩展返回大写 mountName/targetName 与 newTabTarget settings,AC-06-1;BD06;I01,P0,"运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；Django shell 已为 App pk=70（Saleor QA App，seed 创建；若不存在则用 populatedb/manifest 安装任一 App 代替）创建扩展：`AppExtension.objects.create(app_id=70, label='QA new tab', url='https://example.com/ext/create', mount='product_overview_create', target='new_tab', http_target_method='POST')`","1. 以 admin@example.com / admin 调用 `mutation { tokenCreate(email: ""admin@example.com"", password: ""admin"") { token errors { code } } }` 获取 staff token（下称 TOKEN）
+2. 发送 `{ appExtensions(first: 20, filter: { mount: [PRODUCT_OVERVIEW_CREATE] }) { edges { node { label mountName targetName settings mount target } } } }`","1. 获得 TOKEN
+2. HTTP 200，无 errors；label=`QA new tab` 的节点返回 mountName=`PRODUCT_OVERVIEW_CREATE`、targetName=`NEW_TAB`、settings=`{""newTabTarget"":{""method"":""POST""}}`、mount=`PRODUCT_OVERVIEW_CREATE`、target=`NEW_TAB`"
+TC036,C. GraphQL 契约与生成产物,R06 · Core 提供 App 扩展的 `mountName`、`targetName`、`settings` 字段,WIDGET + GET 扩展返回 widgetTarget settings，POPUP 扩展返回空对象,AC-06-2;BD06;I01,P0,"运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；Django shell 已为 App pk=70（Saleor QA App，seed 创建；若不存在则用 populatedb/manifest 安装任一 App 代替）创建扩展：`AppExtension.objects.create(app_id=70, label='QA new tab', url='https://example.com/ext/create', mount='product_overview_create', target='new_tab', http_target_method='POST')`","1. Django shell 创建：`AppExtension.objects.create(app_id=70, label='QA widget', url='https://example.com/ext/widget', mount='order_details_widgets', target='widget', http_target_method='GET')` 与 `AppExtension.objects.create(app_id=70, label='QA popup', url='https://example.com/ext/popup', mount='product_details_more_actions', target='popup')`
+2. 以 TOKEN 发送 `{ appExtensions(first: 50) { edges { node { label mountName targetName settings } } } }`","1. 创建成功
+2. `QA widget`：mountName=`ORDER_DETAILS_WIDGETS`、targetName=`WIDGET`、settings=`{""widgetTarget"":{""method"":""GET""}}`；`QA popup`：targetName=`POPUP`、settings=`{}`（不是 null）"
+TC037,C. GraphQL 契约与生成产物,R06 · Core 提供 App 扩展的 `mountName`、`targetName`、`settings` 字段,未配置方法的 NEW_TAB、APP_PAGE 返回空 settings，WIDGET + POST 返回 POST,AC-06-2;BD06;I01,P1,"运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；Django shell 已为 App pk=70（Saleor QA App，seed 创建；若不存在则用 populatedb/manifest 安装任一 App 代替）创建扩展：`AppExtension.objects.create(app_id=70, label='QA new tab', url='https://example.com/ext/create', mount='product_overview_create', target='new_tab', http_target_method='POST')`","1. Django shell 创建三条扩展（app_id=70）：`label='QA tab nomethod', mount='product_overview_more_actions', target='new_tab', http_target_method=None`；`label='QA app page', mount='navigation_catalog', target='app_page', url='/page'`；`label='QA widget post', mount='product_details_widgets', target='widget', http_target_method='POST'`
+2. 以 TOKEN 查询 `appExtensions(first: 50)` 的 label、targetName、settings","1. 创建成功
+2. `QA tab nomethod` settings=`{}`；`QA app page` targetName=`APP_PAGE`、settings=`{}`；`QA widget post` settings=`{""widgetTarget"":{""method"":""POST""}}`"
+TC038,C. GraphQL 契约与生成产物,R06 · Core 提供 App 扩展的 `mountName`、`targetName`、`settings` 字段,旧字段 options 返回值不变且与 settings 一致,AC-06-1;BD06;I01;I03,P1,"运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；Django shell 已为 App pk=70（Saleor QA App，seed 创建；若不存在则用 populatedb/manifest 安装任一 App 代替）创建扩展：`AppExtension.objects.create(app_id=70, label='QA new tab', url='https://example.com/ext/create', mount='product_overview_create', target='new_tab', http_target_method='POST')`；已执行 TC036",1. 以 TOKEN 发送 `{ appExtensions(first: 50) { edges { node { label settings options { ... on AppExtensionOptionsNewTab { newTabTarget { method } } ... on AppExtensionOptionsWidget { widgetTarget { method } } } } } } }`,1. `QA new tab` 的 options.newTabTarget.method=`POST`；`QA widget` 的 options.widgetTarget.method=`GET`；`QA popup` 的 options 为 null；与各自 settings 中的 method 一致，无 errors
+TC039,C. GraphQL 契约与生成产物,R06 · Core 提供 App 扩展的 `mountName`、`targetName`、`settings` 字段,appFetchManifest 返回的每个扩展都可查询 mountName/targetName/settings，未声明 target 时为 POPUP,AC-06-3;BD06;I02,P0,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；另起 API 实例 `HTTP_IP_FILTER_ALLOW_LOOPBACK_IPS=True uvicorn saleor.asgi:application --port 8003`（允许访问本机 manifest），下文 appFetchManifest 发往该实例,"1. 在 /workspace/scratch/manifest/ 写入 manifest.json：`{""id"":""qa.manifest.app"",""version"":""1.0.0"",""name"":""QA Manifest App"",""tokenTargetUrl"":""http://localhost:8888/api/register"",""appUrl"":""http://localhost:8888/app"",""permissions"":[""MANAGE_PRODUCTS"",""MANAGE_ORDERS""],""extensions"":[{""label"":""Create in new tab"",""mount"":""PRODUCT_OVERVIEW_CREATE"",""target"":""NEW_TAB"",""url"":""http://localhost:8888/ext/create"",""permissions"":[""MANAGE_PRODUCTS""],""options"":{""newTabTarget"":{""method"":""POST""}}},{""label"":""Order widget"",""mount"":""ORDER_DETAILS_WIDGETS"",""target"":""WIDGET"",""url"":""http://localhost:8888/ext/widget"",""permissions"":[""MANAGE_ORDERS""],""options"":{""widgetTarget"":{""method"":""GET""}}},{""label"":""Popup no target"",""mount"":""PRODUCT_DETAILS_MORE_ACTIONS"",""url"":""/ext/popup"",""permissions"":[""MANAGE_PRODUCTS""]}]}`，并 `python -m http.server 8888 -d /workspace/scratch/manifest`
+2. 以 admin@example.com / admin 调用 `mutation { tokenCreate(email: ""admin@example.com"", password: ""admin"") { token errors { code } } }` 获取 staff token（下称 TOKEN）
+3. 向允许回环地址的 API 实例发送 `mutation { appFetchManifest(manifestUrl: ""http://localhost:8888/manifest.json"") { manifest { extensions { label mountName targetName settings mount target } } errors { field code message } } }`","1. manifest 可通过 http://localhost:8888/manifest.json 访问
+2. 获得 TOKEN
+3. errors 为 []；`Create in new tab`：PRODUCT_OVERVIEW_CREATE / NEW_TAB / `{""newTabTarget"":{""method"":""POST""}}`；`Order widget`：ORDER_DETAILS_WIDGETS / WIDGET / `{""widgetTarget"":{""method"":""GET""}}`；`Popup no target`：PRODUCT_DETAILS_MORE_ACTIONS / POPUP / `{}`；mount、target 旧字段与新字段同值"
+TC040,C. GraphQL 契约与生成产物,R06 · Core 提供 App 扩展的 `mountName`、`targetName`、`settings` 字段,manifest 扩展校验规则保持不变（WIDGET 挂载点限制与 options 目标匹配）,AC-06-3;BD06;I02,P1,已执行上一用例的 manifest 服务与 :8003 API 实例,"1. 将 manifest 的第 1 个扩展改为 `""target"":""WIDGET""`、`""options"":{""widgetTarget"":{""method"":""GET""}}`（mount 仍为 PRODUCT_OVERVIEW_CREATE），执行 appFetchManifest
+2. 恢复后将第 2 个扩展改为 `""target"":""NEW_TAB""`（保留 widgetTarget options），执行 appFetchManifest
+3. 恢复后将第 1 个扩展的 url 改为 `https://other-host.example/ext`（NEW_TAB + POST），执行 appFetchManifest","1. errors 中含 code=INVALID、message=`Mount PRODUCT_OVERVIEW_CREATE is not available for WIDGET target.`，manifest 为 null
+2. errors 中含 code=INVALID，message 包含 `widgetTarget options must be set only on WIDGET target`
+3. errors 中含扩展 URL / options 相关的校验错误（与 3.22 行为一致，POST 扩展 URL 必须与 appUrl 同源）"
+TC041,C. GraphQL 契约与生成产物,R06 · Core 提供 App 扩展的 `mountName`、`targetName`、`settings` 字段,Core schema 中旧字段的 deprecated 原因与 Dashboard schema 逐字一致,AC-06-4;BD07;I01;I02;I03,P0,两端源码已更新到待测版本；node 与 graphql 包可用,"1. 用 node 脚本以 graphql.buildSchema 加载 /workspace/repos/saleor/saleor/graphql/schema.graphql 与 /workspace/repos/saleor-dashboard 的主 schema 文件（schema-main.graphql）
+2. 读取 AppExtension.mount / target / options、AppManifestExtension.mount / target 的 deprecationReason
+3. 读取 AppExtensionOptionsWidget.widgetTarget、WidgetTargetOptions.method、AppExtensionOptionsNewTab.newTabTarget、NewTabTargetOptions.method 的 deprecationReason
+4. 读取 AppExtension.mountName/targetName/settings 与 AppManifestExtension 同名字段的类型与描述","1. 两份 schema 均加载成功
+2. 依次为 ``Use `mountName` instead.``、``Use `targetName` instead.``、``Use `settings` field instead.``、``Use `mountName` instead.``、``Use `targetName` instead.``，两边相同
+3. 均为 ``Use `settings` field directly.``，两边相同
+4. 类型分别为 String!、String!、JSON!；描述两边一致（含 `Added in Saleor 3.22.`）"
+TC042,C. GraphQL 契约与生成产物,R06 · Core 提供 App 扩展的 `mountName`、`targetName`、`settings` 字段,appExtensions 权限：匿名拒绝，App token 只能看到自己的扩展,AC-06-1;I01,P1,"运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；Django shell 已为 App pk=70（Saleor QA App，seed 创建；若不存在则用 populatedb/manifest 安装任一 App 代替）创建扩展：`AppExtension.objects.create(app_id=70, label='QA new tab', url='https://example.com/ext/create', mount='product_overview_create', target='new_tab', http_target_method='POST')`","1. 不带鉴权头发送 `{ appExtensions(first: 10) { edges { node { mountName } } } }`
+2. Django shell 为 App pk=70 创建 token：`from saleor.app.models import AppToken; _, raw = AppToken.objects.create_with_token(app_id=70, name='qa'); print(raw)`；再为另一个 App 创建扩展 label='QA other app'
+3. 以 `Authorization: Bearer <raw>` 查询 `appExtensions(first: 50) { edges { node { label settings } } }`","1. 字段级 errors[0].extensions.exception.code = `PermissionDenied`，data.appExtensions 为 null
+2. token 与扩展创建成功
+3. 只返回 App 70 的扩展（含 `QA new tab`），不含 `QA other app`；settings 正常返回"
+TC043,C. GraphQL 契约与生成产物,R06 · Core 提供 App 扩展的 `mountName`、`targetName`、`settings` 字段,Dashboard 商品列表“创建”扩展（NEW_TAB + POST）显示并以 POST 打开新标签页,AC-06-5;FD09;BD06,P0,"运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；Django shell 已为 App pk=70（Saleor QA App，seed 创建；若不存在则用 populatedb/manifest 安装任一 App 代替）创建扩展：`AppExtension.objects.create(app_id=70, label='QA new tab', url='https://example.com/ext/create', mount='product_overview_create', target='new_tab', http_target_method='POST')`；App 70 处于激活状态","1. 浏览器打开 http://localhost:9000/ ，以 admin@example.com / admin 登录，打开浏览器控制台，进入 http://localhost:9000/products/
+2. 点击商品列表页右上角“创建”按钮旁的下拉/扩展菜单
+3. 点击 `QA new tab`，观察新打开的标签页及其请求
+4. 检查控制台日志","1. 商品列表正常加载
+2. 菜单中出现 `QA new tab` 项
+3. 新标签页以 POST 方式请求 https://example.com/ext/create，表单字段包含 accessToken、appId、saleorApiUrl=http://localhost:8000/graphql/
+4. 不出现 `Invalid extension configuration`"
+TC044,C. GraphQL 契约与生成产物,R06 · Core 提供 App 扩展的 `mountName`、`targetName`、`settings` 字段,Dashboard 订单详情页渲染 WIDGET 扩展（GET 与 POST 两种方式）,AC-06-5;FD09;BD06,P0,"运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；Django shell 已为 App pk=70（Saleor QA App，seed 创建；若不存在则用 populatedb/manifest 安装任一 App 代替）创建扩展：`AppExtension.objects.create(app_id=70, label='QA new tab', url='https://example.com/ext/create', mount='product_overview_create', target='new_tab', http_target_method='POST')`；已执行 TC036（QA widget）","1. 浏览器打开 http://localhost:9000/ ，以 admin@example.com / admin 登录，打开任一订单详情页 http://localhost:9000/orders/<Order ID>，打开控制台
+2. 查看右侧栏的小部件卡片
+3. Django shell 将 `QA widget` 改为 `http_target_method='POST'`，刷新页面
+4. 检查控制台日志","1. 页面正常加载
+2. 出现 `QA widget` 卡片，内含 iframe，src 以 https://example.com/ext/widget 开头并附带 orderId 等参数（GET 方式）
+3. 卡片改为通过隐藏 form（method=POST，target=ext-frame-<id>）提交到 https://example.com/ext/widget 并在 iframe 中加载
+4. 不出现 `Invalid extension configuration`"
+TC045,C. GraphQL 契约与生成产物,R07 · Core 与 Dashboard 的 schema 文件及 Dashboard 生成产物一致,Core 与 Dashboard 主 schema 双向 findBreakingChanges 为空且无单向新增,AC-07-1;BD07;FD02,P0,两端源码已更新到待测版本,"1. node 脚本：buildSchema 加载 /workspace/repos/saleor/saleor/graphql/schema.graphql（A）与 /workspace/repos/saleor-dashboard/schema-main.graphql（B）
+2. 执行 findBreakingChanges(A,B)、findBreakingChanges(B,A)、findDangerousChanges(A,B)、findDangerousChanges(B,A)
+3. 枚举两边全部类型名、每个对象/输入类型的字段名与参数名、每个枚举的值名，求双向差集
+4. 比较两边每个字段/枚举值的 deprecationReason","1. 加载成功
+2. 四个结果均为空数组
+3. 所有差集为空
+4. 全部相同"
+TC046,C. GraphQL 契约与生成产物,R07 · Core 与 Dashboard 的 schema 文件及 Dashboard 生成产物一致,Core schema.graphql 与代码重新生成的结果一致，并与 target-schema 等价,AC-07-1;BD07,P0,Core 源码已更新到待测版本,"1. 在 /workspace/repos/saleor 执行 `python manage.py get_graphql_schema > /workspace/scratch/schema.gen.graphql`
+2. `diff saleor/graphql/schema.graphql /workspace/scratch/schema.gen.graphql`
+3. 用 findBreakingChanges 双向比较 schema.gen.graphql 与 /workspace/artifacts/sprint1/tech-design/target-schema.graphql","1. 命令成功
+2. 无差异
+3. 双向均为空，无单向新增"
+TC047,C. GraphQL 契约与生成产物,R07 · Core 与 Dashboard 的 schema 文件及 Dashboard 生成产物一致,用 Core schema 校验 Dashboard 全部 GraphQL 文档：字段错误 0、重复片段 0,AC-07-2;FD02,P0,两端源码已更新到待测版本,"1. node 脚本：按 /workspace/repos/saleor-dashboard/codegen-main.ts 的 documents 配置（src/**/queries.ts、src/**/mutations.ts、src/**/fragments/*.ts、src/searches/*.ts）提取全部 gql 文档
+2. 以 Core schema.graphql 为 schema 执行 graphql.validate（片段跨文件合并）
+3. 统计 FragmentDefinition 名称出现次数
+4. 检查 `PageTypeDeleteErrorFragment` 与 `PageTypeBulkDeleteErrorFragment` 的定义与引用位置","1. 提取到全部定义（数量与设计记录的 640 左右一致）
+2. 校验错误数为 0
+3. 所有片段名出现次数均为 1
+4. 两个片段各定义一次；PageTypeBulkDelete mutation 展开 `...PageTypeBulkDeleteErrorFragment`"
+TC048,C. GraphQL 契约与生成产物,R07 · Core 与 Dashboard 的 schema 文件及 Dashboard 生成产物一致,离线执行 generate:main 后已提交的生成产物无变化,AC-07-3;FD02,P0,Dashboard 源码已更新到待测版本；node_modules 已预装,"1. 备份：`cp -r /workspace/repos/saleor-dashboard/src/graphql /workspace/scratch/graphql.before`
+2. 断开外网，在 Dashboard 根目录执行 `pnpm run generate:main`
+3. `diff -r /workspace/scratch/graphql.before /workspace/repos/saleor-dashboard/src/graphql`，并执行 `git -c safe.directory='*' status --porcelain src/graphql`","1. 备份完成
+2. 命令退出码 0，不访问网络
+3. 无差异；git status 对 src/graphql/*.generated.ts 无输出"
+TC049,C. GraphQL 契约与生成产物,R07 · Core 与 Dashboard 的 schema 文件及 Dashboard 生成产物一致,pnpm run check-types 通过,AC-07-4;FD02;FD03,P0,Dashboard 源码已更新到待测版本,1. 在 /workspace/repos/saleor-dashboard 执行 `pnpm run check-types`,1. check-types:src（tsc --noEmit && tsc-strict）与 check-types:playwright 均退出码 0，无类型错误
+TC050,C. GraphQL 契约与生成产物,R07 · Core 与 Dashboard 的 schema 文件及 Dashboard 生成产物一致,所有引用 schema 的配置指向真实存在的文件，staging 产物不覆盖 main 产物,AC-07-3;FD02,P1,Dashboard 源码已更新到待测版本,"1. 在 /workspace/repos/saleor-dashboard 检查 codegen-main.ts、codegen-staging.ts、graphql.config.ts、apollo.config.js、Dockerfile、scripts/fetch-local-schema.cjs 中出现的 schema 文件路径，逐一 `test -f`
+2. 记录 src/graphql/*.generated.ts 的 sha256，执行 `pnpm run generate:staging`
+3. 再次计算 src/graphql/*.generated.ts 的 sha256 并查看 staging 输出目录","1. 所有引用的 schema 文件都存在（如 schema-main.graphql、schema-staging.graphql）
+2. 命令退出码 0
+3. main 产物哈希不变；staging 产物写入独立目录（如 src/graphql/staging/）"
+TC051,C. GraphQL 契约与生成产物,R07 · Core 与 Dashboard 的 schema 文件及 Dashboard 生成产物一致,片段改名后 Dashboard 批量删除页面类型仍正常（SALEOR_190 场景）,AC-07-2;FD02,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；已执行 E2E 播种脚本 /workspace/seed_e2e_fixtures.py（或 run-suite.sh dash-e2e 的播种步骤）,"1. 浏览器打开 http://localhost:9000/ ，以 admin@example.com / admin 登录，打开 http://localhost:9000/page-types/
+2. 勾选 2 个由播种脚本创建的待删除页面类型，点击批量删除并确认","1. 列表正常加载
+2. 出现 `[data-test-type=""success""]` 通知，两条记录从列表消失；控制台无 GraphQL 校验错误"
+TC052,D. API 行为,R08 · API 支持可配置的根 mutation 数量上限 `GRAPHQL_MUTATION_COUNT_LIMIT`,limit=2 时 3 个带 alias 的 updateMetadata 被整体拒绝，数据库不变,AC-08-1;BD08;I04,P0,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；在 Core 仓库 /workspace/repos/saleor 下以 `GRAPHQL_MUTATION_COUNT_LIMIT=2 uvicorn saleor.asgi:application --port 8001` 另起一个 API 实例（与运行时同库），下文请求均发往 http://localhost:8001/graphql/,"1. 以 admin@example.com / admin 调用 `mutation { tokenCreate(email: ""admin@example.com"", password: ""admin"") { token errors { code } } }` 获取 staff token（下称 TOKEN）
+2. 以 TOKEN 向 :8001 发送 `mutation UpdateThree($input: [MetadataInput!]!) { a: updateMetadata(id: ""UHJvZHVjdDoxMjc="", input: $input) { errors { field code } } b: updateMetadata(id: ""UHJvZHVjdDoxMjg="", input: $input) { errors { field code } } c: updateMetadata(id: ""UHJvZHVjdDoxMjk="", input: $input) { errors { field code } } }`，variables=`{""input"":[{""key"":""qa-limit"",""value"":""x""}]}`
+3. 检查响应体的 errors 内容
+4. 查询 `{ a: product(id: ""UHJvZHVjdDoxMjc="") { metafield(key: ""qa-limit"") } b: product(id: ""UHJvZHVjdDoxMjg="") { metafield(key: ""qa-limit"") } c: product(id: ""UHJvZHVjdDoxMjk="") { metafield(key: ""qa-limit"") } }`","1. 获得 TOKEN
+2. HTTP 400，响应体不含 `data` 键
+3. errors[0].message = `Number of root mutations (3) exceeds the limit of 2.`；extensions.mutationCount = `{""requested"":3,""maximumAvailable"":2}`；extensions.exception.code = `MutationCountLimitError`
+4. 三个 metafield 均为 null（未写入）"
+TC053,D. API 行为,R08 · API 支持可配置的根 mutation 数量上限 `GRAPHQL_MUTATION_COUNT_LIMIT`,通过片段展开与内联片段到达根级的 mutation 同样计数,AC-08-1;BD08;I04,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；在 Core 仓库 /workspace/repos/saleor 下以 `GRAPHQL_MUTATION_COUNT_LIMIT=2 uvicorn saleor.asgi:application --port 8001` 另起一个 API 实例（与运行时同库），下文请求均发往 http://localhost:8001/graphql/,"1. 向 :8001 发送 `mutation M($input: [MetadataInput!]!) { ...F } fragment F on Mutation { a: updateMetadata(id: ""UHJvZHVjdDoxMjc="", input: $input) { errors { code } } b: updateMetadata(id: ""UHJvZHVjdDoxMjg="", input: $input) { errors { code } } c: updateMetadata(id: ""UHJvZHVjdDoxMjk="", input: $input) { errors { code } } }`（TOKEN，input 同上）
+2. 发送 `mutation N($input: [MetadataInput!]!) { a: updateMetadata(id: ""UHJvZHVjdDoxMjc="", input: $input) { errors { code } } ... on Mutation { b: updateMetadata(id: ""UHJvZHVjdDoxMjg="", input: $input) { errors { code } } c: updateMetadata(id: ""UHJvZHVjdDoxMjk="", input: $input) { errors { code } } } }`
+3. 查询三个商品的 metafield(key: ""qa-limit"")","1. HTTP 400，mutationCount.requested = 3，maximumAvailable = 2
+2. HTTP 400，mutationCount.requested = 3
+3. 均为 null"
+TC054,D. API 行为,R08 · API 支持可配置的根 mutation 数量上限 `GRAPHQL_MUTATION_COUNT_LIMIT`,limit=2 时恰好 2 个根 mutation 正常执行并返回两个结果,AC-08-2;BD08;I04,P0,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；在 Core 仓库 /workspace/repos/saleor 下以 `GRAPHQL_MUTATION_COUNT_LIMIT=2 uvicorn saleor.asgi:application --port 8001` 另起一个 API 实例（与运行时同库），下文请求均发往 http://localhost:8001/graphql/,"1. 以 TOKEN 向 :8001 发送 `mutation Two($input: [MetadataInput!]!) { a: updateMetadata(id: ""UHJvZHVjdDoxMjc="", input: $input) { item { ... on Product { metafield(key: ""qa-two"") } } errors { code } } b: updateMetadata(id: ""UHJvZHVjdDoxMjg="", input: $input) { item { ... on Product { metafield(key: ""qa-two"") } } errors { code } } }`，variables=`{""input"":[{""key"":""qa-two"",""value"":""ok""}]}`",1. HTTP 200，无顶层 errors；data.a 与 data.b 的 errors 均为 []，item.metafield 均为 `ok`
+TC055,D. API 行为,R08 · API 支持可配置的根 mutation 数量上限 `GRAPHQL_MUTATION_COUNT_LIMIT`,根级 __typename 不计入 mutation 数量,AC-08-2;BD08;I04,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；在 Core 仓库 /workspace/repos/saleor 下以 `GRAPHQL_MUTATION_COUNT_LIMIT=2 uvicorn saleor.asgi:application --port 8001` 另起一个 API 实例（与运行时同库），下文请求均发往 http://localhost:8001/graphql/,1. 在上一用例的请求根选择集中额外加入 `__typename`，向 :8001（limit=2）发送,1. HTTP 200，未被拒绝；data.__typename = `Mutation`，a、b 正常执行
+TC056,D. API 行为,R08 · API 支持可配置的根 mutation 数量上限 `GRAPHQL_MUTATION_COUNT_LIMIT`,多操作文档只统计 operationName 指定的操作,AC-08-1;AC-08-2;BD08;I04,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；在 Core 仓库 /workspace/repos/saleor 下以 `GRAPHQL_MUTATION_COUNT_LIMIT=2 uvicorn saleor.asgi:application --port 8001` 另起一个 API 实例（与运行时同库），下文请求均发往 http://localhost:8001/graphql/,"1. 构造文档：操作 `mutation Big($input: [MetadataInput!]!)` 含 a/b/c 三个 updateMetadata（同 TC052），操作 `mutation Small($input: [MetadataInput!]!)` 只含 `updateMetadata(id: ""UHJvZHVjdDoxMjc="", input: $input) { errors { code } }`；以 operationName=`Small` 发送到 :8001
+2. 同一文档以 operationName=`Big` 发送","1. HTTP 200，Small 正常执行
+2. HTTP 400，mutationCount.requested = 3"
+TC057,D. API 行为,R08 · API 支持可配置的根 mutation 数量上限 `GRAPHQL_MUTATION_COUNT_LIMIT`,批量请求中每个操作单独判定,AC-08-1;AC-08-2;BD08;I04,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；在 Core 仓库 /workspace/repos/saleor 下以 `GRAPHQL_MUTATION_COUNT_LIMIT=2 uvicorn saleor.asgi:application --port 8001` 另起一个 API 实例（与运行时同库），下文请求均发往 http://localhost:8001/graphql/,"1. 以 TOKEN 向 :8001 发送 JSON 数组：第 1 项为 TC054 的 2 个 mutation（key=`qa-batch-1`，value=`x`），第 2 项为 TC052 的 3 个 mutation（key=`qa-batch-2`，value=`x`）
+2. 分别查询三个商品的 metafield(key: ""qa-batch-1"") 与 metafield(key: ""qa-batch-2"")","1. 响应为数组：第 1 项含 data 且两个结果 errors 为 []；第 2 项只含 errors（MutationCountLimitError，requested=3），无 data
+2. Product 127、128 的 qa-batch-1 = `x`；三个商品的 qa-batch-2 均为 null"
+TC058,D. API 行为,R08 · API 支持可配置的根 mutation 数量上限 `GRAPHQL_MUTATION_COUNT_LIMIT`,limit=1 时含 5 个根字段的 query 不受限制,AC-08-3;BD08;I04,P0,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；在 Core 仓库 /workspace/repos/saleor 下以 `GRAPHQL_MUTATION_COUNT_LIMIT=1 uvicorn saleor.asgi:application --port 8001` 另起一个 API 实例（与运行时同库），下文请求均发往 http://localhost:8001/graphql/,"1. 以 TOKEN 向 limit=1 的实例发送 `{ shop { name } channels { slug } categories(first: 1) { totalCount } products(first: 1, channel: ""default-channel"") { totalCount } collections(first: 1, channel: ""default-channel"") { totalCount } }`
+2. 向同一实例发送只含 1 个根 mutation 的 updateMetadata 请求","1. HTTP 200，无 errors，5 个根字段均有数据
+2. HTTP 200，正常执行"
+TC059,D. API 行为,R08 · API 支持可配置的根 mutation 数量上限 `GRAPHQL_MUTATION_COUNT_LIMIT`,上限对匿名请求同样生效,AC-08-1;BD08;I04,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；在 Core 仓库 /workspace/repos/saleor 下以 `GRAPHQL_MUTATION_COUNT_LIMIT=1 uvicorn saleor.asgi:application --port 8001` 另起一个 API 实例（与运行时同库），下文请求均发往 http://localhost:8001/graphql/,"1. 不带鉴权头向 limit=1 的实例发送 `mutation { a: tokenCreate(email: ""admin@example.com"", password: ""admin"") { token } b: tokenCreate(email: ""admin@example.com"", password: ""admin"") { token } }`",1. HTTP 400，message = `Number of root mutations (2) exceeds the limit of 1.`，无 data，未签发任何 token
+TC060,D. API 行为,R08 · API 支持可配置的根 mutation 数量上限 `GRAPHQL_MUTATION_COUNT_LIMIT`,limit=0 时 10 个根 mutation 不因数量被拒绝,AC-08-4;BD08;I04,P0,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；在 Core 仓库 /workspace/repos/saleor 下以 `GRAPHQL_MUTATION_COUNT_LIMIT=0 uvicorn saleor.asgi:application --port 8001` 另起一个 API 实例（与运行时同库），下文请求均发往 http://localhost:8001/graphql/,"1. 以 TOKEN 向 limit=0 的实例发送 10 个 alias（m0…m9）的 `updateMetadata(id: ""UHJvZHVjdDoxMjc="", input: [{key: ""qa-k<i>"", value: ""<i>""}])`
+2. 查询 Product 127 的 metafields(keys: [""qa-k0"",""qa-k9""])","1. HTTP 200，无 MutationCountLimitError，10 个结果的 errors 均为 []
+2. 返回 `{""qa-k0"":""0"",""qa-k9"":""9""}`"
+TC061,D. API 行为,R08 · API 支持可配置的根 mutation 数量上限 `GRAPHQL_MUTATION_COUNT_LIMIT`,未设置环境变量时使用默认上限,AC-08-1;AC-08-2;BD08;I04,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. `env -u GRAPHQL_MUTATION_COUNT_LIMIT uvicorn saleor.asgi:application --port 8004` 启动实例，执行 `python -c ""...; print(settings.GRAPHQL_MUTATION_COUNT_LIMIT)""` 读取默认值 D（设计假设为 3，见 PRD Q4）
+2. 向 :8004 发送 D 个 alias 的 updateMetadata
+3. 向 :8004 发送 D+1 个 alias 的 updateMetadata","1. D 为正整数，与上游 3.23 默认值一致
+2. HTTP 200，正常执行
+3. HTTP 400，message = `Number of root mutations (D+1) exceeds the limit of D.`"
+TC062,D. API 行为,R08 · API 支持可配置的根 mutation 数量上限 `GRAPHQL_MUTATION_COUNT_LIMIT`,运行时（limit=4）在 Dashboard 编辑变体属性、价格、库存、元数据并保存成功,AC-08-5;FD10;BD08,P0,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；已执行 E2E 播种脚本 /workspace/seed_e2e_fixtures.py（或 run-suite.sh dash-e2e 的播种步骤）,"1. 浏览器打开 http://localhost:9000/ ，以 admin@example.com / admin 登录，打开浏览器 Network 面板，访问 http://localhost:9000/products/variant/UHJvZHVjdFZhcmlhbnQ6MTIzMg==
+2. 选择变体属性的最后一个可选值；在 USD 渠道将售价改为 120、成本价改为 100；在仓库 Africa 的库存数量填 5000（若未分配则先点击 `assign-warehouse-button` 分配 Africa）；在元数据卡片新增 key `qa-key`、value `qa-value`
+3. 点击保存（`button-bar-confirm`）
+4. 检查 Network 中 operationName=VariantUpdate 的请求
+5. 刷新页面","1. 变体编辑页加载
+2. 表单显示修改
+3. 出现 `[data-test-type=""success""]` 通知
+4. HTTP 200，响应无 `MutationCountLimitError`
+5. 属性值、售价 120、成本 100、Africa 库存 5000、元数据 qa-key=qa-value 均保持"
+TC063,D. API 行为,R08 · API 支持可配置的根 mutation 数量上限 `GRAPHQL_MUTATION_COUNT_LIMIT`,运行时（limit=4）5 个根 mutation 的请求被拒绝,AC-08-5;BD08;I04,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 以 TOKEN 向 http://localhost:8000/graphql/ 发送 5 个 alias 的 updateMetadata（Product 127，key qa-rt-0…4）
+2. 以 TOKEN 发送 4 个 alias 的 updateMetadata（key qa-rt4-0…3）","1. HTTP 400，message = `Number of root mutations (5) exceeds the limit of 4.`，元数据未写入
+2. HTTP 200，4 个结果均成功"
+TC064,D. API 行为,R08 · API 支持可配置的根 mutation 数量上限 `GRAPHQL_MUTATION_COUNT_LIMIT`,Dashboard 全部 mutation 文档的根 mutation 数最大不超过 4,AC-08-6;FD10,P0,Dashboard 源码已更新到待测版本,"1. 在 /workspace/repos/saleor-dashboard 执行 `node scripts/check-mutation-count.cjs`
+2. 另用独立 node 脚本（graphql 解析 codegen documents，展开片段、alias 各计一次）统计每个 mutation 操作的根字段数并排序","1. 退出码 0，报告最大值为 4
+2. 最大为 VariantUpdate = 4，其次 MenuUpdate = 3；无任何操作 > 4；FD03 新增的鉴权 mutation 均为 1"
+TC065,D. API 行为,R08 · API 支持可配置的根 mutation 数量上限 `GRAPHQL_MUTATION_COUNT_LIMIT`,3 个根 mutation 的 MenuUpdate 在运行时正常保存（SALEOR_198 场景）,AC-08-6;FD10,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；已执行 E2E 播种脚本 /workspace/seed_e2e_fixtures.py（或 run-suite.sh dash-e2e 的播种步骤）,"1. 浏览器打开 http://localhost:9000/ ，以 admin@example.com / admin 登录，打开 http://localhost:9000/navigation/ 中播种的待更新菜单
+2. 修改菜单名称为 `qa menu updated`，新增/删除一个菜单项后保存","1. 详情页加载
+2. 出现成功通知，刷新后修改保持；Network 中 MenuUpdate 返回 200"
+TC066,D. API 行为,R08 · API 支持可配置的根 mutation 数量上限 `GRAPHQL_MUTATION_COUNT_LIMIT`,上限低于文档根 mutation 数时 Dashboard 给出错误通知而非静默失败,AC-08-5;FD10,P2,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 以 `GRAPHQL_MUTATION_COUNT_LIMIT=3` 在 :8000 重启 API（测后恢复为 4）
+2. 按 TC062 修改变体后点击保存","1. API 启动成功
+2. 出现 `[data-test-type=""error""]` 通知，错误日志中可见 `Number of root mutations (4) exceeds the limit of 3.`；数据未保存"
+TC067,D. API 行为,R09 · 客户搜索支持 `search_vector`（全文检索）,3.22 库执行 migrate 后 account_user 新增 search_vector 列与 GIN 索引,AC-09-1;BD09;BD10,P1,已准备 3.22 存量库 saleor_322：用 3.22.0 基线代码对空库执行 migrate 与 populatedb --createsuperuser，并记录 account_user 行数,"1. 切换到 3.23 代码，以 DATABASE_URL 指向 saleor_322 在 /workspace/repos/saleor 执行 `python manage.py migrate`
+2. `psql saleor_322 -c '\d account_user'`
+3. `python manage.py showmigrations account | tail -3`","1. 退出码 0，无锁等待超时
+2. 存在列 `search_vector tsvector`（可空）与索引 `user_search_vector_idx` gin (search_vector)
+3. 0096_user_search_vector 与 0097_user_search_vector_idx 均为 [X]（以实际文件名为准）"
+TC068,D. API 行为,R09 · 客户搜索支持 `search_vector`（全文检索）,存量用户的 search_vector 由回填任务补齐，任务可重复执行,AC-09-1;BD09,P1,已准备 3.22 存量库 saleor_322：用 3.22.0 基线代码对空库执行 migrate 与 populatedb --createsuperuser，并记录 account_user 行数；已执行上一用例,"1. 在 saleor_322 上启动 celery worker（或在 shell 中直接调用 `populate_user_search_vector_task()`），等待任务链完成
+2. `psql saleor_322 -c 'select count(*) from account_user where search_vector is null'`
+3. 再次调用回填任务，并对比一个用户的 search_vector 与 updated_at","1. 任务日志无异常
+2. 结果为 0
+3. 任务正常结束，已有值的用户不被修改"
+TC069,D. API 行为,R09 · 客户搜索支持 `search_vector`（全文检索）,新建客户后按名、邮箱片段、城市搜索均能命中,AC-09-2;BD09;I06,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；库中不存在 jane.doe@example.com,"1. 以 admin@example.com / admin 调用 `mutation { tokenCreate(email: ""admin@example.com"", password: ""admin"") { token errors { code } } }` 获取 staff token（下称 TOKEN）
+2. `mutation { customerCreate(input: { email: ""jane.doe@example.com"", firstName: ""Jane"", lastName: ""Doe"", defaultShippingAddress: { firstName: ""Jane"", lastName: ""Doe"", streetAddress1: ""ul. Świdnicka 1"", city: ""Wrocław"", postalCode: ""50-066"", country: PL } }) { user { id } errors { field code } } }`
+3. 依次查询 `customers(search: ""jane"", first: 10)`、`customers(search: ""doe@example"", first: 10)`、`customers(search: ""Wrocław"", first: 10)` 的 edges.node.email","1. 获得 TOKEN
+2. errors 为 []，返回 user.id
+3. 三次结果均包含 `jane.doe@example.com`"
+TC070,D. API 行为,R09 · 客户搜索支持 `search_vector`（全文检索）,搜索不区分大小写，支持多词、邮编及 filter.search 入口,AC-09-2;BD09;I06,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；已执行上一用例,"1. 查询 `customers(search: ""WROCŁAW"", first: 10)`
+2. 查询 `customers(search: ""jane doe"", first: 10)` 与 `customers(search: ""50-066"", first: 10)`
+3. 查询 `customers(filter: { search: ""jane"" }, first: 10)`
+4. 查询 `customers(search: ""zzz-no-such-user"", first: 10)`","1. 包含 jane.doe@example.com
+2. 两次均包含 jane.doe@example.com
+3. 包含 jane.doe@example.com，与 search 参数结果一致
+4. edges 为空，无错误"
+TC071,D. API 行为,R09 · 客户搜索支持 `search_vector`（全文检索）,更新客户姓为 Smith 后可按 smith 搜索到,AC-09-3;BD09;I06,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；已执行 TC069,"1. `mutation { customerUpdate(id: ""<Jane 的 ID>"", input: { lastName: ""Smith"" }) { user { lastName } errors { code } } }`
+2. 查询 `customers(search: ""smith"", first: 10)`","1. errors 为 []，lastName = `Smith`
+2. 结果包含 jane.doe@example.com"
+TC072,D. API 行为,R09 · 客户搜索支持 `search_vector`（全文检索）,地址新增、customerBulkUpdate 等写入路径同步维护 search_vector,AC-09-3;BD09,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；已执行 TC069,"1. `mutation { addressCreate(userId: ""<Jane 的 ID>"", input: { firstName: ""Jane"", lastName: ""Smith"", streetAddress1: ""Długa 5"", city: ""Gdańsk"", postalCode: ""80-827"", country: PL }) { address { id } errors { code } } }`，然后 `customers(search: ""Gdańsk"")`
+2. `mutation { customerBulkUpdate(customers: [{ id: ""<Jane 的 ID>"", input: { firstName: ""Janina"" } }]) { count errors { code } } }`，然后 `customers(search: ""janina"")`
+3. Django shell 读取该用户 `search_vector`","1. 地址创建成功，搜索命中 jane.doe@example.com
+2. count = 1，搜索命中
+3. search_vector 中包含 `gdańsk`、`janina` 等词元"
+TC073,D. API 行为,R09 · 客户搜索支持 `search_vector`（全文检索）,search_vector 尚未回填的用户仍可通过 search_document 搜到,AC-09-1;BD09;I06,P2,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；已执行 E2E 播种脚本 /workspace/seed_e2e_fixtures.py（或 run-suite.sh dash-e2e 的播种步骤）,"1. `psql -c ""update account_user set search_vector = null where email = 'e2e_customer@delete.com'""`
+2. 查询 `customers(search: ""e2e_customer@delete.com"", first: 10)` 与 `customers(search: ""delete.com"", first: 10)`","1. 更新 1 行
+2. 两次结果均包含 e2e_customer@delete.com"
+TC074,D. API 行为,R09 · 客户搜索支持 `search_vector`（全文检索）,staffUsers 的 filter.search 正常命中员工,AC-09-2;I06,P2,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；已执行 E2E 播种脚本 /workspace/seed_e2e_fixtures.py（或 run-suite.sh dash-e2e 的播种步骤）,"1. 以 TOKEN 查询 `{ staffUsers(first: 10, filter: { search: ""admin@example"" }) { edges { node { email } } } }`
+2. 查询 `staffUsers(first: 10, filter: { search: ""test123"" })`","1. 结果包含 admin@example.com
+2. 结果包含 test123@hotmail.com"
+TC075,D. API 行为,R09 · 客户搜索支持 `search_vector`（全文检索）,播种脚本 tier_user_search 走 search_vector 分支并成功执行,AC-09-4;BD09,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 在 /workspace/repos/saleor 执行 `python -c ""import django,os; os.environ['DJANGO_SETTINGS_MODULE']='saleor.settings'; django.setup(); from saleor.account.models import User; from saleor.account.search import update_user_search_vector; print(any(f.name=='search_vector' for f in User._meta.get_fields()))""`
+2. 执行 `python /workspace/seed_e2e_fixtures.py > /workspace/scratch/seed.log 2>&1`
+3. 查看 seed.log 中 tier_user_search 的输出，并在 shell 中读取 `User.objects.get(pk=1367).search_vector`","1. 输出 `True`，导入 update_user_search_vector 成功
+2. 退出码 0
+3. 日志无 Traceback；search_vector 非空"
+TC076,D. API 行为,R09 · 客户搜索支持 `search_vector`（全文检索）,Dashboard 客户列表按邮箱搜索能定位目标客户（customers.spec.ts 场景）,AC-09-4;I06,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；已执行 E2E 播种脚本 /workspace/seed_e2e_fixtures.py（或 run-suite.sh dash-e2e 的播种步骤）,"1. 浏览器打开 http://localhost:9000/ ，以 admin@example.com / admin 登录，打开 http://localhost:9000/customers/
+2. 在搜索框输入 `e2e_customer@delete.com`
+3. 清空后输入 `bulk-delete`","1. 列表加载
+2. 列表只显示 1 行，邮箱为 e2e_customer@delete.com
+3. 显示 3 行：e2e_customer_1/2/3_bulk-delete@saleor.io"
+TC077,E. Dashboard 依赖、构建与工程化,R10 · Dashboard 依赖与构建声明和 3.23.0 目标清单一致,package.json 的依赖、脚本、engines、packageManager、版本与目标清单逐键一致,AC-10-1;FD01,P0,Dashboard 源码已更新到待测版本,"1. node 脚本加载 /workspace/repos/saleor-dashboard/package.json 与 /opt/environment/dependencies/target/saleor-dashboard/package.json
+2. 逐键比较 dependencies、devDependencies、scripts、engines、packageManager、config.saleor.schemaVersion、version
+3. 检查关键条目","1. 两份文件可解析
+2. 全部键值相等，差异列表为空
+3. 不含 `@material-ui/icons`、`@saleor/sdk`；含 `@react-editor-js/core` 2.1.0、`history` 4.10.1、`moment` 2.30.1、`react-transition-group` 4.4.5、`sonner` ^2.0.7；engines 为 node `>=24 <25`、pnpm `>=10`"
+TC078,E. Dashboard 依赖、构建与工程化,R10 · Dashboard 依赖与构建声明和 3.23.0 目标清单一致,离线 pnpm install --frozen-lockfile 成功，锁文件与 workspace 配置和目标一致,AC-10-2;FD01,P0,Dashboard 源码已更新到待测版本；node_modules 已预装,"1. 断开外网，在 /workspace/repos/saleor-dashboard 执行 `pnpm install --frozen-lockfile --offline`
+2. `diff pnpm-workspace.yaml /opt/environment/dependencies/target/saleor-dashboard/pnpm-workspace.yaml` 与 `diff pnpm-lock.yaml /opt/environment/dependencies/target/saleor-dashboard/pnpm-lock.yaml`
+3. `grep -c ""@saleor/sdk"" pnpm-lock.yaml`；`grep -n ""sonner@2.0.7"" pnpm-lock.yaml`","1. 退出码 0，不出现 ERR_PNPM_OUTDATED_LOCKFILE 或网络请求
+2. 两者均无差异（含 blockExoticSubdeps、minimumReleaseAge 及排除项、trustPolicy: no-downgrade、overrides、auditConfig.ignoreCves）
+3. 第一个结果为 0；第二个有匹配行"
+TC079,E. Dashboard 依赖、构建与工程化,R10 · Dashboard 依赖与构建声明和 3.23.0 目标清单一致,src 中不存在对 @saleor/sdk 与 @material-ui/icons 的导入,AC-10-3;FD03;FD04,P0,Dashboard 源码已更新到待测版本,"1. 在 /workspace/repos/saleor-dashboard 执行 `grep -rn 'from ""@saleor/sdk' src`
+2. 执行 `grep -rn 'from ""@material-ui/icons' src`
+3. 执行 `grep -rnE ""require\(['\""]@saleor/sdk|import\(['\""]@saleor/sdk"" src`","1. 无输出
+2. 无输出
+3. 无输出"
+TC080,E. Dashboard 依赖、构建与工程化,R10 · Dashboard 依赖与构建声明和 3.23.0 目标清单一致,pnpm run build 成功，nginx :9000 提供的登录页正常渲染,AC-10-4;FD01,P0,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 在 /workspace/repos/saleor-dashboard 执行 `API_URL=http://localhost:8000/graphql/ APP_MOUNT_URI=/ STATIC_URL=/ pnpm run build`
+2. `curl -s -o /dev/null -w '%{http_code}' http://localhost:9000/`
+3. 浏览器打开 http://localhost:9000/ 并查看控制台","1. 退出码 0，生成 build/dashboard/index.html
+2. 输出 `200`
+3. 登录页显示邮箱（`email`）、密码（`password`）输入框与登录按钮（`submit`），控制台无未捕获异常"
+TC081,E. Dashboard 依赖、构建与工程化,R10 · Dashboard 依赖与构建声明和 3.23.0 目标清单一致,Dockerfile 使用 Node 24 与 pnpm，不再引用 npm ci 与 package-lock.json,AC-10-5;FD01,P0,Dashboard 源码已更新到待测版本,"1. 在 /workspace/repos/saleor-dashboard 执行 `grep -nE ""npm ci|package-lock.json|package\*.json|legacy-peer-deps"" Dockerfile`
+2. 执行 `grep -n ""^FROM"" Dockerfile`
+3. 执行 `grep -nE ""pnpm|pnpm-lock.yaml|pnpm-workspace.yaml|codegen-|schema-"" Dockerfile`，并对每个 COPY 源执行 `test -e`","1. 无输出
+2. 构建阶段基础镜像为 `node:24-*`
+3. 存在 `pnpm install --frozen-lockfile` 与 COPY pnpm-lock.yaml、pnpm-workspace.yaml 等；所有 COPY 源文件均存在"
+TC082,E. Dashboard 依赖、构建与工程化,R10 · Dashboard 依赖与构建声明和 3.23.0 目标清单一致,CI 工作流改用 pnpm 与 Node 24，不再引用 package-lock.json,AC-10-5;FD01,P1,Dashboard 源码已更新到待测版本,"1. 在 /workspace/repos/saleor-dashboard 执行 `grep -rnE ""npm ci|package-lock.json|npm run "" .github/workflows/`
+2. 执行 `grep -rn ""node-version"" .github/workflows/` 与 `grep -rn ""lockfile-lint"" .github/workflows/main.yml`","1. 无输出（或仅剩设计中说明的保留项）
+2. node-version 为 24；lockfile-lint 的 --path 指向 pnpm-lock.yaml"
+TC083,E. Dashboard 依赖、构建与工程化,R10 · Dashboard 依赖与构建声明和 3.23.0 目标清单一致,代码中直接 import 的包均已在 package.json 中显式声明,AC-10-1;FD01,P1,Dashboard 源码已更新到待测版本,"1. 在 /workspace/repos/saleor-dashboard 执行 `grep -rhoE ""from \""(history|moment|react-transition-group|@react-editor-js/core|sonner)[\""/]"" src | sort -u`
+2. 对输出的每个包名执行 `node -p ""require('./package.json').dependencies['<包名>']""`","1. 列出实际使用的包
+2. 每个包都返回版本号，不出现 undefined"
+TC084,E. Dashboard 依赖、构建与工程化,R11 · 以本地实现替代 `@saleor/sdk`，登录与会话能力不变,管理员登录后显示用户菜单，刷新后仍保持登录,AC-11-1;FD03,P0,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 打开 http://localhost:9000/ ，在 `email` 输入 admin@example.com、`password` 输入 admin，点击 `submit`
+2. 查看页面与 localStorage
+3. 按 F5 刷新页面
+4. 关闭标签页后在同一浏览器新开 http://localhost:9000/","1. 进入首页，左侧栏底部出现 `userMenu`
+2. localStorage 中存在 `_saleorRefreshToken`；access token 不出现在 localStorage/sessionStorage
+3. 刷新后无需再次登录，仍显示 userMenu；Network 中有一次 TokenRefresh 请求成功
+4. 会话恢复，仍为登录状态"
+TC085,E. Dashboard 依赖、构建与工程化,R11 · 以本地实现替代 `@saleor/sdk`，登录与会话能力不变,非 staff 客户账号登录被拒绝，提示无权限且不再携带其令牌请求 API,AC-11-2;FD03,P0,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；已执行 E2E 播种脚本 /workspace/seed_e2e_fixtures.py（或 run-suite.sh dash-e2e 的播种步骤）,"1. 打开 Network 面板，在登录页以 e2e_customer@delete.com / password 登录
+2. 查看页面提示与地址
+3. 停留 30 秒并刷新一次页面，检查后续请求头
+4. 检查 localStorage","1. tokenCreate 返回 token（API 层允许客户登录）
+2. 停留在登录页，`login-error-message` 显示 `You don't have permission to login.`
+3. 错误出现后，不再有带 `Authorization-Bearer` 为该用户令牌的业务请求
+4. `_saleorRefreshToken` 不存在"
+TC086,E. Dashboard 依赖、构建与工程化,R11 · 以本地实现替代 `@saleor/sdk`，登录与会话能力不变,错误密码登录显示登录失败提示,AC-11-3;FD03,P0,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,1. 在登录页以 admin@example.com / wrong-password-1 登录,1. 停留在登录页，显示 `Your username and/or password are incorrect. Please try again.`，无 token 写入
+TC087,E. Dashboard 依赖、构建与工程化,R11 · 以本地实现替代 `@saleor/sdk`，登录与会话能力不变,连续失败触发登录限流后显示需要等待的提示,AC-11-3;FD03,P0,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；测试前清空 valkey 中的 login:* 缓存键,"1. 在登录页以 admin@example.com / wrong-password-1 登录
+2. 在 1 秒内立即以 admin@example.com / wrong-password-2 再次提交
+3. 等待 5 秒后以 admin@example.com / admin 登录","1. 显示用户名或密码错误
+2. 显示 `Please wait a moment before trying again.`（API 返回 LOGIN_ATTEMPT_DELAYED）
+3. 登录成功（限流计数被清除）"
+TC088,E. Dashboard 依赖、构建与工程化,R11 · 以本地实现替代 `@saleor/sdk`，登录与会话能力不变,access token 过期时客户端自动刷新并重试，用户无感知,AC-11-4;FD03,P0,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 浏览器打开 http://localhost:9000/ ，以 admin@example.com / admin 登录
+2. 用 Playwright `page.route('**/graphql/', ...)` 拦截下一次 operationName=ProductList 的请求，返回 `{""errors"":[{""message"":""Signature has expired"",""extensions"":{""exception"":{""code"":""ExpiredSignatureError""}}}]}`（仅一次），之后放行
+3. 导航到 http://localhost:9000/products/
+4. 检查 Network 顺序","1. 登录成功
+2. 路由已注册
+3. 商品列表正常显示，无错误通知，未跳转登录页
+4. 依次出现：ProductList（被拦截）→ TokenRefresh（成功）→ ProductList（携带新 token，200）"
+TC089,E. Dashboard 依赖、构建与工程化,R11 · 以本地实现替代 `@saleor/sdk`，登录与会话能力不变,并发请求同时遇到过期时只触发一次刷新,AC-11-4;FD03,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 浏览器打开 http://localhost:9000/ ，以 admin@example.com / admin 登录
+2. 用 page.route 对接下来 3 个并发 GraphQL 请求（首页加载时的多个查询）各返回一次 ExpiredSignatureError
+3. 刷新首页 http://localhost:9000/ 并统计 Network 中 TokenRefresh 的数量","1. 登录成功
+2. 路由已注册
+3. TokenRefresh 只发出 1 次，3 个查询都用新 token 重试成功，首页正常显示"
+TC090,E. Dashboard 依赖、构建与工程化,R11 · 以本地实现替代 `@saleor/sdk`，登录与会话能力不变,refresh token 失效时清理会话并跳转登录页,AC-11-4;FD03,P0,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 浏览器打开 http://localhost:9000/ ，以 admin@example.com / admin 登录
+2. 在另一个客户端以该用户 TOKEN 调用 `mutation { tokensDeactivateAll { errors { code } } }` 使全部 refresh token 失效
+3. 在 Dashboard 中刷新页面（触发 TokenRefresh）","1. 登录成功
+2. errors 为 []
+3. TokenRefresh 返回错误，页面跳转到登录页；localStorage 中 `_saleorRefreshToken` 被清除；无死循环刷新"
+TC091,E. Dashboard 依赖、构建与工程化,R11 · 以本地实现替代 `@saleor/sdk`，登录与会话能力不变,登出后回到登录页，直接访问受保护页面被重定向到登录页,AC-11-5;FD03,P0,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 浏览器打开 http://localhost:9000/ ，以 admin@example.com / admin 登录
+2. 点击 `userMenu`，再点击 `log-out-button`（Log out）
+3. 在地址栏访问 http://localhost:9000/products/
+4. 用登出前记录的 refresh token 调用 `mutation { tokenRefresh(refreshToken: ""<旧值>"") { token errors { code } } }`","1. 进入首页
+2. 回到登录页；Network 中有 TokensDeactivateAll 请求；`_saleorRefreshToken` 被清除
+3. 显示登录页，不显示商品列表数据
+4. token 为 null，errors 非空"
+TC092,E. Dashboard 依赖、构建与工程化,R11 · 以本地实现替代 `@saleor/sdk`，登录与会话能力不变,通过重置密码邮件链接设置新密码后自动登录，并可用新密码再次登录,AC-11-6;FD03,P0,"运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；Django shell 已创建员工：`u = User.objects.create_user('qa.reset.staff@example.com', 'OldPass123!', is_staff=True, is_active=True)` 并加入 `Full Access` 权限组；AdminEmail/UserEmail 插件已配置 SMTP localhost:1025（可选）","1. 在登录页点击 `reset-password-link`（Forgot password?），输入 qa.reset.staff@example.com 并提交
+2. 打开 mailpit http://localhost:8025 中最新的重置邮件，访问其中的 /new-password/?email=...&token=... 链接（若邮件插件未配置，则在 shell 用 `default_token_generator.make_token(user)` 构造同样的链接）
+3. 两次输入新密码 `NewPass456!` 并提交
+4. 登出后以 qa.reset.staff@example.com / NewPass456! 登录
+5. 登出后以旧密码 OldPass123! 登录","1. 显示邮件已发送的提示页
+2. 打开新密码页面
+3. 自动登录并进入首页，显示 userMenu（SetPassword 返回 token）
+4. 登录成功
+5. 显示用户名或密码错误"
+TC093,E. Dashboard 依赖、构建与工程化,R11 · 以本地实现替代 `@saleor/sdk`，登录与会话能力不变,新密码页使用无效 token 时提示错误且不登录,AC-11-6;FD03,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；已执行上一用例的员工账号,"1. 访问 http://localhost:9000/new-password/?email=qa.reset.staff%40example.com&token=invalid-token-123
+2. 两次输入 `Another789!` 并提交
+3. 检查 localStorage 与地址","1. 页面显示新密码表单
+2. 显示错误提示（setPassword 返回 INVALID 类错误），不进入首页
+3. `_saleorRefreshToken` 不存在；仍在新密码页或登录页"
+TC094,E. Dashboard 依赖、构建与工程化,R11 · 以本地实现替代 `@saleor/sdk`，登录与会话能力不变,Playwright auth.setup.ts 与 login.spec.ts 在运行时环境通过,AC-11-7;FD03;FD12,P0,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；已执行 E2E 播种脚本 /workspace/seed_e2e_fixtures.py（或 run-suite.sh dash-e2e 的播种步骤）,"1. 在 /workspace/repos/saleor-dashboard 设置 BASE_URL=http://localhost:9000/、API_URL=http://localhost:8000/graphql/、E2E_USER_NAME=admin@example.com、E2E_USER_PASSWORD=admin、E2E_PERMISSIONS_USERS_PASSWORD=password
+2. 执行 `node_modules/.bin/playwright test --project=setup`
+3. 执行 `node_modules/.bin/playwright test playwright/tests/login.spec.ts`","1. 变量生效
+2. auth.setup.ts 全部通过，生成各权限用户的登录态文件
+3. SALEOR_39 与 SALEOR_41 的全部参数化用例通过"
+TC095,E. Dashboard 依赖、构建与工程化,R11 · 以本地实现替代 `@saleor/sdk`，登录与会话能力不变,DevModePanel 通过本地 createFetch 携带鉴权发起请求,AC-11-1;FD03,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 浏览器打开 http://localhost:9000/ ，以 admin@example.com / admin 登录，按 Ctrl+'（macOS 为 Cmd+'）打开 DevModePanel
+2. 输入 `{ me { email isStaff } }` 并执行","1. 面板打开
+2. 返回 `{""data"":{""me"":{""email"":""admin@example.com"",""isStaff"":true}}}`，请求头包含当前 access token"
+TC096,E. Dashboard 依赖、构建与工程化,R11 · 以本地实现替代 `@saleor/sdk`，登录与会话能力不变,外部登录（OpenID Connect）按钮调用 externalAuthenticationUrl 并跳转授权地址,AC-11-1;FD03,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；已通过 pluginUpdate 激活 OpenIDConnect 插件，配置 client_id=qa-client、client_secret=qa-secret、oauth_authorization_url=http://localhost:8889/authorize、oauth_token_url=http://localhost:8889/token、json_web_key_set_url=http://localhost:8889/jwks、enable_oauth2=true,"1. 打开登录页 http://localhost:9000/
+2. 点击 `external-authentication` 按钮
+3. 检查 localStorage","1. 页面显示外部登录按钮
+2. Network 中 ExternalAuthenticationUrl 请求的 pluginId=`mirumee.authentication.openidconnect`；浏览器跳转到 http://localhost:8889/authorize?...（含 redirect_uri 与 state）
+3. `_saleorAuthPluginId` = `mirumee.authentication.openidconnect`"
+TC097,E. Dashboard 依赖、构建与工程化,R11 · 以本地实现替代 `@saleor/sdk`，登录与会话能力不变,选中的频道在刷新后保持（AppChannelContext 本地来源）,AC-11-1;FD03,P2,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 浏览器打开 http://localhost:9000/ ，以 admin@example.com / admin 登录，在订单列表等可切换频道的页面选择 `Channel-PLN`
+2. 刷新页面
+3. 在控制台执行 `localStorage.getItem('channel')`","1. 列表按 Channel-PLN 显示
+2. 仍为 Channel-PLN
+3. 返回 Channel-PLN 对应的 slug"
+TC098,E. Dashboard 依赖、构建与工程化,R11 · 以本地实现替代 `@saleor/sdk`，登录与会话能力不变,浏览器凭据管理 API 登录可用,AC-11-1;FD03,P2,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；浏览器启用密码管理,"1. 在 Chromium 中以 admin@example.com / admin 登录，浏览器提示保存密码时选择保存
+2. 登出后重新打开 http://localhost:9000/","1. 凭据被保存（navigator.credentials.store 被调用）
+2. 使用已保存凭据自动登录或一键填充后登录成功；登出时调用 preventSilentAccess，不出现崩溃"
+TC099,E. Dashboard 依赖、构建与工程化,R12 · 移除 `@material-ui/icons`，图标替换为现有图标库且外观、交互不变,src 中无 @material-ui/icons 导入且 ESLint 无错误,AC-12-1;FD04,P0,Dashboard 源码已更新到待测版本,"1. 在 /workspace/repos/saleor-dashboard 执行 `grep -rn ""@material-ui/icons"" src`
+2. 执行 `pnpm exec eslint ""src/**/*.@(tsx|ts)""`（不带 --fix）
+3. 检查输出中 `local-rules/no-deprecated-icons` 的条目","1. 无输出
+2. 退出码 0，无 error 级别问题
+3. 无命中"
+TC100,E. Dashboard 依赖、构建与工程化,R12 · 移除 `@material-ui/icons`，图标替换为现有图标库且外观、交互不变,配置页支付相关配置项（Refunds settings）图标显示且可点击进入,AC-12-2;FD04,P0,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 浏览器打开 http://localhost:9000/ ，以 admin@example.com / admin 登录，打开 http://localhost:9000/configuration/
+2. 找到 `configuration-menu-refunds-settings` 项，检查其图标元素
+3. 点击该配置项（含点击图标区域）","1. 配置页加载
+2. 图标为 svg（lucide CreditCard），尺寸与其他配置项图标一致，无破图
+3. 跳转到 http://localhost:9000/refunds-settings 并正常加载"
+TC101,E. Dashboard 依赖、构建与工程化,R12 · 移除 `@material-ui/icons`，图标替换为现有图标库且外观、交互不变,渠道详情仓库/配送区域卡片的“添加”（CardAddItemsFooter）打开分配入口,AC-12-3;FD04,P0,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 浏览器打开 http://localhost:9000/ ，以 admin@example.com / admin 登录，打开 http://localhost:9000/channels/ ，进入 Channel-USD 详情
+2. 在仓库卡片点击 `warehouse-add-link`（或图标按钮 `warehouse-add-button`）
+3. 在 `warehouse-auto-complete-select` 中选择一个尚未分配的仓库，然后保存
+4. 在配送区域卡片点击 `shipping-add-button`","1. 详情页加载
+2. 出现仓库选择下拉框（Plus 图标按钮可点击，尺寸与 3.22 相同）
+3. 仓库加入列表，保存后出现成功通知
+4. 出现 `shipping-auto-complete-select` 下拉框"
+TC102,E. Dashboard 依赖、构建与工程化,R12 · 移除 `@material-ui/icons`，图标替换为现有图标库且外观、交互不变,变体库存卡片分配仓库入口与 3.22 行为一致,AC-12-3;FD04,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；已执行 E2E 播种脚本 /workspace/seed_e2e_fixtures.py（或 run-suite.sh dash-e2e 的播种步骤）,"1. 浏览器打开 http://localhost:9000/ ，以 admin@example.com / admin 登录，打开 http://localhost:9000/products/variant/UHJvZHVjdFZhcmlhbnQ6MTIzMg==
+2. 在库存卡片点击 `assign-warehouse-button`
+3. 选择一个未分配仓库","1. 变体页加载
+2. 弹出可选仓库列表
+3. 该仓库出现在库存表中，可填写数量"
+TC103,E. Dashboard 依赖、构建与工程化,R12 · 移除 `@material-ui/icons`，图标替换为现有图标库且外观、交互不变,ConfirmButton 保存成功后显示勾选图标,AC-12-4;FD04,P0,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 浏览器打开 http://localhost:9000/ ，以 admin@example.com / admin 登录，打开 http://localhost:9000/site-settings
+2. 修改公司名称字段为 `QA Company`，点击保存（`button-bar-confirm`）
+3. 保存完成后立即检查按钮","1. 页面加载
+2. 出现成功通知
+3. 按钮内出现 `data-test-id=""button-success""` 的勾选 svg 图标，随后恢复为默认文案"
+TC104,E. Dashboard 依赖、构建与工程化,R12 · 移除 `@material-ui/icons`，图标替换为现有图标库且外观、交互不变,Chip 关闭图标点击后移除对应条目（商品导出对话框）,AC-12-4;FD04,P0,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 浏览器打开 http://localhost:9000/ ，以 admin@example.com / admin 登录，打开 http://localhost:9000/products/ ，点击 `export` 打开导出对话框
+2. 在 organization 区域勾选 Category 与 Collections
+3. 点击 Category Chip 上的关闭（X）图标","1. 对话框打开
+2. 摘要区出现 Category、Collections 两个 Chip
+3. Category Chip 消失，对应复选框取消勾选；Collections 保留"
+TC105,E. Dashboard 依赖、构建与工程化,R12 · 移除 `@material-ui/icons`，图标替换为现有图标库且外观、交互不变,其余替换图标（下拉箭头、帮助、外链）显示与交互不变,AC-12-1;FD04,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；已执行 TC036,"1. 打开任一代金券详情页的国家列表，点击 `countries-drop-down-icon`
+2. 打开 /translations/ 下任一商品翻译页，点击字段的展开/收起箭头
+3. 打开商品类型详情的变体属性卡片与渠道详情的分配策略卡片，悬停帮助图标
+4. 打开含 WIDGET 扩展的订单详情页，查看小部件标题旁的外链图标","1. 列表展开/收起，箭头随状态旋转
+2. 字段内容展开/收起
+3. 显示与 3.22 相同的提示文案
+4. 外链图标显示为 16px，点击在新标签页打开扩展地址"
+TC106,E. Dashboard 依赖、构建与工程化,R12 · 移除 `@material-ui/icons`，图标替换为现有图标库且外观、交互不变,与替换组件相关的 dash-unit 测试通过,AC-12-5;FD04;FD12,P0,Dashboard 源码已更新到待测版本,1. 在 /workspace/repos/saleor-dashboard 执行 `pnpm exec jest src/components/ConfirmButton src/configuration src/components/CountryList src/channels src/products/components/ProductStocks src/translations src/extensions/components/AppWidgets src/productTypes`,1. 全部测试套件通过，无 `Test suite failed to run`，快照无未预期差异
+TC107,E. Dashboard 依赖、构建与工程化,R12 · 移除 `@material-ui/icons`，图标替换为现有图标库且外观、交互不变,替换后的图标尺寸与可点击区域与 3.22 一致,AC-12-2;AC-12-3;FD04,P2,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 分别在 3.22.9 基线与待测版本中，用 Playwright 获取配置页 Refunds settings 图标、CardAddItemsFooter 图标按钮、ConfirmButton 勾选图标、Chip 关闭图标的 boundingBox
+2. 对比宽高","1. 均能获取
+2. 宽高差异不超过 1px（Material 24px / small 20px 对应 lucide size 相同）"
+TC108,E. Dashboard 依赖、构建与工程化,R13 · 通知改用 `sonner`，保持现有通知契约,保存成功后出现 success 通知并在约 3 秒后自动消失,AC-13-1;FD05,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 浏览器打开 http://localhost:9000/ ，以 admin@example.com / admin 登录，打开 http://localhost:9000/site-settings ，修改公司名称为 `QA Notify 1` 并保存
+2. 从通知出现开始计时，观察通知","1. 右上角出现 1 个 `[data-test-type=""success""]` 元素，文本包含 `Saved changes`
+2. 约 3 秒（2.5–5 秒内）后自动消失"
+TC109,E. Dashboard 依赖、构建与工程化,R13 · 通知改用 `sonner`，保持现有通知契约,API 错误通知可展开/收起原始错误文本,AC-13-2;FD05,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 浏览器打开 http://localhost:9000/ ，以 admin@example.com / admin 登录，打开 http://localhost:9000/categories/add ，名称填 `QA Dup`，在 SEO 区域将 slug 设为已存在的 `accessories`，保存
+2. 点击通知中的 `See error log`
+3. 点击 `Hide log`
+4. 等待 10 秒","1. 出现 `[data-test-type=""error""]` 通知
+2. 显示原始错误文本（包含 slug 与 UNIQUE 等错误信息），按钮变为 `Hide log`
+3. 原始错误文本收起，按钮恢复为 `See error log`
+4. error 通知不自动消失（与 3.22 一致）"
+TC110,E. Dashboard 依赖、构建与工程化,R13 · 通知改用 `sonner`，保持现有通知契约,鼠标悬停暂停自动隐藏计时，移开后按剩余时间消失,AC-13-3;FD05,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 在站点设置页保存一次以触发 success 通知，1 秒内将鼠标移到通知上
+2. 保持悬停 6 秒
+3. 移开鼠标并计时","1. 通知可见
+2. 通知始终不消失
+3. 约 2 秒（剩余时间，3 秒内）后消失"
+TC111,E. Dashboard 依赖、构建与工程化,R13 · 通知改用 `sonner`，保持现有通知契约,点击通知关闭按钮后通知立即消失,AC-13-4;FD05,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 触发 TC109 的 error 通知
+2. 点击通知右上角关闭按钮","1. error 通知可见
+2. 通知立即从 DOM 移除，`[data-test-type=""error""]` 计数为 0"
+TC112,E. Dashboard 依赖、构建与工程化,R13 · 通知改用 `sonner`，保持现有通知契约,带 actionBtn 的通知显示动作按钮，点击执行回调,AC-13-5;FD05,P1,Dashboard 源码已更新到待测版本,"1. 在 /workspace/scratch 中编写临时 RTL 用例（不提交）：渲染 MessageManagerProvider，调用 `notify({ status: ""info"", title: ""QA action"", actionBtn: { label: ""Undo"", action: mockFn } })`，以 `pnpm exec jest --rootDir /workspace/repos/saleor-dashboard --roots /workspace/scratch/notify-test` 运行
+2. 在用例中查找按钮 `Undo` 并点击","1. 渲染出 `[data-test-type=""info""]` 通知，标题为 `QA action`
+2. 按钮存在，点击后 mockFn 被调用 1 次"
+TC113,E. Dashboard 依赖、构建与工程化,R13 · 通知改用 `sonner`，保持现有通知契约,四种状态通知各自带 data-test-type，多条通知在右上角堆叠,AC-13-1;FD05,P2,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 在临时 RTL 用例或浏览器中依次触发 success、error、info、warning 四条通知
+2. 检查 DOM 与位置","1. 四条通知同时可见
+2. 分别存在 `[data-test-type=""success""]`、`[data-test-type=""error""]`、`[data-test-type=""info""]`、`[data-test-type=""warning""]`；容器位于右上角，按出现顺序堆叠，互不遮挡"
+TC114,E. Dashboard 依赖、构建与工程化,R13 · 通知改用 `sonner`，保持现有通知契约,E2E 通知定位器在新渲染层下可用,AC-13-1;FD05;FD12,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；已执行 E2E 播种脚本 /workspace/seed_e2e_fixtures.py（或 run-suite.sh dash-e2e 的播种步骤）,"1. 保存站点设置触发 success 通知，在 Playwright 中执行 `page.locator('[data-test-type=""success""]').first().waitFor({ state: 'visible' })`
+2. 执行依赖 successBanner 的现有用例 `playwright test playwright/tests/collections.spec.ts playwright/tests/navigation.spec.ts`","1. 5 秒内找到可见元素
+2. 不出现因通知定位失败导致的超时"
+TC115,E. Dashboard 依赖、构建与工程化,R13 · 通知改用 `sonner`，保持现有通知契约,messages 目录现有单元测试通过,AC-13-3;AC-13-4;FD05,P1,Dashboard 源码已更新到待测版本,1. 在 /workspace/repos/saleor-dashboard 执行 `pnpm exec jest src/components/messages src/hooks/useNotifier`,1. useMessageState.test.tsx、MessageManagerProvider.test.tsx 等全部通过
+TC116,E. Dashboard 依赖、构建与工程化,R14 · Dashboard 工程脚本与配置补齐（codegen、lint 规则测试、支付资源）,pnpm run test:lint-rules 离线执行成功,AC-14-1;FD06,P1,Dashboard 源码已更新到待测版本,1. 断开外网，在 /workspace/repos/saleor-dashboard 执行 `pnpm run test:lint-rules; echo exit=$?`,1. named-styles.test.mjs 与 named-effects.test.mjs 均运行且无失败，输出 `exit=0`
+TC117,E. Dashboard 依赖、构建与工程化,R14 · Dashboard 工程脚本与配置补齐（codegen、lint 规则测试、支付资源）,named-effects 规则对匿名 effect 报错、对具名函数放行,AC-14-1;FD06,P1,Dashboard 源码已更新到待测版本,"1. 在 /workspace/scratch/lint/sample.tsx 写入：`useEffect(() => {}, []);`、`useEffect(function () {}, []);`、`React.useEffect(() => {});`、`useEffect(function syncChannel() {}, []);`、`useEffect(handleSync, []);`
+2. 在 /workspace/repos/saleor-dashboard 用 ESLint API 加载本地规则 `local-rules/named-effects: error` 检查该文件","1. 文件写入
+2. 前 3 行各报告 1 条 `Effect callback should be a named function.`；后 2 行无报告"
+TC118,E. Dashboard 依赖、构建与工程化,R14 · Dashboard 工程脚本与配置补齐（codegen、lint 规则测试、支付资源）,启用 named-effects 后 lint 无新增错误,AC-14-2;FD06,P1,Dashboard 源码已更新到待测版本,"1. 在 /workspace/repos/saleor-dashboard 执行 `pnpm exec eslint ""{src,playwright}/**/*.@(tsx|ts|jsx|js)""`（不带 --fix）
+2. 检查 lint/rules/index.mjs 与 eslint.config.mjs","1. 退出码 0，无 error
+2. index.mjs 注册了 `named-effects`；eslint.config.mjs 中有 `local-rules/named-effects` 配置项"
+TC119,E. Dashboard 依赖、构建与工程化,R14 · Dashboard 工程脚本与配置补齐（codegen、lint 规则测试、支付资源）,codegen 配置与支付资源脚本存在且语法正确,AC-14-3;FD06,P1,Dashboard 源码已更新到待测版本,"1. 在 /workspace/repos/saleor-dashboard 执行 `ls codegen-main.ts codegen-staging.ts scripts/update-payment-assets.cjs`
+2. 执行 `node --check scripts/update-payment-assets.cjs; echo exit=$?`
+3. 执行 `node scripts/update-payment-assets.cjs; echo exit=$?`","1. 三个文件都存在
+2. 输出 `exit=0`
+3. 打印用法说明，`exit=0`，不访问网络、不修改文件"
+TC120,E. Dashboard 依赖、构建与工程化,R14 · Dashboard 工程脚本与配置补齐（codegen、lint 规则测试、支付资源）,update-payment-assets 处理本地 SVG 时去除脚本并生成清单,AC-14-3;FD06,P2,Dashboard 源码已更新到待测版本,"1. 准备 /workspace/scratch/pay-src/visa.svg，内容 `<svg xmlns=""http://www.w3.org/2000/svg"" onload=""alert(1)""><script>alert(2)</script><rect width=""10"" height=""10""/></svg>`
+2. 复制 /workspace/repos/saleor-dashboard 到 /workspace/scratch/dash-copy 后执行 `node scripts/update-payment-assets.cjs --source /workspace/scratch/pay-src`
+3. 查看输出目录 assets/images/payment-methods/","1. 文件准备完成
+2. 退出码 0
+3. visa.svg 不含 `<script>` 与 `onload`；生成 index.json 并列出 visa"
+TC121,E. Dashboard 依赖、构建与工程化,R14 · Dashboard 工程脚本与配置补齐（codegen、lint 规则测试、支付资源）,VITE_DISABLE_STRICT_MODE=true 时根组件不包裹 StrictMode，默认包裹,AC-14-4;FD06,P1,Dashboard 源码已更新到待测版本；API :8000 可用,"1. 在 /workspace/repos/saleor-dashboard 执行 `pnpm run dev:no-strict`，浏览器打开 dev server 首页
+2. 控制台执行 `const el=document.querySelector('#dashboard-app'); const k=Object.keys(el).find(k=>k.startsWith('__reactContainer')); el[k].child.type === Symbol.for('react.strict_mode')`
+3. 停止后执行 `pnpm run dev`，重复步骤 2","1. dev server 启动，页面可访问
+2. 返回 `false`
+3. 返回 `true`"
+TC122,E. Dashboard 依赖、构建与工程化,R14 · Dashboard 工程脚本与配置补齐（codegen、lint 规则测试、支付资源）,新增脚本引用的文件和命令都真实存在,AC-14-3;FD06,P1,Dashboard 源码已更新到待测版本,"1. 在 /workspace/repos/saleor-dashboard 列出 package.json scripts 中引用的本地文件（codegen-*.ts、lint/rules/*.test.mjs、scripts/*.cjs、vitest.config.ts、.storybook/ 等），逐一 `test -e`
+2. 执行 `pnpm run change:status`、`pnpm run e2e:clean-auth`
+3. 执行 `pnpm exec vitest --project=storybook --help`","1. 全部存在
+2. 命令可执行，不报文件缺失
+3. vitest 能识别 storybook project 配置"
+TC123,E. Dashboard 依赖、构建与工程化,R14 · Dashboard 工程脚本与配置补齐（codegen、lint 规则测试、支付资源）,pnpm test 依次执行 jest 与 lint 规则测试,AC-14-1;FD06,P2,Dashboard 源码已更新到待测版本,1. 在 /workspace/repos/saleor-dashboard 执行 `pnpm test 2>&1 | tail -30`,1. jest 结束后继续执行 test:lint-rules，两者都通过时整体退出码 0
+TC124,F. 到期清理与已知缺陷,R15 · 移除标注于 3.23 到期的旧变体路径重定向,src 中不再存在 productVariantLegacyEditPath,AC-15-1;FD07,P2,Dashboard 源码已更新到待测版本,"1. 在 /workspace/repos/saleor-dashboard 执行 `grep -rn ""productVariantLegacyEditPath"" src`
+2. 执行 `grep -n ""TODO: Remove in Saleor Dashboard 3.23"" src/products/index.tsx src/products/urls.ts`","1. 无输出
+2. 无输出"
+TC125,F. 到期清理与已知缺陷,R15 · 移除标注于 3.23 到期的旧变体路径重定向,新格式变体路径可打开，从商品详情点击变体跳转到新格式路径,AC-15-2;FD07,P2,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；已执行 E2E 播种脚本 /workspace/seed_e2e_fixtures.py（或 run-suite.sh dash-e2e 的播种步骤）,"1. 浏览器打开 http://localhost:9000/ ，以 admin@example.com / admin 登录，访问 http://localhost:9000/products/variant/UHJvZHVjdFZhcmlhbnQ6MTIzMg==
+2. 访问商品详情 http://localhost:9000/products/UHJvZHVjdDo3NjU= ，在变体列表点击 `update variant`","1. 变体编辑页加载，变体名称输入框可见
+2. 地址变为 /products/variant/UHJvZHVjdFZhcmlhbnQ6MTIzMg==（不含商品 ID），页面加载成功"
+TC126,F. 到期清理与已知缺陷,R15 · 移除标注于 3.23 到期的旧变体路径重定向,旧格式变体路径不再重定向到变体页,AC-15-2;FD07,P2,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；已执行 E2E 播种脚本 /workspace/seed_e2e_fixtures.py（或 run-suite.sh dash-e2e 的播种步骤）,"1. 浏览器打开 http://localhost:9000/ ，以 admin@example.com / admin 登录，访问 http://localhost:9000/products/UHJvZHVjdDo3NjU=/variant/UHJvZHVjdFZhcmlhbnQ6MTIzMg==
+2. 检查地址栏与页面内容","1. 不发生到 /products/variant/... 的重定向
+2. 按 FD07 由商品路由前缀匹配处理（显示商品详情或未找到），无白屏或未捕获异常"
+TC127,F. 到期清理与已知缺陷,R16 · 集合分配商品后列表即时刷新,为空集合分配 1 个商品后，不刷新浏览器即显示该商品并提示成功,AC-16-1;FD08,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；已执行 E2E 播种脚本 /workspace/seed_e2e_fixtures.py（或 run-suite.sh dash-e2e 的播种步骤）（集合 pk=166 无商品）,"1. 浏览器打开 http://localhost:9000/ ，以 admin@example.com / admin 登录，打开 http://localhost:9000/collections/Q29sbGVjdGlvbjoxNjY=（Collection to be updated）
+2. 点击 `add-product` 打开分配商品对话框，搜索 `Bean Juice`，勾选后点击 `submit`
+3. 不刷新页面，查看商品列表与通知","1. 商品列表显示 `No products found`
+2. 对话框在列表刷新完成后关闭；Network 中 CollectionAssignProduct 后有 CollectionProducts 重新查询
+3. 列表显示 1 行 `Bean Juice`，出现 `[data-test-type=""success""]` 通知"
+TC128,F. 到期清理与已知缺陷,R16 · 集合分配商品后列表即时刷新,刷新浏览器后集合商品列表与数据库一致,AC-16-2;FD08,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；已执行上一用例,"1. 在上一用例完成后按 F5 刷新页面
+2. 以 TOKEN 查询 `{ collection(id: ""Q29sbGVjdGlvbjoxNjY="") { products(first: 10) { edges { node { name } } } } }`","1. 列表仍显示 1 行 `Bean Juice`
+2. 返回 1 个商品 `Bean Juice`"
+TC129,F. 到期清理与已知缺陷,R16 · 集合分配商品后列表即时刷新,取消分配商品后列表同样即时刷新,AC-16-1;FD08,P2,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；已执行 TC127,"1. 在集合 166 详情页勾选 `Bean Juice` 行，执行取消分配并确认
+2. 不刷新页面查看列表","1. 出现成功通知
+2. 列表变为 `No products found`"
+TC130,F. 到期清理与已知缺陷,R16 · 集合分配商品后列表即时刷新,Playwright SALEOR_113 场景通过,AC-16-1;AC-16-2;FD08;FD12,P1,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 重新播种使集合 166 为空
+2. 在 /workspace/repos/saleor-dashboard 执行 `node_modules/.bin/playwright test playwright/tests/collections.spec.ts --grep SALEOR_113`","1. 播种成功
+2. 用例通过"
+TC131,G. 质量与回归,R17 · 数据库迁移完整、一致，可从 3.22 存量库升级,空库 migrate 后 populatedb --createsuperuser 成功,AC-17-1;BD10,P0,本地 PostgreSQL 可用；Core 源码已更新到待测版本,"1. 创建空库 saleor_qa_fresh
+2. 在 /workspace/repos/saleor 以该库执行 `python manage.py migrate`
+3. 执行 `python manage.py populatedb --createsuperuser`
+4. 以 admin@example.com / admin 调用 tokenCreate","1. 创建成功
+2. 退出码 0
+3. 退出码 0，输出包含超级用户创建信息
+4. 返回 token"
+TC132,G. 质量与回归,R17 · 数据库迁移完整、一致，可从 3.22 存量库升级,3.22 存量库升级到 3.23 后关键数据数量不变,AC-17-2;BD09;BD10,P0,已准备 3.22 存量库 saleor_322：用 3.22.0 基线代码对空库执行 migrate 与 populatedb --createsuperuser，并记录 account_user 行数,"1. 在 saleor_322（3.22 代码迁移并 populatedb 后，额外插入 TC031 同类的 Adyen 支付）上执行 `select (select count(*) from product_product),(select count(*) from order_order),(select count(*) from account_user),(select count(*) from payment_payment),(select count(*) from plugins_pluginconfiguration)`
+2. 切换到 3.23 代码执行 `python manage.py migrate`
+3. 再次执行步骤 1 的 SQL","1. 记录 5 个数量
+2. 退出码 0
+3. 5 个数量与迁移前完全一致"
+TC133,G. 质量与回归,R17 · 数据库迁移完整、一致，可从 3.22 存量库升级,makemigrations --check --dry-run 无变化,AC-17-3;BD10,P0,Core 源码已更新到待测版本,1. 在 /workspace/repos/saleor 执行 `python manage.py makemigrations --check --dry-run; echo exit=$?`,1. 输出 `No changes detected`，`exit=0`
+TC134,G. 质量与回归,R17 · 数据库迁移完整、一致，可从 3.22 存量库升级,migrate --plan 无冲突，每个 app 只有一个叶子节点,AC-17-4;BD10,P0,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 在 /workspace/repos/saleor 执行 `python manage.py migrate --plan`（指向已迁移的运行时库）
+2. Django shell 执行 `from django.db.migrations.loader import MigrationLoader; from django.db import connection; l=MigrationLoader(connection); print(l.detect_conflicts())`","1. 不出现 `Conflicting migrations detected`，输出 `No planned migration operations.` 或待执行列表
+2. 输出 `{}`"
+TC135,G. 质量与回归,R17 · 数据库迁移完整、一致，可从 3.22 存量库升级,新增 account 迁移可回退,AC-17-2;BD09,P2,已执行 TC131,"1. 在 saleor_qa_fresh 上执行 `python manage.py migrate account 0095_repopulate_user_number_of_orders`
+2. 执行 `psql -c '\d account_user'`
+3. 再次执行 `python manage.py migrate`","1. 退出码 0
+2. search_vector 列与 GIN 索引已删除
+3. 重新添加成功"
+TC136,G. 质量与回归,R18 · 现有回归行为保持，测试可正常收集与执行,core-unit 套件收集 0 错误并产出结果文件,AC-18-1;BD10,P0,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 执行 `/opt/runtime/run-suite.sh qa1 core-unit`
+2. 检查 /logs/verifier/core-unit-qa1/ 下的 results.xml 与日志
+3. 检查收集数量","1. 脚本正常结束
+2. results.xml 存在；日志中无 `ERROR collecting`，collection errors = 0
+3. 收集数量与基线 16598 相比，只减少随 adyen/np_atobarai 一起删除的测试，没有因导入失败缺失的测试"
+TC137,G. 质量与回归,R18 · 现有回归行为保持，测试可正常收集与执行,dash-unit 套件无 Test suite failed to run,AC-18-2;FD12,P0,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 执行 `/opt/runtime/run-suite.sh qa1 dash-unit`
+2. `grep -c ""Test suite failed to run"" /logs/verifier/dash-unit-qa1/*`","1. 生成结果文件
+2. 结果为 0"
+TC138,G. 质量与回归,R18 · 现有回归行为保持，测试可正常收集与执行,core-e2e 在健康检查通过后实际执行并产出结果,AC-18-3;BD10,P0,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 执行 `/opt/runtime/run-suite.sh qa1 core-e2e`
+2. 检查 /logs/verifier/core-e2e-qa1/results.xml 中的 tests 数量","1. 健康检查通过
+2. tests > 0，存在实际执行的用例记录"
+TC139,G. 质量与回归,R18 · 现有回归行为保持，测试可正常收集与执行,dash-e2e 播种后实际执行 Playwright 用例并产出结果,AC-18-3;FD12,P0,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser,"1. 执行 `/opt/runtime/run-suite.sh qa1 dash-e2e`
+2. 检查 seed.log 与 /logs/verifier/dash-e2e-qa1/results.json","1. 播种与健康检查通过
+2. seed.log 无 Traceback；results.json 中执行的用例数 > 0"
+TC140,G. 质量与回归,R18 · 现有回归行为保持，测试可正常收集与执行,变更 diff 中测试目录、fixtures、/opt/runtime 与 verifier 无改动,AC-18-4;FD12;BD10,P0,两端源码已更新到待测版本；已知基线提交,"1. 在两个仓库执行 `git -c safe.directory='*' diff --name-only <基线提交>` 并合并结果
+2. 用正则 `(^|/)tests/|^playwright/|\.test\.tsx?$|fixtures|testUtils` 过滤
+3. 对 /opt/runtime 下文件计算 sha256，与环境初始校验值比较","1. 得到变更文件列表
+2. 只允许出现随 adyen、np_atobarai 目录整体删除的测试文件（需在交付说明中列出）；无其他命中
+3. 完全一致"
+TC141,G. 质量与回归,R18 · 现有回归行为保持，测试可正常收集与执行,官方 P2P 用例全部保持通过，F2P 用例全部通过,AC-18-5;FD12;BD10,P0,运行时环境已由 /opt/runtime/services.sh 启动（API http://localhost:8000/graphql/，进程环境 GRAPHQL_MUTATION_COUNT_LIMIT=4；Dashboard http://localhost:9000/），数据库已执行 migrate 与 populatedb --createsuperuser；已执行 TC136–TC139,"1. 取官方提供的 P2P 与 F2P 列表
+2. 汇总四个套件的结果文件，逐条匹配列表中的用例状态","1. 列表可读
+2. P2P 全部 passed；F2P 全部 passed；不存在缺失结果或收集失败的条目"
+TC142,G. 质量与回归,R18 · 现有回归行为保持，测试可正常收集与执行,生产代码中没有针对测试数据或测试名的特殊分支,AC-18-5;FD12;BD10,P1,两端源码已更新到待测版本,"1. 在两个仓库的变更 diff 中检索 `SALEOR_[0-9]`、`PYTEST_CURRENT_TEST`、`e2e_`、`playwright`、`jest`、`process.env.NODE_ENV === ""test""`、`sys.modules['pytest']`",1. 生产代码中无命中（测试与工具配置文件除外）
+TC143,G. 质量与回归,R19 · 发布说明记录 3.23 变更,Core CHANGELOG 记录 3.23.0 的插件移除、mutation 上限与 App 扩展字段,AC-19-1;BD11,P2,Core 源码已更新到待测版本,"1. 打开 /workspace/repos/saleor/CHANGELOG.md，定位 `3.23.0` 标题
+2. 阅读该小节内容","1. 标题存在
+2. 至少包含：移除 Adyen 与 NP Atobarai 插件（Breaking）、新增 `GRAPHQL_MUTATION_COUNT_LIMIT`、`AppExtension`/`AppManifestExtension` 新字段 mountName/targetName/settings 及旧字段 deprecated，并说明依赖变化"
+TC144,G. 质量与回归,R19 · 发布说明记录 3.23 变更,Dashboard changeset 记录 3.23 的主要变更,AC-19-2;FD11,P2,Dashboard 源码已更新到待测版本,"1. 在 /workspace/repos/saleor-dashboard 执行 `ls .changeset/` 并阅读新增条目
+2. 执行 `pnpm run change:status`","1. 存在描述以下内容的条目：移除 @saleor/sdk、通知改用 sonner、移除旧变体路由、改用 pnpm
+2. 命令能识别这些 changeset，不报格式错误"

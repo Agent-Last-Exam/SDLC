@@ -1,0 +1,7 @@
+{"time": 1791913501.797886, "event": "run_started"}
+{"time": 1791913501.7985318, "event": "stage_started", "stage": "sprint1/prd", "resume_session": null, "role_sha256": "08ca77a00383eed67358affa92954023f39ee1d0e5f3ee76885c377f1f4035cd", "prd_input_sha256": null, "missing_inputs": []}
+{"time": 1791913524.8455071, "event": "stage_execution_started", "stage": "sprint1/prd"}
+{"time": 1791913844.6070578, "event": "stage_accepted", "stage": "sprint1/prd", "hashes": {"prd.md": "3ac1073c623840ea611384759eb79026e4395551bf9f332858baef3fe0848bd2"}, "missing_outputs": [], "cost_usd": 4.153697}
+{"time": 1791913844.891194, "event": "stage_started", "stage": "sprint1/tech-design", "resume_session": "d0b9d926-dbc7-4a69-ba56-4a5afa8ce1d8", "role_sha256": "1bbeac97331ac12182de3e0d4cf69dc05f8e097ebb0478580755fa2b24c5544a", "prd_input_sha256": "3ac1073c623840ea611384759eb79026e4395551bf9f332858baef3fe0848bd2", "missing_inputs": []}
+{"time": 1791913847.343807, "event": "stage_execution_started", "stage": "sprint1/tech-design"}
+{"time": 1791914561.8621528, "event": "run_failed", "error": "Native transcript does not contain the current stage-role activation"}

@@ -1,0 +1,28 @@
+{
+    "task": {
+        "path": "/home/iriszeng18_gmail_com/software-last-exam/.prepared/single-docs-glm53flash-max-retry-20261014/task"
+    },
+    "trial_name": "task__oUgV9U2",
+    "trials_dir": "/home/iriszeng18_gmail_com/software-last-exam/jobs/single-docs-glm53flash-max-retry-20261014",
+    "agent": {
+        "import_path": "runtime.workflow_agent:WorkflowClaudeCode",
+        "model_name": "z-ai/glm-5.3-flash",
+        "override_setup_timeout_sec": 600.0,
+        "kwargs": {
+            "prepared_path": "/home/iriszeng18_gmail_com/software-last-exam/.prepared/single-docs-glm53flash-max-retry-20261014",
+            "smoke": false,
+            "reasoning_effort": "max",
+            "max_runtime_sec": null,
+            "request_profile": true,
+            "client_version": "2.1.280",
+            "smoke_scenario": "repair",
+            "role_probe": false,
+            "stop_after_stage": "sprint1/test-design",
+            "missing_output_policy": "fail"
+        }
+    },
+    "verifier": {
+        "disable": true
+    },
+    "job_id": "7907ffa5-fc9e-4031-8e76-049b503831b7"
+}

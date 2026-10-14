@@ -1,0 +1,19 @@
+  1/1 Mean: 0.000 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2:47:19 0:00:00
+adhoc • sdlc-workflow-claude-code • claude-opus-5.5
+┏━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━┓
+┃ Trials ┃ Exceptions ┃  Mean ┃
+┡━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━┩
+│      0 │          0 │ 0.000 │
+└────────┴────────────┴───────┘
+
+Job Info
+Total runtime: 2h 47m 19s
+Results written to 
+/home/iriszeng18_gmail_com/software-last-exam/jobs/single-docs-opus55-high-conti
+nuation-20261014/result.json
+Inspect results by running `harbor view 
+/home/iriszeng18_gmail_com/software-last-exam/jobs`
+Share results by running `harbor upload 
+/home/iriszeng18_gmail_com/software-last-exam/jobs/single-docs-opus55-high-conti
+nuation-20261014`
+

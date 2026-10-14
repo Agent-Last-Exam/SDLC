@@ -1,0 +1,25 @@
+  1/1 Mean: 0.000 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 0:25:17 0:00:00
+adhoc • sdlc-workflow-claude-code • claude-opus-5.5
+┏━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━┓
+┃ Trials ┃ Exceptions ┃  Mean ┃
+┡━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━┩
+│      0 │          1 │ 0.000 │
+└────────┴────────────┴───────┘
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━┓
+┃ Exception                 ┃ Count ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━┩
+│ NonZeroAgentExitCodeError │     1 │
+└───────────────────────────┴───────┘
+
+Job Info
+Total runtime: 25m 17s
+Results written to 
+/home/iriszeng18_gmail_com/software-last-exam/jobs/single-docs-opus55-xhigh-retr
+y-20261014/result.json
+Inspect results by running `harbor view 
+/home/iriszeng18_gmail_com/software-last-exam/jobs`
+Share results by running `harbor upload 
+/home/iriszeng18_gmail_com/software-last-exam/jobs/single-docs-opus55-xhigh-retr
+y-20261014`
+

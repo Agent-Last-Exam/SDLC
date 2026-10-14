@@ -1,0 +1,4 @@
+{"time": 1791912002.115329, "event": "run_started"}
+{"time": 1791912002.1162252, "event": "stage_started", "stage": "sprint1/prd", "resume_session": null, "role_sha256": "08ca77a00383eed67358affa92954023f39ee1d0e5f3ee76885c377f1f4035cd", "prd_input_sha256": null, "missing_inputs": []}
+{"time": 1791912024.8359406, "event": "stage_execution_started", "stage": "sprint1/prd"}
+{"time": 1791912177.9601076, "event": "run_failed", "error": "Missing regular output: /workspace/artifacts/sprint1/prd/prd.md"}

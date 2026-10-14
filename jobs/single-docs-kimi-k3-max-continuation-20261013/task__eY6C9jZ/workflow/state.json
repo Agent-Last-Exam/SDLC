@@ -1,0 +1,72 @@
+{
+  "mode": "single",
+  "status": "stopped_at_boundary",
+  "cursor": 3,
+  "stages": [
+    {
+      "id": "sprint1/prd",
+      "role": "pm",
+      "status": "accepted",
+      "execution_started": true,
+      "session_id": "d0b9d926-dbc7-4a69-ba56-4a5afa8ce1d8",
+      "prd_input_sha256": null,
+      "input_sha256": {},
+      "missing_inputs": [],
+      "outputs": {
+        "prd.md": "3ac1073c623840ea611384759eb79026e4395551bf9f332858baef3fe0848bd2"
+      },
+      "missing_outputs": [],
+      "delivery_complete": true,
+      "cost_usd": 4.153697,
+      "recovered_from": "/home/iriszeng18_gmail_com/software-last-exam/jobs/single-docs-kimi-k3-max-20261013/task__HHz96Rh"
+    },
+    {
+      "id": "sprint1/tech-design",
+      "role": "architect",
+      "status": "accepted",
+      "execution_started": true,
+      "session_id": "d0b9d926-dbc7-4a69-ba56-4a5afa8ce1d8",
+      "outputs": {
+        "interface-contract.md": "e86ffe2d1d2d3335fcb861d53e8fff32438cf90ae645299ac6f4d72eada6cb79",
+        "frontend-design.md": "0f824ecd978d7a52600f417401be0c1dbc4667bceb488159a5e938395cd9fa49",
+        "backend-design.md": "95a8d2e4bd6ebdb28e4a97b758c7cd1b5cf9201d59fad478e0ff7ba5248fcecc",
+        "target-schema.graphql": "4fa23faa263234ed2283f1d6daea4c20c22d4f3df39ffd850ecad1e4ecbfdef8"
+      },
+      "recovered_from": "/home/iriszeng18_gmail_com/software-last-exam/jobs/single-docs-kimi-k3-max-20261013/task__HHz96Rh",
+      "missing_outputs": []
+    },
+    {
+      "id": "sprint1/test-design",
+      "role": "qa-design",
+      "status": "accepted",
+      "execution_started": true,
+      "session_id": "d0b9d926-dbc7-4a69-ba56-4a5afa8ce1d8",
+      "prd_input_sha256": "3ac1073c623840ea611384759eb79026e4395551bf9f332858baef3fe0848bd2",
+      "input_sha256": {
+        "artifact:sprint1/prd/prd": "3ac1073c623840ea611384759eb79026e4395551bf9f332858baef3fe0848bd2",
+        "artifact:sprint1/tech-design/frontend_design": "0f824ecd978d7a52600f417401be0c1dbc4667bceb488159a5e938395cd9fa49",
+        "artifact:sprint1/tech-design/backend_design": "95a8d2e4bd6ebdb28e4a97b758c7cd1b5cf9201d59fad478e0ff7ba5248fcecc",
+        "artifact:sprint1/tech-design/interface_contract": "e86ffe2d1d2d3335fcb861d53e8fff32438cf90ae645299ac6f4d72eada6cb79",
+        "artifact:sprint1/tech-design/target_schema": "4fa23faa263234ed2283f1d6daea4c20c22d4f3df39ffd850ecad1e4ecbfdef8"
+      },
+      "missing_inputs": [],
+      "outputs": {
+        "test-cases.v1.csv": "88b6e29c5b5bf0127dcf0501e356ff66ffc260cdcfdf50efa6516ddfe6a651ba"
+      },
+      "missing_outputs": [],
+      "delivery_complete": true,
+      "cost_usd": 22.231962
+    }
+  ],
+  "model_called": true,
+  "synthetic": false,
+  "missing_output_policy": "fail",
+  "delivery_complete": true,
+  "max_cost_usd": 50.0,
+  "cost_usd": 22.231962,
+  "principal_session": "d0b9d926-dbc7-4a69-ba56-4a5afa8ce1d8",
+  "recovery_source": "/home/iriszeng18_gmail_com/software-last-exam/jobs/single-docs-kimi-k3-max-20261013/task__HHz96Rh",
+  "original_deadline_epoch": 1791917124.8455071,
+  "baseline_sha256": "25532d978ca8375836bc63f911c79567bb39df3b8e7b44dbb7223a3bed36dd50",
+  "stop_after_stage": "sprint1/test-design"
+}

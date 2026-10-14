@@ -1,0 +1,107 @@
+[
+  {
+    "recovery_source": "/home/iriszeng18_gmail_com/software-last-exam/jobs/single-docs-kimi-k3-max-20261013/task__HHz96Rh",
+    "test_case_count": 41,
+    "model": "moonshotai/kimi-k3",
+    "effort": "max",
+    "label": "kimi-k3-max",
+    "status": "stopped_at_boundary",
+    "error": null,
+    "accepted_stages": 3,
+    "runtime_from_first_stage_execution_sec": 1931.81,
+    "max_runtime_sec": 3600,
+    "request_profile_verified": true,
+    "usage": {
+      "requests": 81,
+      "requests_with_usage": 81,
+      "input_tokens_including_cache": 3813387,
+      "output_tokens": 55131,
+      "cache_read_input_tokens": 3573504,
+      "cache_creation_input_tokens": 0,
+      "gateway_reported_cost_usd": 2.84351808,
+      "requests_with_gateway_cost": 81,
+      "gateway_cost_complete": true
+    },
+    "outputs": [
+      {
+        "stage": "sprint1/prd",
+        "file": "prd.md",
+        "status": "accepted",
+        "sha256": "3ac1073c623840ea611384759eb79026e4395551bf9f332858baef3fe0848bd2"
+      },
+      {
+        "stage": "sprint1/tech-design",
+        "file": "frontend-design.md",
+        "status": "accepted",
+        "sha256": "0f824ecd978d7a52600f417401be0c1dbc4667bceb488159a5e938395cd9fa49"
+      },
+      {
+        "stage": "sprint1/tech-design",
+        "file": "backend-design.md",
+        "status": "accepted",
+        "sha256": "95a8d2e4bd6ebdb28e4a97b758c7cd1b5cf9201d59fad478e0ff7ba5248fcecc"
+      },
+      {
+        "stage": "sprint1/tech-design",
+        "file": "interface-contract.md",
+        "status": "accepted",
+        "sha256": "e86ffe2d1d2d3335fcb861d53e8fff32438cf90ae645299ac6f4d72eada6cb79"
+      },
+      {
+        "stage": "sprint1/tech-design",
+        "file": "target-schema.graphql",
+        "status": "accepted",
+        "sha256": "4fa23faa263234ed2283f1d6daea4c20c22d4f3df39ffd850ecad1e4ecbfdef8"
+      },
+      {
+        "stage": "sprint1/test-design",
+        "file": "test-cases.v1.csv",
+        "status": "accepted",
+        "sha256": "88b6e29c5b5bf0127dcf0501e356ff66ffc260cdcfdf50efa6516ddfe6a651ba"
+      }
+    ],
+    "native": [
+      {
+        "stage": "sprint1/prd",
+        "model": "moonshotai/kimi-k3",
+        "version": "2.1.280",
+        "subagent_tool_available": false
+      },
+      {
+        "stage": "sprint1/tech-design",
+        "model": "moonshotai/kimi-k3",
+        "version": "2.1.280",
+        "subagent_tool_available": false
+      },
+      {
+        "stage": "sprint1/test-design",
+        "model": "moonshotai/kimi-k3",
+        "version": "2.1.280",
+        "subagent_tool_available": false
+      }
+    ],
+    "client_results": [
+      {
+        "stage": "sprint1/prd",
+        "stop_reason": "end_turn",
+        "is_error": false,
+        "terminal_reason": "completed",
+        "subagents_spawned": 0
+      },
+      {
+        "stage": "sprint1/tech-design",
+        "stop_reason": "end_turn",
+        "is_error": false,
+        "terminal_reason": "completed",
+        "subagents_spawned": 0
+      },
+      {
+        "stage": "sprint1/test-design",
+        "stop_reason": "end_turn",
+        "is_error": false,
+        "terminal_reason": "completed",
+        "subagents_spawned": 0
+      }
+    ]
+  }
+]

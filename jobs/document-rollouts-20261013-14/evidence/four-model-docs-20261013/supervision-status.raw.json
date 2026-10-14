@@ -1,0 +1,175 @@
+{
+  "status": "finished",
+  "results": [
+    {
+      "job_name": "single-docs-opus55-xhigh-20261013",
+      "model": "anthropic/claude-opus-5.5",
+      "effort": "xhigh",
+      "exit_code": 0,
+      "elapsed_including_setup_sec": 290.3,
+      "status": "failed",
+      "stages": [
+        {
+          "id": "sprint1/prd",
+          "role": "pm",
+          "status": "failed",
+          "execution_started": true,
+          "session_id": "2e3049af-652b-4e71-a874-c4b60ae16870",
+          "prd_input_sha256": null,
+          "input_sha256": {},
+          "missing_inputs": []
+        }
+      ],
+      "audited_requests": 15,
+      "request_profile_verified": true,
+      "cache_read_input_tokens": 726482,
+      "cache_creation_input_tokens": 82662
+    },
+    {
+      "job_name": "single-docs-deepseek41-high-20261013",
+      "model": "deepseek/deepseek-v4.1-flash",
+      "effort": "high",
+      "exit_code": 0,
+      "elapsed_including_setup_sec": 1210.5,
+      "status": "stopped_at_boundary",
+      "stages": [
+        {
+          "id": "sprint1/prd",
+          "role": "pm",
+          "status": "accepted",
+          "execution_started": true,
+          "session_id": "413212fb-3773-477b-8287-aeabb5bd0c7b",
+          "prd_input_sha256": null,
+          "input_sha256": {},
+          "missing_inputs": [],
+          "outputs": {
+            "prd.md": "87d5c1cddc352536ab90ff0089f474c494831ad124cea623d213c6252c15563e"
+          },
+          "missing_outputs": [],
+          "delivery_complete": true,
+          "cost_usd": 3.175392
+        },
+        {
+          "id": "sprint1/tech-design",
+          "role": "architect",
+          "status": "accepted",
+          "execution_started": true,
+          "session_id": "413212fb-3773-477b-8287-aeabb5bd0c7b",
+          "prd_input_sha256": "87d5c1cddc352536ab90ff0089f474c494831ad124cea623d213c6252c15563e",
+          "input_sha256": {
+            "artifact:sprint1/prd/prd": "87d5c1cddc352536ab90ff0089f474c494831ad124cea623d213c6252c15563e"
+          },
+          "missing_inputs": [],
+          "outputs": {
+            "backend-design.md": "6707122f4475b0500602be81cc6acfa439672bd6713190ad28fb941b9aae84d5",
+            "frontend-design.md": "ef08519b0c219a256f9c9dd7a7324386c1b9822f7da4da488f478d47db8f827e",
+            "interface-contract.md": "ca632b3fd68df208090c7c015fbcf82d3655f090b48139a7803fccfd936431fb",
+            "target-schema.graphql": "65ccb1157fcd8ddcf4c526793cd701a8b215199b51caa2bad7d3cdb0277fb1b4"
+          },
+          "missing_outputs": [],
+          "delivery_complete": true,
+          "cost_usd": 13.238745
+        },
+        {
+          "id": "sprint1/test-design",
+          "role": "qa-design",
+          "status": "accepted",
+          "execution_started": true,
+          "session_id": "413212fb-3773-477b-8287-aeabb5bd0c7b",
+          "prd_input_sha256": "87d5c1cddc352536ab90ff0089f474c494831ad124cea623d213c6252c15563e",
+          "input_sha256": {
+            "artifact:sprint1/prd/prd": "87d5c1cddc352536ab90ff0089f474c494831ad124cea623d213c6252c15563e",
+            "artifact:sprint1/tech-design/frontend_design": "ef08519b0c219a256f9c9dd7a7324386c1b9822f7da4da488f478d47db8f827e",
+            "artifact:sprint1/tech-design/backend_design": "6707122f4475b0500602be81cc6acfa439672bd6713190ad28fb941b9aae84d5",
+            "artifact:sprint1/tech-design/interface_contract": "ca632b3fd68df208090c7c015fbcf82d3655f090b48139a7803fccfd936431fb",
+            "artifact:sprint1/tech-design/target_schema": "65ccb1157fcd8ddcf4c526793cd701a8b215199b51caa2bad7d3cdb0277fb1b4"
+          },
+          "missing_inputs": [],
+          "outputs": {
+            "test-cases.v1.csv": "c4582b0d0ed3aaf2ceeef1e67bb4e231d0f6753a21de2e2af267662acf2dccac"
+          },
+          "missing_outputs": [],
+          "delivery_complete": true,
+          "cost_usd": 25.346143
+        }
+      ],
+      "audited_requests": 149,
+      "request_profile_verified": true,
+      "cache_read_input_tokens": 25350912,
+      "cache_creation_input_tokens": 0
+    },
+    {
+      "job_name": "single-docs-kimi-k3-max-20261013",
+      "model": "moonshotai/kimi-k3",
+      "effort": "max",
+      "exit_code": 0,
+      "elapsed_including_setup_sec": 1180.27,
+      "status": "failed",
+      "stages": [
+        {
+          "id": "sprint1/prd",
+          "role": "pm",
+          "status": "accepted",
+          "execution_started": true,
+          "session_id": "d0b9d926-dbc7-4a69-ba56-4a5afa8ce1d8",
+          "prd_input_sha256": null,
+          "input_sha256": {},
+          "missing_inputs": [],
+          "outputs": {
+            "prd.md": "3ac1073c623840ea611384759eb79026e4395551bf9f332858baef3fe0848bd2"
+          },
+          "missing_outputs": [],
+          "delivery_complete": true,
+          "cost_usd": 4.153697
+        },
+        {
+          "id": "sprint1/tech-design",
+          "role": "architect",
+          "status": "failed",
+          "execution_started": true
+        }
+      ],
+      "audited_requests": 76,
+      "request_profile_verified": true,
+      "cache_read_input_tokens": 3377664,
+      "cache_creation_input_tokens": 0
+    },
+    {
+      "job_name": "single-docs-glm53flash-max-20261013",
+      "model": "z-ai/glm-5.3-flash",
+      "effort": "max",
+      "exit_code": 0,
+      "elapsed_including_setup_sec": 3740.91,
+      "status": "timed_out",
+      "stages": [
+        {
+          "id": "sprint1/prd",
+          "role": "pm",
+          "status": "accepted",
+          "execution_started": true,
+          "session_id": "66d2827e-46f7-429d-86aa-d790cab0b780",
+          "prd_input_sha256": null,
+          "input_sha256": {},
+          "missing_inputs": [],
+          "outputs": {
+            "prd.md": "43374a7aceea98478902ef12101d8400fa5be9219b1097977d2061e7c62db114"
+          },
+          "missing_outputs": [],
+          "delivery_complete": true,
+          "cost_usd": 48.502294
+        },
+        {
+          "id": "sprint1/tech-design",
+          "role": "architect",
+          "status": "failed",
+          "execution_started": true
+        }
+      ],
+      "audited_requests": 306,
+      "request_profile_verified": true,
+      "cache_read_input_tokens": 17735424,
+      "cache_creation_input_tokens": 0
+    }
+  ],
+  "active": null
+}

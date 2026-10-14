@@ -1,0 +1,88 @@
+{
+  "status": "finished",
+  "results": [
+    {
+      "job_name": "single-docs-glm53flash-max-retry-20261014",
+      "model": "z-ai/glm-5.3-flash",
+      "effort": "max",
+      "exit_code": 0,
+      "elapsed_including_setup_sec": 5296.01,
+      "status": "stopped_at_boundary",
+      "stages": [
+        {
+          "id": "sprint1/prd",
+          "role": "pm",
+          "status": "accepted",
+          "execution_started": true,
+          "session_id": "fb166191-9969-4060-9b85-e10a648499c2",
+          "prd_input_sha256": null,
+          "input_sha256": {},
+          "missing_inputs": [],
+          "outputs": {
+            "prd.md": "96dcf52d5a834c7dc0c14d795fc57508931c7765a01249d3748d07ddbc84a120"
+          },
+          "missing_outputs": [],
+          "delivery_complete": true,
+          "cost_usd": 3.358288
+        },
+        {
+          "id": "sprint1/tech-design",
+          "role": "architect",
+          "status": "accepted",
+          "execution_started": true,
+          "session_id": "fb166191-9969-4060-9b85-e10a648499c2",
+          "prd_input_sha256": "96dcf52d5a834c7dc0c14d795fc57508931c7765a01249d3748d07ddbc84a120",
+          "input_sha256": {
+            "artifact:sprint1/prd/prd": "96dcf52d5a834c7dc0c14d795fc57508931c7765a01249d3748d07ddbc84a120"
+          },
+          "missing_inputs": [],
+          "outputs": {
+            "backend-design.md": "f38f21eec6a0a90faacf624bf660acd33212c167f5a664c2e54bc48b4a448237",
+            "frontend-design.md": "1403ed237a63c833a8f11886382c7ef0e0447b6b499e76aa6c92d8f85a34ba44",
+            "interface-contract.md": "56eac2246b472f902005ec7348a0272f51f2f14dfc14e756b5e7c4a4167ae75b",
+            "target-schema.graphql": "4fa23faa263234ed2283f1d6daea4c20c22d4f3df39ffd850ecad1e4ecbfdef8"
+          },
+          "missing_outputs": [],
+          "delivery_complete": true,
+          "cost_usd": 28.852075
+        },
+        {
+          "id": "sprint1/test-design",
+          "role": "qa-design",
+          "status": "accepted",
+          "execution_started": true,
+          "session_id": "fb166191-9969-4060-9b85-e10a648499c2",
+          "prd_input_sha256": "96dcf52d5a834c7dc0c14d795fc57508931c7765a01249d3748d07ddbc84a120",
+          "input_sha256": {
+            "artifact:sprint1/prd/prd": "96dcf52d5a834c7dc0c14d795fc57508931c7765a01249d3748d07ddbc84a120",
+            "artifact:sprint1/tech-design/frontend_design": "1403ed237a63c833a8f11886382c7ef0e0447b6b499e76aa6c92d8f85a34ba44",
+            "artifact:sprint1/tech-design/backend_design": "f38f21eec6a0a90faacf624bf660acd33212c167f5a664c2e54bc48b4a448237",
+            "artifact:sprint1/tech-design/interface_contract": "56eac2246b472f902005ec7348a0272f51f2f14dfc14e756b5e7c4a4167ae75b",
+            "artifact:sprint1/tech-design/target_schema": "4fa23faa263234ed2283f1d6daea4c20c22d4f3df39ffd850ecad1e4ecbfdef8"
+          },
+          "missing_inputs": [],
+          "outputs": {
+            "test-cases.v1.csv": "19d63c9ff93c71bac9fd4be3198890077479082e63e5fe3c55964f9983168bba"
+          },
+          "missing_outputs": [],
+          "delivery_complete": true,
+          "cost_usd": 56.063914
+        }
+      ],
+      "audited_requests": 525,
+      "request_profile_verified": true,
+      "usage": {
+        "requests": 525,
+        "requests_with_usage": 525,
+        "input_tokens_including_cache": 43388739,
+        "output_tokens": 136176,
+        "cache_read_input_tokens": 42919168,
+        "cache_creation_input_tokens": 0,
+        "gateway_reported_cost_usd": null,
+        "requests_with_gateway_cost": 0,
+        "gateway_cost_complete": false
+      }
+    }
+  ],
+  "active": null
+}

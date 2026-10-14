@@ -1,0 +1,33 @@
+{
+    "id": "7a858bee-7e55-4b47-ab79-f136f9ea042a",
+    "started_at": "2026-10-14T04:45:04.194291",
+    "updated_at": "2026-10-14T07:32:23.825421",
+    "finished_at": "2026-10-14T07:32:23.825421",
+    "n_total_trials": 1,
+    "stats": {
+        "n_completed_trials": 1,
+        "n_errored_trials": 0,
+        "n_running_trials": 0,
+        "n_pending_trials": 0,
+        "n_cancelled_trials": 0,
+        "n_retries": 0,
+        "evals": {
+            "sdlc-workflow-claude-code__claude-opus-5.5__adhoc": {
+                "n_trials": 0,
+                "n_errors": 0,
+                "metrics": [
+                    {
+                        "mean": 0.0
+                    }
+                ],
+                "pass_at_k": {},
+                "reward_stats": {},
+                "exception_stats": {}
+            }
+        },
+        "n_input_tokens": 57260584,
+        "n_cache_tokens": 56102331,
+        "n_output_tokens": 1572744,
+        "cost_usd": 138.73662625000006
+    }
+}

@@ -1,0 +1,10 @@
+{
+  "session_id": "d0b9d926-dbc7-4a69-ba56-4a5afa8ce1d8",
+  "active_role": "pm",
+  "stage_id": "sprint1/prd",
+  "native_user_activation_verified": true,
+  "role_activations_recorded": 1,
+  "transport": "claude-code-jsonl",
+  "role_prompt_sha256": "08ca77a00383eed67358affa92954023f39ee1d0e5f3ee76885c377f1f4035cd",
+  "recovery_reason": "ignore SDK compaction summary as role activation"
+}

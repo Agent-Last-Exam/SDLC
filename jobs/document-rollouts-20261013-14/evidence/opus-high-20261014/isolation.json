@@ -1,0 +1,31 @@
+{
+  "native": [
+    {
+      "session_id": "99fa9cb2-5403-45c0-a655-947213c9a0a2",
+      "model": "anthropic/claude-opus-5.5",
+      "claude_code_version": "2.1.280"
+    }
+  ],
+  "fresh_session_verified": true,
+  "network": [
+    "task__vmvswrq__env_default"
+  ],
+  "mounts": [
+    {
+      "source": "/home/iriszeng18_gmail_com/software-last-exam/jobs/single-docs-opus55-high-20261014/task__vMvSwRQ/agent",
+      "destination": "/logs/agent",
+      "writable": true
+    },
+    {
+      "source": "/home/iriszeng18_gmail_com/software-last-exam/jobs/single-docs-opus55-high-20261014/task__vMvSwRQ/artifacts/logs/artifacts",
+      "destination": "/logs/artifacts",
+      "writable": true
+    },
+    {
+      "source": "/home/iriszeng18_gmail_com/software-last-exam/jobs/single-docs-opus55-high-20261014/task__vMvSwRQ/verifier",
+      "destination": "/logs/verifier",
+      "writable": true
+    }
+  ],
+  "published_ports": {}
+}

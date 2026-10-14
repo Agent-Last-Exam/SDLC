@@ -1,0 +1,90 @@
+{
+  "status": "finished",
+  "results": [
+    {
+      "job_name": "single-docs-opus55-high-continuation-20261014",
+      "model": "anthropic/claude-opus-5.5",
+      "effort": "high",
+      "exit_code": 0,
+      "elapsed_including_setup_sec": 10042.0,
+      "status": "stopped_at_boundary",
+      "stages": [
+        {
+          "id": "sprint1/prd",
+          "role": "pm",
+          "status": "accepted",
+          "execution_started": true,
+          "session_id": "99fa9cb2-5403-45c0-a655-947213c9a0a2",
+          "prd_input_sha256": null,
+          "input_sha256": {},
+          "missing_inputs": [],
+          "outputs": {
+            "prd.md": "c0abf99fc5af86e0e22da3a70ddf91d5972819a30e75494720c620a4d4f999e8"
+          },
+          "missing_outputs": [],
+          "delivery_complete": true,
+          "cost_usd": 12.603685,
+          "recovered_from": "/home/iriszeng18_gmail_com/software-last-exam/jobs/single-docs-opus55-high-20261014/task__vMvSwRQ"
+        },
+        {
+          "id": "sprint1/tech-design",
+          "role": "architect",
+          "status": "accepted",
+          "execution_started": true,
+          "session_id": "99fa9cb2-5403-45c0-a655-947213c9a0a2",
+          "prd_input_sha256": "c0abf99fc5af86e0e22da3a70ddf91d5972819a30e75494720c620a4d4f999e8",
+          "input_sha256": {
+            "artifact:sprint1/prd/prd": "c0abf99fc5af86e0e22da3a70ddf91d5972819a30e75494720c620a4d4f999e8"
+          },
+          "missing_inputs": [],
+          "outputs": {
+            "interface-contract.md": "5052cc9f617a397e3ce83debf477a5921d0da6b24bacdda776ab0b8f219c7115",
+            "frontend-design.md": "5bbe824ab92c68c307f4c7a135ae9c9463e1474d4810e25dc1d47bfb7eed7fc3",
+            "backend-design.md": "2e2e0718deced7ca34d20a94dd971a8b8a1e9cc9aabf8445016a98c0091f147b",
+            "target-schema.graphql": "4fa23faa263234ed2283f1d6daea4c20c22d4f3df39ffd850ecad1e4ecbfdef8"
+          },
+          "missing_outputs": [],
+          "delivery_complete": true,
+          "cost_usd": 57.283726,
+          "recovered_from": "/home/iriszeng18_gmail_com/software-last-exam/jobs/single-docs-opus55-high-20261014/task__vMvSwRQ"
+        },
+        {
+          "id": "sprint1/test-design",
+          "role": "qa-design",
+          "status": "accepted",
+          "execution_started": true,
+          "session_id": "99fa9cb2-5403-45c0-a655-947213c9a0a2",
+          "prd_input_sha256": "c0abf99fc5af86e0e22da3a70ddf91d5972819a30e75494720c620a4d4f999e8",
+          "input_sha256": {
+            "artifact:sprint1/prd/prd": "c0abf99fc5af86e0e22da3a70ddf91d5972819a30e75494720c620a4d4f999e8",
+            "artifact:sprint1/tech-design/frontend_design": "5bbe824ab92c68c307f4c7a135ae9c9463e1474d4810e25dc1d47bfb7eed7fc3",
+            "artifact:sprint1/tech-design/backend_design": "2e2e0718deced7ca34d20a94dd971a8b8a1e9cc9aabf8445016a98c0091f147b",
+            "artifact:sprint1/tech-design/interface_contract": "5052cc9f617a397e3ce83debf477a5921d0da6b24bacdda776ab0b8f219c7115",
+            "artifact:sprint1/tech-design/target_schema": "4fa23faa263234ed2283f1d6daea4c20c22d4f3df39ffd850ecad1e4ecbfdef8"
+          },
+          "missing_inputs": [],
+          "outputs": {
+            "test-cases.v1.csv": "4e6b5b4954bf43735be29c9458af3a1d3e829f0cb1e06370b3ba825d74aeabf2"
+          },
+          "missing_outputs": [],
+          "delivery_complete": true,
+          "cost_usd": 81.4529
+        }
+      ],
+      "audited_requests": 141,
+      "request_profile_verified": true,
+      "usage": {
+        "requests": 141,
+        "requests_with_usage": 141,
+        "input_tokens_including_cache": 15998104,
+        "output_tokens": 1025861,
+        "cache_read_input_tokens": 15399393,
+        "cache_creation_input_tokens": 346466,
+        "gateway_reported_cost_usd": 26.3384086,
+        "requests_with_gateway_cost": 141,
+        "gateway_cost_complete": true
+      }
+    }
+  ],
+  "active": null
+}
