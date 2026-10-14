@@ -1,0 +1,28 @@
+{
+  "status": "stopped_at_boundary",
+  "model": "gpt-6.1-sol",
+  "reasoning_effort": "xhigh",
+  "test_case_count": 260,
+  "accepted_stages": 3,
+  "accepted_file_count": 13,
+  "model_execution_elapsed_sec": 7901.36,
+  "independent_quality_evaluation": false,
+  "test_execution": false,
+  "gateway_reported_usage": {
+    "requests": 117,
+    "requests_with_usage": 117,
+    "input_tokens_including_cache": 13700299,
+    "output_tokens": 270647,
+    "cache_read_input_tokens": 12711540,
+    "cache_creation_input_tokens": 988340,
+    "gateway_reported_cost_usd": 6.449312,
+    "requests_with_gateway_cost": 117,
+    "gateway_cost_complete": true
+  },
+  "limitations": [
+    "Gateway response usage is not reconciled billing; cache reads included in total input.",
+    "Request fields do not prove private upstream model routing.",
+    "Existing local execution runtime includes unsubmitted audit/boundary extensions; this PR keeps only the business-input change.",
+    "Older five-model runs did not receive these detailed business inputs and are not directly comparable."
+  ]
+}

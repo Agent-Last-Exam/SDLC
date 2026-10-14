@@ -1,0 +1,524 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:saleor:sprint1:app-manifest:v1",
+  "title": "I16 当前 App manifest（规范化后）",
+  "description": "旧 mount/target/options 通过受约束兼容适配器映射后，再应用本 schema。tokenTargetUrl 可省略；不是已部署声明。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "name",
+    "version"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "about": {
+      "type": "string"
+    },
+    "permissions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "MANAGE_USERS",
+          "MANAGE_STAFF",
+          "IMPERSONATE_USER",
+          "MANAGE_APPS",
+          "MANAGE_OBSERVABILITY",
+          "MANAGE_CHECKOUTS",
+          "HANDLE_CHECKOUTS",
+          "HANDLE_TAXES",
+          "MANAGE_TAXES",
+          "MANAGE_CHANNELS",
+          "MANAGE_DISCOUNTS",
+          "MANAGE_GIFT_CARD",
+          "MANAGE_MENUS",
+          "MANAGE_ORDERS",
+          "MANAGE_ORDERS_IMPORT",
+          "MANAGE_PAGES",
+          "MANAGE_PAGE_TYPES_AND_ATTRIBUTES",
+          "HANDLE_PAYMENTS",
+          "MANAGE_PLUGINS",
+          "MANAGE_PRODUCTS",
+          "MANAGE_PRODUCT_TYPES_AND_ATTRIBUTES",
+          "MANAGE_SHIPPING",
+          "MANAGE_SETTINGS",
+          "MANAGE_TRANSLATIONS"
+        ]
+      },
+      "uniqueItems": true,
+      "default": []
+    },
+    "appUrl": {
+      "type": "string",
+      "format": "uri"
+    },
+    "configurationUrl": {
+      "type": "string",
+      "format": "uri"
+    },
+    "tokenTargetUrl": {
+      "type": "string",
+      "format": "uri"
+    },
+    "dataPrivacy": {
+      "type": "string"
+    },
+    "dataPrivacyUrl": {
+      "type": "string",
+      "format": "uri"
+    },
+    "homepageUrl": {
+      "type": "string",
+      "format": "uri"
+    },
+    "supportUrl": {
+      "type": "string",
+      "format": "uri"
+    },
+    "extensions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Extension"
+      },
+      "default": []
+    },
+    "webhooks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Webhook"
+      },
+      "default": []
+    },
+    "audience": {
+      "type": "string",
+      "minLength": 1
+    },
+    "requiredSaleorVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "author": {
+      "type": "string"
+    },
+    "brand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "logo"
+      ],
+      "properties": {
+        "logo": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "default"
+          ],
+          "properties": {
+            "default": {
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "Extension": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label",
+        "url",
+        "mountName"
+      ],
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "url": {
+          "type": "string",
+          "minLength": 1
+        },
+        "mountName": {
+          "type": "string",
+          "enum": [
+            "CATEGORY_OVERVIEW_CREATE",
+            "CATEGORY_OVERVIEW_MORE_ACTIONS",
+            "CATEGORY_DETAILS_MORE_ACTIONS",
+            "COLLECTION_OVERVIEW_CREATE",
+            "COLLECTION_OVERVIEW_MORE_ACTIONS",
+            "COLLECTION_DETAILS_MORE_ACTIONS",
+            "COLLECTION_DETAILS_WIDGETS",
+            "GIFT_CARD_OVERVIEW_CREATE",
+            "GIFT_CARD_OVERVIEW_MORE_ACTIONS",
+            "GIFT_CARD_DETAILS_MORE_ACTIONS",
+            "GIFT_CARD_DETAILS_WIDGETS",
+            "CUSTOMER_OVERVIEW_CREATE",
+            "CUSTOMER_OVERVIEW_MORE_ACTIONS",
+            "CUSTOMER_DETAILS_MORE_ACTIONS",
+            "CUSTOMER_DETAILS_WIDGETS",
+            "PRODUCT_OVERVIEW_CREATE",
+            "PRODUCT_OVERVIEW_MORE_ACTIONS",
+            "PRODUCT_DETAILS_MORE_ACTIONS",
+            "PRODUCT_DETAILS_WIDGETS",
+            "NAVIGATION_CATALOG",
+            "NAVIGATION_ORDERS",
+            "NAVIGATION_CUSTOMERS",
+            "NAVIGATION_DISCOUNTS",
+            "NAVIGATION_TRANSLATIONS",
+            "NAVIGATION_PAGES",
+            "ORDER_DETAILS_MORE_ACTIONS",
+            "ORDER_OVERVIEW_CREATE",
+            "ORDER_OVERVIEW_MORE_ACTIONS",
+            "ORDER_DETAILS_WIDGETS",
+            "DRAFT_ORDER_DETAILS_MORE_ACTIONS",
+            "DRAFT_ORDER_OVERVIEW_CREATE",
+            "DRAFT_ORDER_OVERVIEW_MORE_ACTIONS",
+            "DRAFT_ORDER_DETAILS_WIDGETS",
+            "DISCOUNT_DETAILS_MORE_ACTIONS",
+            "DISCOUNT_OVERVIEW_CREATE",
+            "DISCOUNT_OVERVIEW_MORE_ACTIONS",
+            "VOUCHER_DETAILS_MORE_ACTIONS",
+            "VOUCHER_OVERVIEW_CREATE",
+            "VOUCHER_OVERVIEW_MORE_ACTIONS",
+            "VOUCHER_DETAILS_WIDGETS",
+            "PAGE_DETAILS_MORE_ACTIONS",
+            "PAGE_OVERVIEW_CREATE",
+            "PAGE_OVERVIEW_MORE_ACTIONS",
+            "PAGE_TYPE_OVERVIEW_CREATE",
+            "PAGE_TYPE_OVERVIEW_MORE_ACTIONS",
+            "PAGE_TYPE_DETAILS_MORE_ACTIONS",
+            "MENU_OVERVIEW_CREATE",
+            "MENU_OVERVIEW_MORE_ACTIONS",
+            "MENU_DETAILS_MORE_ACTIONS"
+          ]
+        },
+        "targetName": {
+          "type": "string",
+          "enum": [
+            "POPUP",
+            "APP_PAGE",
+            "NEW_TAB",
+            "WIDGET"
+          ],
+          "default": "POPUP"
+        },
+        "permissions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "MANAGE_USERS",
+              "MANAGE_STAFF",
+              "IMPERSONATE_USER",
+              "MANAGE_APPS",
+              "MANAGE_OBSERVABILITY",
+              "MANAGE_CHECKOUTS",
+              "HANDLE_CHECKOUTS",
+              "HANDLE_TAXES",
+              "MANAGE_TAXES",
+              "MANAGE_CHANNELS",
+              "MANAGE_DISCOUNTS",
+              "MANAGE_GIFT_CARD",
+              "MANAGE_MENUS",
+              "MANAGE_ORDERS",
+              "MANAGE_ORDERS_IMPORT",
+              "MANAGE_PAGES",
+              "MANAGE_PAGE_TYPES_AND_ATTRIBUTES",
+              "HANDLE_PAYMENTS",
+              "MANAGE_PLUGINS",
+              "MANAGE_PRODUCTS",
+              "MANAGE_PRODUCT_TYPES_AND_ATTRIBUTES",
+              "MANAGE_SHIPPING",
+              "MANAGE_SETTINGS",
+              "MANAGE_TRANSLATIONS"
+            ]
+          },
+          "uniqueItems": true,
+          "default": []
+        },
+        "settings": {
+          "$ref": "#/$defs/Settings",
+          "default": {}
+        }
+      }
+    },
+    "Settings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "newTabTarget": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "method"
+          ],
+          "properties": {
+            "method": {
+              "type": "string",
+              "enum": [
+                "GET",
+                "POST"
+              ]
+            }
+          }
+        },
+        "widgetTarget": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "method"
+          ],
+          "properties": {
+            "method": {
+              "type": "string",
+              "enum": [
+                "GET",
+                "POST"
+              ]
+            }
+          }
+        }
+      },
+      "not": {
+        "required": [
+          "newTabTarget",
+          "widgetTarget"
+        ]
+      }
+    },
+    "Webhook": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "query",
+        "targetUrl"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "query": {
+          "type": "string",
+          "minLength": 1
+        },
+        "targetUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "isActive": {
+          "type": "boolean",
+          "default": true
+        },
+        "customHeaders": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "现有 custom_headers_validator 继续校验禁止覆盖头、大小与合法性；不是绕过签名的任意头。"
+        },
+        "asyncEvents": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "ANY_EVENTS",
+              "ACCOUNT_CONFIRMATION_REQUESTED",
+              "ACCOUNT_CHANGE_EMAIL_REQUESTED",
+              "ACCOUNT_EMAIL_CHANGED",
+              "ACCOUNT_SET_PASSWORD_REQUESTED",
+              "ACCOUNT_CONFIRMED",
+              "ACCOUNT_DELETE_REQUESTED",
+              "ACCOUNT_DELETED",
+              "ADDRESS_CREATED",
+              "ADDRESS_UPDATED",
+              "ADDRESS_DELETED",
+              "APP_INSTALLED",
+              "APP_UPDATED",
+              "APP_DELETED",
+              "APP_STATUS_CHANGED",
+              "ATTRIBUTE_CREATED",
+              "ATTRIBUTE_UPDATED",
+              "ATTRIBUTE_DELETED",
+              "ATTRIBUTE_VALUE_CREATED",
+              "ATTRIBUTE_VALUE_UPDATED",
+              "ATTRIBUTE_VALUE_DELETED",
+              "CATEGORY_CREATED",
+              "CATEGORY_UPDATED",
+              "CATEGORY_DELETED",
+              "CHANNEL_CREATED",
+              "CHANNEL_UPDATED",
+              "CHANNEL_DELETED",
+              "CHANNEL_STATUS_CHANGED",
+              "CHANNEL_METADATA_UPDATED",
+              "GIFT_CARD_CREATED",
+              "GIFT_CARD_UPDATED",
+              "GIFT_CARD_DELETED",
+              "GIFT_CARD_SENT",
+              "GIFT_CARD_STATUS_CHANGED",
+              "GIFT_CARD_METADATA_UPDATED",
+              "GIFT_CARD_EXPORT_COMPLETED",
+              "MENU_CREATED",
+              "MENU_UPDATED",
+              "MENU_DELETED",
+              "MENU_ITEM_CREATED",
+              "MENU_ITEM_UPDATED",
+              "MENU_ITEM_DELETED",
+              "ORDER_CREATED",
+              "ORDER_CONFIRMED",
+              "ORDER_PAID",
+              "ORDER_FULLY_PAID",
+              "ORDER_REFUNDED",
+              "ORDER_FULLY_REFUNDED",
+              "ORDER_UPDATED",
+              "ORDER_CANCELLED",
+              "ORDER_EXPIRED",
+              "ORDER_FULFILLED",
+              "ORDER_METADATA_UPDATED",
+              "ORDER_BULK_CREATED",
+              "FULFILLMENT_CREATED",
+              "FULFILLMENT_CANCELED",
+              "FULFILLMENT_APPROVED",
+              "FULFILLMENT_METADATA_UPDATED",
+              "FULFILLMENT_TRACKING_NUMBER_UPDATED",
+              "DRAFT_ORDER_CREATED",
+              "DRAFT_ORDER_UPDATED",
+              "DRAFT_ORDER_DELETED",
+              "SALE_CREATED",
+              "SALE_UPDATED",
+              "SALE_DELETED",
+              "SALE_TOGGLE",
+              "PROMOTION_CREATED",
+              "PROMOTION_UPDATED",
+              "PROMOTION_DELETED",
+              "PROMOTION_STARTED",
+              "PROMOTION_ENDED",
+              "PROMOTION_RULE_CREATED",
+              "PROMOTION_RULE_UPDATED",
+              "PROMOTION_RULE_DELETED",
+              "INVOICE_REQUESTED",
+              "INVOICE_DELETED",
+              "INVOICE_SENT",
+              "CUSTOMER_CREATED",
+              "CUSTOMER_UPDATED",
+              "CUSTOMER_DELETED",
+              "CUSTOMER_METADATA_UPDATED",
+              "COLLECTION_CREATED",
+              "COLLECTION_UPDATED",
+              "COLLECTION_DELETED",
+              "COLLECTION_METADATA_UPDATED",
+              "PRODUCT_CREATED",
+              "PRODUCT_UPDATED",
+              "PRODUCT_DELETED",
+              "PRODUCT_METADATA_UPDATED",
+              "PRODUCT_EXPORT_COMPLETED",
+              "PRODUCT_MEDIA_CREATED",
+              "PRODUCT_MEDIA_UPDATED",
+              "PRODUCT_MEDIA_DELETED",
+              "PRODUCT_VARIANT_CREATED",
+              "PRODUCT_VARIANT_UPDATED",
+              "PRODUCT_VARIANT_DELETED",
+              "PRODUCT_VARIANT_METADATA_UPDATED",
+              "PRODUCT_VARIANT_OUT_OF_STOCK",
+              "PRODUCT_VARIANT_BACK_IN_STOCK",
+              "PRODUCT_VARIANT_STOCK_UPDATED",
+              "CHECKOUT_CREATED",
+              "CHECKOUT_UPDATED",
+              "CHECKOUT_FULLY_AUTHORIZED",
+              "CHECKOUT_FULLY_PAID",
+              "CHECKOUT_METADATA_UPDATED",
+              "NOTIFY_USER",
+              "PAGE_CREATED",
+              "PAGE_UPDATED",
+              "PAGE_DELETED",
+              "PAGE_TYPE_CREATED",
+              "PAGE_TYPE_UPDATED",
+              "PAGE_TYPE_DELETED",
+              "PERMISSION_GROUP_CREATED",
+              "PERMISSION_GROUP_UPDATED",
+              "PERMISSION_GROUP_DELETED",
+              "SHIPPING_PRICE_CREATED",
+              "SHIPPING_PRICE_UPDATED",
+              "SHIPPING_PRICE_DELETED",
+              "SHIPPING_ZONE_CREATED",
+              "SHIPPING_ZONE_UPDATED",
+              "SHIPPING_ZONE_DELETED",
+              "SHIPPING_ZONE_METADATA_UPDATED",
+              "STAFF_CREATED",
+              "STAFF_UPDATED",
+              "STAFF_DELETED",
+              "STAFF_SET_PASSWORD_REQUESTED",
+              "TRANSACTION_ITEM_METADATA_UPDATED",
+              "TRANSLATION_CREATED",
+              "TRANSLATION_UPDATED",
+              "WAREHOUSE_CREATED",
+              "WAREHOUSE_UPDATED",
+              "WAREHOUSE_DELETED",
+              "WAREHOUSE_METADATA_UPDATED",
+              "VOUCHER_CREATED",
+              "VOUCHER_UPDATED",
+              "VOUCHER_DELETED",
+              "VOUCHER_CODES_CREATED",
+              "VOUCHER_CODES_DELETED",
+              "VOUCHER_METADATA_UPDATED",
+              "VOUCHER_CODE_EXPORT_COMPLETED",
+              "OBSERVABILITY",
+              "THUMBNAIL_CREATED",
+              "SHOP_METADATA_UPDATED"
+            ]
+          }
+        },
+        "syncEvents": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "PAYMENT_LIST_GATEWAYS",
+              "PAYMENT_AUTHORIZE",
+              "PAYMENT_CAPTURE",
+              "PAYMENT_REFUND",
+              "PAYMENT_VOID",
+              "PAYMENT_CONFIRM",
+              "PAYMENT_PROCESS",
+              "CHECKOUT_CALCULATE_TAXES",
+              "ORDER_CALCULATE_TAXES",
+              "TRANSACTION_CHARGE_REQUESTED",
+              "TRANSACTION_REFUND_REQUESTED",
+              "TRANSACTION_CANCELATION_REQUESTED",
+              "SHIPPING_LIST_METHODS_FOR_CHECKOUT",
+              "CHECKOUT_FILTER_SHIPPING_METHODS",
+              "ORDER_FILTER_SHIPPING_METHODS",
+              "PAYMENT_GATEWAY_INITIALIZE_SESSION",
+              "TRANSACTION_INITIALIZE_SESSION",
+              "TRANSACTION_PROCESS_SESSION",
+              "LIST_STORED_PAYMENT_METHODS",
+              "STORED_PAYMENT_METHOD_DELETE_REQUESTED",
+              "PAYMENT_GATEWAY_INITIALIZE_TOKENIZATION_SESSION",
+              "PAYMENT_METHOD_INITIALIZE_TOKENIZATION_SESSION",
+              "PAYMENT_METHOD_PROCESS_TOKENIZATION_SESSION"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

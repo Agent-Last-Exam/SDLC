@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "decoded_files_scanned": 34,
+  "checks": [
+    "configured API secrets",
+    "Bearer/key-like tokens",
+    "local account/machine identity settings"
+  ],
+  "native_settings_sessions_credentials_excluded": true
+}

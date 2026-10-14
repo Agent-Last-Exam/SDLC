@@ -11,3 +11,5 @@
 ## 2026-10-13 真实 Single
 
 [single-gpt61-xhigh-20261013](single-gpt61-xhigh-20261013/README.md)：首轮 QA 写出失败报告后，运行器封存错误退出；包含脱敏 ATIF 轨迹与阶段结果，未执行官方评分。
+
+- [GPT 6.1 Sol xhigh：正式业务题目三阶段运行](single-docs-gpt61-xhigh-instruction-20261014/README.md)：instruction＋business 输入，260条测试设计用例；已交付，尚未独立质量评分。

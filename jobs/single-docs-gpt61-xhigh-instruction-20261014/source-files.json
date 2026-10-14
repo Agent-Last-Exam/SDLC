@@ -1,0 +1,152 @@
+[
+  {
+    "source": "jobs/single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/workflow/accepted/sprint1/prd/prd.md",
+    "published": "artifacts/sprint1/prd/prd.md",
+    "sha256": "44234ed349fee2132362eb42e5c1c72abef89d6aae9bcbe7a63b49f8896af89f"
+  },
+  {
+    "source": "jobs/single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/workflow/accepted/sprint1/tech-design/backend-design.md",
+    "published": "artifacts/sprint1/tech-design/backend-design.md",
+    "sha256": "36feb5d88fe697500c76585fbd1cfd8b716dc1b79ba46a9d3afcf4b4e1decdd5"
+  },
+  {
+    "source": "jobs/single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/workflow/accepted/sprint1/tech-design/frontend-design.md",
+    "published": "artifacts/sprint1/tech-design/frontend-design.md",
+    "sha256": "7620f5338941c6f743f267d7276f691d1baeb4cf8d4f11ddaadb7b6ea39045ca"
+  },
+  {
+    "source": "jobs/single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/workflow/accepted/sprint1/tech-design/interface-contract.md",
+    "published": "artifacts/sprint1/tech-design/interface-contract.md",
+    "sha256": "60ca8baca48c33dcf0eaf9367538c203ff05f7739454fe251032f3354afd537e"
+  },
+  {
+    "source": "jobs/single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/workflow/accepted/sprint1/tech-design/interfaces/app-installation.openapi.yaml",
+    "published": "artifacts/sprint1/tech-design/interfaces/app-installation.openapi.yaml",
+    "sha256": "9961c3d7bbc22b9fac4324c18e5a288e7c2c737aa326b5aeaf5c549b95d2f0fa"
+  },
+  {
+    "source": "jobs/single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/workflow/accepted/sprint1/tech-design/interfaces/app-manifest.schema.json",
+    "published": "artifacts/sprint1/tech-design/interfaces/app-manifest.schema.json",
+    "sha256": "02ab5638c95bbf42ff3e82ac5bd79b696bae7235c940bc4dbf9f2cbc2dde7460"
+  },
+  {
+    "source": "jobs/single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/workflow/accepted/sprint1/tech-design/interfaces/editorjs-content.md",
+    "published": "artifacts/sprint1/tech-design/interfaces/editorjs-content.md",
+    "sha256": "f1d2da0d908a93fc6d786dbbe4586703246ecebe70fd051bca70662465eda0fb"
+  },
+  {
+    "source": "jobs/single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/workflow/accepted/sprint1/tech-design/interfaces/extension-form-response.md",
+    "published": "artifacts/sprint1/tech-design/interfaces/extension-form-response.md",
+    "sha256": "99f07542bb8304adff2f4df1b755b9e137b4e1fb8deff8b08afed7ef74e57b29"
+  },
+  {
+    "source": "jobs/single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/workflow/accepted/sprint1/tech-design/interfaces/extensions-catalog.openapi.yaml",
+    "published": "artifacts/sprint1/tech-design/interfaces/extensions-catalog.openapi.yaml",
+    "sha256": "4bb77054661110d694b6ecc45477468dff3aff51ad383f418ac7bceb1633eac6"
+  },
+  {
+    "source": "jobs/single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/workflow/accepted/sprint1/tech-design/interfaces/query-export-row-data.md",
+    "published": "artifacts/sprint1/tech-design/interfaces/query-export-row-data.md",
+    "sha256": "762d9f81bf6bf19d735e9de8f5ac839b3778f659484a3c128ce55d16d269187d"
+  },
+  {
+    "source": "jobs/single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/workflow/accepted/sprint1/tech-design/interfaces/webhook-delivery.openapi.yaml",
+    "published": "artifacts/sprint1/tech-design/interfaces/webhook-delivery.openapi.yaml",
+    "sha256": "974af9ca5386b577c3d5a277ec3cd0be83a3ae1c39ca622470680b9cbc455695"
+  },
+  {
+    "source": "jobs/single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/workflow/accepted/sprint1/tech-design/target-schema.graphql",
+    "published": "artifacts/sprint1/tech-design/target-schema.graphql",
+    "sha256": "22d077f8fa53b71a2f9a867cecce70907528b03644bd87beb1ba43c91afc4536"
+  },
+  {
+    "source": "jobs/single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/workflow/accepted/sprint1/test-design/test-cases.v1.csv",
+    "published": "artifacts/sprint1/test-design/test-cases.v1.csv",
+    "sha256": "e23bbf42b36732d2cc16f390d4e3981233bd3581ae6c6ab0b91d96fa91ad164f"
+  },
+  {
+    "source": "jobs/single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/workflow/state.json",
+    "published": "workflow/state.json",
+    "sha256": "f30495c263b2082a489fcc53ddae9b05fb230ab9361aea59f2c2d1357b4e45e9"
+  },
+  {
+    "source": "jobs/single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/workflow/events.jsonl",
+    "published": "workflow/events.jsonl",
+    "sha256": "86c3a0893bbe2f6f5861c8e0ade45f580b3e67c3501eb6aff227be13a51fd732"
+  },
+  {
+    "source": "jobs/single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/workflow/baseline.json",
+    "published": "workflow/baseline.json",
+    "sha256": "9e1d13ef40f1271650a0b64143e4015d63120a1a79481516d3da93f09716aafe"
+  },
+  {
+    "source": "jobs/single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/workflow/request-evidence.jsonl",
+    "published": "workflow/request-evidence.jsonl",
+    "sha256": "7425fd600bb5330aad8da29581faf5effb0316c7927c565bccbddefb6647021e"
+  },
+  {
+    "source": "jobs/single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/workflow/stages/sprint1/prd/role.md",
+    "published": "workflow/stages/sprint1/prd/role.md",
+    "sha256": "395ffcd6a423f82afb0e11e20b704c29b32c0e7fb9a5b494fd65bae4ea09d9ee"
+  },
+  {
+    "source": "jobs/single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/workflow/stages/sprint1/prd/instruction.md",
+    "published": "workflow/stages/sprint1/prd/instruction.md",
+    "sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8"
+  },
+  {
+    "source": "jobs/single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/workflow/stages/sprint1/prd/native-evidence.json",
+    "published": "workflow/stages/sprint1/prd/native-evidence.json",
+    "sha256": "6b246f656cd591b199edbf36708ee9ba39b5de57254b01338ab7a5ed02e092bb"
+  },
+  {
+    "source": "jobs/single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/workflow/stages/sprint1/tech-design/role.md",
+    "published": "workflow/stages/sprint1/tech-design/role.md",
+    "sha256": "6a6cdb44641cb1a7f0ede03f0d0ab81aa42c819526caa1827d4b4a715e0c0ab1"
+  },
+  {
+    "source": "jobs/single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/workflow/stages/sprint1/tech-design/instruction.md",
+    "published": "workflow/stages/sprint1/tech-design/instruction.md",
+    "sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8"
+  },
+  {
+    "source": "jobs/single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/workflow/stages/sprint1/tech-design/native-evidence.json",
+    "published": "workflow/stages/sprint1/tech-design/native-evidence.json",
+    "sha256": "aceda7f3d49523b47b25a1a5839b4c00c9be259a3e9c63c67c5971636f2c3229"
+  },
+  {
+    "source": "jobs/single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/workflow/stages/sprint1/test-design/role.md",
+    "published": "workflow/stages/sprint1/test-design/role.md",
+    "sha256": "fea60030c959402b8e32ba2312c189ba13107ce33ec40edbf4018df0119d3a10"
+  },
+  {
+    "source": "jobs/single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/workflow/stages/sprint1/test-design/instruction.md",
+    "published": "workflow/stages/sprint1/test-design/instruction.md",
+    "sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8"
+  },
+  {
+    "source": "jobs/single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/workflow/stages/sprint1/test-design/native-evidence.json",
+    "published": "workflow/stages/sprint1/test-design/native-evidence.json",
+    "sha256": "2f66b158dce973907f1d2f702d89400ecc8c2e4804210c5cc1dc39fe7b248049"
+  },
+  {
+    "source": ".prepared/single-docs-gpt61-xhigh-instruction-20261014/workspace/instruction.md",
+    "published": "inputs/instruction.md",
+    "sha256": "02fcc6fa0bdb37428d76e0d57e76ddff4eeefd237d11b2016980077ec55f7a73"
+  },
+  {
+    "source": ".prepared/single-docs-gpt61-xhigh-instruction-20261014/workspace/business-conversations.md",
+    "published": "inputs/business-conversations.md",
+    "sha256": "6d31106a4aabdc4e9e3342b6d036523e0a1bf6154d25d5c218548e5e33cb689d"
+  },
+  {
+    "source": ".prepared/single-docs-gpt61-xhigh-instruction-20261014/input-manifest.json",
+    "published": "configuration/input-manifest.json",
+    "sha256": "e9355c22d1c7e3c2595b3f4b304dd8223fe53fc84ea68745b5aeecbb1fe9f191"
+  },
+  {
+    "source": "jobs/single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/agent/trajectory.json",
+    "published": "agent/trajectory.json.gz",
+    "uncompressed_sha256": "47aed11b61c0fa09de784f937f3a0255292c7010aaeae23b7135866179e68cba"
+  }
+]

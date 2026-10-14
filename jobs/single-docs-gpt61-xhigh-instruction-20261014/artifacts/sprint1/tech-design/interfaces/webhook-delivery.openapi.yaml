@@ -1,0 +1,79 @@
+openapi: 3.0.3
+info:
+  title: Saleor 业务 Webhook 投递（I19、I20）
+  version: 1.0.0
+  description: 接收方提供端点。payload 由 GraphQL subscriptionQuery 的 selection 与 target-schema.graphql 定义共同限定，或使用现有 legacy event 生成器；本轮保留现行形状。异步接收方失败只影响对应 delivery。
+servers:
+  - url: https://receiver.example.invalid
+paths:
+  /webhooks/saleor:
+    post:
+      operationId: receiveSaleorEvent
+      summary: 接收业务事件或同步服务请求
+      description: 同一逻辑事件的重发保持 Saleor-Event-Id，异步调用重发使用已生成的受权 payload。消费者验签、按事件ID去重。同步响应需匹配已有 SHIPPING_LIST_METHODS_FOR_CHECKOUT、CHECKOUT_FILTER_SHIPPING_METHODS、tax 等现行插件合同；本轮不新增这些服务的字段或端点。实际URL由Webhook.targetUrl配置，不要求接收方使用此示例路径。
+      parameters:
+        - in: header
+          name: Saleor-Event
+          required: true
+          schema: {type: string, minLength: 1}
+          description: 事件名取目标SDL现有 WebhookEventTypeAsyncEnum/WebhookEventTypeSyncEnum 的服务端映射
+        - in: header
+          name: Saleor-Domain
+          required: true
+          schema: {type: string}
+        - in: header
+          name: Saleor-Api-Url
+          required: true
+          schema: {type: string, format: uri}
+        - in: header
+          name: Saleor-Signature
+          required: true
+          schema: {type: string, minLength: 1}
+          description: 现行 verifiable JWS 或既有secret签名；验证原始body，不能依赖JSON重编码后的字节
+        - in: header
+          name: Saleor-Event-Id
+          required: false
+          schema: {type: string, format: uuid}
+          description: 本轮outbox覆盖异步事件必带且各delivery重试稳定；未纳入outbox的现行同步调用可省略。不是delivery attempt ID。
+        - in: header
+          name: X-Saleor-Event
+          required: false
+          schema: {type: string}
+          description: 保留现行弃用兼容头，值与 Saleor-Event 相同
+        - in: header
+          name: X-Saleor-Domain
+          required: false
+          schema: {type: string}
+        - in: header
+          name: X-Saleor-Signature
+          required: false
+          schema: {type: string}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  additionalProperties: true
+                - type: array
+                  items: {type: object, additionalProperties: true}
+              description: GraphQL subscriptionQuery 使用对应响应对象；现行 legacy serializer 可返回对象数组（如 generate_order_payload），不能强制改成单对象。字段遵守 target-schema.graphql 的事件类型、权限和空值合同，非统一固定订单JSON；仅已有Order/Fulfillment嵌套字段按兼容策略扩展配送快照。
+      responses:
+        '200':
+          description: 异步投递已确认（并非接收方下游业务已完成）；同步响应继续由现行同步服务合同验证
+          content:
+            application/json:
+              schema: {type: object, additionalProperties: true}
+        '204':
+          description: 异步投递已确认；同步服务需要响应体时该状态不是合法服务结果
+        '400':
+          description: 接收方拒绝非法内容，delivery按现行策略失败/重试
+        '401':
+          description: 验签/鉴权失败，不能放宽签名继续投递
+        '429':
+          description: 接收方限流，沿用既有有界重试
+        '500':
+          description: 接收方失败，仅此delivery受影响
+        '503':
+          description: 接收方暂不可用；继续现行超时、重试、熔断上限

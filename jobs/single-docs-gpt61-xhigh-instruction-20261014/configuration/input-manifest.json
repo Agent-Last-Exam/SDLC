@@ -1,0 +1,132 @@
+{
+  "base-revisions.json": {
+    "kind": "file",
+    "sha256": "204710945aee5462b4b5547b318ceff0b5a66a3e6754279d00e879b6fe8e95c9",
+    "executable": false
+  },
+  "business-conversations.md": {
+    "kind": "file",
+    "sha256": "6d31106a4aabdc4e9e3342b6d036523e0a1bf6154d25d5c218548e5e33cb689d",
+    "executable": false
+  },
+  "instruction.md": {
+    "kind": "file",
+    "sha256": "02fcc6fa0bdb37428d76e0d57e76ddff4eeefd237d11b2016980077ec55f7a73",
+    "executable": false
+  },
+  "roles/architect.system.md": {
+    "kind": "file",
+    "sha256": "be900ab9300902d2d40b1bfaee5b429851cd8c0c40cf5e42f29e75bbe7e886ee",
+    "executable": false
+  },
+  "roles/deployer.system.md": {
+    "kind": "file",
+    "sha256": "98e5df681ad7213a8673adff517477ae3dba1b28218f0d37d91388796219ac3a",
+    "executable": false
+  },
+  "roles/developer.system.md": {
+    "kind": "file",
+    "sha256": "d491f7857fd77f7a1f490adf604abb62c08d722edb43ea42ab0814ce3afe87b1",
+    "executable": false
+  },
+  "roles/lead.system.md": {
+    "kind": "file",
+    "sha256": "8f511d0b3fd1adee24eabcc9dc14e8a6eb061d7810ed7943984d1761bfb8bfaa",
+    "executable": false
+  },
+  "roles/member.system.md": {
+    "kind": "file",
+    "sha256": "9ced5ec69db644717b8f6c8bedca482b7315c7ae16822955e39b9da758b30adf",
+    "executable": false
+  },
+  "roles/pm.system.md": {
+    "kind": "file",
+    "sha256": "58476a4d64157c7dc41475399f4659990005ff9cb2c9db765c90237908e7e3d2",
+    "executable": false
+  },
+  "roles/qa-design.system.md": {
+    "kind": "file",
+    "sha256": "80907037aeeb44b7c209cf5a08b5f6c14b257f04d39280dbfd07cdba71fc1408",
+    "executable": false
+  },
+  "roles/qa.system.md": {
+    "kind": "file",
+    "sha256": "7dc701ef89cd7b5dea3751cbba04517c8714a64d2e8dfc25d261a4d9f8397bd1",
+    "executable": false
+  },
+  "roles/reviewer.system.md": {
+    "kind": "file",
+    "sha256": "7cdca77f7a3e9252af0638e98024b6e01146d58da53e015c842510b9dc7e3659",
+    "executable": false
+  },
+  "roles/triage.system.md": {
+    "kind": "file",
+    "sha256": "5fa23b82b51e02362af5c77df6e92b4a68db26b0bdf98d10fe4083f0a7ece646",
+    "executable": false
+  },
+  "roles/workflow.system.md": {
+    "kind": "file",
+    "sha256": "84d1367e8fad63ea7222d1bc6ea616c7cc293fa7e6989eb467b2bd61761b74f6",
+    "executable": false
+  },
+  "templates/backend-design.md": {
+    "kind": "file",
+    "sha256": "8408ac1f639e813f43fa5f870bbeb66082f5fb3821af2eeacd8ced310227cf3f",
+    "executable": false
+  },
+  "templates/deployment.schema.json": {
+    "kind": "file",
+    "sha256": "1778dd97ecadddfcebb0d93997f3761801e42248b4914f24118f443547a774f1",
+    "executable": false
+  },
+  "templates/frontend-design.md": {
+    "kind": "file",
+    "sha256": "10b793b63450dc8590b82165dba922d404808518afae9bb70f6393ba95b7d2b8",
+    "executable": false
+  },
+  "templates/interface-contract.md": {
+    "kind": "file",
+    "sha256": "0da2d22643043c1e1c6738f2018e89c6c3832833a0fa5ad91570b8a2c8c5fe9b",
+    "executable": false
+  },
+  "templates/prd.md": {
+    "kind": "file",
+    "sha256": "df50e1048a26ca7d8bdda74cb0e99f572064c74002f4cc05f5e611f0613b226d",
+    "executable": false
+  },
+  "templates/repair-plan.schema.json": {
+    "kind": "file",
+    "sha256": "939121e92c3d3b32287d50a6ed3913c879fba8cb64a4bad12f60bb4bb78762ac",
+    "executable": false
+  },
+  "templates/target-interface.md": {
+    "kind": "file",
+    "sha256": "5c2aecae86f2ad5221eecf7128c91c3c894e493df89a9de254ce0ecf95c3d546",
+    "executable": false
+  },
+  "templates/test-cases.md": {
+    "kind": "file",
+    "sha256": "ecdc5cb7ae55e01fa704974e574f70dac6153185fea3b3041cb91d59f18d4e43",
+    "executable": false
+  },
+  "templates/test-handoff.md": {
+    "kind": "file",
+    "sha256": "30c5a099de16d9ec5e58762ae35854fb5f4463841656d4f9bdcc1e9c83c2a5a9",
+    "executable": false
+  },
+  "templates/test-report.md": {
+    "kind": "file",
+    "sha256": "489c98584693b739b21e2ce551edb7c6791c582517ba6745bc148b15d784fb84",
+    "executable": false
+  },
+  "templates/test-results.md": {
+    "kind": "file",
+    "sha256": "fc1a3d0212865aff69c91c55bd3c10f99a89bc3bc84a3732b950579d6dee8b95",
+    "executable": false
+  },
+  "templates/test-verify.schema.json": {
+    "kind": "file",
+    "sha256": "aaa9c54a9d7c346c663acaedfe7a6952de0b0366f415809efe2d89b76aeb96fd",
+    "executable": false
+  }
+}
