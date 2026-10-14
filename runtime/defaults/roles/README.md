@@ -4,6 +4,6 @@
 本目录，runtime 不做 task 级静默覆盖。
 
 `pm`、`architect`、`qa-design` 与契约声明的输入绑定：这里的版本读
-`/workspace/instruction.md`，对应 `defaults/workflows/lifecycle.yaml`。
+`/workspace/instruction.md` 和 `/workspace/business-conversations.md`（两份共同构成完整业务题目，均须阅读），对应 `defaults/workflows/lifecycle.yaml`。
 
 仓库清单按两仓（`saleor`、`saleor-dashboard`）措辞，与当前 Saleor 交付契约一致。

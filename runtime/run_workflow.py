@@ -100,7 +100,7 @@ def main():
     shutil.copyfile(prepared / "runtime-inputs/Dockerfile", environment / "Dockerfile")
     (environment / ".dockerignore").write_text("*\n!Dockerfile\n!workspace/\n!workspace/**\n")
     (environment / "docker-compose.yaml").write_text("services:\n  main:\n    security_opt:\n      - no-new-privileges:true\n")
-    (task / "instruction.md").write_text("Execute the configured workflow with its stage boundaries and termination rules.\n")
+    shutil.copyfile(prepared / "workspace/instruction.md", task / "instruction.md")
     shutil.copyfile(prepared / "runtime-inputs/task.toml", task / "task.toml")
     verifier = {"disable": True}
     if evaluation_manifest is not None:
@@ -127,6 +127,7 @@ def main():
                                    "continue_for_evaluation" if evaluation_manifest is not None else "fail"
                                )}}],
         "tasks": [{"path": str(task)}],
+        "extra_instruction_paths": [str(prepared / "workspace/business-conversations.md")],
     }
     (prepared / "job.json").write_text(json.dumps(recipe, indent=2) + "\n")
     print(f"Recipe: {prepared / 'job.json'}", flush=True)

@@ -42,6 +42,7 @@ class TaskFixture(unittest.TestCase):
         self.task = self.root / "frozen"
         (self.task / "env").mkdir(parents=True)
         (self.task / "instruction.md").write_text("Business need\n")
+        (self.task / "business-conversations.md").write_text("Business decisions\n")
         (self.task / "task.toml").write_text(TASK_TOML)
         (self.task / "env/manifest.json").write_text(json.dumps({"repositories": {
             "saleor": {"agent_baseline_commit": "c" * 40},
@@ -228,7 +229,7 @@ class ContractTests(TaskFixture):
         self.assertEqual(result["workspace_paths"]["input:base_revisions"], "base-revisions.json")
         self.assertEqual(result["workspace_paths"]["input:repos"], "repos")
         prd = result["stages"][0]
-        self.assertEqual(set(prd["inputs"]), {"input:instruction", "input:repos", "template:prd"})
+        self.assertEqual(set(prd["inputs"]), {"input:instruction", "input:business_conversations", "input:repos", "template:prd"})
         self.assertNotIn("private", json.dumps(result, ensure_ascii=False).lower())
 
     def test_inputs_must_be_explicit_and_use_the_runtime_layout(self):
@@ -246,6 +247,30 @@ class ContractTests(TaskFixture):
         }
         with self.assertRaisesRegex(ValueError, "requires exactly"):
             self.compile(inputs=contract["inputs"])
+
+    def test_business_materials_are_required_and_reach_every_stage(self):
+        result = self.compile()
+        for stage in result["stages"]:
+            self.assertEqual(stage["inputs"]["input:business_conversations"],
+                             "/workspace/business-conversations.md")
+        destination = self.root / "prepared-business"
+        prepare(result, destination)
+        self.assertEqual((destination / "workspace/business-conversations.md").read_text(),
+                         "Business decisions\n")
+        manifest = json.loads((destination / "input-manifest.json").read_text())
+        self.assertIn("business-conversations.md", manifest)
+        (self.task / "business-conversations.md").unlink()
+        with self.assertRaisesRegex(ValueError, "Missing inputs:business_conversations"):
+            self.compile()
+
+    def test_empty_business_input_and_stage_omission_are_rejected(self):
+        contract = read_yaml(CONTRACT)
+        contract["stages"][0]["inputs"].remove("input:business_conversations")
+        with self.assertRaisesRegex(ValueError, "must include both business inputs"):
+            self.compile(stages=contract["stages"])
+        (self.task / "business-conversations.md").write_text(" \n")
+        with self.assertRaisesRegex(ValueError, "must not be empty"):
+            self.compile()
 
     def test_future_or_missing_artifact_is_rejected(self):
         contract = read_yaml(CONTRACT)

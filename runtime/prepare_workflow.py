@@ -308,11 +308,15 @@ def compile_workflow(mode, task, verify_repos=True, contract_path=CONTRACT):
                 input_workspace_paths[name] = workspace_value
     required_input_paths = {
         "instruction": "instruction.md",
+        "business_conversations": "business-conversations.md",
         "base_revisions": "base-revisions.json",
         "repos": "repos",
     }
     if set(contract["inputs"]) != set(required_input_paths):
-        raise ValueError("Local SDLC requires exactly instruction, base_revisions and repos inputs")
+        raise ValueError("Local SDLC requires exactly instruction, business_conversations, base_revisions and repos inputs")
+    for name in ("instruction", "business_conversations"):
+        if not Path(sources["inputs"][name]).read_text().strip():
+            raise ValueError(f"Business input must not be empty: {name}")
     if verify_repos and repos_source == "host" and not Path(sources["inputs"]["repos"]).is_dir():
         raise ValueError("Repository snapshot root is not a directory")
     if input_workspace_paths != required_input_paths:
@@ -330,6 +334,8 @@ def compile_workflow(mode, task, verify_repos=True, contract_path=CONTRACT):
     stage_ids = set()
     output_paths = set()
     for stage in contract["stages"]:
+        if not {"input:instruction", "input:business_conversations"}.issubset(stage["inputs"]):
+            raise ValueError(f"Stage {stage['id']} must include both business inputs")
         sid = stage["id"]
         if not re.fullmatch(r"[a-z0-9_-]+/[a-z0-9_-]+", sid) or sid in stage_ids:
             raise ValueError(f"Invalid or duplicate stage: {sid}")

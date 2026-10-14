@@ -16,6 +16,7 @@ roles:
   triage: defaults:triage.system.md
 inputs:
   instruction: {source: task:instruction.md, workspace: instruction.md}
+  business_conversations: {source: task:business-conversations.md, workspace: business-conversations.md}
   base_revisions: {source: derive:env/manifest.json, workspace: base-revisions.json}
   repos: {source: task:environment/repos, workspace: repos}
 templates:
@@ -36,6 +37,7 @@ stages:
   role: pm
   inputs:
   - input:instruction
+  - input:business_conversations
   - input:repos
   - template:prd
   outputs:
@@ -44,6 +46,7 @@ stages:
   role: architect
   inputs:
   - input:instruction
+  - input:business_conversations
   - input:repos
   - artifact:sprint1/prd/prd
   - template:frontend_design
@@ -64,6 +67,7 @@ stages:
   role: qa-design
   inputs:
   - input:instruction
+  - input:business_conversations
   - input:repos
   - artifact:sprint1/prd/prd
   - artifact:sprint1/tech-design/frontend_design
@@ -78,6 +82,7 @@ stages:
   role: developer
   inputs:
   - input:instruction
+  - input:business_conversations
   - input:repos
   - artifact:sprint1/prd/prd
   - artifact:sprint1/tech-design/frontend_design
@@ -94,6 +99,7 @@ stages:
   role: deployer
   inputs:
   - input:instruction
+  - input:business_conversations
   - input:repos
   - artifact:sprint1/prd/prd
   - artifact:sprint1/development/handoff
@@ -107,6 +113,7 @@ stages:
   role: qa
   inputs:
   - input:instruction
+  - input:business_conversations
   - input:repos
   - artifact:sprint1/prd/prd
   - artifact:sprint1/tech-design/frontend_design
@@ -127,6 +134,7 @@ stages:
   role: triage
   inputs:
   - input:instruction
+  - input:business_conversations
   - input:repos
   - artifact:sprint1/prd/prd
   - artifact:sprint1/tech-design/frontend_design
@@ -148,6 +156,7 @@ stages:
   id: sprint2/tech-design
   inputs:
   - input:instruction
+  - input:business_conversations
   - input:repos
   - artifact:sprint1/prd/prd
   - template:frontend_design
@@ -172,6 +181,7 @@ stages:
   role: developer
   inputs:
   - input:instruction
+  - input:business_conversations
   - input:repos
   - artifact:sprint1/prd/prd
   - artifact:sprint2/tech-design/frontend_design
@@ -191,6 +201,7 @@ stages:
   role: deployer
   inputs:
   - input:instruction
+  - input:business_conversations
   - input:repos
   - artifact:sprint1/prd/prd
   - artifact:sprint2/development/handoff
@@ -204,6 +215,7 @@ stages:
   role: qa
   inputs:
   - input:instruction
+  - input:business_conversations
   - input:repos
   - artifact:sprint1/prd/prd
   - artifact:sprint2/tech-design/frontend_design

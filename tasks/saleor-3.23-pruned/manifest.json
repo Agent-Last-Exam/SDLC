@@ -5,10 +5,10 @@
   "mode": "full",
   "release_status": "calibrated-verified",
   "source_fingerprint": "caa062ec2fabfcf2ba9978e08f93afaaf2fbdb5ff65c67c40fde94fcf821dfd7",
-  "shared_payload_fingerprint": "b7a65b099cc7e178d5498f1d6216abed47421d9d84f6e2d38d6493fdae107681",
+  "shared_payload_fingerprint": "d774287ce3d00137691ed7e7794303183b5a5dbe4dfe05e5820cb5e991133c80",
   "shared_files": {
-    "README.md": "c786f20cf51375a022df8943fe8cfe50cae508cb69c4f7d62c365e1bba0b4b2d",
-    "instruction.md": "c30e2fe79894ef93307b98475882226b301f63255c0b62e7c1bf6d0f0436b2f5",
+    "README.md": "6d19edaf992afeda5316fac9259ffbad538b8cd509e837afe4c959ce825ec875",
+    "instruction.md": "02fcc6fa0bdb37428d76e0d57e76ddff4eeefd237d11b2016980077ec55f7a73",
     "solution/saleor-dashboard.code.patch": "fa0c4769a01daead3fa4c921a076e39c27ecf431f699f358db1a199fce397abe",
     "solution/saleor.code.patch": "dfcee8e2ef4dd10092efea58b28d26726ae99f8eb5aca0f18a8adb6cb3a8887f",
     "tests/apply_patches.py": "9016791e55112d68409142a245dc25263d7972daeb00bd319ca8c5e9e856e838",
@@ -19,7 +19,8 @@
     "tests/saleor-dashboard.test.patch": "14488c9b7e8127976f2ab8abfd78543185d2e48979d005965906358db4456bae",
     "tests/saleor.test.patch": "1f544aa7a18f316f6e9df997b4da0bd35be24eea4671b025b4368d3fa3599e80",
     "tests/seed_e2e_fixtures.py": "7940a9a6fbda081e0bb640cb0cbb3c0d361503c937c3ae256da7c0eabba0b3b4",
-    "tests/test.sh": "e762ae7ec880164bd5353094e2d70cfba112c163324b9c8c36b2a4226f4bb20d"
+    "tests/test.sh": "e762ae7ec880164bd5353094e2d70cfba112c163324b9c8c36b2a4226f4bb20d",
+    "business-conversations.md": "6d31106a4aabdc4e9e3342b6d036523e0a1bf6154d25d5c218548e5e33cb689d"
   },
   "source_files": {
     "package.yaml": "1479c5df42359beb7f59847f3cfa024a8b16e68a33993c6fe15229d548f5a75d",
@@ -82,7 +83,7 @@
     }
   },
   "files": {
-    "README.md": "c786f20cf51375a022df8943fe8cfe50cae508cb69c4f7d62c365e1bba0b4b2d",
+    "README.md": "6d19edaf992afeda5316fac9259ffbad538b8cd509e837afe4c959ce825ec875",
     "environment/Dockerfile": "d657d5a9f3080c154177568b1dedb07a885479a3baef839516c81b537e33e6ca",
     "environment/harbor/saleor-3.23/env/saleor-dashboard.env.patch": "fd9edc96a558db352b9d866c72e33b1f45bf6578061783985a4273a173829fbc",
     "environment/harbor/saleor-3.23/env/saleor.env.patch": "f1a86eb7fd35685e474e39560e1b7378f02713f985d08f9bc0ce9bd94f96300c",
@@ -100,7 +101,7 @@
     "environment/images/saleor-3.23/base/runtime/services.sh": "16cc7cbc6c765663fad4fd6f9eddaec767ee95043c1da3c5c67ba42e27b04ab3",
     "environment/images/saleor-3.23/base/runtime/start-services.sh": "c55dfef2550358eb45eda59e00aca041df1fea941f5439c0a8dc3e659a3216b8",
     "environment/images/saleor-3.23/base/runtime/stop-services.sh": "baf39468b8caf1f5d305aed78af1fa94a605dca9b1ce8a77181a2ee7595e4fe1",
-    "instruction.md": "c30e2fe79894ef93307b98475882226b301f63255c0b62e7c1bf6d0f0436b2f5",
+    "instruction.md": "02fcc6fa0bdb37428d76e0d57e76ddff4eeefd237d11b2016980077ec55f7a73",
     "solution/saleor-dashboard.code.patch": "fa0c4769a01daead3fa4c921a076e39c27ecf431f699f358db1a199fce397abe",
     "solution/saleor.code.patch": "dfcee8e2ef4dd10092efea58b28d26726ae99f8eb5aca0f18a8adb6cb3a8887f",
     "task.toml": "38b4fee25b479e31457898d8c5d1bdea87275763d706f5515e7d5362ee2a7249",
@@ -113,6 +114,11 @@
     "tests/saleor-dashboard.test.patch": "14488c9b7e8127976f2ab8abfd78543185d2e48979d005965906358db4456bae",
     "tests/saleor.test.patch": "1f544aa7a18f316f6e9df997b4da0bd35be24eea4671b025b4368d3fa3599e80",
     "tests/seed_e2e_fixtures.py": "7940a9a6fbda081e0bb640cb0cbb3c0d361503c937c3ae256da7c0eabba0b3b4",
-    "tests/test.sh": "e762ae7ec880164bd5353094e2d70cfba112c163324b9c8c36b2a4226f4bb20d"
+    "tests/test.sh": "e762ae7ec880164bd5353094e2d70cfba112c163324b9c8c36b2a4226f4bb20d",
+    "business-conversations.md": "6d31106a4aabdc4e9e3342b6d036523e0a1bf6154d25d5c218548e5e33cb689d"
+  },
+  "business_input_revision": {
+    "layout": "instruction-and-business-v1",
+    "description": "Query promoted to the Harbor instruction; companion is required. source_files/source_fingerprint preserve original exporter provenance; files and shared_files describe current task inputs."
   }
 }

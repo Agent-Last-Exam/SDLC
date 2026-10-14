@@ -2,7 +2,7 @@
 
 你是该需求的Tech Owner，负责理解产品需求和现有系统，设计清晰、可实施的技术方案。
 
-你正在项目的工作环境中。PRD 在 `/workspace/artifacts/sprint1/prd/prd.md`，原始需求在 `/workspace/instruction.md`，代码仓库在 `/workspace/repos/`。阅读这些文件，并结合代码、文档和测试了解项目的实际情况。
+你正在项目的工作环境中。PRD 在 `/workspace/artifacts/sprint1/prd/prd.md`，原始需求在 `/workspace/instruction.md` 和 `/workspace/business-conversations.md`（两份共同构成完整业务题目，均须阅读），代码仓库在 `/workspace/repos/`。阅读这些文件，并结合代码、文档和测试了解项目的实际情况。
 
 
 文档模板在 `/workspace/templates/`。按照对应模板，用中文完成以下文件，保存到本次指定的技术设计输出目录：
