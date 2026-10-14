@@ -265,6 +265,26 @@ class DocumentRubricTests(unittest.TestCase):
         )
         self.assertIn("不能作为本项失败依据", tdd4.criteria)
 
+    def test_v5_preserves_rubrics_and_binds_pruned_inputs(self):
+        import hashlib
+        root = Path(__file__).resolve().parents[2]
+        directory = root / "examples/document-rubric-evaluation/rubrics"
+        old = Manifest.load(directory / "document-rubrics.v4.json")
+        new = Manifest.load(directory / "document-rubrics.v5.json")
+        self.assertEqual([g.rubrics for g in old.groups], [g.rubrics for g in new.groups])
+        for group in new.groups:
+            evidence = {(e.root, e.path) for e in group.evidence}
+            self.assertIn(("inputs", "instruction.md"), evidence)
+            self.assertIn(("inputs", "business-conversations.md"), evidence)
+            self.assertFalse(any(e.root == "public" for e in group.evidence))
+        for key, relative in {
+            "instruction_sha256": "instruction.md",
+            "business_conversations_sha256": "business-conversations.md",
+            "golden_prd_sha256": "golden-docs/PRD/prd-golden.md",
+        }.items():
+            payload = (root / "tasks/saleor-3.23-pruned" / relative).read_bytes()
+            self.assertEqual(new.source_revisions[key], hashlib.sha256(payload).hexdigest())
+
     def test_prepare_only_wires_private_manifest_without_copying_it_to_agent(self):
         from runtime import run_workflow
 
@@ -272,6 +292,7 @@ class DocumentRubricTests(unittest.TestCase):
         task = root / "task"
         (task / "env").mkdir(parents=True)
         (task / "instruction.md").write_text("Evaluate this fixture.\n")
+        (task / "business-conversations.md").write_text("Fixture business decisions.\n")
         (task / "task.toml").write_text('''schema_version = "1.3"
 
 [task]
@@ -375,6 +396,33 @@ class DocumentRubricVerifierPreparationTests(unittest.IsolatedAsyncioTestCase):
         value["groups"][0]["evidence"] = evidence
         self.manifest_path.write_text(json.dumps(value))
         return Manifest.load(self.manifest_path)
+
+    async def test_v5_rejects_changed_inputs_before_preparing_judge(self):
+        import hashlib
+        from unittest.mock import AsyncMock
+        for root, name, key in (
+            ("inputs", "instruction.md", "instruction_sha256"),
+            ("inputs", "business-conversations.md", "business_conversations_sha256"),
+            ("private", "prd-golden.md", "golden_prd_sha256"),
+        ):
+            with self.subTest(name=name):
+                path = (self.workspace if root == "inputs" else self.private) / name
+                path.write_text("frozen original")
+                value = manifest_value()
+                value["groups"] = value["groups"][:1]
+                value["groups"][0]["evidence"] = [{"root": root, "path": name}]
+                value["source_revisions"][key] = hashlib.sha256(path.read_bytes()).hexdigest()
+                self.manifest_path.write_text(json.dumps(value))
+                verifier = self.verifier()
+                group = Manifest.load(self.manifest_path).groups[0]
+                entries = verifier._evidence_entries(group)
+                self.assertEqual(entries[0]["content"], "frozen original")
+                path.write_text("changed task or wrong Golden")
+                verifier._delivery_status = lambda: ([], [])
+                verifier._prepare_remote = AsyncMock()
+                with self.assertRaisesRegex(DocumentEvaluationError, "input hash mismatch"):
+                    await verifier.verify()
+                verifier._prepare_remote.assert_not_awaited()
 
     async def test_direct_verifier_uploads_only_runner_and_returns_api_environment(self):
         manifest = self.write_manifest([

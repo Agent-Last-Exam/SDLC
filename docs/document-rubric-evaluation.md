@@ -24,17 +24,47 @@ GraphQL 差异与 GT 一致性由独立 checker 负责，不进入 LLM 文档 Ju
 
 ## 执行
 
-```bash
-python3 -m runtime.prepare_sources --task tasks/standard
+新版剪枝任务使用 `examples/document-rubric-evaluation/rubrics/document-rubrics.v5.json`。
+22项评分标准与 v4 一致；仅更新题目/参考绑定，并向测试设计组提供同一份原始题目。
+`inputs` 证据根明确映射到 `prepared_path/workspace`，读取冻结的
+`instruction.md` 和 `business-conversations.md`；不读取任务目录里后来修改的源文件。
+旧版 `public` 证据根保持原有含义，v2～v4 配置继续保留。
 
-python3 -m runtime \
-  --task tasks/standard \
+先在候选工作区之外准备独立评分材料：
+
+```bash
+install -d -m 700 /absolute/private/eval-v5
+cp examples/document-rubric-evaluation/rubrics/document-rubrics.v5.json /absolute/private/eval-v5/manifest.json
+cp tasks/saleor-3.23-pruned/golden-docs/PRD/prd-golden.md /absolute/private/eval-v5/prd-golden.md
+
+python3 -m runtime.run_workflow \
+  --task tasks/saleor-3.23-pruned \
   --mode single \
+  --model gpt-6.1-sol \
   --stop-after-stage sprint1/test-design \
-  --document-eval-manifest /absolute/private/path/document-rubrics.json \
-  --judge-model gpt-6-astra \
-  --use-local-codex-auth
+  --document-eval-manifest /absolute/private/eval-v5/manifest.json \
+  --judge-model gpt-6-astra
 ```
+
+以上命令会启动一次新的生成和评分。对已经完成的产物，不能重跑该命令来“补开”评分；
+应创建独立评分任务，给 `DocumentRubricVerifier` 设置以下 kwargs：
+
+```json
+{
+  "manifest_path": "/absolute/private/eval-v5/manifest.json",
+  "prepared_path": "/absolute/path/to/original-prepared",
+  "candidate_path": "/absolute/path/to/original-trial/workflow/accepted",
+  "judge_model": "gpt-6-astra",
+  "judge_replicas": 2,
+  "evaluation_boundary": "sprint1/test-design"
+}
+```
+
+结果写入新的 trial 目录，不改原始 rollout。v5 声明 instruction、business 和剪枝版 Golden
+的 SHA-256；Verifier 在任何模型请求前检查全部证据包，哈希不匹配、缺少必需题目或
+Golden 均为基础设施错误，不计候选零分。更换题目必须生成新的评分配置版本和哈希，
+不得将旧五模型 rollout 的通用迁移说明冒充为新版业务题目。
+
 
 直接 Judge 还需要通过 verifier 环境配置 `OPENAI_API_KEY` 与
 `OPENAI_BASE_URL`。Verifier 在宿主侧读取 manifest 明确声明的小型文本文件，按

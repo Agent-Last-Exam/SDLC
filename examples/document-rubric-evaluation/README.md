@@ -9,7 +9,8 @@
 | `candidate/` | source trial 封存的 PRD、技术设计和测试设计 |
 | `rubrics/document-rubrics.v2.json` | 三阶段分组的冻结 P/F Rubric；Tech Design 含 12 项 |
 | `rubrics/document-rubrics.v3.json` | direct LLM 文档 Judge 的 22 条原子化 Rubric；排除 GraphQL、Base 与模板结构检查 |
-| `rubrics/document-rubrics.v4.json` | 当前 Rubric；明确禁止以目标 SDL 未进入证据包作为 TDD4 失败依据 |
+| `rubrics/document-rubrics.v4.json` | 历史业务题目 Rubric；明确禁止以目标 SDL 未进入证据包作为 TDD4 失败依据 |
+| `rubrics/document-rubrics.v5.json` | 当前剪枝业务题目配置；22项标准不变，绑定冻结 instruction/business 与剪枝版 Golden，尚未付费评分 |
 | `source-result-v4/` | regrade12 的原始 Harbor 结果，保留历史 `tdd_schema` / `tdd_quality` 分组 |
 | `merged-result-v5/` | 保持逐项最终判定不变、合并为 `tech_design` 后的确定性重聚合结果 |
 | `direct-result-v6/` | v3 范围校准运行；保留“SDL 缺失被间接扣分”的审计证据 |
@@ -68,3 +69,7 @@ Test Design 83.33%，最终 reward 取最低组为 0.500。两次首轮 Judge �
 - 不包含认证信息、VKE 配置、原始事件流或完整 Agent 轨迹。
 - PRD Golden 属于私有 Judge 输入，未提交到仓库，因此此目录不是可直接重新调用 Judge 的完整私有评测包。
 - `examples/` 不会由 `prepare_workflow.py` 复制到候选 Agent 工作区。
+
+## v5 剪枝题目配置
+
+v5 使用 `inputs:instruction.md`、`inputs:business-conversations.md`，其宿主根是原运行的 `prepared/workspace`，而非旧的 `public/query.md`。私有参考为 `prd-golden.md`，必须从剪枝任务 `golden-docs/PRD/prd-golden.md` 复制到独立 manifest 同目录，不能沿用旧 `golden-prd.md`。配置中的三份SHA-256由Verifier实际校验；未改动22项Rubric、两次独立评分及最低组通过率聚合。v5尚无正式Judge结果，不可由旧结果重新聚合推得。执行与已有产物独立评分配置见 `docs/document-rubric-evaluation.md`。

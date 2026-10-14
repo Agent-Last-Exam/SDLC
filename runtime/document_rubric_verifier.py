@@ -163,6 +163,7 @@ class DocumentRubricVerifier(BaseVerifier):
                 self.trial_paths.trial_dir / "workflow" / "accepted"
             ),
             "public": self.prepared_path / "workspace" / "public",
+            "inputs": self.prepared_path / "workspace",
             "base": self.prepared_path / "workspace" / "repos",
             "templates": self.prepared_path / "workspace" / "templates",
             "private": self.manifest_path.parent,
@@ -173,6 +174,7 @@ class DocumentRubricVerifier(BaseVerifier):
         return {
             "candidate": PurePosixPath("/candidate"),
             "public": PurePosixPath("/public"),
+            "inputs": PurePosixPath("/inputs"),
             "base": PurePosixPath("/base"),
             "templates": PurePosixPath("/templates"),
             "private": PurePosixPath("/private"),
@@ -183,6 +185,7 @@ class DocumentRubricVerifier(BaseVerifier):
         virtual_roots = self._virtual_roots()
         entries: list[dict[str, Any]] = []
         total = 0
+        revisions = Manifest.load(self.manifest_path).source_revisions
         for evidence in group.evidence:
             root = roots[evidence.root].resolve()
             unresolved = roots[evidence.root] / evidence.path
@@ -226,6 +229,16 @@ class DocumentRubricVerifier(BaseVerifier):
                         f"document evidence must be readable UTF-8 text: {path}"
                     ) from exc
                 total += len(payload)
+                revision_key = {
+                    ("inputs", "instruction.md"): "instruction_sha256",
+                    ("inputs", "business-conversations.md"): "business_conversations_sha256",
+                    ("private", "prd-golden.md"): "golden_prd_sha256",
+                }.get((evidence.root, path.relative_to(root).as_posix()))
+                expected = revisions.get(revision_key)
+                if expected and hashlib.sha256(payload).hexdigest() != expected:
+                    raise DocumentEvaluationError(
+                        f"evaluator input hash mismatch: {evidence.root}:{evidence.path}"
+                    )
                 if total > self.max_evidence_bytes:
                     raise DocumentEvaluationError(
                         f"inline evidence for {group.group_id} exceeds "
@@ -474,6 +487,9 @@ Judge replica：{replica}
     async def verify(self) -> VerifierResult:
         manifest = Manifest.load(self.manifest_path)
         required_files, missing_files = self._delivery_status()
+        # Validate every fixed packet before any paid request, including later groups.
+        for group in manifest.groups:
+            self._evidence_entries(group)
         replicas = self.judge_replicas or manifest.judge_replicas
         if not 1 <= replicas <= 3:
             raise ValueError("judge_replicas must be from 1 to 3")
