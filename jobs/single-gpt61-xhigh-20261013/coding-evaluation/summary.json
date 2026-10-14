@@ -1,0 +1,118 @@
+[
+  {
+    "set": "F2P",
+    "suite": "core-unit",
+    "total": 4050,
+    "oracle_passed": 4050,
+    "oracle_status_counts": {
+      "passed": 4050
+    },
+    "agent_passed": 95,
+    "agent_status_counts": {
+      "failed": 1005,
+      "missing": 2492,
+      "error": 458,
+      "passed": 95
+    },
+    "baseline_status_counts": {
+      "failed": 1100,
+      "missing": 2492,
+      "error": 458
+    },
+    "observed_fail_or_error_to_pass": 95,
+    "regressions": 0
+  },
+  {
+    "set": "F2P",
+    "suite": "core-e2e",
+    "total": 15,
+    "oracle_passed": 15,
+    "oracle_status_counts": {
+      "passed": 15
+    },
+    "agent_passed": 0,
+    "agent_status_counts": {
+      "missing": 15
+    },
+    "baseline_status_counts": {
+      "missing": 15
+    },
+    "observed_fail_or_error_to_pass": 0,
+    "regressions": 0
+  },
+  {
+    "set": "F2P",
+    "suite": "dash-unit",
+    "total": 1117,
+    "oracle_passed": 1117,
+    "oracle_status_counts": {
+      "passed": 1117
+    },
+    "agent_passed": 0,
+    "agent_status_counts": {
+      "failed": 296,
+      "missing": 821
+    },
+    "baseline_status_counts": {
+      "failed": 296,
+      "missing": 821
+    },
+    "observed_fail_or_error_to_pass": 0,
+    "regressions": 0
+  },
+  {
+    "set": "P2P",
+    "suite": "core-unit",
+    "total": 12760,
+    "oracle_passed": 12760,
+    "oracle_status_counts": {
+      "passed": 12760
+    },
+    "agent_passed": 12760,
+    "agent_status_counts": {
+      "passed": 12760
+    },
+    "baseline_status_counts": {
+      "passed": 12760
+    },
+    "observed_fail_or_error_to_pass": 0,
+    "regressions": 0
+  },
+  {
+    "set": "P2P",
+    "suite": "core-e2e",
+    "total": 210,
+    "oracle_passed": 210,
+    "oracle_status_counts": {
+      "passed": 210
+    },
+    "agent_passed": 210,
+    "agent_status_counts": {
+      "passed": 210
+    },
+    "baseline_status_counts": {
+      "passed": 210
+    },
+    "observed_fail_or_error_to_pass": 0,
+    "regressions": 0
+  },
+  {
+    "set": "P2P",
+    "suite": "dash-unit",
+    "total": 2042,
+    "oracle_passed": 2042,
+    "oracle_status_counts": {
+      "passed": 2042
+    },
+    "agent_passed": 2039,
+    "agent_status_counts": {
+      "passed": 2039,
+      "failed": 3
+    },
+    "baseline_status_counts": {
+      "passed": 2042
+    },
+    "observed_fail_or_error_to_pass": 0,
+    "regressions": 3
+  }
+]

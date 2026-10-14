@@ -1,0 +1,4 @@
+set,suite,node_id,baseline,oracle_reference,agent_candidate,baseline_nonpass_to_pass,observed_fail_or_error_to_pass,p2p_regression
+P2P,dash-unit,saleor-dashboard.dash-unit.src/utils/handlers/metadataUpdateHandler.test.ts.createMetadataUpdateHandler should call only updateMetadata mutation,passed,passed,failed,False,False,True
+P2P,dash-unit,saleor-dashboard.dash-unit.src/utils/handlers/metadataUpdateHandler.test.ts.createMetadataUpdateHandler should call only updatePrivateMetadata mutation,passed,passed,failed,False,False,True
+P2P,dash-unit,saleor-dashboard.dash-unit.src/utils/handlers/metadataUpdateHandler.test.ts.createMetadataUpdateHandler should return updatePrivateMetadata errors if exists,passed,passed,failed,False,False,True

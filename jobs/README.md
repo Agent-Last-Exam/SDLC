@@ -7,3 +7,7 @@
 | Job / 报告 | 类型 | 状态 |
 | --- | --- | --- |
 | [standard-test-design-rollout-20260920](<standard-test-design-rollout-20260920/report.md>) | Workflow rollout（真实模型） | stopped_at_boundary |
+
+## 2026-10-13 真实 Single
+
+[single-gpt61-xhigh-20261013](single-gpt61-xhigh-20261013/README.md)：首轮 QA 写出失败报告后，运行器封存错误退出；包含脱敏 ATIF 轨迹与阶段结果，未执行官方评分。
