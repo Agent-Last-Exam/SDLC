@@ -1,7 +1,5 @@
-# Preserve archived evidence bytes, including CRLF and patch context lines.
+# Preserve archived artifact bytes and patch context lines.
 ** -text
 code-diffs/** -whitespace linguist-generated=true
 documents/** -whitespace linguist-generated=true
-inputs/** -whitespace
-metadata/stages/** -whitespace
 trajectories/** linguist-generated=true
