@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "profile_id": "saleor-3.23-pruned-no-browser",
+  "source_task": "tasks/saleor-3.23-pruned",
+  "suites": ["core-unit", "core-e2e", "dash-unit"],
+  "expected_counts": {"f2p": 5182, "p2p": 15012}
+}
