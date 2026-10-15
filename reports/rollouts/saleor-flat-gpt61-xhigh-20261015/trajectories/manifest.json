@@ -1,0 +1,38 @@
+{
+  "format": "ATIF-v1.8",
+  "file": "trajectory.atif.json.gz",
+  "uncompressed_bytes": 88659117,
+  "compressed_bytes": 16517308,
+  "source_sha256": "95dd3ae53d54e99342ae7de842964ae5b22f2a9f1538516db7e92984e0ef38a2",
+  "export_sha256": "95dd3ae53d54e99342ae7de842964ae5b22f2a9f1538516db7e92984e0ef38a2",
+  "steps": 3698,
+  "principal_sessions": [
+    {
+      "stage_id": "sprint1/prd",
+      "role": "pm",
+      "session_id": "ff93b650-b787-4ab3-a78b-f38098b3b44e"
+    },
+    {
+      "stage_id": "sprint1/tech-design",
+      "role": "architect",
+      "session_id": "ea28bfa0-817e-4bb2-bd97-a36fc51a7ae4"
+    },
+    {
+      "stage_id": "sprint1/test-design",
+      "role": "qa-design",
+      "session_id": "15da765f-96b2-4327-92b5-cd0092298cc5"
+    },
+    {
+      "stage_id": "sprint1/development",
+      "role": "developer",
+      "session_id": "4816d43d-e4ff-4fe6-a3c2-a3876a343154"
+    }
+  ],
+  "stage_step_counts": {
+    "sprint1/prd": 140,
+    "sprint1/tech-design": 195,
+    "sprint1/test-design": 256,
+    "sprint1/development": 3107
+  },
+  "sidechain_steps": 3262
+}

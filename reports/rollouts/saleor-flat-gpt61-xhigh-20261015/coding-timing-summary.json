@@ -1,0 +1,19 @@
+{
+  "requests": 3080,
+  "completed": 3080,
+  "http_statuses": {
+    "200": 3080
+  },
+  "errors": {},
+  "header_wait_seconds": {
+    "median": 5.116,
+    "p90": 10.501,
+    "max": 19.55348491668701
+  },
+  "model_roundtrip_seconds": {
+    "median": 8.35,
+    "p90": 21.424,
+    "max": 331.77629804611206
+  },
+  "output_tokens": 2128638
+}

@@ -1,0 +1,15 @@
+Runtime 1427 definitions; target 1427 definitions; differences 14 (excluding descriptions/order)
+CheckoutAutomaticCompletionStatusEnum
+CheckoutDeliveryRecalculate
+DeliverySelectionStatusEnum
+EventPayloadStateEnum
+ExportVouchers
+GiftCardsExportInput
+Mutation
+ProductsExportInput
+Query
+StockSourceStrategyEnum
+TransactionCountableConnection
+TransactionCountableEdge
+VoucherCodesExportInput
+VouchersExportInput

@@ -1,0 +1,87 @@
+npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> saleor-dashboard@3.22.9 test:quiet
+> jest --silent --runInBand --cacheDirectory=/workspace/scratch/jest-cache --runTestsByPath /workspace/repos/saleor-dashboard/src/attributes/utils/handlers.test.ts /workspace/repos/saleor-dashboard/src/auth/AuthProvider.test.tsx /workspace/repos/saleor-dashboard/src/auth/components/LoginPage/LoginPage.test.tsx /workspace/repos/saleor-dashboard/src/auth/components/PasswordPolicyGate.test.tsx /workspace/repos/saleor-dashboard/src/auth/hooks/useAuthProvider.test.ts /workspace/repos/saleor-dashboard/src/categories/navigation.test.ts /workspace/repos/saleor-dashboard/src/channels/views/ChannelCreate/useSaveChannel.test.ts /workspace/repos/saleor-dashboard/src/channels/views/ChannelDetails/settings.test.ts /workspace/repos/saleor-dashboard/src/channels/views/ChannelDetails/useChannelSettings.test.ts /workspace/repos/saleor-dashboard/src/components/AppLayout/ListFilters/components/SearchInput.test.tsx /workspace/repos/saleor-dashboard/src/components/ConditionalFilter/FiltersQueryBuilder/FiltersQueryBuilder.test.ts /workspace/repos/saleor-dashboard/src/components/ConditionalFilter/downloadExport.test.ts /workspace/repos/saleor-dashboard/src/components/ConditionalFilter/effectiveScope.test.ts /workspace/repos/saleor-dashboard/src/components/ConditionalFilter/scopedSearch.test.ts /workspace/repos/saleor-dashboard/src/components/ConditionalFilter/search.test.ts /workspace/repos/saleor-dashboard/src/components/ConditionalFilter/useScopedExport.test.ts /workspace/repos/saleor-dashboard/src/components/Form/useExitFormDialog.test.tsx /workspace/repos/saleor-dashboard/src/components/RichTextEditor/RichTextEditor.test.tsx /workspace/repos/saleor-dashboard/src/components/RichTextEditor/utils.test.ts /workspace/repos/saleor-dashboard/src/extensions/components/AppExtensionContext/useAppFormExtension.test.tsx /workspace/repos/saleor-dashboard/src/extensions/domain/app-extension-manifest-options.test.ts /workspace/repos/saleor-dashboard/src/extensions/domain/app-extension-manifest.test.ts /workspace/repos/saleor-dashboard/src/extensions/domain/app-manifest.test.ts /workspace/repos/saleor-dashboard/src/extensions/domain/catalog.test.ts /workspace/repos/saleor-dashboard/src/extensions/domain/extension-manifest-validator.test.ts /workspace/repos/saleor-dashboard/src/extensions/hooks/useExtensions.test.ts /workspace/repos/saleor-dashboard/src/extensions/views/EditManifestExtension/components/AppDetailsPage/AppExtensionSettingsCard.test.tsx /workspace/repos/saleor-dashboard/src/extensions/views/EditManifestExtension/components/AppWebhooksDisplay/EventDeliveriesList.test.tsx /workspace/repos/saleor-dashboard/src/extensions/views/EditManifestExtension/components/AppWebhooksDisplay/utils.test.ts /workspace/repos/saleor-dashboard/src/extensions/views/ExploreExtensions/components/ExtenionItem/components/AppInstallButton/AppInstallButton.test.tsx /workspace/repos/saleor-dashboard/src/extensions/views/ExploreExtensions/hooks/useAppStoreExtensions.test.ts /workspace/repos/saleor-dashboard/src/extensions/views/ExploreExtensions/hooks/useExploreExtensions.test.ts /workspace/repos/saleor-dashboard/src/extensions/views/InstallCustomExtension/hooks/useInstallApp.test.ts /workspace/repos/saleor-dashboard/src/extensions/views/ViewManifestExtension/components/AppFrame/formProtocol.test.ts /workspace/repos/saleor-dashboard/src/extensions/views/ViewManifestExtension/components/AppFrame/useAppActions.test.ts /workspace/repos/saleor-dashboard/src/giftCards/GiftCardExportDialogContent/utils.test.ts /workspace/repos/saleor-dashboard/src/graphql/sessionPolicy.test.ts /workspace/repos/saleor-dashboard/src/hooks/useForm/index.test.tsx /workspace/repos/saleor-dashboard/src/hooks/useHandleFormSubmit.test.ts /workspace/repos/saleor-dashboard/src/hooks/useMetadataBundles.test.ts /workspace/repos/saleor-dashboard/src/hooks/useMetadataUpdate.test.ts /workspace/repos/saleor-dashboard/src/misc.test.ts /workspace/repos/saleor-dashboard/src/orders/components/OrderDetailsPage/OrderShippingMetadataSnapshot.test.tsx /workspace/repos/saleor-dashboard/src/orders/components/OrderDetailsPage/utils.test.tsx /workspace/repos/saleor-dashboard/src/orders/components/OrderHistory/groupOrderHistory.test.ts /workspace/repos/saleor-dashboard/src/orders/components/OrderMetadataDialog/OrderMetadataDialog.test.tsx /workspace/repos/saleor-dashboard/src/orders/components/OrderPaymentOrTransaction/OrderPaymentOrTransaction.test.tsx /workspace/repos/saleor-dashboard/src/orders/components/OrderPaymentOrTransaction/OrderRootTransactions.test.tsx /workspace/repos/saleor-dashboard/src/orders/components/OrderSendRefundPage/components/useOrderSendRefund.test.ts /workspace/repos/saleor-dashboard/src/orders/components/OrderSummaryCard/OrderSummaryCard.test.tsx /workspace/repos/saleor-dashboard/src/orders/components/OrderUsedGiftCards/OrderUsedGiftCards.test.tsx /workspace/repos/saleor-dashboard/src/orders/hooks/usePaymentRequest.test.ts /workspace/repos/saleor-dashboard/src/orders/utils/data.test.ts /workspace/repos/saleor-dashboard/src/orders/utils/draftEligibility.test.ts /workspace/repos/saleor-dashboard/src/orders/utils/payments.test.ts /workspace/repos/saleor-dashboard/src/orders/views/OrderDetails/useOrderDetails.test.ts /workspace/repos/saleor-dashboard/src/ordersV2/OrderDetailsViewModel.test.ts /workspace/repos/saleor-dashboard/src/ordersV2/OrderRefunds/OrderRefundsViewModel.test.ts /workspace/repos/saleor-dashboard/src/products/components/ProductUpdatePage/ProductChannelDiagnostics.test.tsx /workspace/repos/saleor-dashboard/src/products/components/ProductUpdatePage/form.test.ts /workspace/repos/saleor-dashboard/src/products/components/ProductUpdatePage/formChannels.test.ts /workspace/repos/saleor-dashboard/src/products/components/ProductVariantPage/form.test.tsx /workspace/repos/saleor-dashboard/src/products/components/ProductVariantPage/useVariantFormSubmit.test.tsx /workspace/repos/saleor-dashboard/src/products/views/ProductCreate/handlers.test.ts /workspace/repos/saleor-dashboard/src/products/views/ProductList/export.test.ts /workspace/repos/saleor-dashboard/src/products/views/ProductUpdate/handlers/useProductUpdateHandler.test.ts /workspace/repos/saleor-dashboard/src/siteSettings/useSiteSettings.test.ts /workspace/repos/saleor-dashboard/src/translations/components/TranslationFields/useRichTextSubmit.test.ts /workspace/repos/saleor-dashboard/src/translations/components/TranslationFields/useTranslationStringDraft.test.ts /workspace/repos/saleor-dashboard/src/translations/components/TranslationsProductsPage/TranslationAppFeedback.test.tsx /workspace/repos/saleor-dashboard/src/translations/components/TranslationsProductsPage/useProductTranslationForm.test.tsx /workspace/repos/saleor-dashboard/src/translations/views/useTranslationMutation.test.ts /workspace/repos/saleor-dashboard/src/utils/handlers/confirmedSaves.test.ts /workspace/repos/saleor-dashboard/src/utils/handlers/metadataUpdateHandler.test.ts /workspace/repos/saleor-dashboard/src/utils/richText/useRichText.test.ts /workspace/repos/saleor-dashboard/src/utils/richText/validation.test.ts /workspace/repos/saleor-dashboard/src/utils/weight.test.ts
+
+PASS src/orders/utils/data.test.ts
+PASS src/auth/components/LoginPage/LoginPage.test.tsx
+PASS src/extensions/views/EditManifestExtension/components/AppDetailsPage/AppExtensionSettingsCard.test.tsx
+PASS src/extensions/views/InstallCustomExtension/hooks/useInstallApp.test.ts
+PASS src/orders/components/OrderPaymentOrTransaction/OrderRootTransactions.test.tsx
+PASS src/orders/components/OrderSendRefundPage/components/useOrderSendRefund.test.ts
+PASS src/orders/views/OrderDetails/useOrderDetails.test.ts
+PASS src/orders/components/OrderMetadataDialog/OrderMetadataDialog.test.tsx
+PASS src/graphql/sessionPolicy.test.ts
+PASS src/extensions/views/ExploreExtensions/hooks/useExploreExtensions.test.ts
+PASS src/translations/components/TranslationsProductsPage/TranslationAppFeedback.test.tsx
+PASS src/products/views/ProductUpdate/handlers/useProductUpdateHandler.test.ts
+PASS src/products/components/ProductUpdatePage/form.test.ts
+PASS src/extensions/domain/app-manifest.test.ts
+PASS src/extensions/domain/app-extension-manifest.test.ts
+PASS src/orders/components/OrderPaymentOrTransaction/OrderPaymentOrTransaction.test.tsx
+PASS src/giftCards/GiftCardExportDialogContent/utils.test.ts
+PASS src/extensions/views/ExploreExtensions/components/ExtenionItem/components/AppInstallButton/AppInstallButton.test.tsx
+PASS src/orders/components/OrderSummaryCard/OrderSummaryCard.test.tsx
+PASS src/extensions/domain/extension-manifest-validator.test.ts
+PASS src/products/views/ProductList/export.test.ts
+PASS src/attributes/utils/handlers.test.ts
+PASS src/extensions/views/ViewManifestExtension/components/AppFrame/useAppActions.test.ts
+PASS src/orders/utils/payments.test.ts
+PASS src/extensions/views/EditManifestExtension/components/AppWebhooksDisplay/EventDeliveriesList.test.tsx
+PASS src/components/ConditionalFilter/FiltersQueryBuilder/FiltersQueryBuilder.test.ts
+PASS src/misc.test.ts
+PASS src/channels/views/ChannelDetails/settings.test.ts
+PASS src/utils/handlers/confirmedSaves.test.ts
+PASS src/products/components/ProductVariantPage/form.test.tsx
+PASS src/auth/hooks/useAuthProvider.test.ts
+PASS src/extensions/hooks/useExtensions.test.ts
+PASS src/utils/handlers/metadataUpdateHandler.test.ts
+PASS src/ordersV2/OrderDetailsViewModel.test.ts
+PASS src/siteSettings/useSiteSettings.test.ts
+PASS src/ordersV2/OrderRefunds/OrderRefundsViewModel.test.ts
+PASS src/orders/utils/draftEligibility.test.ts
+PASS src/products/components/ProductUpdatePage/ProductChannelDiagnostics.test.tsx
+PASS src/channels/views/ChannelCreate/useSaveChannel.test.ts
+PASS src/orders/components/OrderDetailsPage/utils.test.tsx
+PASS src/products/views/ProductCreate/handlers.test.ts
+PASS src/products/components/ProductVariantPage/useVariantFormSubmit.test.tsx
+PASS src/channels/views/ChannelDetails/useChannelSettings.test.ts
+PASS src/utils/weight.test.ts
+PASS src/extensions/views/EditManifestExtension/components/AppWebhooksDisplay/utils.test.ts
+PASS src/components/ConditionalFilter/useScopedExport.test.ts
+PASS src/auth/AuthProvider.test.tsx
+PASS src/orders/components/OrderUsedGiftCards/OrderUsedGiftCards.test.tsx
+PASS src/extensions/views/ViewManifestExtension/components/AppFrame/formProtocol.test.ts
+PASS src/components/RichTextEditor/RichTextEditor.test.tsx
+PASS src/translations/components/TranslationsProductsPage/useProductTranslationForm.test.tsx
+PASS src/hooks/useHandleFormSubmit.test.ts
+PASS src/hooks/useForm/index.test.tsx
+PASS src/auth/components/PasswordPolicyGate.test.tsx
+PASS src/components/Form/useExitFormDialog.test.tsx
+PASS src/hooks/useMetadataBundles.test.ts
+PASS src/orders/components/OrderDetailsPage/OrderShippingMetadataSnapshot.test.tsx
+PASS src/components/ConditionalFilter/downloadExport.test.ts
+PASS src/components/AppLayout/ListFilters/components/SearchInput.test.tsx
+PASS src/translations/components/TranslationFields/useRichTextSubmit.test.ts
+PASS src/translations/components/TranslationFields/useTranslationStringDraft.test.ts
+PASS src/extensions/components/AppExtensionContext/useAppFormExtension.test.tsx
+PASS src/categories/navigation.test.ts
+PASS src/utils/richText/validation.test.ts
+PASS src/components/ConditionalFilter/scopedSearch.test.ts
+PASS src/extensions/domain/catalog.test.ts
+PASS src/extensions/domain/app-extension-manifest-options.test.ts
+PASS src/translations/views/useTranslationMutation.test.ts
+PASS src/components/ConditionalFilter/search.test.ts
+PASS src/utils/richText/useRichText.test.ts
+PASS src/products/components/ProductUpdatePage/formChannels.test.ts
+PASS src/orders/components/OrderHistory/groupOrderHistory.test.ts
+PASS src/extensions/views/ExploreExtensions/hooks/useAppStoreExtensions.test.ts
+PASS src/components/RichTextEditor/utils.test.ts
+PASS src/hooks/useMetadataUpdate.test.ts
+PASS src/components/ConditionalFilter/effectiveScope.test.ts
+PASS src/orders/hooks/usePaymentRequest.test.ts
+
+Test Suites: 77 passed, 77 total
+Tests:       741 passed, 741 total
+Snapshots:   1 passed, 1 total
+Time:        90.41 s

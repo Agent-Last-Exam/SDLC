@@ -1,0 +1,11 @@
+{
+  "session_id": "4816d43d-e4ff-4fe6-a3c2-a3876a343154",
+  "active_role": "developer",
+  "stage_id": "sprint1/development",
+  "native_user_activation_verified": true,
+  "role_activations_recorded": 1,
+  "transport": "claude-code-jsonl",
+  "role_prompt_sha256": "47c1d098f9f90919e24b05bf7ca339d0dbb53f56c3b010cc71242133b0264211",
+  "session_continuity_verified": true,
+  "system_prompt_transport": "--append-system-prompt"
+}

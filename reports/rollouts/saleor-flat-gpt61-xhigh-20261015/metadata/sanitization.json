@@ -1,0 +1,8 @@
+{
+  "counts": {
+    "configured_secret_or_endpoint": 0,
+    "credential_pattern": 0,
+    "local_path_rewrites": 0
+  },
+  "policy": "Remove configured credentials/endpoints, token patterns and source-host absolute paths. Full trajectory structure retained; contents may contain redaction placeholders. No raw authentication config or secrets are included."
+}

@@ -1,0 +1,1 @@
+Credential/endpoints scan completed. Redactions: 0. Original sealed hashes refer to local originals; exported files may be redacted.

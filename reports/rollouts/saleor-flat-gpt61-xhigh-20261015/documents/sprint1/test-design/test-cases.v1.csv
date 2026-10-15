@@ -1,0 +1,1261 @@
+用例编号,一级模块,二级模块,用例标题,覆盖,优先级,前置条件,操作步骤,预期结果
+TC001,结账、配送、库存与可靠成单,R01 · 主动重算当前结账的配送选项,有效结账的显式重算返回当前选项、币种价格和有效选择,AC-01-1;BD01;I01,P0,未来待执行；Core GraphQL集成层；客户A拥有CA，渠道web-us/USD，实体商品V数量2、完整美国地址；已选ShippingMethod S1/USD 5.00，另有S2/USD 8.00及合法自提W1；记录CA.version=v。,"1. 以客户A调用checkoutDeliveryRecalculate(id:CA, expectedVersion:v)，查询checkout.version、shippingMethods的id/price/active/message、collectionPoints、deliveryMethod、selectionStatus/selectionError/errors。
+2. 重读CA选择、价格并核对主库和副作用账。","1. 无顶层错误且errors=[]；返回当前fixture的S1/S2和W1，价格分别USD 5.00/8.00、有效项active=true；deliveryMethod=S1、selectionStatus=VALID、selectionError=null。
+2. 选择仍为S1且价格与成功结果一致；未创建订单、预留或资金动作，未自动选择S2或W1。"
+TC002,结账、配送、库存与可靠成单,R01 · 主动重算当前结账的配送选项,无原选择的成功重算保持未选择且不把空选项误报为服务失败,AC-01-1;AC-01-2;AC-01-5;BD01;I01,P0,未来待执行；Core API层；客户A拥有完整CA且未选择配送；配送服务可控，先返回S1/USD 5.00，再在独立无原选择fixture返回合法空集合。,"1. 对有S1的CA重算。
+2. 对服务成功返回空集合、无合法自提的独立CA重算。","1. errors=[]、selectionStatus=NONE、deliveryMethod=null；返回S1但不代选。
+2. errors=[]、shippingMethods=[]、collectionPoints=[]、selectionStatus=NONE；这是成功无选项，不是SHIPPING_SERVICE_ERROR，也不伪造配送选择。"
+TC003,结账、配送、库存与可靠成单,R01 · 主动重算当前结账的配送选项,地址或商品变化使旧方式失效时重算清除旧选择而不代选,AC-01-2;BD01;I01,P0,未来待执行；Core服务/API集成层；客户A拥有两个独立CA，重算前保留旧S1：一例地址由US变CA使S1不适用，另一例加入受限大件使S1不适用；各有合法替代S2，使用变更后的version；若正常变更入口已清除选择，另用服务fixture保留待清理旧选择。,"1. 分别按新地址、新行项目调用checkoutDeliveryRecalculate。
+2. 重读两例CA.deliveryMethod及返回选项的active/message。","1. 采用本次已保存条件；待清理旧选择时selectionStatus=INVALID、deliveryMethod=null、selectionError说明DELIVERY_METHOD_NOT_APPLICABLE；已清除时可为NONE，不误报VALID。
+2. 原S1不再可选，若保留则active=false并有原因；持久化选择为空，不代选S2，不形成订单或资金动作。"
+TC004,结账、配送、库存与可靠成单,R01 · 主动重算当前结账的配送选项,同步配送结果变价和排除状态以本次显式计算为准,AC-01-3;AC-01-2;BD01;I01,P0,未来待执行；Core同步服务集成层；客户A的CA已选外部E1，缓存价格USD 5.00；可控SHIPPING_LIST_METHODS_FOR_CHECKOUT和CHECKOUT_FILTER_SHIPPING_METHODS。,"1. 将本次list响应改为E1/USD 7.50、E2/USD 9.00，显式重算。
+2. 再令本次filter排除E1且原因为服务暂停，使用新version重算。","1. errors=[]，E1最新价格为USD 7.50而非缓存5.00，仍有效时保持E1；同步调用采用当前CA数据。
+2. E1不作为可选项或明确active=false/message；原选择清空、selectionStatus=INVALID、原因可识别，不代选E2；无半成品价格或选择。"
+TC005,结账、配送、库存与可靠成单,R01 · 主动重算当前结账的配送选项,缺失和不完整地址导致重算失败时保留所有已保存事实,AC-01-4;BD01;I01,P0,未来待执行；Core API与DB快照层；客户A拥有需配送CA；独立fixture分别shippingAddress=null和US地址缺必填postalCode；快照包括原选择、价格、地址、缓存、version、last_change。,"1. 分别以当前version重算两个CA并读取完整payload。
+2. 比较失败前后DB快照及外部调用/事件记录。","1. errors非空，分别为SHIPPING_ADDRESS_NOT_SET及MISSING_ADDRESS_DATA或合同地址必填错误，field能定位shippingAddress/缺项；checkout/selectionStatus=null，结果数组[]。
+2. 失败不改变原选择、价格、地址、有效缓存、version或last_change，不保存部分结果、不发成功或完成事件；不能仅以数组为空认定成功。"
+TC006,结账、配送、库存与可靠成单,R01 · 主动重算当前结账的配送选项,配送服务超时和非法响应不会被折叠成成功空列表,AC-01-5;BD01;I01,P0,未来待执行；Core严格配送适配器集成层；客户A的CA已选E1且保存USD 5.00；独立fixture注入list超时、list返回错误结构、价格币种不符、filter调用失败，记录完整快照。,"1. 对每种服务故障调用显式重算，收集payload和脱敏错误。
+2. 核对CA原选择、缓存、价格、version和事件。","1. 每例errors含SHIPPING_SERVICE_ERROR且有可定位field/code/message；checkout/selectionStatus=null，两个数组[]，不能errors=[]伪装无配送；错误不含服务凭据或完整敏感数据。
+2. 所有失败均保留原已保存事实，不部分替换选项、不清E1、不创建订单或成功事件；不沿用Base吞异常返回[]作为目标预期。"
+TC007,结账、配送、库存与可靠成单,R01 · 主动重算当前结账的配送选项,分阶段配送计算中后续服务失败不会保存前段成功结果,AC-01-5;AC-01-4;BD01;I01,P0,未来待执行；Core服务故障注入层；客户A的CA原选E1/USD 5.00且缓存有效；本次list成功返回E1/USD 7.50和E2，后续filter故障；记录选择、denormalized价格、缓存、version与last_change。,"1. 在list成功而filter失败的屏障顺序下重算CA。
+2. 核对DB、缓存和CHECKOUT_UPDATED业务事件。","1. 返回SHIPPING_SERVICE_ERROR，业务失败payload遵守空结果/null约定，不返回已保存成功。
+2. E1、USD 5.00和原缓存均保持；7.50及E2没有部分落盘，不提前clear selection或invalidate价格；无本次CHECKOUT_UPDATED成功事件。"
+TC008,结账、配送、库存与可靠成单,R01 · 主动重算当前结账的配送选项,显式版本冲突和省略版本时的内部CAS均阻止旧计算覆盖新事实,AC-01-2;AC-01-3;AC-01-5;BD01;I01,P0,未来待执行；Core事务并发层；客户A的CA.version=12；可在外部配送响应前暂停，允许另一连接提交CA业务变更至13；分别测试expectedVersion=12及省略参数。,"1. 启动重算并暂停服务响应，另一连接更新地址或行项目并提交version=13，再释放旧配送结果。
+2. 另发expectedVersion=11的重算，并核对最终CA和事件。","1. 两种传参方式均以staged快照CAS复核，旧响应返回CONFLICT且不写；外部等待期间业务变更能够完成，不能通过持CA锁等待服务掩盖竞争。
+2. 陈旧11被拒CONFLICT；version=13对应的新选择/价格/缓存不被覆盖，无冲突计算成功事件；以新版本重算仍可恢复。"
+TC009,结账、配送、库存与可靠成单,R01 · 主动重算当前结账的配送选项,重算前后对象授权变化不会泄露或写入受限配送结果,AC-01-6;BD01;I01,P0,未来待执行；Core授权/API并发层；客户A、客户B各有结账；另有超出CA渠道范围的员工/App；可控服务屏障和授权撤销；不存在的合法Checkout Relay ID为CX。,"1. 分别以A访问B结账、越渠道员工/App访问CA、A访问CX，调用重算并监听配送服务。
+2. 以初始获准App启动CA重算，服务返回前撤销其对象范围，再释放响应。","1. 按合同返回NOT_FOUND保护受限存在性或顶层PERMISSION_DENIED，CX为NOT_FOUND；不调用配送服务，不返回受限地址、价格、选择或token，不改任一结账。
+2. 短事务提交前重验授权，结果拒绝且不落盘、不返回受限配送信息；不能因为先前已获计算快照而继续保存。"
+TC010,结账、配送、库存与可靠成单,R01 · 主动重算当前结账的配送选项,无实质变化的重算和数字商品重算不会制造持久化或完成事件,AC-01-1;AC-01-2;AC-01-3;BD01;I01,P0,未来待执行；Core API/event集成层；客户A拥有数据稳定的实体CA及仅无需配送商品的CD；记录版本、last_change、业务事件和资金动作基线。,"1. 对稳定CA连续两次重算，第二次采用最新version且服务数据完全相同。
+2. 对无配送地址/选择的CD重算。","1. 两次返回一致事实；无实质持久化变化的读取/重算不重复发CHECKOUT_UPDATED，不发完成事件或资金动作，不以诊断刷新业务last_change。
+2. errors=[]且selectionStatus=NOT_REQUIRED、deliveryMethod=null；不因缺配送地址失败，也不自动给CD选择实体配送或伪造完成订单。"
+TC011,结账、配送、库存与可靠成单,R02 · 更新选择与完成结账重新验证配送,当前配送标识更新成功后读取保持同一有效方式,AC-02-1;BD01;I02,P0,未来待执行；Core API集成层；客户A拥有完整实体CA，重算返回当前可用ShippingMethod S1及S2，当前选择S1，version=v。,"1. 调用checkoutDeliveryMethodUpdate(id:CA, deliveryMethodId:S2, expectedVersion:v)。
+2. 重新读取deliveryMethod、shippingMethod和version。","1. 无顶层错误且errors=[]，更新为本结账仍适用的S2；版本按实质业务变化递增。
+2. deliveryMethod为ShippingMethod S2，弃用shippingMethod也按shipping语义返回S2；没有选择S1残留或重复更新事件，没有资金/订单副作用。"
+TC012,结账、配送、库存与可靠成单,R02 · 更新选择与完成结账重新验证配送,合法旧配送入口及旧外部标识保留兼容而不绕过当前校验,AC-02-2;AC-02-1;BD01;I02,P0,未来待执行；Core schema契约与API集成层；客户A拥有CA；准备Base支持的内置ShippingMethod ID、旧App编码外部E1 ID，其本次配送结果仍适用；使用真实编码helper或fixture而非编造每结账专有ID。,"1. 分别通过checkoutShippingMethodUpdate的id、兼容token/checkoutId参数选择合法内置或旧外部方式。
+2. 读取schema弃用信息、CA.shippingMethod和deliveryMethod，再将旧E1变为当前不适用后重复旧请求。","1. 合法兼容请求成功，当前读取仍指同一真实配送方式，不要求旧客户端立即切断。
+2. shippingMethod和旧mutation带指向deliveryMethod/current update的弃用说明；失效旧方式被拒并保留原有效选择，兼容编码不绕过当前结账适用性。"
+TC013,结账、配送、库存与可靠成单,R02 · 更新选择与完成结账重新验证配送,其他结账缓存标识和非法标识被拒且共享合法配送实体仍可选,AC-02-3;BD01;I02,P0,未来待执行；Core服务/API层；客户A拥有CA/CB；CA原选S1；外部EB仅出现在CB结果缓存，CA结果不含EB；公共内置S2同时适用CA/CB。,"1. 在独立CA fixture分别提交EB、Product类型Relay ID、损坏ID、不在当前渠道listing的ShippingMethod和因当前商品不适用的方式。
+2. 对CA提交同时适用的共享内置S2。","1. 各自返回INVALID/NOT_FOUND/DELIVERY_METHOD_NOT_APPLICABLE的可分支错误；EB不能从CB缓存解析使用，失败保留S1、地址、版本、价格且无资金/订单副作用。
+2. S2合法更新成功；不能错误要求所有ShippingMethod ID均为每结账唯一，也不能因S2在CB出现过一概拒绝。"
+TC014,结账、配送、库存与可靠成单,R02 · 更新选择与完成结账重新验证配送,完成前配送过期、不可用和不适用会分别阻断人工成单,AC-02-4;BD01;I02,P0,未来待执行；Core checkoutComplete/API与资金spy集成层；三份CA均已完整支付且其他资格有效，原选择E1；分别令外部有效期过期、服务将E1停用、地址或行改变导致E1不适用。,"1. 分别对三份CA调用checkoutComplete，监听最终配送校验、资金动作、订单和outbox。
+2. 读取失败payload及各对象持久化状态。","1. 最终边界重新验证；分别以DELIVERY_METHOD_EXPIRED、DELIVERY_METHOD_UNAVAILABLE和DELIVERY_METHOD_NOT_APPLICABLE阻止完成，不因先前选过而放行。
+2. order=null、errors非空且原因可分支；不创建半成品订单/库存分配、不重复扣款、不生成完成业务事件，原已确认资金事实不被抹除。"
+TC015,结账、配送、库存与可靠成单,R02 · 更新选择与完成结账重新验证配送,无有效期的外部方式和自动成单均在完成边界重新验证,AC-02-4;BD01;BD04;I02;I05,P0,未来待执行；Core人工/worker集成层；客户A拥有CA，外部E1无有效期且已缓存为有效；另有自动完成已入队CB，支付/时间/其余资格满足；在实际完成前让配送服务移除E1。,"1. 分别触发CA人工checkoutComplete和CB自动完成，并记录最终服务请求。
+2. 核对两种路径的订单、资金、选择和诊断。","1. 两种完成路径均重新确认无有效期E1，不能复用旧缓存为最终凭据；失效按合同原因拒绝。
+2. 均无新订单/重复扣款/完成事件；自动路径给出安全可定位的BLOCKED诊断而非执行成功，人工路径返回非空errors。"
+TC016,结账、配送、库存与可靠成单,R02 · 更新选择与完成结账重新验证配送,无需配送只豁免配送条件而不豁免其他完成资格,AC-02-5;BD01;I02,P0,未来待执行；Core API层；客户A拥有仅数字商品CD，总额USD 20、支付成功20、有客户/邮箱及账单且库存合法，无shippingAddress/deliveryMethod；另备各自缺邮箱和客户、缺账单、支付不足、库存不足的独立CD。,"1. 完成正常CD。
+2. 分别完成四份缺其他资格的CD。","1. 不因缺配送地址/选择报错；完成一个对应订单，适用客户、账单、金额、支付和库存检查仍执行。
+2. 分别按EMAIL_NOT_SET、BILLING_ADDRESS_NOT_SET、CHECKOUT_NOT_FULLY_PAID/适用支付错误及INSUFFICIENT_STOCK阻断；order=null，无半成品订单或重复资金动作；不能SHIPPING_NOT_REQUIRED后直接跳过全部校验。"
+TC017,结账、配送、库存与可靠成单,R02 · 更新选择与完成结账重新验证配送,新旧配送入口对不存在和无权结账返回稳定错误而不泄露信息,AC-02-6;BD01;I02,P0,未来待执行；Core授权矩阵层；客户A/B、越渠道员工/App；B结账CB有受限地址/价格；不存在Checkout ID与token均为类型正确fixture。,"1. 分别从checkoutDeliveryMethodUpdate与checkoutShippingMethodUpdate，以A或越范围员工/App请求CB，覆盖id/token兼容定位和显式清除。
+2. 对不存在结账经两入口提交合法配送ID。","1. 均按scope合同得到NOT_FOUND保护存在性或顶层PERMISSION_DENIED；无受限地址、价格、选择、token泄露，不能借null清除或旧token绕授权，CB原值不变。
+2. 两入口均为可识别NOT_FOUND，不改其他结账，不以success empty表示完成，也不进行受限配送计算。"
+TC018,结账、配送、库存与可靠成单,R02 · 更新选择与完成结账重新验证配送,Warehouse自提由deliveryMethod读取且旧shipping字段不伪装为配送,AC-02-7;AC-02-1;BD01;I02,P0,未来待执行；Core API与DB层；客户A的CA实体商品允许自提；W1为本次collectionPoints中的合法Warehouse且有地址，W2不适用；CA原有配送S1。,"1. 使用当前版本调用checkoutDeliveryMethodUpdate(id:CA, deliveryMethodId:W1)。
+2. 查询deliveryMethod.__typename/仓库id、shippingMethod及shippingAddress，再通过旧shipping-only入口提交Warehouse W2。","1. errors=[]，选择为Warehouse W1，按现有click-and-collect合同更新自提地址，不残留原S1。
+2. deliveryMethod.__typename=Warehouse、id=W1，shippingMethod=null且仍弃用；旧shipping-only入口不接受Warehouse，拒绝后W1及地址保持，不伪装为ShippingMethod。"
+TC019,结账、配送、库存与可靠成单,R02 · 更新选择与完成结账重新验证配送,明确清除配送或自提后选择为空且需配送结账不能完成,AC-02-7;AC-02-4;BD01;I02,P0,未来待执行；Core API集成层；客户A有两份需配送CA，分别已选ShippingMethod S1和Warehouse W1；均具备其余完成资格。,"1. 分别传deliveryMethodId:null及当前expectedVersion明确清除选择。
+2. 重读两份CA的deliveryMethod、shippingMethod后调用checkoutComplete。","1. errors=[]，相关shipping/collection point引用及外部选择清理，不自动代选其他选项；只执行合同允许的清除，不凭空新增地址副作用。
+2. deliveryMethod和shippingMethod均null；完成返回SHIPPING_METHOD_NOT_SET、order=null，无订单/资金/完成事件；空选择不是成功完成。"
+TC020,结账、配送、库存与可靠成单,R02 · 更新选择与完成结账重新验证配送,选择更新的版本竞争和同步失败均保留最新有效选择,AC-02-1;AC-02-3;AC-02-4;BD01;I02,P0,未来待执行；Core事务并发与服务故障层；CA.version=9且选S1，S2适用；可暂停外部校验；另一连接可先更新为S3/version=10。,"1. 启动expectedVersion=9的S2更新，在外部结果返回前提交S3/version=10，再释放S2结果。
+2. 用当前版本重试S2但注入配送服务通信错误。","1. 旧更新返回CONFLICT，不把S3覆盖为S2，地址、价格、版本均保留新事实，无失败动作的部分保存。
+2. 服务错误与不适用/过期区分且payload失败；S3及保存数据保持，不把失败当清除或成功无选项，不生成订单或资金动作。"
+TC021,结账、配送、库存与可靠成单,R03 · 渠道库存策略在查询、预留、订单和履约一致,未切换的旧渠道保留配送区域地址库存行为而不擅自迁移来源,AC-03-1;BD02;I03,P0,未来待执行；Core兼容回归设计，使用已准备的基线及目标态同构fixture而非本Stage执行迁移；获准库存/订单员工；旧渠道未配置sourceStrategy，原仓库/区域/US与CA地址及数量快照可比。,"1. 未来执行时读取旧渠道目标态stockSettings并对相同地址、商品、库存查询可用量及建立合法订单/履约。
+2. 对照基线fixture的合法候选仓库和数量，并以旧client仅更新allocationStrategy。","1. sourceStrategy为设计默认SHIPPING_ZONE；未新增/删除仓库关系、未改库存，地址/配送区域规则保持基线业务含义。
+2. 同配置下数量和履约来源等价；只改allocationStrategy不切到CHANNEL，分配顺序不是库存来源策略。"
+TC022,结账、配送、库存与可靠成单,R03 · 渠道库存策略在查询、预留、订单和履约一致,直接渠道来源在商品结账订单草稿及履约只使用关联库存3而不借用未关联10,AC-03-2;BD02;I03,P0,未来待执行；Core跨入口集成层；获准商品/checkout/订单/履约身份；渠道C.sourceStrategy=CHANNEL；V跟踪库存且无占用，关联W-A数量3，未关联W-B数量10；数量cap不截断3；独立fixture避免各入口相互消耗。,"1. 查询V.quantityAvailable/availability并分别在独立fixture创建数量3的结账预留、订单分配、草稿完成和合法履约来源。
+2. 在重置的同构fixture对各写入口请求数量4，并尝试从未关联W-B新增或改仓履约。","1. 商品可用量=3；合法数量3只来自W-A，结账、订单、草稿和履约使用同一集合，不显示13或10作为可售量。
+2. 数量4按INSUFFICIENT_STOCK等适用错误拒绝，不能用W-B的10补足；新增/改仓到W-B被拒，无订单或库存部分副作用。"
+TC023,结账、配送、库存与可靠成单,R03 · 渠道库存策略在查询、预留、订单和履约一致,CHANNEL策略接受旧地址参数但地址不会改变库存候选集合,AC-03-3;BD02;I03,P0,未来待执行；Core查询/checkout服务层；客户A和获准库存员工；CHANNEL渠道C关联W-A库存3，未关联W-B库存10；US与CA地址配送规则不同而仓库关系不变，数量cap不截断。,"1. 对同一V/C分别传合法US、CA和省略兼容地址查询可用量及候选仓库。
+2. 在独立CA中保持关系库存不变，只改变配送地址至不支持配送的国家并尝试完成。","1. 所有旧参数均被合同接受且候选集合均为W-A、可用量均3，不因配送区域剔除或加入库存仓库。
+2. 库存来源仍为W-A；配送资格可独立失败，不能用新库存策略免除地址/配送验证，也不能因配送失败把库存来源改为W-B。"
+TC024,结账、配送、库存与可靠成单,R03 · 渠道库存策略在查询、预留、订单和履约一致,仓库关联新增移除后查询预留和分配均读取最新关系,AC-03-4;BD02;I03,P0,未来待执行；Core配置/缓存/DB集成层；MANAGE_CHANNELS员工及合法业务actor；CHANNEL C.version=v，初始仅关联W-A/3，未关联W-B/10，无占用；缓存已预热。,"1. CAS新增W-B并重查、在独立fixture预留/分配数量4。
+2. 移除W-B后使用最新version重查，并再次尝试新增数量4或指定W-B的新分配。","1. 关系保存成功递增settingsVersion并失效相关缓存；候选为W-A/W-B，可用量13，合法新动作可采用当前关联库存。
+2. 查询恢复3；新预留/分配不再使用W-B，返回可解释不足或非法来源错误，不能沿用旧缓存或replica集合。"
+TC025,结账、配送、库存与可靠成单,R03 · 渠道库存策略在查询、预留、订单和履约一致,移除仓库关系不会抹掉既有合法分配但会禁止新增或改仓动作,AC-03-4;AC-03-5;BD02;I03,P0,未来待执行；Core订单/履约层；获准库存和订单员工；CHANNEL C已合法从W-A分配V数量2，记录Allocation和库存；随后通过获准CAS移除W-A。,"1. 读取原订单分配并按已记录的合法分配履约。
+2. 用另一订单尝试从失去关系的W-A新增分配，或把其他订单改仓到W-A。","1. 既有Allocation不自动删除或失账，允许按已记录事实完成合法履约，库存扣减与原分配一致。
+2. 新增/改仓按最新关系拒绝且给可解释错误，原订单分配、库存和历史履约事实不被改写。"
+TC026,结账、配送、库存与可靠成单,R03 · 渠道库存策略在查询、预留、订单和履约一致,预留转分配后各入口按同一库存占用显示剩余量,AC-03-5;BD02;I03,P0,未来待执行；Core商品/checkout/订单集成层；客户A及获准库存员工；CHANNEL C仅W-A库存3，无占用；有效预留功能已启用且不会在观察中到期；安全查询身份的数量cap不截断。,"1. 为CA成功预留V数量2，然后以另一结账及商品查询读取可用量。
+2. 合法完成CA，将其预留转为订单分配，再读取商品、其他结账和草稿可用量。","1. 有效预留为2，其他消费者按共同事实看到剩余1，不把预留忽略或重复计扣。
+2. 本动作分配2且原预留被消费/释放，其他入口仍剩1而非负数或3；来源W-A一致，原CA自己的预留在转换时不被二扣。"
+TC027,结账、配送、库存与可靠成单,R03 · 渠道库存策略在查询、预留、订单和履约一致,多行预留中后行不足会回滚先前行的全部新增占用,AC-03-5;BD02;I03,P0,未来待执行；Core reservation事务集成层；客户A拥有CA；CHANNEL C关联W-A；V1库存3、V2库存1，未关联W-B有V2库存10；另有不属于本动作的有效预留作为保留基线。,"1. 同一动作请求V1数量2、V2数量2，确保先遍历V1后遇V2不足。
+2. 核对所有Reservation、Stock及其他结账的原有效预留，重查两商品可用量。","1. 以INSUFFICIENT_STOCK或当前预留不足合同失败，W-B库存不能补足第二行，不返回部分成功。
+2. 本次V1/V2新增预留均不存在，库存及他人原有效预留保持；可用量回到动作前快照，没有先行残留占用或超卖。"
+TC028,结账、配送、库存与可靠成单,R03 · 渠道库存策略在查询、预留、订单和履约一致,多行订单分配或草稿完成失败会回滚全部新增分配及订单副作用,AC-03-5;BD02;I03,P0,未来待执行；Core订单/草稿事务层；获准订单员工；独立fixture的CHANNEL C关联W-A，V1库存3、V2库存1，订单请求V1=2/V2=2；已有其他订单Allocation快照。,"1. 分别通过订单分配和草稿完成路径提交两行请求，在第二行不足处终止。
+2. 检查本动作Allocation、quantity_allocated、订单/草稿状态和outbox。","1. 两入口均基于最新合法集合返回不足错误，不用第一行已分配作为部分成功。
+2. 本次两行Allocation全回滚，Stock计数恢复，既有他人分配保留；草稿未变为完成，无半成品订单或完成业务通知。"
+TC029,结账、配送、库存与可靠成单,R03 · 渠道库存策略在查询、预留、订单和履约一致,不同请求争抢最后库存时不会超卖或遗留失败请求占用,AC-03-5;BD02;I03,P0,未来待执行；真实DB双连接并发设计而非纯mock；客户A/B拥有独立结账，CHANNEL C关联W-A仅V库存1，未关联W-B库存10；设置预留/分配读写屏障。,"1. 并发让A/B各请求V数量1，分别覆盖预留对预留、预留对订单分配的独立场景。
+2. 等待事务完成后统计成功请求、有效reservations/allocations及可用量。","1. 基于主库锁后最新可用量最多一个请求成功，另一个返回可解释不足/可重试冲突，不凭两次陈旧查询都成功。
+2. 成功总占用不超过1，失败方无残留；W-B未被借用，所有入口剩余0，Stock和占用计数非负且可对账。"
+TC030,结账、配送、库存与可靠成单,R03 · 渠道库存策略在查询、预留、订单和履约一致,策略关系顺序同一次CAS保存失败时不产生部分配置,AC-03-4;AC-03-6;BD02;I03;FD01,P0,未来待执行；Core channelUpdate与Dashboard配置集成层；MANAGE_CHANNELS员工；C.settingsVersion=4，策略SHIPPING_ZONE、仓库W-A/W-B及原顺序已保存。,"1. 一次提交expectedVersion=4、sourceStrategy=CHANNEL、移除W-B并传仍含W-B或重复W-A的warehouseOrder。
+2. 另以正确完整顺序只patch sourceStrategy，省略allocationStrategy，再用旧version=4重放配置。","1. 非法完整顺序返回INVALID/DUPLICATED_INPUT_ITEM等定位错误；策略、关系、顺序、version均保持原值，UI不先保存settings再独立reorder假称整体成功。
+2. 合法source-only patch成功且不改分配优先顺序；version递增，旧version重放返回CONFLICT且不覆盖；旧allocation-only更新不隐式改变来源。"
+TC031,结账、配送、库存与可靠成单,R03 · 渠道库存策略在查询、预留、订单和履约一致,权限不足配置非法和预留异常均不泄露受限库存或产生部分写入,AC-03-6;BD02;I03,P0,未来待执行；Core授权与故障注入层；无MANAGE_CHANNELS员工、越渠道App及合法库存actor；C/W受对象范围限制；可在多行预留写入中注入DB失败；记录快照。,"1. 分别尝试无权限改source/关系、引用外部渠道Warehouse、显式null sourceStrategy/warehouseOrder和非法enum。
+2. 合法actor发起多行预留并在写入中注入DB错误，再读取库存及占用。","1. 按顶层权限/类型错误或payload INVALID/NOT_FOUND定位，scope先于数量和错误明细；不披露受限仓库ID/数量，不改变已保存配置。
+2. 返回可识别失败而非成功空列表，所有本动作占用回滚且原库存/他人占用保持；可修复重试，不遗留部分预留。"
+TC032,结账、配送、库存与可靠成单,R03 · 渠道库存策略在查询、预留、订单和履约一致,库存来源升级不破坏不跟踪库存和合法预售的既有例外,AC-03-1;AC-03-2;BD02;I03,P0,未来待执行；Core兼容服务集成层；获准业务actor；独立fixture含trackInventory=false商品及满足既有上限/时间配置的预售商品，在SHIPPING_ZONE和CHANNEL均有合法发布/价格/配送条件。,"1. 分别查询并完成两类商品的合法数量请求，核对目标态与基线fixture行为。
+2. 对预售超过其现行合法上限的请求再次提交。","1. 仅因无普通Stock不得把不跟踪库存商品强制归零；预售走原合法规则而非伪造普通库存，来源策略不破坏这些例外。
+2. 预售仍按适用既有上限拒绝，失败无部分占用；不把例外解释成无限超卖或豁免其他成交资格。"
+TC033,结账、配送、库存与可靠成单,R04 · 商品编辑页按渠道诊断真实可售原因,商品渠道诊断按名称币种过滤和分页返回正确可见集合,AC-04-1;BD03;FD02;I04,P1,未来待执行；Core resolver与Dashboard组件集成层；员工具MANAGE_PRODUCTS及合法渠道读取scope；商品P可读；可见渠道按pk为US-Web/USD、EU-Web/EUR、US-Outlet/USD，另有不可见Secret-Web/USD。,"1. 查询P.channelAvailability(filter:{search:'us',currency:'USD'},first:1)，按endCursor连续翻页再返回前页。
+2. 在商品编辑诊断区用名称Web和币种EUR筛选，核对row channel、issueCount及issues。","1. 不区分大小写的名称包含且币种精确匹配，仅US-Web、US-Outlet；固定pk分页无重复漏项，totalCount=2且不含Secret，游标稳定。
+2. 仅EU-Web符合，行key为channel id；每行issueCount等于本次BLOCKING+WARNING数量，明细来自同次响应，非客户端旧库存猜测。"
+TC034,结账、配送、库存与可靠成单,R04 · 商品编辑页按渠道诊断真实可售原因,未发布和未到可购买时间的根阻断不会重复计入正常依赖,AC-04-2;BD03;FD02;I04,P1,未来待执行；Core诊断/API层；获准商品员工；独立P fixture分别未发布和availableForPurchaseAt晚于冻结时刻，合法价格/库存/仓库/配送区域等依赖均正常。,"1. 分别读取两份P在渠道C的channelAvailability。
+2. 在商品编辑区展开问题明细，核对isAvailable、severity和issueCount。","1. 分别包含PRODUCT_NOT_PUBLISHED、PRODUCT_NOT_YET_AVAILABLE的BLOCKING原因和可操作说明，isAvailable=false。
+2. 正常价格/仓库/库存/配送依赖不重复标BLOCKING；count与实际BLOCKING+WARNING相符，不因上游未满足堆砌正常依赖告警。"
+TC035,结账、配送、库存与可靠成单,R04 · 商品编辑页按渠道诊断真实可售原因,缺货非法仓库和缺配送区域分别指出真正阻断原因,AC-04-3;BD03;FD02;I04,P1,未来待执行；Core诊断服务层；获准商品/渠道员工；独立实体P fixture分别全部跟踪变体缺货、CHANNEL无合法关联仓库、SHIPPING_ZONE缺可达配送区域，其余核心条件正常。,"1. 分别查询三份P的渠道诊断并展开对应明细。
+2. 核对明细中的code/severity/variantIds以及是否调用外部配送或税务。","1. 缺货以INSUFFICIENT_STOCK/NO_SALEABLE_VARIANT适用层级阻断，无合法仓库为NO_ELIGIBLE_WAREHOUSE，缺区域为NO_SHIPPING_ZONE；原因可操作且不混淆。
+2. 阻断severity=BLOCKING，variantIds仅含可见变体；只读计算配置事实，不调用外部配送/税务、不修改商品或库存。"
+TC036,结账、配送、库存与可靠成单,R04 · 商品编辑页按渠道诊断真实可售原因,部分变体缺货只作警告且不把可售商品整体判为不可售,AC-04-3;BD03;FD02;I04,P1,未来待执行；Core诊断和Dashboard层；获准商品员工；P有V1库存0、V2库存3，二者发布/价格/渠道仓库合法且V2可售。,"1. 查询渠道诊断并在UI展开V1问题。
+2. 将V2也变为缺货后刷新诊断。","1. isAvailable=true；V1缺货按WARNING呈现且variantIds准确，不误报商品级无可售变体阻断；issueCount包含该警告。
+2. 最新结果为isAvailable=false且指出无可售变体/库存阻断，数量与本次明细一致，旧可售结论不冒充最新。"
+TC037,结账、配送、库存与可靠成单,R04 · 商品编辑页按渠道诊断真实可售原因,数字商品只跳过配送区域检查而仍执行发布价格和库存诊断,AC-04-4;BD03;FD02;I04,P1,未来待执行；Core诊断与UI层；获准商品员工；数字P无需配送，跟踪库存0且未发布，缺配送区域；另备已发布但缺变体渠道价格的同构P。,"1. 读取两份数字P的诊断并展开检查类别。
+2. 修复发布/价格/库存后刷新，核对issueCount。","1. 配送检查为SHIPPING_NOT_REQUIRED/NOT_APPLICABLE而非NO_SHIPPING_ZONE阻断；发布、价格、库存核心规则仍按根因优先诊断，不能整体跳过。
+2. 修复后可售事实正确；NOT_APPLICABLE不计入issueCount，不将无需配送说成0项检查全部通过。"
+TC038,结账、配送、库存与可靠成单,R04 · 商品编辑页按渠道诊断真实可售原因,渠道停用和未分配商品也能在允许范围内诊断根因,AC-04-1;AC-04-2;AC-04-3;BD03;I04,P1,未来待执行；Core诊断resolver层；获准商品和渠道员工；可见渠道C1停用、C2未给P建立listing，其他可见C3正常；全部在允许scope内。,"1. 不按现有listing预过滤，查询P.channelAvailability(first:100)。
+2. 检查C1/C2的根因和count，并核对正常C3。","1. 结果含可见C1/C2而不只已分配渠道；C1为CHANNEL_INACTIVE，C2为PRODUCT_NOT_LISTED_IN_CHANNEL，均BLOCKING。
+2. 根因准确且不重复堆砌正常依赖；C3不因其他渠道问题被误判，问题数量与各自行明细一致。"
+TC039,结账、配送、库存与可靠成单,R04 · 商品编辑页按渠道诊断真实可售原因,无商品权限或渠道范围时诊断和问题数量均不泄露受限配置,AC-04-5;BD03;FD02;I04,P1,未来待执行；Core授权矩阵及UI层；无MANAGE_PRODUCTS员工、仅商品权无渠道资格员工、拥有商品及部分渠道scope的员工/App；Secret渠道有已知问题用于泄漏探针。,"1. 无权身份直接查询channelAvailability并打开商品编辑诊断区。
+2. 部分scope身份查询/翻页，并通过Secret名称/币种筛选尝试推断问题数。","1. Core返回适用顶层PERMISSION_DENIED，UI不发无权诊断请求或展示受限内容；不存在商品按原读取合同null，不借错误泄露配置。
+2. scope先于count和诊断计算，Secret不出现在行、variantIds、totalCount、issueCount及错误明细，不以隐藏行但暴露计数保护。"
+TC040,结账、配送、库存与可靠成单,R04 · 商品编辑页按渠道诊断真实可售原因,加载刷新和失败状态不会把旧诊断当当前无问题结论,AC-04-6;BD03;FD02;I04,P1,未来待执行；Dashboard RTL/GraphQL受控响应层；获准商品员工；P原诊断有1个阻断，支持延迟响应、network失败及Core顶层INTERNAL_ERROR。,"1. 延迟初次诊断和刷新响应，观察加载；刷新时保留原结果，随后分别返回network错误和顶层服务错误。
+2. 点击重试返回新诊断，并检查商品表单、evaluatedAt及保存请求。","1. 初次明确loading；旧结果如保留则标旧结果/刷新中而非最新；失败显示可恢复错误，不显示0问题或伪装空结果。
+2. 重试后以新evaluatedAt和明细呈现；诊断不触发商品保存、不覆盖编辑字段，错误不清除已保存商品事实。"
+TC041,结账、配送、库存与可靠成单,R04 · 商品编辑页按渠道诊断真实可售原因,迟到诊断不会覆盖已切换商品渠道及当前未保存编辑,AC-04-6;BD03;FD02;I04,P1,未来待执行；Dashboard组件竞态层；获准商品员工；P1/P2及C1/C2均可见；可控制请求顺序，P1名称初值Alpha。,"1. 对P1/C1发慢诊断，将商品名编辑为Alpha-new，切换到P2/C2并让新诊断先返回，再释放P1旧响应。
+2. 在P2编辑未保存字段后刷新诊断，随后分别模拟保存失败和保存成功。","1. 旧product/filter/cursor世代响应被丢弃，不写入P2诊断或表单，不覆盖Alpha-new及P2当前编辑。
+2. 未保存时明确基于已保存商品；保存失败不以draft作为已诊断事实，保存成功才按新savedRevision刷新；晚到结果不覆盖dirty值。"
+TC042,结账、配送、库存与可靠成单,R04 · 商品编辑页按渠道诊断真实可售原因,非法诊断过滤分页参数返回输入错误而非零问题成功,AC-04-1;AC-04-6;BD03;FD02;I04,P1,未来待执行；Core query契约与UI映射层；获准商品员工；P存在；目标接口新分页上限100、search最多256字符为技术边界而非性能SLA。,"1. 分别查询first:0、first:101、同时first/last、损坏cursor、search为257字符、currency为非法币种。
+2. 再使用合法first:1/名称及ISO币种请求，包含无匹配条件。","1. 各自得到顶层INPUT_ERROR或类型coercion错误且path可定位，UI显示输入/请求错误而非0问题；无商品写入或外部配送税务调用。
+2. 合法请求正常分页，无匹配是正常空edges/totalCount=0，不误判为请求失败；不能用任意数值SLA替代状态验证。"
+TC043,结账、配送、库存与可靠成单,R05 · 已支付结账按完整资格自动成单,完整成功授权且资格时间均满足的Transaction结账自动生成一个订单,AC-05-1;BD04;I05,P0,未来待执行；Core worker/DB集成层；系统任务actor；C自动完成开启，delay=10分钟，CA创建在cutoff后且last_change距冻结now超过10分钟；总额USD 100，Transaction成功净授权100、无扣款和pending，其余客户/账单/配送/可售库存齐全；渠道策略允许仅授权成单。,"1. 未来执行批次扫描及处理CA，读取completion record、订单与交易关联。
+2. 再次投递同一CA任务并核对资金及outbox。","1. 生成唯一对应Order，record=COMPLETED且指向该order；授权100在订单保持同一支付事实，sourceCheckout来源持久保留，不因自动化强行再次扣款。
+2. 返回既有订单结果，无第二订单/授权/扣款；一次应有ORDER_CREATED和完成通知业务outbox，delivery重投不算新业务通知。"
+TC044,结账、配送、库存与可靠成单,R05 · 已支付结账按完整资格自动成单,完整扣款的Transaction和兼容Payment自动完成不再次向已付额度扣款,AC-05-2;BD04;I05,P0,未来待执行；Core worker与gateway spy集成层；系统actor；两份完全合格且符合时间范围CA：一份Transaction成功净charged=USD 100，一份受支持legacy Payment真实FULLY_CHARGED且capturedAmount=USD 100；总额均100，无pending。,"1. 分别处理Transaction和Payment结账，记录gateway调用、金额及关联迁移。
+2. 重投任务并读取对应Order支付状态。","1. 各生成一个对应订单；按各自流程迁移原支付关联，已扣款100不再次charge/capture，不把Payment和Transaction两套金额盲加。
+2. 各返回同一既有Order且支付事实仍100；无重复扣款/订单/业务完成事件，旧支付兼容不是仅看历史有记录。"
+TC045,结账、配送、库存与可靠成单,R05 · 已支付结账按完整资格自动成单,受支持legacy Payment完整授权遵循真实授权资格和原捕获策略,AC-05-1;AC-05-2;AC-05-3;BD04;I05,P0,未来待执行；Core Payment/worker集成层；系统actor；一份Payment成功AUTH授权USD 100、is_active=true、当前可授权额度足够且gateway支持原完成路径；独立负例为失败AUTH或is_active=false；其余资格和时间均满足。,"1. 处理合法完整授权Payment结账，监听原策略要求的后续捕获。
+2. 处理失败授权和停用Payment负例。","1. 合法路径可形成一个订单，授权/必要捕获按该受支持Payment合同执行且只执行一次，不机械套Transaction净额算法或无条件新增charge。
+2. 失败/停用记录不作为fully paid凭据，BLOCKED并给安全支付原因，无订单或不必要资金动作；实际支持的gateway资格以实施合同核对。"
+TC046,结账、配送、库存与可靠成单,R05 · 已支付结账按完整资格自动成单,部分支付失败事件和pending不能因FULL标记被自动成单,AC-05-3;BD04;I05,P0,未来待执行；Core支付资格服务/worker层；系统actor；独立CA总额100，分别仅成功charge60、仅CHARGE_FAILURE100、仅CHARGE_REQUEST100、仅AUTHORIZATION_REQUEST100、已charge100但有冲突refundPending20或cancel/charge pending；可令Base聚合charge_status/authorize_status显示FULL作为回归探针。,"1. 逐一处理各CA并读取当前成功净额、pending及completion诊断。
+2. 将一份请求pending补为真实成功100并清除冲突占用，满足新last_change等待条件后重试。","1. 全部不成单；BLOCKED且错误可定位支付资格，不仅依赖FULL或历史事件存在；pending不当成功、失败不虚增有效金额，无完成通知。
+2. 修复后才生成唯一订单；保留真实请求/失败/成功追踪，不删除pending历史来假装原先已满足资格。"
+TC047,结账、配送、库存与可靠成单,R05 · 已支付结账按完整资格自动成单,成功授权与扣款按当前净额合计且不能重复计算已消费授权,AC-05-1;AC-05-2;AC-05-3;BD04;I05,P0,未来待执行；Core支付资格与worker层；系统actor；总额100的独立CA：合法当前净authorized40+charged60；负例历史授权100已转charge60后当前净authorized0、charged60；另一例charge100退款20后当前charged80；时间/其他资格均满足。,"1. 处理三份CA并核对实际用于fully paid的金额。
+2. 核对订单数、支付动作和原交易事件。","1. 40+60合法覆盖100可成单；两个负例分别只有60和80而BLOCKED，不把历史授权或历史累计charge重新加回，不将charged80再错误减refund20。
+2. 仅合法例一个订单且不对已成功60重复扣款；负例无订单/完成通知，历史事件金额保持真实。"
+TC048,结账、配送、库存与可靠成单,R05 · 已支付结账按完整资格自动成单,客户账单配送商品和正总额任一必要资格缺失均阻断自动成单,AC-05-4;BD04;I05,P0,未来待执行；Core资格服务参数化设计；系统actor；从完全合格CA复制独立fixture，分别缺客户且email为空、缺账单、需配送缺地址、缺有效配送、空行、未发布/不可购买商品、channel停用、total=0及内部服务构造total<0；支付和时间不遮蔽相应检查。,"1. 分别处理每个单缺陷CA并读取安全error.field/code/message。
+2. 核对订单、库存占用、支付和业务完成outbox。","1. 每例BLOCKED且原因对应EMAIL_NOT_SET、BILLING_ADDRESS_NOT_SET、SHIPPING_ADDRESS_NOT_SET、SHIPPING_METHOD_NOT_SET、NO_LINES、商品/渠道适用码或总额正值资格错误；不得把未明确的总额码编造为新enum。
+2. 全部无半成品订单/新增库存占用/完成通知；不因allowUnpaidOrders或零价手工旧流程放宽本自动化total>0及fully paid规则。"
+TC049,结账、配送、库存与可靠成单,R05 · 已支付结账按完整资格自动成单,入队后库存不足或配送失效会在执行前复核并给可定位阻断,AC-05-5;BD04;BD01;BD02;I05,P0,未来待执行；Core queue/worker事务集成层；系统actor；CA/CB入队时均合格；执行屏障前让CA唯一合法仓库库存被另一订单占用，让CB原配送停用或过期。,"1. 释放任务执行屏障并处理CA/CB。
+2. 检查record状态、订单、库存、资金和outbox。","1. 按执行时最新主库库存与配送结果复核；分别BLOCKED为库存不足及可区分配送原因，而非因入队时合格继续完成。
+2. 无新订单/重复资金动作/完成通知，失败动作无部分库存占用；诊断不显示COMPLETED或把任务被消费当成功。"
+TC050,结账、配送、库存与可靠成单,R05 · 已支付结账按完整资格自动成单,入队后金额支付客户和渠道配置变化均使用最新资格版本,AC-05-3;AC-05-4;AC-05-5;BD04;I05,P0,未来待执行；Core qualification revision/worker层；系统actor；从合格CA独立复制，排队后分别总额100变120而paid仍100、成功款退款至80、清客户/邮箱、清账单、渠道自动完成关闭；另有amount改变但聚合status仍FULL的fixture。,"1. 在claim或staged计算后并发提交各业务变更，再恢复旧worker尝试提交。
+2. 检查CA.version/last_change、record和业务结果，并重复只读诊断/续租。","1. 旧eligibility revision不得提交订单；最新金额/支付/客户/账单/开关均重验，必要时BLOCKED/DISABLED或重新等待，不依赖状态字符串未变化放行。
+2. 影响资格的金额事实即使status不变也递增version/last_change；诊断、claim和续租不刷新业务last_change；无半订单/重复资金/完成事件。"
+TC051,结账、配送、库存与可靠成单,R05 · 已支付结账按完整资格自动成单,重复入队与人工完成并发共享唯一成单记录,AC-05-6;BD04;I05;I02,P0,未来待执行；真实DB双连接worker/API并发层；客户A人工能力及系统actor；CA完全合格且已付100；设置人工checkoutComplete、两个重复worker的提交屏障，记录原checkout token。,"1. 并发释放一次人工完成和两份自动完成任务，覆盖人工先胜及worker先胜的独立场景。
+2. 以原token重试人工/任务，核对completion record、Order、资金动作和业务outbox。","1. 共享completion唯一键和锁/fencing，最多一个Order结果；另一请求返回同order或合同可重试冲突后读同order，不能只依赖无唯一约束的order.checkout_token。
+2. 即便Checkout已删除也通过record找到同Order，不以checkout=null推断成功；一次有效资金动作、一次对应完成业务事件，订单金额100不因重算改变。"
+TC052,结账、配送、库存与可靠成单,R05 · 已支付结账按完整资格自动成单,提交前失败和提交后ACK丢失的恢复不会重复订单库存资金或完成事件,AC-05-6;AC-05-7;BD04;I05,P0,未来待执行；Core事务/queue故障注入层；系统actor；完全合格CA；独立场景在本地订单与库存写入后commit前抛DB错误，及commit成功后ACK/后续投递前中断。,"1. 分别执行两类中断并重投同一CA任务。
+2. 核对Order、Allocation/Reservation、record和BusinessEventOutbox及原金额。","1. commit前本地订单/占用全回滚、记录可诊断FAILED并可恢复；commit后从COMPLETED记录/outbox恢复而非再建订单。
+2. 恢复后仅一个Order、一份应有库存结果、一次有效资金动作和各event_type一次业务outbox；delivery可重投同身份，不新增完成业务通知，已完成金额保持。"
+TC053,结账、配送、库存与可靠成单,R05 · 已支付结账按完整资格自动成单,外部扣款未知结果先对账并以稳定动作键恢复而不重复扣款,AC-05-2;AC-05-6;AC-05-7;BD04;I05,P0,未来待执行；Core Payment/外部adapter故障集成设计；系统actor；受支持完整授权CA按原策略需一次capture100；provider已实际成功但响应丢失，可查询原reference；动作账和稳定provider key可观测。,"1. 在外部capture成功后丢响应，重试任务并观察对账及请求key。
+2. 确认原动作成功后完成；另注入本地commit前失败再恢复。","1. 保持REQUESTED/UNKNOWN或相应pending事实，不当完整成功，也不删除真实资金事实释放占用盲重扣；先对账，必要重试使用同一稳定provider key。
+2. 确认后只形成一个有效capture100和一个订单；本地失败回滚订单/库存但保留已发生成功资金，恢复复用原成功结果，不反向抹除或再次扣款。"
+TC054,结账、配送、库存与可靠成单,R05 · 已支付结账按完整资格自动成单,过期lease接管的generation fencing阻止旧worker提交或利用旧回调成单,AC-05-6;AC-05-7;BD04;I05,P0,未来待执行；Core worker/真实DB并发层；系统actor；CA合格，workerA已claim generation=g且在外部调用前后暂停；使用实施定义的lease_until冻结时钟越过lease，不编造时长SLA；workerB接管。,"1. 令B接管并取得新generation，在当前revision下处理；随后恢复A的旧外部响应和最终提交。
+2. 重复覆盖B已完成、B尚未完成及CA资格revision已改变的独立场景，核对订单/动作账/outbox。","1. 接管或续租遵守设计generation规则；A的旧generation/revision不能提交COMPLETED、订单、库存或完成outbox，lease过期不是允许A继续写入。
+2. 最多一个订单和一次有效资金动作/完成事件；旧回调若确认真实资金仍安全记录对账，但不得绕过当前generation/revision触发旧成单；记录可恢复且不丢真实支付事实。"
+TC055,结账、配送、库存与可靠成单,R05 · 已支付结账按完整资格自动成单,批次内阻断故障和worker中断不影响其他结账且修复后可恢复,AC-05-7;AC-05-6;BD04;I05,P0,未来待执行；Core batch/queue集成层；系统actor；固定pk序列A合格、B缺货、C注入基础设施失败、D合格；测试配置batch_size=2仅为覆盖跨批游标的fixture，不是业务容量或SLA。,"1. 扫描处理跨两批数据，在C claim后模拟worker中断，再恢复队列处理D。
+2. 修复B库存、C基础设施并满足新的last_change/delay，重扫和受控恢复。","1. A/D各可生成唯一订单；B为BLOCKED、C为FAILED或可恢复PROCESSING lease状态，单条失败不回滚成功条或阻断后续批次，游标不永久漏单。
+2. B/C恢复后各仅一订单，失败轮次不留半订单/占用；A/D不再扣款或重发完成业务事件，所有record可定位失败及next attempt事实。"
+TC056,结账、配送、库存与可靠成单,R05 · 已支付结账按完整资格自动成单,自动完成诊断按管理权限读取且结账消失不自动等于成功,AC-05-3;AC-05-6;AC-05-7;BD04;I05,P0,未来待执行；Core query授权与状态层；MANAGE_CHECKOUTS或HANDLE_CHECKOUTS管理actor、普通owner客户、越scope App；CA无尝试、CB WAITING、CC BLOCKED、CD FAILED及已完成有record的CE，另有仅被合法删除且无完成记录的CF。,"1. 各身份读取Checkout.automaticCompletion及安全error/order字段。
+2. 分别查询CE/CF的checkout并通过允许的完成结果/订单查询核对。","1. 合法管理scope可区分null、WAITING、BLOCKED、FAILED及实际状态，错误脱敏且可定位；普通客户/越scope身份不能枚举失败日志或受限订单字段。
+2. CE依据record返回同订单事实；CF不能仅因checkout=null标COMPLETED，无对应Order时不显示订单已生成，不伪造成功。"
+TC057,结账、配送、库存与可靠成单,R06 · 按渠道保存自动完成开关、延迟与 cutoff,合法自动完成配置按渠道CAS保存并重读相同生效值,AC-06-1;BD04;FD01;I06,P0,未来待执行；Core API与Dashboard配置集成层；MANAGE_CHANNELS员工；C1.settingsVersion=7，C2配置快照独立；C1原关闭，资金释放配置另存。,"1. 以expectedVersion=7保存C1 checkoutSettings:{automaticallyCompleteFullyPaidCheckouts:true,automaticCompletionDelay:10,automaticCompletionCutoffDate:'2026-10-01T08:00:00+08:00'}。
+2. 重读C1/C2并刷新配置页。","1. errors=[]，返回新version及生效值；delay单位分钟，cutoff持久化UTC等价2026-10-01T00:00:00Z，带时区语义清楚。
+2. C1开关=true/delay=10/cutoff同一时刻，C2不变；UI显示已保存配置而非订单已生成，缓存只写服务端成功事实。"
+TC058,结账、配送、库存与可靠成单,R06 · 按渠道保存自动完成开关、延迟与 cutoff,严格超过延迟才成为候选且恰好十分钟不会入选,AC-06-2;BD04;I06;I05,P0,未来待执行；Core scanner冻结时钟层；系统actor；C开启、delay=10、cutoff无约束；now='2026-10-15T12:00:00Z'；三个其余完全合格CA.last_change分别11:50:00Z、11:49:59Z、11:50:01Z，测试精度为fixture秒级而非SLA。,"1. 在冻结now扫描并处理候选，记录候选ID和结果。
+2. 将now推进至12:00:01Z后再次扫描恰好边界CA。","1. 仅11:49:59Z符合last_change < now-10分钟；恰好11:50:00Z和更晚者不入选、不成单。
+2. 原11:50:00Z此时严格超过10分钟才可进入资格检查；不使用>=延迟或从created_at计算等待。"
+TC059,结账、配送、库存与可靠成单,R06 · 按渠道保存自动完成开关、延迟与 cutoff,再次业务变化重置延迟而诊断和续租不延后结账资格,AC-06-2;BD04;I06;I05,P0,未来待执行；Core revision/worker层；系统actor；C.delay=10，CA.last_change=11:40Z；now=12:00Z；独立fixture覆盖行、地址、客户、配送和支付额度变化，包含金额改变但FULL状态不变。,"1. 在11:59Z提交每类业务变化，然后12:00Z扫描；在12:09Z及12:09:01Z分别扫描。
+2. 另对未变更CA重复读automaticCompletion、claim诊断和续租，比较last_change。","1. 业务变化递增version/last_change至11:59Z；12:00Z及恰好12:09Z均不入选，12:09:01Z才可；不能支付status未变就漏更新。
+2. 只读诊断/处理claim续租不刷新业务last_change，不能永久延后或提前资格；无数值后台耗时承诺。"
+TC060,结账、配送、库存与可靠成单,R06 · 按渠道保存自动完成开关、延迟与 cutoff,创建时间cutoff包含等于边界且不是任务停止时间,AC-06-3;BD04;FD01;I06;I05,P0,未来待执行；Core scanner/API与配置文案层；系统actor及获准配置员工；cutoff='2026-10-01T08:00:00+08:00'即C=00:00Z；CA创建C前1秒、CB恰C、CC在C后1秒，其他资格及严格delay已满足。,"1. 在now远晚于C时扫描处理三份结账。
+2. 页面核对cutoff说明，并用等价Z时区重读/保存。","1. CA不处理，CB/CC继续资格检查并可各成一单；执行时间经过C仍正常运行，不把cutoff作为任务结束。
+2. 说明为创建时间含等于下界，offset/Z代表同一时刻；无时区本地日期误判，生效范围不因显示时区改变。"
+TC061,结账、配送、库存与可靠成单,R06 · 按渠道保存自动完成开关、延迟与 cutoff,非法时长时间类型和配置组合在执行前拒绝并保留生效值,AC-06-4;BD04;FD01;I06,P0,未来待执行；Core GraphQL与Dashboard输入层；MANAGE_CHANNELS员工；C已保存开关false/delay10/cutoff C0及version=5；每个负例从相同快照独立执行。,"1. 分别提交delay=-1、delay='ten'、delay=null、开关null、cutoff无Z/offset、不可解析时间及未知enum/不允许输入字段，带当前version。
+2. 重读配置和version，在UI修正为合法值再保存。","1. 按coercion顶层INPUT_ERROR/GRAPHQL_VALIDATION_FAILED或payload REQUIRED/INVALID定位字段，非负Minute和带时区要求生效；不编造合同未定义的delay/cutoff额外组合限制。
+2. 每次失败均保留false/10/C0及原version，不部分写；UI错误可修正、不把失败值写成功缓存；合法重试可保存。"
+TC062,结账、配送、库存与可靠成单,R06 · 按渠道保存自动完成开关、延迟与 cutoff,省略保留显式cutoff空值清下界且缺少受控版本被拒,AC-06-1;AC-06-4;BD04;I06,P0,未来待执行；Core API契约层；获准配置员工；C开关true/delay10/cutoff C0/version=5。,"1. 仅patch automaticCompletionDelay:0并传version=5，随后使用新version显式cutoff:null。
+2. 分别省略expectedVersion及传expectedVersion:null修改checkoutSettings，再重读。","1. 省略的开关/cutoff先保留；delay=0合法且仍严格last_change<now；第二次仅清创建下界，开关/延迟保留。
+2. 两种缺版本均返回REQUIRED而不写，version不算业务权限字段；未传cutoff不同于null，不默认清除历史范围。"
+TC063,结账、配送、库存与可靠成单,R06 · 按渠道保存自动完成开关、延迟与 cutoff,并发CAS保存冲突不会覆盖最后成功配置或自动重发旧草稿,AC-06-4;BD04;FD01;I06,P0,未来待执行；Core双客户端与Dashboard响应控制层；两个获准员工均读取C.version=8/delay10；A草稿delay20，B草稿delay30。,"1. A以version8成功保存20；B仍以version8提交30，并让旧查询/保存响应迟到。
+2. B重读最新baseline后观察草稿、缓存、冲突说明和网络请求。","1. A成功成version9/delay20；B返回CONFLICT，不覆盖A、不用新version静默重发旧30，旧响应不回写过期缓存。
+2. Core重读仍20/version9；B可保留可修正draft并提示对比/重新确认，成功缓存保持20；冲突不显示保存成功或订单生成。"
+TC064,结账、配送、库存与可靠成单,R06 · 按渠道保存自动完成开关、延迟与 cutoff,checkout专用配置权限与混合配置权限按实际业务字段判断,AC-06-1;AC-06-4;BD04;FD01;I06;I03,P0,未来待执行；Core员工/App授权矩阵与UI层；身份分别仅MANAGE_CHECKOUTS、仅MANAGE_CHANNELS、无二者、越渠道scope；C当前version已读取。,"1. 分别只提交checkoutSettings及expectedVersion保存开关/delay。
+2. 仅MANAGE_CHECKOUTS身份混合提交checkoutSettings与stockSettings/仓库关系，再以MANAGE_CHANNELS身份合法提交。","1. 前两类在合法对象scope均可保存，expectedVersion不被误分类为需MANAGE_CHANNELS的业务key；无权/越scope得到适用权限错误，原值不变。
+2. checkout-only身份混合请求整体拒绝，不部分保存；MANAGE_CHANNELS合法组合可成功；UI无权只读而直接API仍校验，错误不泄露受限渠道配置。"
+TC065,结账、配送、库存与可靠成单,R06 · 按渠道保存自动完成开关、延迟与 cutoff,旧未配置渠道保持默认关闭且执行前关闭开关阻止新自动结果,AC-06-5;BD04;FD01;I06;I05,P0,未来待执行；Core兼容fixture及worker并发层；系统actor和获准配置员工；旧未配置C0、明确原开关false的C1、原明确true的C2；目标态fixture已准备，不在本Stage迁移。,"1. 读取旧渠道配置并扫描各自合格已付结账。
+2. 对已开启C2的合格CA入队后、最终提交前CAS关闭开关，再恢复worker；另核对之前已完成订单。","1. 未配置/明确关闭保持false，不意外成单或改变手工流程；设计默认delay0/cutoff null不等于擅自开启，已有明确true不在兼容初始化中强制重置。
+2. 执行前按最新开关停止尚未提交的新自动结果，不新增订单/资金动作/完成通知；已完成订单不被删除或改金额，真实已确认资金不抹除。"
+TC066,结账、配送、库存与可靠成单,R06 · 按渠道保存自动完成开关、延迟与 cutoff,配置保存与任务等待失败和订单完成在页面明确区分,AC-06-6;BD04;FD01;I06;I05,P0,未来待执行；Dashboard受控GraphQL/worker事实联调设计；获准配置员工；C保存合法配置成功；CA分别无记录、WAITING、PROCESSING、BLOCKED、FAILED及实际COMPLETED事实。,"1. 保存配置后暂停worker，观察toast/页面并分别返回非完成状态。
+2. 仅在后端实际生成Order并返回允许的完成事实后刷新，再模拟网络/payload保存失败。","1. 仅显示配置已保存，任务未执行/处理中/阻断/失败不显示订单已生成；如展示诊断则来自Core，不前端setTimeout模拟完成。
+2. 真实Order才显示完成；保存失败保留上次生效值/缓存及可修正编辑，不将HTTP200或payload data存在当成功，不伪造新订单。"
+TC067,结账、配送、库存与可靠成单,R06 · 按渠道保存自动完成开关、延迟与 cutoff,自动完成延迟cutoff与过期释放资金设置互不混用,AC-06-7;BD04;FD01;I06,P0,未来待执行；Core API与Dashboard配置层；具相应渠道/支付配置权员工；C自动delay10/cutoff A，paymentSettings.checkoutTtlBeforeReleasingFunds=6小时、checkoutReleaseFundsCutOffDate=B，A/B不同。,"1. 仅修改自动delay为20分钟、自动cutoff为A2并重读支付释放字段。
+2. 仅修改释放资金TTL及cutoff为B2，再重读自动配置及观察两任务候选条件。","1. 自动字段正确保存且单位分钟清楚，释放资金6小时/B完全不变，不共享前端输入state或payload字段。
+2. 自动20分钟/A2不变；资金释放任务仍按自身TTL/cutoff合同，自动任务仍严格last_change延迟与created下界，不互相解释为执行范围。"
+TC068,结账、配送、库存与可靠成单,R06 · 按渠道保存自动完成开关、延迟与 cutoff,配置晚到加载和反序保存响应不会污染当前渠道编辑及成功缓存,AC-06-1;AC-06-4;AC-06-6;BD04;FD01;I06,P0,未来待执行；Dashboard组件/Apollo响应控制层；获准配置员工；C1真实开关true/delay10，C2不同配置；可延迟query/save并返回顶层/业务/network错误。,"1. 延迟C1加载，随后编辑delay20并接收晚到旧查询；切到C2后再释放C1响应。
+2. 连续提交可辨识快照并反序返回，包含一次失败；检查draft、baselineVersion、Apollo缓存和提示。","1. 加载期不闪false/0伪默认；仅当前context未dirty字段可回填，delay20不被旧10覆盖，C1响应不进入C2表单。
+2. 按context/generation/version/submissionId保护组件及缓存；失败不污染成功事实，提交后新编辑不被清dirty，只有最新合法成功快照显示已保存且不宣称订单已成。"
+TC069,支付、礼品卡与查账,R07 · 礼品卡纳入统一初始化、授权与扣款生命周期,内建礼品卡授权占用额度并返回同一对象的遮罩支付明细,AC-07-1;BD05;I07,P0,未来待执行；Core GraphQL/余额DB集成层；客户A合法拥有CA，总额USD 60；礼品卡GC-A code为秘密fixture值、启用未过期、USD currentBalance100且reserved0；无可安装giftcard App。,"1. 读取availablePaymentGateways后调用transactionInitialize(id:CA, paymentGateway:{id:'saleor.gift-card',data:{code:秘密fixture值}},action:AUTHORIZATION,amount:60,idempotencyKey:'gc-auth-a')。
+2. 以合法owner读取交易和事件，以MANAGE_GIFT_CARD获准管理身份读取卡余额。","1. 网关为id saleor.gift-card/name Gift card/config=[]/currencies含USD，不含code；初始化走内建adapter而非寻找App或普通gateway回退，无业务错误，产生有效授权事实。
+2. 交易关联CA、provider命名空间稳定、method typename=GiftCardPaymentMethodDetails且仅遮罩displayCode/尾号，授权USD60可追踪；currentBalance100、reservedBalance60、availableBalance40，未永久扣卡或假称已charge60。"
+TC070,支付、礼品卡与查账,R07 · 礼品卡纳入统一初始化、授权与扣款生命周期,授权后的扣款只消费原占用并使支付事件与卡余额一致,AC-07-2;AC-07-1;BD05;I07,P0,未来待执行；Core交易action/DB集成层；获准HANDLE_PAYMENTS及对象scope员工/App；CA礼品卡成功授权60，GC current100/reserved60/available40，transaction.actions允许CHARGE。,"1. 调用transactionRequestAction(id:交易ID,actionType:CHARGE,amount:60,idempotencyKey:'gc-charge-a')并等待真实成功事实。
+2. 查询交易净授权/扣款、CA支付状态、卡余额及reservation。","1. 产生一个有效CHARGE_SUCCESS60及应有动作账，扣款消费原授权而非新增第二授权；受理/initialized不单独视为成功。
+2. current40、reserved0、available40；净授权按已消费额度归零、charged60且CA反映同额支付；余额/event/action同一事务一致，无二扣到负值。"
+TC071,支付、礼品卡与查账,R07 · 礼品卡纳入统一初始化、授权与扣款生命周期,直接CHARGE及省略金额采用当前应付且不会创建普通支付回退,AC-07-2;AC-07-4;BD05;I07,P0,未来待执行；Core initialize/DB层；客户A拥有CA，总额60且已有普通成功交易20，当前需付40；GC current100/reserved0，合法USD；新统一交易basis，不混legacy抵扣。,"1. 调用内建giftcard transactionInitialize(action:CHARGE,省略amount,idempotencyKey:'gc-direct-a')。
+2. 核对成功事件、卡和两种支付来源，并重读当前应付。","1. 以服务端当前需支付40而非原总额60执行一次直接CHARGE；无App硬依赖/普通Payment回退，产生真实成功事件。
+2. GC current60/reserved0/available60，礼品卡charged40，普通20保持；当前应付0且仅一次礼品卡资金影响，不改变历史普通支付。"
+TC072,支付、礼品卡与查账,R07 · 礼品卡纳入统一初始化、授权与扣款生命周期,卡不存在停用过期币种不符和余额不足均返回不同原因并保持原事实,AC-07-3;BD05;I07,P0,未来待执行；Core API错误矩阵/DB快照层；客户A拥有USD CA；独立秘密code分别不存在、is_active=false、expiry早于冻结日期、EUR卡、USD可用余额39而申请40；另有其他合法授权占用基线。,"1. 分别对各卡请求AUTHORIZATION和独立CHARGE40，使用各自稳定key。
+2. 比较卡、reservation、有效交易事件、CA支付状态及普通Payment基线。","1. 分别返回GIFT_CARD_NOT_FOUND、GIFT_CARD_INACTIVE、GIFT_CARD_EXPIRED、GIFT_CARD_CURRENCY_MISMATCH、GIFT_CARD_INSUFFICIENT_BALANCE，field/code/message可定位但不回显秘密code。
+2. 余额、有效授权占用和支付状态均保持失败前事实，无普通支付回退、无有效资金成功事件或额外扣款；失败不能消耗他人合法reservation。"
+TC073,支付、礼品卡与查账,R07 · 礼品卡纳入统一初始化、授权与扣款生命周期,显式零负值超当前应付和非法adapter数据在扣卡前拒绝,AC-07-4;AC-07-3;BD05;I07,P0,未来待执行；Core initialize输入/DB层；客户A拥有当前应付USD40的CA；GC可用100；每个负例独立快照。,"1. 分别initialize amount:0、-1、40.01，并提交data空code、额外cardId/amount字段或错误类型code。
+2. 再以同构合法fixture提交amount:40并核对边界。","1. 零/负为INVALID_AMOUNT或coercion输入错误，超当前应付为AMOUNT_EXCEEDS_BALANCE；非法data为INVALID且定位paymentGateway/data，不用0的truthiness取最大额，不静默裁剪。
+2. 等额40在卡和对象合法时可成功；负例均无余额/授权/支付状态变化，无普通Payment回退或敏感额度泄漏。"
+TC074,支付、礼品卡与查账,R07 · 礼品卡纳入统一初始化、授权与扣款生命周期,对象和动作权限限制礼品卡消费并保护管理余额与完整卡码,AC-07-4;BD05;I07,P0,未来待执行；Core授权矩阵层；owner客户A、非owner B、仅MANAGE_ORDERS员工、同时MANAGE_ORDERS/HANDLE_PAYMENTS员工、HANDLE_PAYMENTS且scope合法/非法App；CA与可支付订单OA；客户只持消费secret不具MANAGE_GIFT_CARD。,"1. 各身份初始化CA/OA礼品卡授权或扣款，覆盖合法owner能力、越对象/渠道和员工缺支付权。
+2. owner查询交易明细及尝试直接读取卡余额/完整code；并尝试对普通外部gateway覆盖action。","1. 合法owner及获准订单actor依合同成功；员工订单需两权限、App需HANDLE_PAYMENTS及处理scope，其他返回权限/存在性保护错误且不扣卡。
+2. 仅显示遮罩giftcard明细；卡余额管理读取需MANAGE_GIFT_CARD及scope，不因知道secret或owner交易扩大；内建AUTHORIZATION/CHARGE客户例外不放宽普通gateway action override。"
+TC075,支付、礼品卡与查账,R07 · 礼品卡纳入统一初始化、授权与扣款生命周期,已完成不允许支付的对象和非法会话状态不会产生新扣款,AC-07-4;BD05;I07,P0,未来待执行；Core initialize/process状态层；合法支付actor；CA已全额支付且无当前应付，另有不允许新支付的已取消订单；GC启用有余额；分别准备无原初始化、已结束会话及不属于本对象的交易。,"1. 对无当前应付/不允许支付对象发新key初始化，或对非法会话process。
+2. 检查errors、卡和普通支付记录。","1. 按INVALID_STATE/INVALID_AMOUNT/适用NOT_FOUND拒绝而非默默继续；非法source/session不能被当作新授权入口。
+2. 不新增有效授权/扣款、不修改卡或已完成订单金额、不回退普通Payment；受限对象信息不从错误泄露。"
+TC076,支付、礼品卡与查账,R07 · 礼品卡纳入统一初始化、授权与扣款生命周期,重复初始化授权扣款和同键异参保持幂等指纹语义,AC-07-5;BD05;I07,P0,未来待执行；Core动作账/DB集成层；客户A及获准支付actor；CA应付60，GC current100；AUTHORIZATION key K1、CHARGE key K2固定，各请求身份/source/action/provider scope可观察。,"1. 对同一初始化授权60连续和并发重发K1，再以同一charge60动作重发K2，模拟响应丢失后重试。
+2. 在已成功动作后以同key修改金额59或重要data/code，并测试空key和超过255字符key。","1. 同key同fingerprint返回原transaction/event/动作结果，各只有一次有效授权和扣款，GC最终current40/reserved0；先查幂等结果再因状态变化拒绝，不能新建冲突授权。
+2. 同key异参为IDEMPOTENCY_CONFLICT且不改原结果/余额；非法key在执行前拒绝，不把网络重试生成新key或把秘密code放进key。"
+TC077,支付、礼品卡与查账,R07 · 礼品卡纳入统一初始化、授权与扣款生命周期,transactionProcess延续原卡原对象且重试不会重新授权,AC-07-1;AC-07-5;AC-07-4;BD05;I07,P0,未来待执行；Core session/adapter集成层；owner客户A；已初始化的内建giftcard会话T绑定CA、GC-A和原action；没有installable App；GC-B另卡有余额；可用data省略的continuation fixture。,"1. 调用transactionProcess(id:T,省略data,idempotencyKey:'process-a')并重复同请求。
+2. 以新请求尝试在process data中替换GC-B或目标source/action。","1. 继续同provider/source/action/transaction，无MISSING_PAYMENT_APP假错误；原初始化已完成时返回既有真实结果而不再授权/扣款，pending也不假称成功。
+2. 替卡或改source/action按INVALID/INVALID_STATE拒绝且定位，GC-A原reservation/余额保持，GC-B无变化，不能创建另一会话作为回退。"
+TC078,支付、礼品卡与查账,R07 · 礼品卡纳入统一初始化、授权与扣款生命周期,两个对象并发竞争同卡额度不能同时超用,AC-07-5;BD05;I07,P0,未来待执行；真实DB双连接并发层；合法owner客户A/B各有独立应付60结账，持同一可消费GC秘密；GC current100/reserved0，申请各60，不同合法key；独立场景覆盖授权对授权和授权对直接扣款。,"1. 在读取余额后设置并发屏障，释放两请求争用同卡60。
+2. 汇总成功reservation、charged和current/available，再让成功授权转扣款。","1. 锁卡/对象后至多一个60成功，另一个为GIFT_CARD_INSUFFICIENT_BALANCE或适用冲突；不同source/key不绕过同卡锁。
+2. 总有效占用与消费不超过100，余额非负；授权胜者current100/reserved60/available40，转扣后current40/reserved0；直接扣胜者同为current40，不留失败请求占用。"
+TC079,支付、礼品卡与查账,R07 · 礼品卡纳入统一初始化、授权与扣款生命周期,礼品卡余额事件和动作账写入中断时本地事务整体回滚,AC-07-2;AC-07-3;AC-07-5;BD05;I07,P0,未来待执行；Core adapter/DB故障注入层；合法支付actor；GC current100、CA应付60，独立场景在reservation创建后、扣余额后/event写入前、event写入后commit前注入错误。,"1. 对每个故障点提交礼品卡授权或扣款并捕获结果。
+2. 清除故障，以同稳定key重试，核对所有余额/事件/动作账。","1. 返回可诊断失败且不伪造成功；本次余额、reservation、有效event、动作账本地写入全回滚，原事实保持。
+2. 重试最终仅一次有效授权/扣款及余额变化，不留孤儿reservation或有成功event但未扣卡的不一致，不新建普通支付。"
+TC080,支付、礼品卡与查账,R07 · 礼品卡纳入统一初始化、授权与扣款生命周期,统一礼品卡与旧抵扣互斥且成单关联迁移后原幂等请求不二扣,AC-07-2;AC-07-5;AC-07-6;BD05;I07,P0,未来待执行；Core checkout/order集成层；owner及获准支付actor；一份CA已走新TRANSACTION_PAYMENT礼品卡charge20，另一份CL已挂旧抵扣卡LEGACY_TOTAL_DEDUCTION；保存原初始化key和sourceCheckoutId。,"1. 分别在CA尝试添加legacy抵扣卡、在CL尝试启用新adapter，核对互斥拒绝。
+2. 合法完成CA，使交易FK迁移到Order后以原checkout来源和同key重试资金请求，再读取交易来源和卡。","1. 同checkout混模式被拒且无额外余额/总额变化，不让旧add_gift_cards_to_order再扣新adapter卡。
+2. transaction关联Order且sourceCheckoutId保持不可变，动作账原scope不因FK变化重建；卡只扣20一次，重试返回原有效结果，不改已完成Order金额或重发完成通知。"
+TC081,支付、礼品卡与查账,R07 · 礼品卡纳入统一初始化、授权与扣款生命周期,历史礼品卡映射保留旧余额和抵扣金额且重复回填不二扣,AC-07-6;BD05;I07,P0,未来待执行；未来历史兼容/回填测试设计，不在本Stage执行迁移；获准giftcard/支付管理actor；准备可靠USED_IN_ORDER历史：原始应付100、旧卡抵扣20后Order.total80、普通已付30、当前卡余额80；历史来源唯一键可用；另有历史来源缺失fixture。,"1. 未来执行受控历史映射回填并重复同一回填，核对源事件ID到交易/event唯一映射和基线金额。
+2. 读取新交易展示、basis及卡余额；对来源不足记录检查审计处理。","1. 仅建立带唯一来源的合成历史CHARGE/REFUND映射，不再次扣卡、不改Order.total80或普通支付30、不发资金/完成业务通知；重复不新增映射。
+2. basis=LEGACY_TOTAL_DEDUCTION，卡余额仍80且历史卡20可解释、不再从已减卡总额重复扣20；来源不足不得用当前卡余额猜历史金额，应保守保留原事实并给安全审计问题。"
+TC082,支付、礼品卡与查账,R08 · 礼品卡取消、退款、余额和事件对账,未完成结账取消全部礼品卡授权只释放占用而不制造退款,AC-08-1;BD05;I08,P0,未来待执行；Core action/DB集成层；owner客户A合法拥有未完成CA；GC current100/reserved60/available40，T有效授权60且未扣款；CANCEL为允许动作。,"1. 以owner调用transactionRequestAction(id:T,actionType:CANCEL,amount:60,idempotencyKey:'gc-cancel-all')。
+2. 核对卡、reservation、T标准事件、CA支付状态及订单退款记录。","1. 合同owner CANCEL窄例外允许，产生一次有效CANCEL_SUCCESS60；不要求owner取得全店支付管理权限，也不扩大到订单退款。
+2. current仍100、reserved0、available100，授权剩余0；无Order REFUND或额外charge，CA授权/支付事实与释放一致。"
+TC083,支付、礼品卡与查账,R08 · 礼品卡取消、退款、余额和事件对账,部分取消和省略金额只释放当前未消费授权额度,AC-08-1;AC-08-3;BD05;I08,P0,未来待执行；Core action/余额层；owner客户A；未完成CA的GC current100/reserved60/available40，T授权60未扣款；各次动作key不同且合法。,"1. 提交CANCEL amount:20并读取余额。
+2. 省略amount再次CANCEL当前剩余额度，再以新key尝试继续取消。","1. 成功释放20，current100/reserved40/available60，取消事件20可追踪。
+2. 省略按当前合法剩余40执行，current100/reserved0/available100；再取消无可用授权时INVALID_STATE/适用金额错误，无重复释放，不把省略和显式0混同。"
+TC084,支付、礼品卡与查账,R08 · 礼品卡取消、退款、余额和事件对账,订单礼品卡部分退款和等额剩余退款使卡余额事件及订单状态一致,AC-08-2;BD05;I08,P0,未来待执行；Core order/action/DB层；HANDLE_PAYMENTS及订单scope获准员工/App；OA礼品卡成功charge60，GC初始100扣后current40/reserved0，availableRefundAmount60。,"1. REFUND amount:20，key='gc-refund-part'，等待真实成功并刷新订单和交易。
+2. 使用新key REFUND当前剩余40，再读取卡、净charged/refunded及订单退款状态。","1. 成功回充20，GC current60，REFUND_SUCCESS20、订单部分退款事实同额，availableRefundAmount40，净charged40；不额外创建授权。
+2. 等于剩余额度40可成功，GC current100、累计历史退款60、净charged0、availableRefundAmount0，订单退款状态对应全额；历史charge事件不被改成0或再次扣卡。"
+TC085,支付、礼品卡与查账,R08 · 礼品卡取消、退款、余额和事件对账,超额负值零值及错误阶段资金动作拒绝且不改变原余额,AC-08-3;BD05;I08,P0,未来待执行；Core API/DB错误矩阵层；获准支付actor；独立OA可退30、CA未消费授权30、已全额扣款OA无授权可取消；每例原快照和key独立。,"1. 分别提交REFUND30.01、-1、0，CANCEL31、-1、0，并尝试对已扣款订单用CANCEL或对未扣款结账用REFUND。
+2. 核对错误field/code及卡余额、reservation、交易状态和有效事件。","1. 超额为AMOUNT_EXCEEDS_BALANCE，零/负为INVALID_AMOUNT或输入coercion错误，错误阶段为INVALID_STATE；不静默裁剪、不将0当省略最大额。
+2. 原余额/有效授权/支付退款状态保持，未产生有效资金成功事件或普通支付回退；错误与PERMISSION_DENIED可区分且不泄露受限余额。"
+TC086,支付、礼品卡与查账,R08 · 礼品卡取消、退款、余额和事件对账,礼品卡退款权限不会因订单可读或owner取消例外而扩大,AC-08-3;AC-08-5;BD05;FD03;I08,P0,未来待执行；Core授权矩阵及Dashboard层；owner客户A、仅可读/管理订单无HANDLE_PAYMENTS员工、获准支付员工、越渠道App；OA已charge30，CA有未消费授权30。,"1. 各身份尝试OA REFUND及读取受限金额/卡明细；owner分别尝试CA CANCEL和OA REFUND。
+2. 检查UI动作、直接mutation错误和DB快照。","1. 仅HANDLE_PAYMENTS且对象/渠道scope合法的订单退款actor可操作；owner仅未完成checkout内建giftcard CANCEL例外成立，不能以能看OA或卡secret退款。
+2. 无权UI不提供可执行动作，Core直接请求仍拒绝并不泄露可退余额；原卡/事件/订单状态保持，不能隐藏按钮却后端放行。"
+TC087,支付、礼品卡与查账,R08 · 礼品卡取消、退款、余额和事件对账,同键取消退款的双击网络重试和同键异参不会重复回充,AC-08-4;BD05;FD03;I08,P0,未来待执行；Core action ledger与Dashboard交互层；合法owner CANCEL及获准订单退款actor；独立fixture授权30和可退30；同动作operation UUID固定。,"1. 对CANCEL30和REFUND30分别双击、并发同key及响应丢失后同key重试，覆盖成功后状态已改变再重试。
+2. 以原key将amount改为20再提交，并检查dialog重试key。","1. 各只一次有效释放/回充及标准成功事件；先复用同key成功结果而不是因当前余额已耗尽新建动作或错误重扣，UI不为网络重试换key。
+2. 异参返回IDEMPOTENCY_CONFLICT，原余额/事件不变；用户明确修改金额形成新操作才用新key，不因双击生成两份退款。"
+TC088,支付、礼品卡与查账,R08 · 礼品卡取消、退款、余额和事件对账,不同键并发取消退款和同卡多对象资金竞争遵守最新额度,AC-08-4;AC-08-3;BD05;I08,P0,未来待执行；真实DB并发层；获准actor；独立T可取消30或可退30；两个请求各20且不同key；另有同卡GC current40/reserved0，OA可退20、另一合法CA请求charge50。,"1. 并发提交T的两个CANCEL20及独立两个REFUND20，读后设置屏障。
+2. 并发执行同卡OA退款20与CA扣款50，再统计卡和两个对象的事件/余额。","1. 按锁后最新可用量至多一个20成功，另一个超当前剩余10被拒而非裁剪；释放/回充总量不超30，失败无占用或成功事件。
+2. 结果可按合法串行顺序解释：退款先则余额60可再扣50终10，扣款先余额40不足则拒且退款后60；不能用陈旧读丢更新、负余额或把退款变第二授权。"
+TC089,支付、礼品卡与查账,R08 · 礼品卡取消、退款、余额和事件对账,停用或过期原卡允许合法退款但仍禁止新的消费,AC-08-2;AC-08-3;BD05;I08;I07,P0,未来待执行；Core adapter资金恢复层；获准退款actor；独立OA原giftcard charge30后卡被停用或expiry已过，仍有可靠原交易关联；当前可退30，原卡未被删除。,"1. 对两种原卡状态REFUND30并检查余额/event。
+2. 以另一合法checkout尝试用该卡作新的AUTHORIZATION/CHARGE。","1. 退款属于恢复原成功资金，两种均可在可退额度内回充原卡30，REFUND_SUCCESS及OA退款状态一致，不创建普通交易。
+2. 新消费仍分别返回GIFT_CARD_INACTIVE/GIFT_CARD_EXPIRED，无新占用/扣款；允许退款不等于重新启用卡或豁免消费资格。"
+TC090,支付、礼品卡与查账,R08 · 礼品卡取消、退款、余额和事件对账,缺失历史原卡关联和本地退款写入失败保持可诊断且不凭空回充,AC-08-2;AC-08-3;AC-08-4;BD05;I08,P0,未来待执行；Core历史修复和DB故障注入层；获准退款actor；一份历史OA的原卡关联不可解析，另一份合法可退30在更新card后/event前注入DB错误。,"1. 对缺卡历史交易申请退款30。
+2. 对合法交易触发写入故障，核对后清故障以同key重试。","1. 返回卡不存在/关联修复的安全可诊断错误，不能凭空造卡或切普通支付，不改历史charge和订单金额。
+2. 本地余额、refund event、动作账、订单状态整体回滚至原事实；修复重试仅一次成功回充30，不留下有余额无事件或反向不一致。"
+TC091,支付、礼品卡与查账,R08 · 礼品卡取消、退款、余额和事件对账,混合礼品卡普通支付在Dashboard和交易读取分别展示真实金额事件,AC-08-5;BD05;FD03;I08;I09;I11,P0,未来待执行；Core订单查询与Dashboard联调设计；获准支付员工；OA完整应付100，TRANSACTION_PAYMENT basis，礼品卡charge20、普通charge30，卡明细遮罩；另有legacy basis已减卡历史订单供兼容对照。,"1. 读取OA关联交易及事件，打开现有订单支付卡片/事件区，核对方式、金额与API。
+2. 模拟礼品卡退款明确失败及普通交易成功，刷新UI；对照legacy订单的新历史映射展示。","1. 礼品卡GiftCardPaymentMethodDetails和普通方式分支可区分，各金额20/30及标准事件来源准确，不用当前卡余额倒推历史，不把同一礼品卡又显示成旧FakeTransaction新增扣款。
+2. 礼品卡失败显示安全原因且不标成功，不影响普通成功事实；legacy与新basis不重复计卡、不改旧总额，未引入独立日期/事件查询增强。"
+TC092,支付、礼品卡与查账,R08 · 礼品卡取消、退款、余额和事件对账,合法无事件交易查询成功并显示空事件列表而非整笔请求失败,AC-08-6;AC-08-5;BD05;FD03;I08;I11,P0,未来待执行；Core dataloader与Dashboard组件层；获准读取actor；OA含可见礼品卡或普通交易T但events=[]；query无顶层错误且对象合法。,"1. 读取T.events并打开订单事件列表，覆盖空列表响应及金额/方式仍存在的交易。
+2. 再模拟顶层PERMISSION_DENIED或INTERNAL_ERROR响应作区分。","1. 查询成功、events稳定[]，UI显示正常暂无事件，不因空数组推断整个请求或支付失败，也不编造CHARGE_SUCCESS事件。
+2. 真正query权限/服务错误展示对应错误而非空事件成功；无受限金额泄漏，不把未知错误吞为[]。"
+TC093,支付、礼品卡与查账,R08 · 礼品卡取消、退款、余额和事件对账,pending失败和成功资金结果不由HTTP200或事件数组存在判定,AC-08-6;AC-08-5;BD05;FD03;I08,P0,未来待执行；Dashboard事件状态映射及Core确认集成设计；获准支付actor；受控响应分别HTTP200顶层errors、payload errors、errors=[]且REQUEST/pending、有效FAILURE事件、真实SUCCESS；pending可用契约mock验证但不假设本地giftcard适配器必须延迟。,"1. 依次向现有取消/退款交互返回各类响应，核对toast、动作可用性、余额和事件。
+2. 仅在Core确认SUCCESS并返回刷新事实后更新视图，再重放原响应。","1. 顶层/payload错误显示失败；REQUEST/pending显示受理待确认而非到账/退款完成；FAILURE显示可辨原因且不虚增有效已退/已扣，事件数组非空不等于成功。
+2. 真实成功才显示相应业务完成，卡/交易/订单与API一致；重放不再释放或回充，不把mock状态覆盖Core已确认事实。"
+TC094,支付、礼品卡与查账,R09 · 金额摘要和剩余待付使用服务端同一口径,已优惠商品和配送的含税金额只组成一次订单总额,AC-09-1;FD03;BD06;I09,P0,后端真实 GraphQL/Decimal 集成及 Dashboard 联调；独立 USD 订单，无礼品卡或支付；已优惠商品 gross=90、net=75，配送 gross=10、net=8，优惠前合计110，discount=10。,"1. 读取 Order.paymentSummary 的 merchandiseAfterDiscounts、shippingAfterDiscounts、discount、tax、total、balance、outstanding。
+2. 打开该订单摘要并切换含税/未税解释视图。","1. 商品90/75、配送10/8、discount=10、tax=17、total=100、balance=-100、outstanding=100，全部USD；优惠和税为解释项，不得到90或117。
+2. 展示与 API 逐项一致，商品及配送 gross 合计100；切换视图不重新加税/减优惠，也不写回订单金额。"
+TC095,支付、礼品卡与查账,R09 · 金额摘要和剩余待付使用服务端同一口径,统一交易礼品卡20和普通扣款30只抵付原始应付100一次,AC-09-2;FD03;BD05;BD06;I09,P0,真实后端订单及 Dashboard；独立USD订单原始应付100，giftCardAmountBasis=TRANSACTION_PAYMENT、paymentFlow=TRANSACTION；内建礼品卡成功CHARGE20、普通交易成功CHARGE30，无退款或pending。,"1. 读取订单 paymentSummary、totalBalance 和两笔交易的金额/方式。
+2. 打开订单金额摘要与礼品卡交易卡片并刷新两次。","1. total=100、payableBeforeGiftCards=100、giftCardCharged=20、charged=50、authorized=0、refunded=0、balance=-50、outstanding=50；礼品卡20属于charged组成项。
+2. 来源分别解释为礼品卡20和普通30，待付始终50，不因刷新或再扣礼品卡得到30；不新增事件或扣卡。"
+TC096,支付、礼品卡与查账,R09 · 金额摘要和剩余待付使用服务端同一口径,历史总额已减礼品卡的订单保留80总额和50待付,AC-09-2;FD03;BD05;BD06;I09,P0,真实后端历史读取 fixture，不执行迁移；USD订单持久化 total=80、可靠历史消费记录卡20、普通成功Payment捕获30，basis=LEGACY_TOTAL_DEDUCTION、flow=PAYMENT；已有历史卡交易映射供展示。,"1. 读取历史订单 paymentSummary、Payment.capturedAmount 及礼品卡历史来源。
+2. 打开摘要并再次读取订单持久化总额和卡余额。","1. total=80、payableBeforeGiftCards=100、giftCardCharged=20、普通主流程charged=30、balance=-50、outstanding=50；合成卡流水不再减balance或加入主流程charged。
+2. 摘要说明总额已含20卡抵扣，待付50，不显示30；订单total仍80，卡余额/历史事件不因读取改变。"
+TC097,支付、礼品卡与查账,R09 · 金额摘要和剩余待付使用服务端同一口径,授权转扣款后的当前授权不与已扣额度重复汇总,AC-09-3;FD03;BD06;I09,P0,真实交易事件/summary集成；独立USD订单total100，Transaction已成功授权100并成功扣款40，两个事件有不同合法动作参考；无pending/退款。,"1. 读取交易与订单摘要。
+2. 通过真实受支持支付确认流程成功扣款剩余60后重新读取。","1. 交易authorizedAmount=60、chargedAmount=40，摘要authorized=60、charged=40、balance=-60、outstanding=60，不显示授权100再加扣款40。
+2. 成功净授权变0、charged变100、待付0；历史授权事件仍可解释100，但不被再算为当前可用授权。"
+TC098,支付、礼品卡与查账,R09 · 金额摘要和剩余待付使用服务端同一口径,相同扣款确认重放不会使多交易摘要重复计额,AC-09-3;FD03;BD06;I09,P0,真实支付沙箱确认及 PostgreSQL；USD订单total100，T1成功扣款30、T2成功扣款20；T1确认具稳定PSP reference及幂等标识，记录动作/事件数。,"1. 对T1重放同一合法扣款确认，并重复查询含T1/T2的订单摘要。
+2. 核对事件有效贡献、主流程汇总及Dashboard列表。","1. 重放不增加成功扣款额度；summary.charged=50、balance=-50、outstanding=50，重复读取相同结果。
+2. T1/T2各出现一次有效资金贡献，当前已收/可退合计50，不变80；无第二次外部扣款或冲突有效事件。"
+TC099,支付、礼品卡与查账,R09 · 金额摘要和剩余待付使用服务端同一口径,charged80和历史退款20不会被再次相减成60,AC-09-4;FD03;BD06;I09,P0,真实Transaction集成及Dashboard；独立USD订单total100，成功扣款累计100、成功退款20，当前chargedAmount=80、refundedAmount=20，无pending/获批退款。,"1. 读取TransactionItem.chargedAmount、refundedAmount、availableRefundAmount及paymentSummary。
+2. 打开当前已收和历史退款展示。","1. 交易chargedAmount=80、refundedAmount=20、availableRefundAmount=80；summary.charged=80、refunded=20、balance=-20、outstanding=20。
+2. 当前已收/可退依据80，退款20独立解释，不显示净额60或待付40；订单和事件不被客户端改写。"
+TC100,支付、礼品卡与查账,R09 · 金额摘要和剩余待付使用服务端同一口径,兼容Payment退款使用capturedAmount并保留其独立授权算法,AC-09-5;FD03;BD06;I09,P0,真实兼容Payment集成；USD订单total100、flow=PAYMENT；Payment有成功AUTH100、CAPTURE100、REFUND20，capturedAmount=80且当前有效，无TransactionItem主支付。,"1. 读取 Payment.capturedAmount、该Payment交易列表及Order.paymentSummary。
+2. 展示兼容Payment的当前授权、已收和退款来源。","1. capturedAmount=80，摘要charged=80、refunded=20、authorized=0、balance=-20、outstanding=20；成功捕获后Payment授权为0，不套Transaction的剩余部分授权公式。
+2. 展示AUTH/CAPTURE/REFUND各自历史，但当前已收80、不再减退款；不将兼容Transaction历史另计为新TransactionItem支付。"
+TC101,支付、礼品卡与查账,R09 · 金额摘要和剩余待付使用服务端同一口径,Payment部分捕获不会被误展示为Transaction剩余授权,AC-09-5;FD03;BD06;I09,P0,真实Payment及summary集成；USD订单total100，Payment成功授权100后成功部分捕获40、capturedAmount40，无pending；Base兼容流程不支持把一次成功capture后授权当60继续捕获。,"1. 读取Payment主流程摘要并查看可用动作。
+2. 刷新订单支付展示。","1. paymentFlow=PAYMENT、summary.authorized=0、charged=40、balance=-60、outstanding=60；不根据100-40自行展示授权60或虚构可捕获动作。
+2. 历史AUTH100/CAPTURE40仍可解释，当前金额不随刷新变化；不发送未受支持的后续capture请求。"
+TC102,支付、礼品卡与查账,R09 · 金额摘要和剩余待付使用服务端同一口径,并存兼容Payment与映射Transaction不被两套主流程相加,AC-09-3;AC-09-5;FD03;BD06;I09,P0,真实summary集成；独立USD订单total100、flow=PAYMENT，有capturedAmount80的Payment及同业务可追溯映射Transaction80，不是独立新增收款；无pending。,"1. 读取paymentSummary和两套历史对象。
+2. 打开金额摘要及来源详情。","1. 主流程charged=80、balance=-20、outstanding=20，不相加160；paymentFlow=PAYMENT决定主计算，映射历史被去重。
+2. 两种历史来源可辨识但不增加新的有效额度；不显示超付60，不改变历史Payment或订单金额。"
+TC103,支付、礼品卡与查账,R09 · 金额摘要和剩余待付使用服务端同一口径,负余额零余额和超付余额均显示非负待付,AC-09-6;FD03;BD06;I09,P0,真实summary集成及UI；三个互相隔离USD订单各total100，无pending/退款，成功charged分别70、100、120；不复用订单或交易。,1. 分别读取三个订单paymentSummary与totalBalance并展示。,1. charged70订单balance=-30/outstanding30；charged100订单balance0/outstanding0；charged120订单balance20/outstanding0并说明超付20；不存在负待付或超付仍需支付。
+TC104,支付、礼品卡与查账,R09 · 金额摘要和剩余待付使用服务端同一口径,扣款pending虽影响Core余额仍不被展示为成功收款,AC-09-6;FD03;BD06;I09,P0,真实沙箱可延迟扣款确认；独立USD订单total100，成功charged60，已受理CHARGE_REQUEST40未确认，无退款/获批退款；Dashboard可刷新请求状态。,"1. 读取paymentSummary并显示订单资金状态。
+2. 沙箱明确确认该40扣款成功后重读和刷新。","1. charged=60、chargePending=40；按Core余额balance=0/outstanding0，但UI明确40待确认，不显示成功已收100或仅据待付0断言支付完成。
+2. charged=100、chargePending=0、balance0/outstanding0，有对应一次CHARGE_SUCCESS；此时才可展示100成功收款。"
+TC105,支付、礼品卡与查账,R09 · 金额摘要和剩余待付使用服务端同一口径,获批但未执行退款只解释余额而不伪造退款成功,AC-09-6;FD03;BD06;I09,P0,真实Transaction/order summary集成；独立USD订单total100，成功charged80，获批退款20但未请求执行，无REFUND_SUCCESS或pending。,"1. 读取totalBalance、paymentSummary及获批退款状态。
+2. 展示已收、历史退款和待付。","1. Core当前目标应付100-获批20，balance=0、outstanding0；charged仍80、refunded0、refundPending0，获批退款不是成功退款。
+2. UI说明获批20未执行，不生成REFUND_SUCCESS、不显示已退20，也不把它称为新的成功收款20。"
+TC106,支付、礼品卡与查账,R09 · 金额摘要和剩余待付使用服务端同一口径,零位和三位币种及多次部分退款保留API精度,AC-09-7;FD03;BD06;I09,P0,真实Decimal summary及金额组件；隔离JPY订单total1000、零税、扣款1000后退款100和200；隔离KWD订单total1.005、零税、扣款1.005后退款0.001和0.002，无pending。,1. 分别读取两个订单摘要并显示所有金额。,1. JPY tax0、charged700、refunded300、balance-300/outstanding300，展示币种零位精度；KWD tax0、charged1.002、refunded0.003、balance-0.003/outstanding0.003，展示三位精度，不四舍五入成1.00/0.00或用浮点差覆盖API。
+TC107,支付、礼品卡与查账,R09 · 金额摘要和剩余待付使用服务端同一口径,不可恢复历史卡金额的摘要不会用当前余额伪造历史,AC-09-2;FD03;BD06;I09,P0,真实异常/历史summary读取及UI错误组件；独立历史订单total80、basis=LEGACY_TOTAL_DEDUCTION，但消费证据缺失，卡当前余额999不能代表消费额；保存订单与卡快照。采用I09允许的历史审计失败分支，不新增未定义审计字段。,"1. 请求该订单完整paymentSummary并打开摘要。
+2. 重读持久化订单total和卡余额。","1. 不能可靠返回全部非空Money时给安全顶层计算错误，不返回giftCardCharged999或成功全零摘要；UI显示摘要不可计算/可恢复错误，不称已付或待付为确定新事实。
+2. 订单total仍80、卡余额999及已有事件保持，读取不补写推测的历史消费或改总额。"
+TC108,支付、礼品卡与查账,R10 · 人工收款、捕获和退款受当前状态及余额限制,无支付记录的合法订单按渠道策略只生成一条人工收款事实,AC-10-1;FD03;BD06;I10,P0,真实资金API及Dashboard；隔离USD订单A/B各total100、有账单且可人工标记、无Payment/Transaction；A渠道markAsPaidStrategy=PAYMENT_FLOW，B=TRANSACTION_FLOW；员工仅MANAGE_ORDERS且可访问两渠道。,"1. 分别以不同稳定UUID key调用orderMarkAsPaid，随后读取相应订单。
+2. 同身份同key同参数分别重试。","1. A仅生成一条覆盖100的Payment事实；B仅生成一条覆盖100的Transaction及成功资金事实；两者charged100/outstanding0，不机械要求HANDLE_PAYMENTS。
+2. 返回首次结果，不再新增支付记录、有效扣款事件或外部请求；摘要仍100，历史人工参考号不变。"
+TC109,支付、礼品卡与查账,R10 · 人工收款、捕获和退款受当前状态及余额限制,存在任意冲突支付记录时标记已支付不可制造第二条记录,AC-10-1;FD03;BD06;I10,P0,真实后端及UI；三个隔离有账单USD订单分别已有失败/非active Payment、零成功金额Transaction、pending Transaction；员工MANAGE_ORDERS且对象范围合法，各记录数量和金额保存快照。,1. 分别打开人工标记入口，并绕过UI用新key直接调用orderMarkAsPaid。,1. 三个订单均不提供可用mark paid动作；直接请求各payload.errors含PAYMENT_ALREADY_EXISTS并有安全message，不新增任何Payment/Transaction/成功资金事实；失败和pending原状态不被覆盖。
+TC110,支付、礼品卡与查账,R10 · 人工收款、捕获和退款受当前状态及余额限制,缺账单的无记录订单仍被人工收款资格阻止,AC-10-1;FD03;BD06;I10,P0,真实orderMarkAsPaid集成；USD订单total100，无支付记录、billingAddress缺失，其余订单和渠道状态合法；员工MANAGE_ORDERS。,1. 打开人工收款并直接调用orderMarkAsPaid。,1. UI禁用并解释账单缺失；Core返回Order错误BILLING_ADDRESS_NOT_SET，不创建支付记录或人工收款事件，outstanding仍100。
+TC111,支付、礼品卡与查账,R10 · 人工收款、捕获和退款受当前状态及余额限制,可捕获授权50时等额捕获50可确认成功,AC-10-2;FD03;BD06;I10,P0,真实兼容Payment沙箱、PostgreSQL及Dashboard；USD订单total50，合法active Payment成功授权50、availableCaptureAmount50；员工MANAGE_ORDERS且channel合法。,"1. 以amount=50和稳定key提交orderCapture。
+2. 在沙箱确认CAPTURE成功后刷新订单、Payment交易和摘要。","1. 接受金额严格为50，不裁剪或重复发起；未确认时不提示到账完成。
+2. Payment.capturedAmount=50、可捕获0、summary.charged50/outstanding0，对应一次成功捕获；Dashboard使用刷新事实展示。"
+TC112,支付、礼品卡与查账,R10 · 人工收款、捕获和退款受当前状态及余额限制,捕获50.01不能被静默裁剪为授权50,AC-10-2;FD03;BD06;I10,P0,真实API及UI；两个隔离USD对象：active Payment可捕获50的订单、普通Transaction.availableChargeAmount50；分别具MANAGE_ORDERS和HANDLE_PAYMENTS身份，沙箱记录外部动作数。,"1. 分别用新key调用orderCapture(amount=50.01)和transactionRequestAction(CHARGE,amount=50.01)。",1. 两个payload均errors含field=amount、code=AMOUNT_EXCEEDS_BALANCE；捕获/扣款请求未发出，不发生50的裁剪成功；授权50、已收0和事件快照保持，UI可修正金额。
+TC113,支付、礼品卡与查账,R10 · 人工收款、捕获和退款受当前状态及余额限制,负资金金额在非负标量入口被拒而不占用余额,AC-10-2;AC-10-3;AC-10-4;FD03;BD06;I10,P0,真实GraphQL coercion及UI校验；每个输入均重建独立合法对象：orderCapture可捕获50、orderRefund可退30，transaction CHARGE/CANCEL可用50、REFUND可退30；金额变量PositiveDecimal=-0.01。,1. 在各UI金额输入尝试-0.01，并分别直接发送五种合法身份/对象但负amount请求。,1. UI本地拒负值；五个直接请求各顶层INPUT_ERROR定位amount变量，不能把负值转null/缺省最大額；无有效事件、pending占用或外部动作，五份fixture原额度不变。
+TC114,支付、礼品卡与查账,R10 · 人工收款、捕获和退款受当前状态及余额限制,可退余额30时等额退款30只回退一次成功资金,AC-10-3;FD03;BD06;I10,P0,真实兼容Payment沙箱及UI；隔离USD订单Payment.capturedAmount30、可退款30、无pending，不含禁止退款的礼品卡商品行；MANAGE_ORDERS员工。,"1. 以amount30、稳定key提交orderRefund。
+2. 确认沙箱退款成功后读取Payment和订单，再同key重试。","1. 仅受理30退款，未确认前不虚增已退或显示完成。
+2. capturedAmount0、历史成功退款30、可退0，重试返回既有结果，不二次退款/创建第二有效退款事实；UI显示确认后金额。"
+TC115,支付、礼品卡与查账,R10 · 人工收款、捕获和退款受当前状态及余额限制,超过30可退额度的订单和交易退款均被明确拒绝,AC-10-3;FD03;BD06;I10,P0,真实资金集成；独立Payment可退30订单和独立Transaction.availableRefundAmount30，均USD；对应权限及沙箱合法，无pending。,"1. 分别以新key提交orderRefund(amount30.01)和transactionRequestAction(REFUND,amount30.01)。",1. 两者errors.field=amount/code=AMOUNT_EXCEEDS_BALANCE，不裁剪为30；Payment.capturedAmount、Transaction.chargedAmount仍30，无新退款请求/占用/有效事件/卡回充。
+TC116,支付、礼品卡与查账,R10 · 人工收款、捕获和退款受当前状态及余额限制,显式零不等于省略且订单捕获退款不能缺必填金额,AC-10-4;FD03;BD06;I10,P0,真实GraphQL与UI；五种动作分别重建独立合法正额度对象：orderCapture50、orderRefund30、transaction CHARGE50/CANCEL50/REFUND30；每个子输入用全新key和fixture。,"1. 分别对五种动作显式传amount=0。
+2. 另建两个隔离订单，执行未提供必填amount变量的orderCapture和orderRefund。","1. 五种动作各payload.errors.field=amount/code=INVALID_AMOUNT，额度、资金事件和外部动作不变；UI不将0替换成最大額。
+2. 两请求各顶层INPUT_ERROR指向缺失的amount变量，resolver无副作用；不隐式捕获50或退款30。"
+TC117,支付、礼品卡与查账,R10 · 人工收款、捕获和退款受当前状态及余额限制,交易动作仅在省略金额时取提交当刻最大合法额度,AC-10-4;FD03;BD06;I10,P0,真实交易沙箱；三个隔离USD交易A/B/C，A成功授权50且chargePending10/cancelPending5、availableCharge35；B成功charged80且refundPending10、availableRefund70；C成功授权50且cancelPending10、无chargePending、未消费可取消40；HANDLE_PAYMENTS身份，pending仅由真实请求占用一次。,1. 分别以不同key省略amount请求A CHARGE、B REFUND、C CANCEL并检查新动作账。,1. A新请求35、B70、C40；A同时扣chargePending10/cancelPending5各一次，B只扣refundPending10一次，C只扣未消费占用10一次；不忽略占用取50/80/50或重复扣成20/60/30，受理仍pending直到真实确认。
+TC118,支付、礼品卡与查账,R10 · 人工收款、捕获和退款受当前状态及余额限制,退款未决与尚未入聚合占用各只扣一次可用额度,AC-10-3;FD03;BD06;I10,P0,真实PostgreSQL/动作账集成；Transaction成功charged80、历史退款20，已有真实refundPending10，另一个动作RESERVED5尚未成为聚合pending；无其他占用，HANDLE_PAYMENTS。,"1. 读取availableRefundAmount和summary。
+2. 隔离复制相同状态，分别请求65和65.01退款，检查副作用。","1. availableRefundAmount=65；summary.charged80、refunded20、refundPending10，不能把pending提前计成功或可退误算55。
+2. 65fixture合法受理且总占用80；65.01fixture errors.field=amount/code=AMOUNT_EXCEEDS_BALANCE、无新占用/外部请求，原65可用不变。"
+TC119,支付、礼品卡与查账,R10 · 人工收款、捕获和退款受当前状态及余额限制,不同key并发退款不能共同超用同一交易可退余额,AC-10-3;AC-10-5;FD03;BD06;I10,P0,真实PostgreSQL事务并发和可延迟确认沙箱；独立USD交易charged30、availableRefund30，无pending；同一授权身份两个并发连接、不同keys，各请求20，使用事务屏障而非mock后端。,"1. 同时提交两个transactionRequestAction REFUND20，在第一个受理后保持外部确认未决。
+2. 只确认被受理请求成功后读取交易和请求账。","1. 恰一请求受理20，另一errors.field=amount/code=AMOUNT_EXCEEDS_BALANCE；pending占用20、可退10，没有两笔20外部退款。
+2. charged10、refunded20、pending0、availableRefund10，只有一次成功资金退款及对应有效事件；无负余额或重复占用。"
+TC120,支付、礼品卡与查账,R10 · 人工收款、捕获和退款受当前状态及余额限制,弹窗旧额度被消耗后提交以Core最新余额拒绝越限,AC-10-5;FD03;BD06;I10,P0,真实API与Dashboard联调；USD交易成功charged30、可退30，用户打开退款弹窗输入30；另一获准身份可真实退款20。,"1. 保持弹窗打开，由另一请求成功退款20。
+2. 原弹窗用新key提交仍输入30，并刷新余额。","1. Core当前charged/availableRefund变10，外部已成功退款20可追踪；前端旧30不是授权依据。
+2. Core返回amount/AMOUNT_EXCEEDS_BALANCE，原30不裁剪成10；无第二资金请求，弹窗保留可修正输入并刷新显示可退10。"
+TC121,支付、礼品卡与查账,R10 · 人工收款、捕获和退款受当前状态及余额限制,同key双击超时重试与异参冲突共享一笔动作结果,AC-10-5;FD03;BD06;I10,P0,真实沙箱/动作账及Dashboard；USD交易authorized50、availableCharge50，用户拟扣款20；沙箱可在受理后丢失客户端响应但保留请求，客户端重试沿用同UUID key。,"1. 双击提交CHARGE20，再模拟仅客户端连接中断，用同key同amount重试。
+2. 真实确认成功后再同key同amount重试，并用同key改amount21请求。","1. 一个动作账/占用20和一笔provider幂等动作，重试返回相同pending结果，不另外占用20或产生冲突成功事件。
+2. 同参返回原成功，authorized30/charged20，异参errors.code=IDEMPOTENCY_CONFLICT、field指向idempotencyKey且无副作用；先查既有key，不因成功后额度/动作变化拒绝合法重放。"
+TC122,支付、礼品卡与查账,R10 · 人工收款、捕获和退款受当前状态及余额限制,资金pending成功及外部失败均以真实事件刷新而非HTTP200判成功,AC-10-6;FD03;BD06;I10,P0,真实沙箱可分别返回受理未决、确认成功、确认失败；独立USD交易A/B均authorized50，CHARGE20；UI组件错误展示可另用typed mock，但后端事件/额度必须真实确认。,"1. A提交20并维持CHARGE_REQUEST，观察UI，随后确认成功。
+2. B提交20后沙箱明确CHARGE_FAILURE，刷新详情。","1. A受理errors=[]不等于完成，UI显示pending20；成功后authorized30/charged20/pending0、一次CHARGE_SUCCESS，才显示业务成功。
+2. B保留可追踪CHARGE_FAILURE及安全原因，不虚增charged，authorized50/pending0/可捕获50；UI显示失败而非到账，不能删事件假称完全未请求。"
+TC123,支付、礼品卡与查账,R10 · 人工收款、捕获和退款受当前状态及余额限制,不支持的支付状态不会仅因权限充足而开放捕获或退款,AC-10-6;FD03;BD06;I10,P0,真实状态校验及UI；隔离inactive Payment订单可见但不能capture；隔离无可退成功扣款的Payment订单；隔离Transaction.actions不含CHARGE且authorized0；相关权限都充分。,1. 分别查看动作并直接请求orderCapture1、orderRefund1、transactionRequestAction CHARGE1。,1. UI各禁用并解释状态；inactive capture返回CAPTURE_INACTIVE_PAYMENT，不能refund的Payment返回CANNOT_REFUND，Transaction返回INVALID_STATE；没有外部请求/新占用/有效资金事件，权限不替代状态资格。
+TC124,支付、礼品卡与查账,R10 · 人工收款、捕获和退款受当前状态及余额限制,订单动作与交易动作分别授权且员工App越范围均拒绝,AC-10-7;FD03;BD06;I10,P0,真实API与UI身份矩阵，每个子请求独立合法余额fixture；O为orderCapture可捕获50订单，T为transaction CHARGE可用50；员工S仅MANAGE_ORDERS、员工P仅HANDLE_PAYMENTS、AppA仅MANAGE_ORDERS、AppB仅HANDLE_PAYMENTS且明确处理T；另设同权限但无目标channel/对象范围身份。,"1. 以S/AppA对各自范围O捕获10，以P/AppB对各自范围T扣款10。
+2. 重建未消耗fixture，交换动作权限并用越范围员工/App直接请求，检查UI入口和错误。","1. S/AppA的orderCapture合法受理而无需HANDLE_PAYMENTS；P/AppB的transaction动作合法受理而无需MANAGE_ORDERS；仅真实确认才成功。
+2. 缺动作权限为顶层PERMISSION_DENIED；具权限但显式受限对象以NOT_FOUND保护存在性，UI不可操作；无金额/余额/受限渠道泄露，无provider调用或资金写入。"
+TC125,支付、礼品卡与查账,R10 · 人工收款、捕获和退款受当前状态及余额限制,资金key长度边界和原始对象身份作用域保持独立,AC-10-5;FD03;BD06;I10,P0,真实GraphQL/PostgreSQL动作账及沙箱；每个长度输入重建独立USD交易authorized50/CHARGE10，key分别ASCII A重复1/255/0/256字符；另建T1/T2各authorized50，两个均明确获准处理T1的独立actor S1/S2；使用相同字符串K验证作用域，不在key放明文卡码/token。,"1. 分别提交1/255/0/256字符key请求，读取动作账及provider调用。
+2. S1对T1 CHARGE10使用K并同参重试；S1对T2、S2对T1分别以K CHARGE10。","1. 长度1/255各合法受理一笔10；空/256各在idempotencyKey输入校验失败、非成功且不建动作账/占用/外部请求；错误安全、不能截断超长key再受理，具体业务输入码待合同补明确而不杜撰新枚举。
+2. S1/T1重试只原动作；S1/T2、S2/T1各独立新动作10，不错误复用S1/T1结果或跨actor泄露；T1总占用20、T2占用10，动作/provider和input fingerprint纳入各scope。"
+TC126,支付、礼品卡与查账,R10 · 人工收款、捕获和退款受当前状态及余额限制,成单迁移后同key仍命中原checkout来源的资金动作,AC-10-5;FD03;BD06;BD07;I10,P0,真实checkout完成与支付动作账集成；允许的Checkout C total50、普通Transaction T成功授权50，HANDLE_PAYMENTS身份、合法处理App及channel；以C为持久原始来源；选择允许授权覆盖完成的真实流程，不运行迁移脚本。,"1. 在C下用key K对T CHARGE50并确认成功，随后合法完成成单为O，使T.order=O且原checkout FK移除。
+2. 在O上下文对同T以K和完全相同原CHARGE50输入重试。","1. 仅一笔成功50，T.sourceCheckoutId仍C，动作账保留原来源C；成单没有重新请求扣款或新资金事件。
+2. 先命中原来源key返回既有成功，即便当前authorized0也不报新额度不足或重建动作；O charged50、outstanding0、provider只扣50，旧checkout FK消失不丢幂等范围。"
+TC127,支付、礼品卡与查账,R11 · 根级交易查询保留基础定位与受限分页,订单和交易ID数组内OR且不同定位字段之间AND,AC-11-1;BD07;FD03;I11,P0,真实root交易resolver集成；授权HANDLE_PAYMENTS员工可见O1/O2；T1属O1和AppA，T2属O2和AppA，T3属O2和AppB；保存三个稳定PK，交易Relay ID编码各UUID token。,"1. 查询transactions(first10,filter:{orderIds:[O1,O2],ids:[T1,T3]})。
+2. 同查询再加appIdentifier为AppA真实identifier。","1. 字段交集返回T1/T3，数组内各为OR，不要求同交易同时属O1与O2；totalCount2，PK升序。
+2. 进一步AND后仅T1、totalCount1，T2/T3不得因某个字段OR绕回结果。"
+TC128,支付、礼品卡与查账,R11 · 根级交易查询保留基础定位与受限分页,PSP参考号精确匹配交易或事件且去重返回交易,AC-11-1;BD07;I11,P0,真实GraphQL/DB；T1自身pspReference=psp-42且两个事件同参考；T2自身其他值但一事件psp-42；T3只有psp-420；三交易在授权范围。,"1. 以filter.pspReference=psp-42查询first10。
+2. 再以pspReference=psp和psp-420各查询。","1. 仅T1/T2各一edge，totalCount2，事件join不产生重复节点。
+2. psp返回正常空集合/totalCount0；psp-420只返回T3，不采用前缀或包含匹配。"
+TC129,支付、礼品卡与查账,R11 · 根级交易查询保留基础定位与受限分页,checkout来源在成单FK迁移后仍可通过checkoutIds定位,AC-11-1;BD07;I11,P0,真实来源读取集成；持久化fixture T1当前关联Checkout C1；T2已关联Order O2、checkout FK为空、sourceCheckoutId可靠指向已完成C2；T3历史来源未知sourceCheckoutId=null，不执行迁移。,"1. 分别以checkoutIds:[C1]、checkoutIds:[C2]查询并读取sourceCheckoutId/order/checkout。
+2. 以checkoutIds:[C1,C2]联合查询。","1. C1仅T1，C2仅T2；T2.checkout=null、order=O2、sourceCheckoutId=C2，删除源checkout不丢来源；T3不得被猜测关联。
+2. 返回T1/T2各一次、totalCount2，固定PK升序，当前来源与持久化来源OR匹配而不跨对象泄露。"
+TC130,支付、礼品卡与查账,R11 · 根级交易查询保留基础定位与受限分页,App标识按identifier定位且礼品卡内建方式不伪造App,AC-11-1;AC-11-2;BD07;FD03;I11,P0,真实交易查询；同一订单有App identifier=pay.alpha的T1、另一App pay.alphabet的T2、内建saleor.gift-card的T3无App FK；员工有HANDLE_PAYMENTS且范围合法。,"1. 分别按appIdentifier=pay.alpha、pay.al、saleor.gift-card查询。
+2. 按orderIds查询全部并读取paymentMethodDetails。","1. 精确pay.alpha仅T1；pay.al正常空；saleor.gift-card作为App identifier无匹配，不创建/映射虚假App给T3。
+2. 订单列表包含T1/T2/T3，T3以GiftCardPaymentMethodDetails明确礼品卡方式而非App标识假关联。"
+TC131,支付、礼品卡与查账,R11 · 根级交易查询保留基础定位与受限分页,礼品卡和普通多交易详情的净额与摘要逐笔对应,AC-11-2;FD03;BD07;I11;I09,P0,真实交易/summary及Dashboard；USD订单total100，礼品卡净扣款20、普通净扣款30及普通成功授权10，方式与标准事件真实；授权员工可读，卡完整code存于卡但不可公开。,"1. 按orderIds查询交易节点的name、authorizedAmount、chargedAmount、events、actions、paymentMethodDetails及订单paymentSummary。
+2. 逐一打开交易详情。","1. 卡charged20、普通charged30、第三authorized10，summary.charged50/authorized10/outstanding50；events金额/币种对应各笔，不把授权当成功扣款。
+2. GiftCardPaymentMethodDetails只遮罩displayCode/last4CodeChars，普通方式可辨；不显示完整卡code或以当前卡余额倒推历史金额。"
+TC132,支付、礼品卡与查账,R11 · 根级交易查询保留基础定位与受限分页,固定PK升序及反向分页不重漏交易,AC-11-3;BD07;I11,P0,真实resolver；授权范围固定五个交易PK严格T1<T2<T3<T4<T5，filter不变、期间无写入，每页2。,"1. 依次first2、after第二条first2、after第四条first2取完。
+2. 使用第三页startCursor及last2/before返回第二页，再返回第一页。","1. 页集合[T1,T2]、[T3,T4]、[T5]，totalCount始终5，游标稳定可复用，终页hasNextPage=false，合并无重复/漏项。
+2. 反向页分别[T3,T4]、[T1,T2]，展示仍按固定PK升序，前后游标与原页相同；无专用sortBy。"
+TC133,支付、礼品卡与查账,R11 · 根级交易查询保留基础定位与受限分页,合法无匹配空事件及分页末尾均为成功空态,AC-11-3;AC-11-5;FD03;BD07;I11,P0,真实查询及UI；合法授权范围一条可见T1且events=[]，有稳定末尾游标；不存在匹配PSP参考号no-match。,"1. 查询T1详情及pspReference=no-match的列表。
+2. after T1末尾游标以first1再查询。","1. T1读取无顶层错误且events=[]，UI事件空态；no-match列表edges[]/totalCount0无错误，不被判查询失败。
+2. edges[]、hasNextPage=false，无INPUT_ERROR；合法末尾区别于非法游标，未伪造交易或事件。"
+TC134,支付、礼品卡与查账,R11 · 根级交易查询保留基础定位与受限分页,空ID数组明确缩成空集合而省略维度不限制,AC-11-1;AC-11-3;BD07;I11,P0,真实resolver；同一授权scope可见T1/T2，T1属O1及C1来源；每个请求只读、固定数据。,"1. 省略filter以及传空对象filter:{}各查询first10。
+2. 分别传orderIds:[]、checkoutIds:[]、ids:[]，并在ids:[]请求另加orderIds:[O1]。","1. 两请求均正常返回授权T1/T2，省略维度不限该维度但不放宽权限。
+2. 四请求各edges[]/totalCount0且无错误；[]不能被truthiness忽略成全范围，其他条件AND也不能恢复空ids集合。"
+TC135,支付、礼品卡与查账,R11 · 根级交易查询保留基础定位与受限分页,显式null列表与null项不被接受为省略或空结果,AC-11-5;BD07;I11,P0,真实GraphQL coercion/resolver；合法HANDLE_PAYMENTS身份可见T1；各请求独立，将orderIds/checkoutIds/ids分别做非法输入，无数据库写操作。,"1. 分别对三个数组字段传整体null，再分别传[T1类型相符ID,null]。",1. 整体null三请求各运行时顶层INPUT_ERROR，extensions.field定位对应filter字段；含null项三请求各coercion INPUT_ERROR定位变量元素；不执行查询为成功空结果、不泄露count，也不运行时崩溃。
+TC136,支付、礼品卡与查账,R11 · 根级交易查询保留基础定位与受限分页,错误定位类型不能把UUID整数和渠道slug误作交易Relay ID,AC-11-5;BD07;I11,P0,真实GraphQL；合法授权T1 Relay ID编码TransactionItem UUID token、C1为Checkout Relay ID、O1为Order Relay ID；每个非法变量单独请求，不复用失败缓存。,"1. 分别将Order Relay ID、裸交易UUID、裸整数PK、channel slug放进filter.ids；将交易ID放进orderIds，裸checkout token放进checkoutIds。
+2. 以正确Relay T1放ids并以不支持的pspReference数组类型查询。","1. 六种错误标识各顶层INPUT_ERROR定位实际filter字段，不能误定位另一对象或当成功无匹配；不把root ids直接当整数PK。
+2. 正确T1正常返回T1；pspReference数组coercion INPUT_ERROR，不能自动取首值或空列表掩盖。"
+TC137,支付、礼品卡与查账,R11 · 根级交易查询保留基础定位与受限分页,根交易分页1到100边界合法而越界组合明确失败,AC-11-5;BD07;I11,P0,真实resolver；授权固定105交易，分页输入分别请求、无数据变更；准备合法首尾游标和字符串bad-cursor。,"1. 分别使用first1、first100、last1、last100查询。
+2. 分别使用first0、first-1、first101、last101、first1+last1、未传first/last、after=bad-cursor查询。","1. 四请求分别返回1/100/1/100个授权节点，正常pageInfo，不超过100。
+2. 七请求各顶层INPUT_ERROR及相应path/字段定位，不返回成功空页或500；无越界count/对象泄露。"
+TC138,支付、礼品卡与查账,R11 · 根级交易查询保留基础定位与受限分页,认证客户只读自己非受限订单交易且无权草稿不可枚举,AC-11-4;BD07;FD03;I11,P0,真实身份授权集成；客户U1/U2，T1为U1已成立订单交易，T2为U2订单，T3为U1无权读取草稿；各有唯一敏感事件reference，客户U1已认证。,"1. U1查询未限定root列表并按自己orderIds读取T1。
+2. 分别显式指定T2、T3，匿名身份直接查询root列表。","1. U1仅得到T1及安全字段、totalCount只包含允许对象，不能因知道token列出他人或无权草稿交易。
+2. 受限T2/T3显式对象返回顶层NOT_FOUND保护存在性，不返回金额/事件/count；匿名root请求顶层PERMISSION_DENIED而非成功empty。"
+TC139,支付、礼品卡与查账,R11 · 根级交易查询保留基础定位与受限分页,员工必须有支付权限并在真实渠道范围内读取交易,AC-11-4;BD07;I11,P0,真实授权集成；T1在channelA，T2在channelB；员工S1仅MANAGE_ORDERS，S2有HANDLE_PAYMENTS但只channelA，S3有HANDLE_PAYMENTS且两渠道。,"1. 分别以S1/S2/S3查询first10。
+2. S2显式按T2 ID或orderIds:[受限O2]读取。","1. S1顶层PERMISSION_DENIED非空成功；S2仅T1/允许count；S3得到T1/T2，不要求MANAGE_ORDERS机械叠加root列表读权。
+2. 两显式受限请求顶层NOT_FOUND，错误不含T2金额/PSP/App/受限渠道细节；不能由空count探测存在性。"
+TC140,支付、礼品卡与查账,R11 · 根级交易查询保留基础定位与受限分页,App支付读权只涵盖自身或明确获授处理的交易,AC-11-4;BD07;I11,P0,真实App bearer授权；AppA有HANDLE_PAYMENTS，T1归A、T2归B但明确授A处理对象、T3归B未授A；AppC仅MANAGE_APPS，三交易固定。,"1. A查询root列表及T2详情，C查询列表。
+2. A明确请求T3或filter.appIdentifier=B。","1. A列表仅T1/T2，T2安全详情可读；C顶层PERMISSION_DENIED，App管理不等于支付全店读权。
+2. 显式T3为NOT_FOUND；B过滤仍与A允许scope相交只T2，不出现T3/受限count或事件。"
+TC141,支付、礼品卡与查账,R11 · 根级交易查询保留基础定位与受限分页,单条Node和嵌套交易共享对象及敏感字段授权,AC-11-4;BD07;FD03;I11,P0,真实schema/授权；owner客户可安全读T1，另一客户T2不可读；T1有public/private交易metadata及createdBy受限身份；具HANDLE_PAYMENTS且scope合法员工P；token与Relay ID准备正确。,"1. 客户经transaction(id)、transaction(token)、node和订单嵌套分别读取T1安全金额/events，再请求T1.metadata/privateMetadata和受限createdBy字段。
+2. 客户通过相同入口请求T2；P读取T1 metadata/privateMetadata。","1. 四入口安全视图一致；客户owner不解锁任何交易metadata，受限字段顶层PERMISSION_DENIED并遵守SDL非空传播，不含敏感值；createdBy按字段guard拒绝。
+2. 四入口显式T2同NOT_FOUND，不借Node/嵌套绕scope；P在scope内可获准确metadata，不错误给予客户同等权限。"
+TC142,支付、礼品卡与查账,R11 · 根级交易查询保留基础定位与受限分页,公开根交易协议与客户端不暴露日期事件筛选或专用排序,AC-11-6;BD07;FD03;I11,P0,待实施契约静态校验层，只读目标runtime SDL及Dashboard实际operations/生成客户端；target RootTransactionFilterInput只orderIds/checkoutIds/ids/pspReference/appIdentifier，Query.transactions无sortBy。,"1. 核对运行时SDL、Dashboard交易查询和生成类型，尝试构造createdAt/modifiedAt/eventType/eventDate/sortBy交易列表请求及其别名版本。
+2. 构造允许的五字段基础过滤分页查询。","1. 不支持字段/参数均顶层GRAPHQL_VALIDATION_FAILED且无resolver执行；别名不能恢复能力，无新交易专用排序/filter索引声明或客户端操作。
+2. 允许字段类型和分页签名与target一致，操作可验证；保留事件展示不等于事件过滤。"
+TC143,搜索、筛选与操作上下文,R12 · 保留主体增强搜索和页面、用户基础搜索,商品搜索保留关键词组合末词前缀和同字段短语,AC-12-1;FD04;BD08;I12,P0,真实PostgreSQL搜索集成，任务已drain；P1 name=Azure Wool Coat、SKU=AX701，P2=Azure Wooden Chest、SKU=AX702，P3=Coat Wool Azure、SKU=AX703，其他字段无查询词；授权MANAGE_PRODUCTS。,"1. 分别搜索AX701、azure wool、azure wo、""wool coat""，排序RANK DESC。",1. AX701仅P1；azure wool返回P1/P3；azure wo末词prefix返回P1/P2/P3；短语仅P1不含逆序P3；各ID一次，未整体退化关闭搜索，RANK与稳定PK次序可解释。
+TC144,搜索、筛选与操作上下文,R12 · 保留主体增强搜索和页面、用户基础搜索,订单搜索保留主体标识组合末词前缀和短语,AC-12-1;FD04;BD08;I12,P0,真实订单search文档，任务drain；O1 number=701、customerNote=Amber Cotton Shirt，O2 number=702、note=Amber Cottage Set，O3 number=703、note=Shirt Cotton Amber；邮箱/地址/行等其余索引字段不含词；MANAGE_ORDERS。,"1. 分别orders(search=701)、amber cotton、amber cot、""cotton shirt""并RANK DESC查询。",1. 701仅O1；组合返回O1/O3；末词prefix返回O1/O2/O3；短语只O1，O3逆序不命中；无重复节点，渠道/订单scope不变。
+TC145,搜索、筛选与操作上下文,R12 · 保留主体增强搜索和页面、用户基础搜索,结账filter.search保留邮箱主体ID和行项目增强匹配,AC-12-1;FD04;BD08;I12,P0,真实checkout文档/列表；C1行名=Indigo Linen Hat、邮箱=alice@example.test，C2行名=Indigo Linear Rack，C3行名=Hat Linen Indigo；三token不同，其余字段无词；具允许checkout管理列表权限及scope。,"1. 以checkouts(filter:{search:完整C1 token})定位，并分别搜索indigo linen、indigo lin、""linen hat""，sortBy RANK DESC。",1. 完整token仅C1；组合C1/C3；末词prefix C1/C2/C3；短语仅C1，逆序C3不命中；使用filter.search而非编造root search参数。
+TC146,搜索、筛选与操作上下文,R12 · 保留主体增强搜索和页面、用户基础搜索,礼品卡按获准创建者词和卡code增强搜索不放宽卡隐私,AC-12-1;FD04;BD08;I12,P0,真实giftcard文档；G1创建者firstName整字段=Coral Meadow Field、lastName为空、code=QA-G701，G2 firstName=Coral Meat Desk、lastName为空、code=QA-G702，G3 firstName=Field Meadow Coral、lastName为空、code=QA-G703；其他索引字段无词；MANAGE_GIFT_CARD且对象允许。,"1. 分别giftCards(search=QA-G701)、coral meadow、coral mea、""meadow field""，RANK DESC。",1. code精确定位G1；组合G1/G3；末词mea为meadow/meat共享前缀，返回G1/G2/G3；同一firstName字段短语仅G1，逆序G3不命中；不在普通查询错误或未授权UI回显完整code。
+TC147,搜索、筛选与操作上下文,R12 · 保留主体增强搜索和页面、用户基础搜索,只有未加引号末词允许prefix而前词必须完整匹配,AC-12-1;BD08;I12,P0,真实Product搜索，drain固定P1=Blue Cotton、P2=Blue Cottage、P3=Blueprint Cotton，其他字段无词；授权员工。,"1. 分别搜索blue cot、blu cotton、blue ""cot""。","1. blue cot仅P1/P2，blue前词精确而cot末词prefix；blu cotton无匹配，不能前词prefix命中P1/P3；blue ""cot""无匹配，引号词不扩展cotton/cottage。"
+TC148,搜索、筛选与操作上下文,R12 · 保留主体增强搜索和页面、用户基础搜索,短语不得跨商品名邮箱等独立字段拼接误命中,AC-12-1;BD08;I12,P0,真实多域search文档，分域fixture隔离：Product P1 name=Red、description=Fox，P2 name=Red Fox；Checkout C1行product=Red、email=fox@example.test，C2同一行product=Red Fox；其他字段无词；相应域管理权限。,"1. 分别对Product和Checkout搜索引号短语""red fox""，再搜索无引号red fox。",1. 短语Product仅P2、Checkout仅C2，不跨P1名称/描述或C1商品/邮箱拼接；无引号AND在各允许文档跨字段匹配时返回P1/P2及C1/C2，不能以禁止跨字段短语误删组合词搜索。
+TC149,搜索、筛选与操作上下文,R12 · 保留主体增强搜索和页面、用户基础搜索,主体相关度保持高权名称优先而RANK必须有非空关键词,AC-12-1;FD04;BD08;I12,P0,真实Product search，P1仅name含唯一词qaflower（A权重），P2仅description含同词（C），长度/重复频率相同，PK固定；其余字段无词。,"1. search=qaflower且RANK DESC查询两次。
+2. 独立请求省略search、search空白但仍RANK排序。","1. P1先于P2，结果/数量/游标两次稳定，客户端不另算rank改变顺序。
+2. 两无有效词RANK请求各顶层INPUT_ERROR，不默默变成任意默认相关度全量结果。"
+TC150,搜索、筛选与操作上下文,R12 · 保留主体增强搜索和页面、用户基础搜索,客户和员工基础搜索按空格组合词而不升级为RANK向量,AC-12-2;FD04;BD08;I12,P0,真实account.search_document与授权；隔离客户U1 firstName=Mina、lastName=Stone，U2=Mina Reed；员工S1=Mina Stone、S2=Mina Reed；其余email/address无stone，分别具MANAGE_USERS和MANAGE_STAFF身份。,"1. 客户/员工入口分别搜索mina stone、MINA STONE并按现有EMAIL排序。
+2. 查看搜索实现/客户端操作，尝试UserSortingInput.field=RANK。","1. 客户仅U1、员工仅S1，组合为两个基础词AND，大小写不改变允许集合；隐私字段仍按字段授权。
+2. 沿基础search_document匹配，不新增向量/prefix相关度模式；RANK为GRAPHQL_VALIDATION_FAILED，无UserSortField.RANK。"
+TC151,搜索、筛选与操作上下文,R12 · 保留主体增强搜索和页面、用户基础搜索,页面标题slug内容基础查询仍正常可用,AC-12-3;FD04;BD08;I12,P0,真实页面查询，MANAGE_PAGES；隔离P1 title=QATitleUnique、P2 slug=qaslugunique、P3 content正常EditorJS文字=QABodyUnique，各其他字段无这些词。,"1. 分别pages(search=QATitleUnique)、qaslugunique、QABodyUnique查询。
+2. 以无匹配词查询并检查PageSortField及生成操作。","1. 三个查询各仅返回对应P1/P2/P3，非固定空结果；标题/slug/内容能力保留，不要求Page高级短语/prefix/rank。
+2. 无匹配正常empty；PageSortField没有RANK，客户端没有Page向量高级搜索请求。"
+TC152,搜索、筛选与操作上下文,R12 · 保留主体增强搜索和页面、用户基础搜索,页面引用名称变更仍使商品搜索发现新标题,AC-12-4;FD04;BD08;I12,P0,真实PageUpdate、Product搜索dirty/worker；商品P引用页面属性Q，Q.title=OldReferenceUnique且无其他字段该词；另有未引用商品N；权限可编辑页面和商品。,"1. 成功把Q标题改为NewReferenceUnique，提交后检查引用P的dirty记录并drain实际搜索更新任务。
+2. 搜索NewReferenceUnique及OldReferenceUnique。","1. 仅引用商品P获得必要搜索更新，任务来自提交后机制；不为Page新增高级向量维护任务，N不被误更新为引用。
+2. 新词能返回P，旧词不再作为P唯一结果且此fixture不命中P；不因排除Page高级搜索删除引用更新。"
+TC153,搜索、筛选与操作上下文,R12 · 保留主体增强搜索和页面、用户基础搜索,列表分配弹窗及筛选入口提交相同Core搜索语义,AC-12-5;FD04;BD08;I12;I14,P0,真实Core及Dashboard；固定允许商品P1=Blue Cotton/P2=Blue Cottage/P3=Blueprint Cotton，另设不可见P4；同一授权scope和锁定category，分配弹窗允许该scope，数据drain。,1. 在商品列表、分配弹窗和筛选搜索入口分别输入blue cot，记录最终Core变量和所有页ID。,1. 三入口同有效search与scope得到同P1/P2集合，P3前词不精确、P4越scope均不返回；UI不自行contains匹配、清锁定范围或额外泄露count。
+TC154,搜索、筛选与操作上下文,R12 · 保留主体增强搜索和页面、用户基础搜索,搜索无域权限明确失败且PageUser高级维护能力不被恢复,AC-12-2;AC-12-5;FD04;BD08;I12,P0,真实授权负向及只读实现审查；无MANAGE_USERS/STAFF/GIFT_CARD及相应checkout列表权限身份，准备受限姓名/email/code/token关键词；当前目标构建可检查search专用任务/索引声明。,"1. 用无权限身份从列表或直接API搜索这些受限主体。
+2. 只读核对本轮Page/User搜索相关SDL、生成操作、任务和迁移声明。","1. 对应域顶层PERMISSION_DENIED，非成功empty；不含受限金额/地址/身份/code/token、数量或存在性细节。
+2. 没有新增Page/User向量、前缀/相关度/RANK及其专用索引、维护任务/迁移；原基础更新和商品引用更新仍保留。"
+TC155,搜索、筛选与操作上下文,R13 · 搜索更新、分页和错误状态稳定可解释,创建商品结账礼品卡和订单后实际更新任务使新词可搜索,AC-13-1;FD04;BD08;I12,P0,真实四域创建API/业务fixture及Celery搜索更新集成；每域独立唯一关键词qacreateproduct/qacreatecheckout/qacreategift/qacreateorder，相应授权账号；不mock搜索worker、不指定秒数。,"1. 分别成功提交四对象创建，检查提交后的dirty/版本任务并drain相应真实任务。
+2. 在各自入口搜索对应唯一关键词。","1. 创建事务提交后有必要文档更新，任务按对象版本处理，失败不能静默丢dirty；不假定提交响应即搜索已即时一致。
+2. 各关键词只找到各自新对象、信息与当前对象一致，其他域fixture不混入；未规定任意秒数SLA。"
+TC156,搜索、筛选与操作上下文,R13 · 搜索更新、分页和错误状态稳定可解释,名称SKU和邮箱修改经版本更新后新值取代旧检索文档,AC-13-1;FD04;BD08;I12,P0,真实更新/API/搜索任务；隔离商品name=OldNameUnique/SKU=OLDSKU701、结账email=oldmail701@example.test、礼品卡获准创建者旧姓名、订单允许email旧值；新词在任何其他索引字段均不存在。,"1. 成功修改为NewNameUnique/NEWSKU701/newmail701@example.test及对应新主体词，drain实际更新机制。
+2. 分别查询每个新值及相应旧值。","1. 每次关联或主体变更提交产生对应dirty/revision更新，不仅某个status改变才维护搜索。
+2. 各新值命中目标且显示最新名称/编码/邮箱；旧值在此无其他来源fixture不再命中目标，不永久成为唯一结果。"
+TC157,搜索、筛选与操作上下文,R13 · 搜索更新、分页和错误状态稳定可解释,商品归档后的搜索结果与当前发布和scope事实一致,AC-13-1;FD04;BD08;I12,P0,真实发布/归档及搜索；商品P在channelA已发布含唯一词qarchive，管理账号有范围、普通渠道读取只允许已发布对象；归档采用现有取消发布业务路径，不编新archive mutation。,"1. 取消P在A的发布并drain实际搜索/相关状态更新。
+2. 分别在普通已发布scope和管理列表无发布限制scope搜索qarchive。","1. 持久化发布事实为未发布，任务不保留旧发布状态当最新。
+2. 普通已发布scope不返回P/受限count；管理合法scope仍可定位P但显示未发布，不把归档一律等于删除或保留公开旧态。"
+TC158,搜索、筛选与操作上下文,R13 · 搜索更新、分页和错误状态稳定可解释,大小写NFKC和重复关键词不改变固定搜索结果集合,AC-13-2;FD04;BD08;I12,P0,真实PostgreSQL文档/输入正规化；固定P1 name=Blue Cotton、P2 name=Ｂｌｕｅ Cotton、P3 name=Blue Cottage，其他字段无词，任务drain、RANK DESC。,1. 依次查询blue cotton、BLUE COTTON、Ｂｌｕｅ Ｃｏｔｔｏｎ、blue blue cotton cotton。,1. 四请求均同P1/P2集合、相同totalCount及顺序/游标；文档和输入均NFKC/casefold，重复lexeme不重复对象或任意抬高rank，P3不误命中cotton。
+TC159,搜索、筛选与操作上下文,R13 · 搜索更新、分页和错误状态稳定可解释,相同rank_key按PK稳定分页并可返回前页,AC-13-3;BD08;FD04;I12,P0,真实搜索排序/游标；五个商品仅相同名称qatie、相同文档长度和词频、PK1<2<3<4<5，RANK ASC固定filter；期间无写入，每页2。,"1. 以search=qatie连续first2翻到末页，重复同首请求。
+2. 用末页startCursor及last2/before返回前页。","1. 相同rank_key时ASC按PK1..5，页[1,2]/[3,4]/[5]；重复查询rank_key、数量、顺序及游标一致，无重漏。
+2. 返回[3,4]后[1,2]，与原页一致，cursor/seek使用同量化rank_key+PK而非另一个EPSILON近似关系。"
+TC160,搜索、筛选与操作上下文,R13 · 搜索更新、分页和错误状态稳定可解释,rank量化边界的排序和seek使用同一个整数键,AC-13-3;BD08;I12,P0,真实PostgreSQL排序/connection集成；构造可重建搜索文档得到量化边界两侧rank，预先以数据库round(SearchRank*1000000)::bigint取得各对象K；含两个raw rank略异但同K对象，PK已知，不mock排序或seek。,"1. RANK ASC、每页1遍历固定结果，对照按(K ASC,PK ASC)数据库顺序；再RANK DESC反向遍历。","1. ASC严格等于(K,PK)升序、DESC严格等于(K,PK)降序，各对象恰一次；raw rank相近不造成重漏；所有cursor及seek比较同K，不使用EPSILON把相邻不同K划同组。"
+TC161,搜索、筛选与操作上下文,R13 · 搜索更新、分页和错误状态稳定可解释,搜索或过滤变化后的旧指纹游标不可拼入新结果,AC-13-3;AC-13-5;FD04;BD08;I12,P0,真实search cursor/API及UI；channelA/B数据隔离，search=blue/filterA有效第一页游标；另有search=red/filterB集合，双方至少两页。,"1. 直接将blue/filterA游标用于red/filterB查询。
+2. UI切换到red/filterB并记录请求游标及结果。","1. 顶层INPUT_ERROR指出游标与过滤指纹不符，不返回混范围成功页或泄露A剩余对象。
+2. 新scopeFingerprint重置游标后有界首请求，结果只red/B，旧响应不能覆盖当前页；合理返回旧scope时只复用同指纹合法cursor。"
+TC162,搜索、筛选与操作上下文,R13 · 搜索更新、分页和错误状态稳定可解释,清空搜索回有界默认列表且保留锁定条件和权限,AC-13-4;FD04;BD08;I12;I14,P0,真实Core及Dashboard；锁定warehouseW1/channelA，允许范围有125商品，另有范围外商品；当前search筛到2项、普通filter保留，页面大小20。,1. 清除关键词并检查请求变量及第一页，再翻一页。,1. search为空/省略、RANK撤为合法默认sort，但锁定W1/A及普通filter/权限保持；每请求first20或等效有界分页，不请求无限全量；返回只有效范围、页间不重漏。
+TC163,搜索、筛选与操作上下文,R13 · 搜索更新、分页和错误状态稳定可解释,256Unicode字符搜索边界按原串字符数而不是字节校验,AC-13-5;FD04;BD08;I12,P0,真实输入validator及UI；四主体分别重建隔离文档/权限；输入A='界'重复256（UTF-8字节数大于256），B='界'重复257，C='ﬁ'重复256（NFKC后展开512字母），无需期待这些长词一定命中。,1. 各主体分别提交A、B、C，观察变量和界面校验。,1. A及C按原串256 Unicode字符合法并执行有界查询，无匹配可正常empty；B各顶层INPUT_ERROR定位search且UI阻止提交257，不能按UTF-8字节或NFKC展开后长度误拒合法原串。
+TC164,搜索、筛选与操作上下文,R13 · 搜索更新、分页和错误状态稳定可解释,未闭引号和非法控制字符与合法空词有不同结果,AC-13-5;FD04;BD08;I12,P0,"真实search lexer/coercion及UI；允许固定两条对象、页大小10；每请求输入隔离，非法输入分别为仅含开引号的字符串""blue、blue + U+0000 + coat、blue + U+0001 + coat（后两项执行时由变量构造实际控制字符，不将控制字节写入CSV）；空词为三个空格。",1. 分别发送三个非法字符串，再发仅空白关键词且合法默认排序。,1. 未闭引号及两个控制字符请求各顶层INPUT_ERROR/安全search定位，无查询成功empty或崩溃，UI可修正；空白trim后正常返回权限/filter有界默认两对象，不作为词法失败或无限全量。
+TC165,搜索、筛选与操作上下文,R13 · 搜索更新、分页和错误状态稳定可解释,网络搜索失败与服务内部失败不伪装无匹配且可继续筛选导航,AC-13-5;FD04;BD08;I12,P0,UI组件层允许typed响应/网络mock；独立真实后端集成使用受控搜索依赖故障或数据库失败注入，不能用UI mock证明后端失败；当前锁定scopeA、search=blue、已有旧结果。,"1. UI分别收到网络失败与顶层INTERNAL_ERROR，随后修改普通filter并导航返回。
+2. 恢复真实后端依赖并以当前scope/filter重试。","1. 分别明确网络/服务错误和retry，非无匹配；旧数据标旧/不可操作，锁定scope和导航不丢失，普通filter可改，不显示内部凭据或SQL。
+2. 只当前scope/filter的成功响应解除错误并展示真实结果；旧失败/旧请求不能覆盖，新查询仍有界。"
+TC166,搜索、筛选与操作上下文,R13 · 搜索更新、分页和错误状态稳定可解释,旧搜索worker和延迟replica不能覆盖新版本或清掉新dirty,AC-13-1;BD08;I12,P0,真实PostgreSQL writer/replica和搜索worker集成，允许事务屏障；P revision10=name OldRevisionUnique，旧任务已取输入并暂停；writer可提交revision11=name NewRevisionUnique并标新dirty，replica仍revision10。,"1. 提交revision11后恢复旧任务，检查search_revision/dirty，再drain新版本任务。
+2. 搜索NewRevisionUnique与OldRevisionUnique并检查持久化文档版本。","1. 旧任务CAS不能写旧文档覆盖11或清新dirty，必须保留/再排新版本工作；读取writer快照，不能仅replica旧值bulk_update无版本清dirty。
+2. 文档最终revision11，新词找到P，旧词在此fixture不命中P；未承诺固定秒数，故障重试前dirty仍可诊断。"
+TC167,搜索、筛选与操作上下文,R13 · 搜索更新、分页和错误状态稳定可解释,事务回滚及搜索任务失败不留下伪成功文档更新,AC-13-1;AC-13-5;BD08;I12,P0,真实事务/on_commit/worker集成；P已索引CommittedName；一次业务更新故意在提交前回滚，另一次合法更新CommittedNewName后真实worker存储失败；错误不含凭据。,"1. 回滚临时名RolledBackName更新并读取任务/搜索。
+2. 成功提交CommittedNewName，触发受控worker失败后恢复并drain重试。","1. 没有为回滚版本发布有效on_commit更新；P仍CommittedName，RolledBackName不可查。
+2. 失败保留新版本dirty和安全重试/告警，不静默清除；恢复后新词可查、旧词不再唯一，不能把任务失败宣称搜索更新已完成。"
+TC168,搜索、筛选与操作上下文,R13 · 搜索更新、分页和错误状态稳定可解释,搜索结果数量地址和身份错误均不披露越scope对象,AC-13-6;FD04;BD08;I12,P0,真实授权/API；允许scope内U1有地址词SharedCity，受限U2同词并带唯一身份证明/邮箱；另有受限staff/App关联对象；分别使用合法有限权限员工与无域权限身份。,"1. 在合法有限scope搜索SharedCity并请求结果数量和允许字段，再搜索受限对象唯一词。
+2. 无域权限身份执行相同搜索并尝试结果中受限地址/身份字段。","1. 仅U1/允许count；受限唯一词在允许scope正常无匹配，不显示U2数量/地址/身份/关联App；scope先于count。
+2. 无域权限请求PERMISSION_DENIED，不用success empty掩盖；受限字段按真实field guard失败，错误不回显地址/身份值或泄露对象存在性。"
+TC169,搜索、筛选与操作上下文,R14 · 锁定条件、导出与批量操作采用同一有效范围,渠道仓库锁定上下文在搜索分页和清除普通条件后保持,AC-14-1;FD04;BD09;I14,P0,真实Dashboard/Core；可信分配上下文锁channel=alpha/warehouseW1；A1/A2/A3在alpha且W1有库存，B1仅beta，C1仅W2；全部name含coat，pageSize2。,"1. 进入锁定列表、输入coat并翻到第二页。
+2. 增加普通name条件后清除普通筛选及搜索。","1. 两页合计仅A1/A2/A3，请求channel alpha且where锁stocks.warehouseIds[W1]，锁定chips只读。
+2. 仅userFilter/search清空，alpha/W1继续生效，结果仍只A集合；不跳到全店B1/C1，不把可编辑URL作为真实授权。"
+TC170,搜索、筛选与操作上下文,R14 · 锁定条件、导出与批量操作采用同一有效范围,普通仓库条件冲突通过AND得到交集而不能覆盖锁定仓库,AC-14-2;FD04;BD09;I14,P0,真实Core及filter构造UI；锁W1，P1仅W1、P2仅W2、P3同时W1/W2且均有库存；用户普通warehouse条件W2，其他filter无约束。,1. 选择普通W2并记录ProductWhereInput.AND变量与全页ID。,1. where.AND保留stocks.W1与stocks.W2两个条件，实际交集仅P3；P2不可借last-spread覆盖出现，P1不满足普通W2不出现；冲突/交集范围说明清晰。
+TC171,搜索、筛选与操作上下文,R14 · 锁定条件、导出与批量操作采用同一有效范围,可编辑URL不能替换可信页面的锁定渠道或仓库,AC-14-2;FD04;BD09;I14,P0,真实Dashboard路由与Core；页面实际授权上下文alpha/W1，URL可编辑普通channel=beta/warehouseW2；alpha/W1对象A、beta/W2对象B，当前身份仅alpha/W1范围。,"1. 修改普通URL参数成beta/W2，刷新并搜索，检查最终请求和显示。
+2. 直接API指定受限beta/W2对象。","1. 从可信context重建锁定alpha/W1，不改成beta/W2；scalar冲突展示空交集/冲突解释，绝不显示B或发送放宽锁定的成功操作。
+2. Core真实scope拒绝显式受限对象，NOT_FOUND保护存在性或域权限PERMISSION_DENIED；URL锁定不充当额外授权，无受限信息。"
+TC172,搜索、筛选与操作上下文,R14 · 锁定条件、导出与批量操作采用同一有效范围,礼品卡改筛选排序后立即导出全集而非旧范围或当前页,AC-14-3;FD04;BD09;I13,P0,真实礼品卡列表/导出worker及Dashboard；G1 active/USD/balance10、G2 active/USD/20、G3 inactive/USD/30、G4 active/EUR/40；有MANAGE_GIFT_CARD和MANAGE_GIFT_CARD_EXPORTS，pageSize1；初始旧filter inactive。,"1. 改filter为isActive:true/currency:USD、排序CURRENT_BALANCE DESC，当前请求成功后立即点击FILTER导出CSV。
+2. 真实worker完成后核对文件集合和顺序。","1. Query.giftCardsExport携带提交时filter、search、sortBy和稳定key，scope FILTER；按新范围G1/G2，不用旧G3/闭包、不是仅当前页G2。
+2. Job SUCCESS且url可用才下载完成；文件集合严格{G1,G2}、顺序G2/G1，不含G3/G4，不额外开放已使用卡完整code。"
+TC173,搜索、筛选与操作上下文,R14 · 锁定条件、导出与批量操作采用同一有效范围,商品导出携带同一锁定仓库渠道where搜索及排序,AC-14-3;FD04;BD09;I13;I14,P0,真实列表与export worker；锁channel alpha/W1，P1/P2满足且name coat，P3同范围name hat，P4只beta/W2且name coat；合法两项商品导出权限，pageSize1。,"1. 列表search=coat、where.AND含W1和普通发布条件、NAME ASC取所有页确认{P1,P2}，提交productsExport FILTER CSV。
+2. 完成后对照job保存的effective_scope_snapshot及文件。","1. ProductsExportInput使用where/search/channel/sortBy及key，不发送旧filter参数；请求范围与当前列表完全同源，接收不代表生成文件完成。
+2. 文件全匹配集合{P1,P2}、NAME ASC，不含P3/P4，snapshot锁W1/alpha未丢，不仅导当前页。"
+TC174,搜索、筛选与操作上下文,R14 · 锁定条件、导出与批量操作采用同一有效范围,voucher主体及代码导出使用各自真实target输入范围,AC-14-3;FD04;BD09;I13,P0,真实voucher列表/worker；channel alpha有效voucher V1/V2符合filter.search=QAOffer和status ACTIVE，V3在beta，V4不匹配；V1代码C1/C2、V2代码C3；MANAGE_DISCOUNTS+MANAGE_VOUCHER_EXPORTS，pageSize1。,"1. 按当前列表filter/channel/sortBy提交vouchersExport(scope:FILTER,fileType:CSV,key)。
+2. 代码已选C1/C2时用voucherCodesExport(voucherId:V1,ids:[C1,C2],fileType:CSV,key)提交并等待两文件。","1. voucher主体job有效集合V1/V2，不仅当前页，不含V3/V4；search放VoucherFilterInput.search而不是不存在的根search参数。
+2. 代码文件仅C1/C2、无C3；VoucherCodesExportInput不发送不存在的scope/filter/sortBy，代码列表有普通筛选时须提交解析出的当前允许ids，不退成不受限全店。"
+TC175,搜索、筛选与操作上下文,R14 · 锁定条件、导出与批量操作采用同一有效范围,scope为ALL或FILTER的非法组合不会退回全店导出,AC-14-2;AC-14-3;BD09;FD04;I13,P0,真实导出API；合法域及导出双权限，独立请求fixture；productsExport锁channel alpha/whereW1，giftCardsExport普通currency USD；记录原job数。,"1. 分别以ALL携带商品有效where/channel或礼品卡filter，再分别以FILTER但无任何有效限制提交。
+2. 在真无锁定/普通范围且有全域权限的独立fixture使用ALL。","1. 四非法组合各Export errors.code=INVALID、安全message定位scope/缺过滤，不创建job或退回全店文件。
+2. 合法ALL仅获准全域集合受理job，权限scope仍生效；无constraints才可ALL，完成仍需真实Job SUCCESS/url。"
+TC176,搜索、筛选与操作上下文,R14 · 锁定条件、导出与批量操作采用同一有效范围,IDS导出必须非空去重且每ID与当前有效scope相符,AC-14-3;AC-14-5;BD09;FD04;I13,P0,真实productsExport；锁alpha/W1允许P1/P2，P3在同可读域但不满足W1有效filter，P4真实无权；每子请求独立key/原job数，具双权限。,"1. 分别请求IDS ids:[]、ids:[P1,P1]、ids:[P1,P3]及ids:[P1,P4]，携带同锁定filter。
+2. 以ids:[P1,P2]及同filter提交合法导出。","1. 空/重复/失配P3分别Export INVALID，受限P4以NOT_FOUND保护存在性；均不静默剔除错误项后部分导出或退全量，不创建job。
+2. 仅P1/P2组成集合受理一次job；所选范围与有效filter和真实权限相交，完成文件只二者。"
+TC177,搜索、筛选与操作上下文,R14 · 锁定条件、导出与批量操作采用同一有效范围,Query导出仅显式用户动作触发且Apollo与HTTP不共享缓存,AC-14-3;AC-14-6;FD04;BD09;I13,P0,UI调用层可mock只验证query策略；后端真实GraphQL导出job集成；合法商品或卡导出权限，页面会正常refetch/focus重新加载；两个不同授权会话A/B。,"1. 进入列表、修改filter、focus/refetch但不点击导出，检查网络和job。
+2. A明确点击导出，检查Apollo fetchPolicy及实际HTTP响应缓存策略；B访问相同列表。","1. 无productsExport/giftCardsExport自动watchQuery或预取，无导出job；普通列表刷新不能隐式创建文件。
+2. A一次显式请求为no-cache，HTTP private/no-store、不可通过GET/CDN共享响应；B不能从A缓存得到job/url或自动重放创建，query缓存不跨身份。"
+TC178,搜索、筛选与操作上下文,R14 · 锁定条件、导出与批量操作采用同一有效范围,同key查询导出复用job而异参返回Export INVALID,AC-14-3;FD04;BD09;I13,P0,真实GraphQL/PostgreSQL导出及worker；合法scope FILTER currency USD，稳定UUID key K，沙箱可让首响应丢失；记录job/完成通知数。,"1. 并发提交同身份同K同输入giftCardsExport并在丢响应后同K重试。
+2. 使用K将filter改currency EUR重试；真实执行原job。","1. 同输入均同ExportFile.id，仅一job/一次有效任务结果，不因Query多次请求新建文件。
+2. 异参payload.errors.code=INVALID且field指向idempotencyKey、安全message解释幂等参数冲突，不能编不存在Export IDEMPOTENCY_CONFLICT；原job仍只USD且一次业务完成通知。"
+TC179,搜索、筛选与操作上下文,R14 · 锁定条件、导出与批量操作采用同一有效范围,选中行与全部筛选批量操作分别确认且实际集合一致,AC-14-4;FD04;BD09;I14,P0,真实giftCardBulkDeactivate和Dashboard；独立fixture两套均active，有效currency USD匹配G1/G2/G3、范围外G4 EUR，pageSize1；MANAGE_GIFT_CARD及对象scope合法。,"1. 第一套跨页选G1/G3，确认“2个选中”后停用。
+2. 第二套选择“全部筛选结果”并确认3个后停用，检查发给既有bulk mutation的ids。","1. 仅G1/G3变inactive、G2/G4不变，count2/errors[]，确认和实际作用集合一致。
+2. 提交解析出的G1/G2/G3 ids而非编造bulk filter参数；三者inactive、G4保持active、count3，不只当前页或全店。"
+TC180,搜索、筛选与操作上下文,R14 · 锁定条件、导出与批量操作采用同一有效范围,切换筛选后范围外旧选中项不被暗中批量执行,AC-14-4;FD04;BD09;I14,P0,真实Dashboard及giftcard bulk；G1 active/USD，G2 active/EUR；初始USD列表选G1，用户可切到EUR，数据固定。,"1. 切filter至EUR并等待当前列表成功，再执行选中行停用。
+2. 明确选择当前G2并确认停用。","1. scopeFingerprint变化清选择或要求重新确认范围内选择，旧G1不能仍被发送；未选当前对象时不发bulk，G1/G2原active。
+2. 仅ids[G2]被发出，G2停用且G1仍active；没有过时闭包暗中操作G1。"
+TC181,搜索、筛选与操作上下文,R14 · 锁定条件、导出与批量操作采用同一有效范围,域权限和专用导出权限同时满足才可从任何入口导出,AC-14-5;FD04;BD09;I13,P0,真实身份矩阵及UI；三域独立fixture：商品需要MANAGE_PRODUCTS+MANAGE_PRODUCT_EXPORTS，卡需要MANAGE_GIFT_CARD+MANAGE_GIFT_CARD_EXPORTS，voucher需要MANAGE_DISCOUNTS+MANAGE_VOUCHER_EXPORTS；每域分别仅域/仅导出/两者身份，scope相同。,1. 各身份通过列表按钮、弹窗和直接Query尝试当前导出；兼容旧exportProducts/exportGiftCards/exportVoucherCodes也分别尝试。,1. 每域仅任一单权身份各顶层PERMISSION_DENIED、无job/url，不能one-of替代AND；双权合法身份当前和兼容入口均实际受理正确scope job；旧入口不以成功空响应伪兼容，UI入口不扩权。
+TC182,搜索、筛选与操作上下文,R14 · 锁定条件、导出与批量操作采用同一有效范围,App与员工直接批量或导出仍受真实对象范围限制,AC-14-5;BD09;FD04;I13;I14,P0,真实Core/App权限；AppA与员工S具相应domain/export权限但仅允许G1，G2受限；AppB有自己job J2；保存G2状态和所有job数，UI锁定URL可被改。,"1. A/S分别绕UI提交G2直接导出IDS及giftCardBulkDeactivate([G2])。
+2. AppA查询AppB的exportFile J2及exportFiles。","1. 导出受限ID为NOT_FOUND且不创建job；bulk按现有对象错误返回受限失败/count0，G2不变，不回显卡余额/code；改URL不授范围。
+2. 显式J2受限不可读，不返回url/owner敏感数据；文件列表仅A当下有权own/domain jobs，不能凭域管理列出其他App文件。"
+TC183,搜索、筛选与操作上下文,R14 · 锁定条件、导出与批量操作采用同一有效范围,导出worker执行前权限撤销使job失败且不生成文件,AC-14-5;FD04;BD09;I13,P0,真实导出query/job/worker授权集成；员工或App原具卡域及导出双权，已受理J但worker被暂停尚未读取数据；可撤销MANAGE_GIFT_CARD_EXPORTS或目标对象scope，不执行当前产品测试。,"1. 撤销该身份导出权或scope后恢复真实worker执行J。
+2. 身份再次查询J及请求文件下载链接。","1. worker重查当前权限，J.status=FAILED且安全message，无文件/url、无导出完成成功通知；不依受理时权限继续泄露卡数据。
+2. 当前无权限读取为PERMISSION_DENIED/显式受限NOT_FOUND，不返回有效下载链接；UI不会把既有J.id当完成成功。"
+TC184,搜索、筛选与操作上下文,R14 · 锁定条件、导出与批量操作采用同一有效范围,筛选失败期间不允许用旧可见数据导出或批量操作,AC-14-6;FD04;BD09;I13;I14,P0,UI响应层可用typed network mock验证世代；真实Core集成单独验证成功集合；初始filterA结果{G1}，切filterB拟{G2}且B请求失败，旧A仍可供展示。,"1. 切到B让列表网络/权限请求失败并尝试导出/批量。
+2. 恢复B查询成功后明确重新选择/提交。","1. 显示当前B错误、旧A标过期，导出和bulk禁用，无以A快照或失败B范围发送动作；不是B成功无匹配。
+2. 只成功当前B可操作，提交对应G2范围，不沿用G1或旧selection；API真实范围由后端再校验。"
+TC185,搜索、筛选与操作上下文,R14 · 锁定条件、导出与批量操作采用同一有效范围,旧筛选响应迟到不能覆盖当前范围或污染导出快照,AC-14-6;FD04;BD09;I13;I14,P0,UI请求世代测试可mock到达顺序；真实export集成核集合；filterA={currency:USD}得G1，filterB={currency:EUR}得G2，A请求慢、B请求先成功，身份具双权。,"1. A后切B，先返回B再返回A，点击当前FILTER导出。
+2. 核对实际送达Core输入及真实worker结果。","1. 当前scopeFingerprint保持B/EUR，迟到A可隔离缓存但不得成为可操作当前数据；界面仍G2，提交snapshot B而非A闭包。
+2. job/file只G2，G1不出现；不借Apollo cache-and-network晚到写入恢复旧范围。"
+TC186,搜索、筛选与操作上下文,R14 · 锁定条件、导出与批量操作采用同一有效范围,导出pending失败与成功文件状态分别表达且不凭jobID显示完成,AC-14-3;AC-14-6;FD04;BD09;I13,P0,真实job/worker与UI；三个隔离有效导出J1停在PENDING/url null、J2受控文件写失败、J3正常执行；UI组件可mockSUCCESS但url null边界，不替代真实worker验证。,1. 读取J1/J2/J3状态并展示导出结果，再在UI单测输入SUCCESS/url null。,1. J1只已受理等待、无下载成功；J2 FAILED安全错误和重试途径、非成功空文件；J3必须SUCCESS且url可用才下载完成；SUCCESS/url null仍不可下载完成，HTTP200/jobID/events有值均不足。
+TC187,搜索、筛选与操作上下文,R15 · 选择器、层级导航与长搜索词保持上下文,同一仓库反复勾选取消再选只提交一次当前选择,AC-15-1;FD05;BD09;I14,P1,UI仓库分配选择器及真实保存联调；候选W1/W2允许，父表单原无W1，保存入口使用现有授权业务字段，不编独立selector API；每次确认有明确选择集合。,"1. 对W1依次选中、取消、再次选中并确认。
+2. 重开在独立未保存fixture中选W1后取消并确认。","1. 候选和已选W1各一次，确认输入含W1恰一次、无重复回调或重复关联。
+2. 取消W1彻底从提交集合移除，本次确认不发送W1；候选仍一次，不能append取消项或以checkbox事件不区分勾选状态。"
+TC188,搜索、筛选与操作上下文,R15 · 选择器、层级导航与长搜索词保持上下文,分页重叠和未加载已选仓库都以对象ID去重,AC-15-1;FD05;BD09;I14,P1,UI组件层重叠页响应可mock；候选第一页W1/W2，第二页W2/W3；已选W2和暂未加载但有权限W4，label可相同但ID不同；真实Core查询另验不重复节点。,"1. 加载第二页、选W2/W3并打开已选区。
+2. W4候选稍后加载，再取消W2并确认。","1. 候选按ID仅W1/W2/W3，已选W2/W3/W4各一次，未加载W4不凭暂缺页丢失；同名不同ID不是一个对象。
+2. W4加载后仍一次、取消W2从最终输入去除，最终集合W3/W4无重复；不按label去重误删对象。"
+TC189,搜索、筛选与操作上下文,R15 · 选择器、层级导航与长搜索词保持上下文,分类钻入子级和返回父级保持正确父子关系与面包屑,AC-15-2;FD05;BD09;I14,P1,真实category查询及Dashboard；树根A/B，A子A1/A2，A1子A11，B子B1；各ID固定且可读，无查询时对象写操作。,"1. 从根进入A再A1，查看children/parent/ancestors与面包屑。
+2. 返回A再根并再次进入A。","1. A仅子A1/A2，A1仅A11；路径根→A→A1，parentId精确，候选不混入祖先A或B1。
+2. A页面恢复A1/A2、根页A/B，面包屑逐级正确，没有重复父子项；纯导航不产生保存/事件。"
+TC190,搜索、筛选与操作上下文,R15 · 选择器、层级导航与长搜索词保持上下文,同名不同父分类搜索不会混淆ID与层级归属,AC-15-2;FD05;BD09;I14,P1,真实层级数据/UI；A下子X1 name=Tools，B下X2 name=Tools，各ID不同；当前parentA、breadcrumb根/A，分类children签名仅分页不含search，客户端可在已加载children展示过滤。,1. 在A子级上下文搜索Tools并选择显示项，再返回父级重新进入A。,1. 当前层级仅X1、面包屑仍根/A，不以label等同X2；不得给Category.children编不存在filter/search参数；确认/导航定位X1，重复进出不多出父项或错误B归属。
+TC191,搜索、筛选与操作上下文,R15 · 选择器、层级导航与长搜索词保持上下文,层级搜索清除后恢复当前父级而不意外回根,AC-15-2;AC-15-3;FD05;BD09;I14,P1,UI层级导航及真实数据；parentA下A1/A2，search=A1、cursor为当前层级合法页，锁定context不变，RootCategories与category.children实际签名可用。,1. 搜索A1、清除关键词后重新读取/展示当前父级候选。,1. filter仅清普通search，parentA和根/A面包屑保留，候选恢复A1/A2且不重复，游标按当前层级合理重置；不以categoryListUrl空参数跳回根或清锁定。
+TC192,搜索、筛选与操作上下文,R15 · 选择器、层级导航与长搜索词保持上下文,加载与无匹配状态均保留当前位置和未提交选择,AC-15-3;FD05;BD09;I14,P1,UI组件层可延迟响应mock；parentA/面包屑根A、search=Tools、已选允许W1或X1，当前层级没有Tools匹配；上下文保存可检查。,"1. 请求延迟期间观察选择器，再返回合法empty响应。
+2. 清词重试并返回当前父级正常数据。","1. loading不闪作无匹配；empty明确无结果但parent/breadcrumb/锁定context及未提交选择不被清空，不生成保存成功。
+2. 仍当前A，不重置根；正常数据恢复且选择按ID一次保留，清词仍有界请求。"
+TC193,搜索、筛选与操作上下文,R15 · 选择器、层级导航与长搜索词保持上下文,网络错误重试不会丢层级位置筛选和返回路径,AC-15-3;FD05;BD09;I14,P1,UI层网络mock仅验证显示/状态，真实Core成功恢复另联调；在A/A1层级、search=hat、合法cursor、锁定channel alpha，选择X1未提交。,1. 当前请求网络失败后观察并点击重试，恢复成功响应。,1. 明确networkError及retry、非empty；重试保留parentA1/面包屑/filter/允许选择X1和返回路径，成功请求仍同scope；不清锁定channel或改写别层数据。
+TC194,搜索、筛选与操作上下文,R15 · 选择器、层级导航与长搜索词保持上下文,权限错误及权限撤销不会静默丢选项或提交受限仓库,AC-15-3;FD05;BD09;I14,P1,真实权限/业务保存及UI；当前selector有允许W1已选、位置与锁定channelA，之后撤W1对象访问或保存权限；候选查询失败应为权限错误。,"1. 撤权后刷新候选并尝试确认/保存W1。
+2. 恢复合法权限后重试当前查询。","1. 显示permissionError区别无结果，保导航和可修正选择上下文但受限值不可提交成功；Core真实拒绝且原关联不变，不在错误披露仓库敏感信息。
+2. 仍当前位置/filter而非根/默认列表，恢复仅允许W1一次，用户可重新明确确认；撤权失败不被缓存为已保存。"
+TC195,搜索、筛选与操作上下文,R15 · 选择器、层级导航与长搜索词保持上下文,旧父级请求迟到不会污染已切换子级的候选和面包屑,AC-15-2;AC-15-3;FD05;BD09;I14,P1,UI请求世代单测可typed mock；A子A1/A2，B子B1，先请求A慢、后切B快，两个允许但contextKey不同。,1. 先返回B数据再返回旧A数据，并在B继续搜索/选择。,1. 候选只B1、parentB、面包屑根/B，旧A响应忽略不append A1/A2；当前selection及filter只属B，不丢当前导航或由旧response伪保存。
+TC196,搜索、筛选与操作上下文,R15 · 选择器、层级导航与长搜索词保持上下文,详情及分配弹窗返回列表恢复锁定普通筛选和合法分页,AC-15-4;FD05;BD09;I14,P1,真实Dashboard route state及Core；列表锁alpha/W1、普通search=coat、sort NAME ASC，固定数据有效第二页cursor；分别从该页进入对象详情或打开分配弹窗，两路径独立。,1. 详情返回列表；另一次打开分配弹窗后取消返回列表。,1. 两路径均恢复alpha/W1、coat、NAME ASC和同合法第二页，对象集合与进入前一致；不无故到无过滤首页，不残留已取消弹窗值或产生对象写入。
+TC197,搜索、筛选与操作上下文,R15 · 选择器、层级导航与长搜索词保持上下文,返回时游标失效只提示有界重置而不清除锁定范围,AC-15-4;FD05;BD09;I14,P1,真实route/API和UI错误处理；进入详情前列表alpha/W1、search=coat、第二页cursor；数据变化或请求指纹使原cursor不可恢复，API实际给INPUT_ERROR；允许scope仍存在。,1. 返回列表并处理无效cursor，继续查看恢复后的列表。,1. 显示位置已失效/需重新加载的提示，再按first合法页大小有界重置；保alpha/W1、coat、sort，不循环重试非法cursor或静默跳无filter全店首页。
+TC198,搜索、筛选与操作上下文,R15 · 选择器、层级导航与长搜索词保持上下文,长关键词视觉截断仍可确认完整值并正常清除和提交,AC-15-5;FD05;FD04;BD09;I14;I12,P1,UI RTL/Playwright设计及真实query变量联调；列表/选择器在项目实际支持视口；关键词为可重建255字符长词含唯一末尾标记END，在I12长度边界内，输入容器宽度与列表基线已记录。,"1. 粘贴255字符长词，使用tooltip或可滚动输入查看末尾，并检查提交变量与布局。
+2. 键盘/清除按钮清词并观察focus、列表及请求。","1. 输入/列表不重叠跳宽、无横向遮挡关键动作；视觉ellipsis不改实际255字符，完整END可确认，发送全词非截断值，无任意像素/耗时SLA。
+2. 真实输入/search为空，focus可继续编辑，锁定/层级context仍在、列表有界恢复；不残留取消长词或把显示截断当真实值。"
+TC199,身份与内容安全,R16 · 商店密码认证三态统一生效,ENABLED允许合格客户和员工取得来源正确的密码会话,AC-16-1;BD10;I15,P0,Core真实GraphQL集成设计层；模式ENABLED；独立active且confirmed客户C、员工S，S具有受控后台权限；仅合规密码fixture。,"1. 分别在隔离子场景以C、S正确密码调用tokenCreate，读取errors/token/refreshToken/user。
+2. 核对JWT签名和auth_method/policy_generation，并访问本人查询及S获准后台查询。","1. 两次errors为空且user为对应fixture，受支持token和refreshToken有效，不混用用户。
+2. token标明password来源及当前generation；C不获得员工权限，S仅获得原有获准权限。"
+TC200,身份与内容安全,R16 · 商店密码认证三态统一生效,ENABLED保留停用未确认和错误密码的原有拒绝条件,AC-16-1;BD10;I15,P0,Core集成设计层；ENABLED；关闭未确认登录且开启邮件确认；每个子场景独立账户与节流计数。,"1. 分别调用tokenCreate：停用账户正确密码、未确认账户正确密码、active confirmed账户错误密码。
+2. 读取响应和会话Cookie，并核对用户状态。","1. 停用账户按Base账户条件拒绝，未确认返回ACCOUNT_NOT_CONFIRMED，错误密码返回INVALID_CREDENTIALS，均不是认证成功。
+2. 无有效token/refreshToken或成功会话；账户条件不被ENABLED放宽，错误不回显密码。"
+TC201,身份与内容安全,R16 · 商店密码认证三态统一生效,CUSTOMERS_ONLY保留客户登录重置设置修改和密码注册能力,AC-16-2;BD10;I15,P0,Core集成设计层；CUSTOMERS_ONLY；各子场景独立非staff合格客户；有效channel、允许redirectUrl、重置token、会话及新邮箱fixture。,"1. 独立执行tokenCreate、requestPasswordReset、setPassword、passwordChange、accountRegister五个合法客户流程；不共享可消耗token。
+2. 分别核对登录结果、邮件任务、密码散列或新账户及后续客户登录。","1. 五个受支持客户入口均按正常流程成功，不返回PASSWORD_AUTHENTICATION_CUSTOMERS_ONLY。
+2. 各流程只产生应有副作用；客户可用新密码认证，均不产生员工会话或后台权限。"
+TC202,身份与内容安全,R16 · 商店密码认证三态统一生效,CUSTOMERS_ONLY拒绝员工和有客户业务关联员工的密码登录,AC-16-2;BD10;I15,P0,Core集成设计层；CUSTOMERS_ONLY；员工S及有客户订单的is_staff=true账户SC，均为active confirmed；独立子场景。,"1. 分别直接调用S、SC的tokenCreate，不经Dashboard隐藏入口。
+2. 检查payload、Cookie和后台请求身份。","1. 两者均返回PASSWORD_AUTHENTICATION_CUSTOMERS_ONLY及安全明确原因，不将SC降级成可恢复员工权限的客户会话。
+2. 无密码员工token/refresh会话，原权限和订单关联不变；不能凭该结果取得后台权限。"
+TC203,身份与内容安全,R16 · 商店密码认证三态统一生效,CUSTOMERS_ONLY在写密码和发邮件前拒绝员工重置设置及修改,AC-16-2;BD10;I15,P0,Core集成设计层；员工S；ENABLED时已有合法重置token和密码会话后切为CUSTOMERS_ONLY；另有可独立授权的外部员工会话。,"1. 独立以S调用requestPasswordReset、旧邮件token的setPassword及外部会话的passwordChange。
+2. 核对密码散列、邮件任务和签token记录。","1. 三个入口均返回PASSWORD_AUTHENTICATION_CUSTOMERS_ONLY；外部会话不意味着可重建员工密码能力。
+2. 原密码不变，不排密码邮件或签发密码token；策略检查先于这些副作用。"
+TC204,身份与内容安全,R16 · 商店密码认证三态统一生效,DISABLED拒绝所有客户和员工密码写入认证与注册入口,AC-16-3;BD10;I15,P0,Core集成设计层；DISABLED；每个身份和入口隔离；active客户/员工、启用前重置token、合法外部会话及新注册邮箱fixture。,"1. 客户和员工分别直接调用tokenCreate、requestPasswordReset、setPassword、passwordChange；另以新邮箱调用accountRegister密码注册。
+2. 比对所有子场景的账户数量、密码散列、邮件、会话和业务关联。","1. 全部密码入口返回PASSWORD_AUTHENTICATION_DISABLED及可分支原因，不因外部会话或旧重置token放行。
+2. 无新密码/注册账户/密码会话、无密码邮件任务或部分账户写入，既有账户与订单关联保持。"
+TC205,身份与内容安全,R16 · 商店密码认证三态统一生效,受限模式阻断创建客户或员工时附带的密码邀请旁路,AC-16-2;AC-16-3;BD10;I15,P0,Core集成设计层；有MANAGE_USERS/MANAGE_STAFF的外部员工身份；customerCreate和staffCreate采用有效redirectUrl，独立邮箱；只验证密码邀请能力及其副作用，不断言纯身份创建必须回滚。,"1. 独立在CUSTOMERS_ONLY执行customerCreate、staffCreate的密码邀请路径，在DISABLED执行二者密码邀请路径。
+2. 核对password相关邮件事件/token以及随后setPassword；无redirectUrl的纯身份创建单独作对照。","1. CUSTOMERS_ONLY客户邀请按正常合同可用，员工邀请被明确策略阻断；DISABLED二者密码能力均被阻断，不静默产生可用密码链接。
+2. 受限路径不排密码通知、不签可用密码token且setPassword仍按当前模式拒绝；只断言密码邀请能力被阻断，不将纯身份创建视为密码认证或要求其必须回滚。"
+TC206,身份与内容安全,R16 · 商店密码认证三态统一生效,受限模式拒绝带来源及无来源旧密码refresh和verify旁路,AC-16-2;AC-16-3;BD10;I15,P0,Core集成设计层；ENABLED时签发password来源access/refresh及可信基线无auth_method旧token；各子场景隔离；切模式后无replica延迟放行。,"1. CUSTOMERS_ONLY对员工旧token、DISABLED对客户和员工旧token分别调用tokenRefresh及tokenVerify；refresh输入与httpOnly cookie+正确CSRF各独立验证。
+2. 检查新token、verify.isValid和受保护查询的身份。","1. 员工CUSTOMERS_ONLY路径返回PASSWORD_AUTHENTICATION_CUSTOMERS_ONLY，DISABLED路径返回PASSWORD_AUTHENTICATION_DISABLED；无标记旧token按password派生处理，不能续期。
+2. 不签新token且verify不为true；旧密码token不能取得被禁用的会话/后台权限，Cookie渠道不绕策略。"
+TC207,身份与内容安全,R16 · 商店密码认证三态统一生效,auth_method和策略世代不得由客户端伪造或复活旧密码会话,AC-16-2;AC-16-3;AC-16-4;BD10;I15,P0,Core认证集成设计层；受控签名token fixture；已记录generation g的密码token及provider拥有的external token；不使用真实token。,"1. 持密码token，将其客户端载荷改成external或更改policy_generation而不重签，再调用verify/refresh和后台查询。
+2. 经有权身份按CAS切ENABLED→DISABLED→ENABLED后重试原generation g密码token，另以重新合法认证的新密码token作对照。","1. 篡改签名被JWT_INVALID_TOKEN/JWT_DECODE_ERROR类真实安全错误拒绝，不能仅信客户端auth_method。
+2. 旧generation以已有真实JWT/认证/策略错误失效，不能重新取得会话；只校验旧密码token不被重新启用模式复活，不强定未约定错误优先级。新合法认证读取当前generation并可用，外部来源凭据按provider合同处理。"
+TC208,身份与内容安全,R16 · 商店密码认证三态统一生效,三态密码策略不误禁有效外部认证和独立App凭据,AC-16-3;AC-16-4;BD10;I15;I16,P0,真实认证集成设计层；受控OIDC测试provider及App token；各模式独立同条件fixture；无UI mock替代真实认证。,"1. 在ENABLED、CUSTOMERS_ONLY、DISABLED分别完成externalObtainAccessTokens/externalRefresh/externalVerify及获准后台查询。
+2. 以App凭据访问其允许的查询，并对照其原有scope限制。","1. 各模式下有效外部流程仍按provider成功，external来源不被password guard一概撤销。
+2. App凭据维持自身权限边界，不被密码模式误禁，也不能调用仅员工支持的入口取得额外权限。"
+TC209,身份与内容安全,R16 · 商店密码认证三态统一生效,保存密码模式以CAS递增版本并使下一认证立即读到新值,AC-16-4;FD01;FD06;BD10;I15,P0,真实Core与Dashboard联调设计层；有MANAGE_SETTINGS的外部员工；主库ENABLED/version v；可受控保持副本旧值；模式缓存有已加载数据。,"1. 在设置页只编辑DISABLED不保存，并直接执行合法密码登录。
+2. 以expectedVersion=v调用shopSettingsUpdate保存DISABLED，重新读mode/version，紧接下一次密码认证且副本仍为旧值。
+3. 重新打开登录页及设置页读取生效策略。","1. 未保存draft不改变生效模式或auth缓存，ENABLED密码登录仍可用。
+2. errors=[]、返回DISABLED且version递增；下一请求立即PASSWORD_AUTHENTICATION_DISABLED，不被副本/缓存旧值放行。
+3. 公开mode、设置生效值与登录入口一致，不将配置保存提示成登录成功。"
+TC210,身份与内容安全,R16 · 商店密码认证三态统一生效,密码模式省略保留而null缺版本非法枚举均无副作用,AC-16-4;AC-16-5;BD10;I15,P0,Core集成设计层；MANAGE_SETTINGS；有效mode/version；每种输入独立回到相同基线。,"1. 分别提交省略passwordAuthenticationMode的合法其他设置更新、passwordAuthenticationMode:null、变更mode但省expectedVersion、非法枚举值。
+2. 读取各结果并重读生效mode与相关设置。","1. 省略mode合法保留；null返回Shop INVALID，缺版本返回REQUIRED，非法枚举在GraphQL coercion/validation阶段失败。
+2. 错误子场景原mode/version与其他设置均不部分改变，无认证策略副作用；成功其他设置不替换mode。"
+TC211,身份与内容安全,R16 · 商店密码认证三态统一生效,密码模式并发保存冲突不覆盖先成功值或自动重放旧draft,AC-16-4;AC-16-5;FD01;FD06;BD10;I15,P0,真实联调设计层；两个MANAGE_SETTINGS外部会话同时读version v；A draft CUSTOMERS_ONLY，B draft DISABLED。,"1. A以v保存成功后，B仍以v保存其draft。
+2. 在B查看冲突并重读baseline，不确认前不再次保存；执行员工密码认证。","1. A成功并递增version；B返回CONFLICT且不覆盖A值。
+2. B保留draft并显示冲突，不自动拿新version重发；生效仍CUSTOMERS_ONLY，员工收到对应策略错误，缓存不存B失败值。"
+TC212,身份与内容安全,R16 · 商店密码认证三态统一生效,无配置权限只能读公开mode且不能读取版本或修改策略,AC-16-5;FD06;BD10;I15,P0,真实API加UI设计层；匿名、客户、无MANAGE_SETTINGS员工及非获准App分别隔离；已有有效模式。,"1. 读取公开Shop.passwordAuthenticationMode；单独读取settingsVersion并直接提交shopSettingsUpdate变更mode。
+2. 以无权员工打开设置页面，查看字段和保存入口后重读生效值。","1. 公开非空mode可读；settingsVersion和改策略均顶层PERMISSION_DENIED，不以无数据替代无权限。
+2. 界面只读并解释限制，后台仍拒绝；mode/version不改变且错误不泄露敏感身份。"
+TC213,身份与内容安全,R16 · 商店密码认证三态统一生效,密码策略加载和保存失败保留原生效值且不污染缓存,AC-16-5;FD01;FD06;I15,P0,Dashboard UI设计层；仅网络/GraphQL响应mock；已保存ENABLED，draft DISABLED；加载失败、网络保存失败、payload INVALID各独立fixture。,"1. 分别模拟策略首次加载失败及合法draft保存发生网络错误或payload.errors非空。
+2. 检查提示、编辑、Apollo生效缓存、重试入口与登录页读取；再给予合法成功响应。","1. 加载显示可恢复错误，保存失败均不toast成功；保留旧baseline和draft，不把HTTP200当成功。
+2. 失败时生效缓存仍ENABLED且不把未知策略当ENABLED闪登录；成功后才刷新事实。UI mock仅验证状态，不宣称Core生效。"
+TC214,身份与内容安全,R16 · 商店密码认证三态统一生效,后台三态登录入口按provider可用性和未知加载状态正确显示,AC-16-6;FD06;I15,P0,Dashboard UI设计层；mode三态与provider有/无的六个独立fixture，另设loading、权限或网络错误fixture；只mock展示数据。,"1. 逐个打开后台login及独立password-reset route，检查密码和外部按钮；对loading/error观察初始显示。
+2. 对CUSTOMERS_ONLY/DISABLED且无provider的页面尝试导航和重试。","1. ENABLED按正常账户流程显示员工密码入口；CUSTOMERS_ONLY/DISABLED均隐藏或禁用员工login/reset；外部按钮仅对应有效provider；loading/unknown不闪密码表单。
+2. 无可用后台方式显示稳定空态及支持说明，不崩溃、构造虚假成功或绕过禁用route；error与无provider空态不同。"
+TC215,身份与内容安全,R16 · 商店密码认证三态统一生效,密码重置策略错误不通过存在不存在或停用邮箱枚举账户,AC-16-3;AC-16-5;BD10;I15,P0,Core安全集成设计层；DISABLED；已有active/停用客户邮箱和不存在邮箱均为受控fixture；独立节流条件。,"1. 分别以三种邮箱直接调用requestPasswordReset，固定其他输入合法。
+2. 比较field/code及安全消息分类、邮件与日志展示。","1. 三者均明确PASSWORD_AUTHENTICATION_DISABLED，外部可观察错误不暴露邮箱是否存在或账户状态。
+2. 不排密码邮件、无token或敏感身份回显；不造响应时间SLA，检查错误语义及副作用而非臆定时间阈值。"
+TC216,身份与内容安全,R16 · 商店密码认证三态统一生效,未配置历史商店迁移后保留管理员密码能力和可读默认模式,AC-16-7;FD06;BD10;I15,P0,迁移专项待执行设计层；基线无显式密码模式商店、active管理员与合法密码；空库独立子场景；本阶段不执行迁移。,"1. 在后续受控环境执行目标迁移并重读Shop.passwordAuthenticationMode；另验证目标空库初始化。
+2. 历史管理员密码登录后打开设置与登录页，再重复迁移检查身份和策略。","1. 旧未配置商店与新初始化返回ENABLED且版本可按权限读取，不默认为DISABLED造成锁出。
+2. 既有管理员原支持登录仍可用，UI与生效值一致，重复迁移不重复改用户或撤销权限；不是本阶段已升级成功的承诺。"
+TC217,身份与内容安全,R17 · OIDC 合同和首次身份关联关闭旧密码旁路,Google启用refresh时使用access_type offline而不附offline_access,AC-17-1;BD10;FD06;I16,P0,真实Core与受控Google合同测试provider集成设计层；启用refresh；有效redirect fixture；不是UI伪造授权URL。,"1. 调用externalAuthenticationUrl(pluginId,input)，解析authenticationData内授权请求参数并按Google合同完成授权。
+2. 完成externalObtainAccessTokens及externalRefresh，检查成功身份和必要凭据。","1. 授权请求包含access_type=offline，scope包含正常openid/profile/email而不附offline_access，provider不因错误scope拒绝。
+2. 按provider允许流程取得并使用refresh能力，errors为空；必要凭据仅在规定认证边界返回，不额外持久化。"
+TC218,身份与内容安全,R17 · OIDC 合同和首次身份关联关闭旧密码旁路,未请求refresh的Google授权不被强制改成离线流程,AC-17-1;BD10;I16,P0,真实provider集成设计层；Google合同fixture关闭enable_refresh_token；其他授权条件有效。,"1. 调用externalAuthenticationUrl并检查授权参数，再完成常规外部登录。
+2. 检查返回和前端使用的认证信息。","1. 不强制追加离线授权参数或offline_access，普通授权按provider合同可用。
+2. 不凭空承诺refreshToken已取得；正常登录能力不因refresh关闭丢失。"
+TC219,身份与内容安全,R17 · OIDC 合同和首次身份关联关闭旧密码旁路,非Google provider保留自身合法refresh参数合同,AC-17-1;BD10;I16,P0,真实外部集成设计层；受控非Google OIDC provider明确支持offline_access scope而不接收access_type；开启refresh。,"1. 生成该provider授权请求并按其合同完成授权和刷新。
+2. 将其参数与Google独立子场景比较。","1. 该provider的offline_access按其合同保留，不被统一改写成Google access_type=offline。
+2. 两类provider各自成功，前端不自行补scope或覆盖Core参数。"
+TC220,身份与内容安全,R17 · OIDC 合同和首次身份关联关闭旧密码旁路,已验证邮箱首次关联原子保留本地用户和业务关联并关闭密码,AC-17-2;BD10;I16,P0,真实Core/OIDC/数据库集成设计层；active本地用户U有密码、订单、地址和权限；合法issuer/sub及email_verified=true且邮箱匹配；旧密码token fixture。,"1. 首次完成externalObtainAccessTokens，读取user并检查数据库identity与用户密码状态。
+2. 重读订单/地址/权限，再以旧密码和旧password access/refresh尝试取得原权限。","1. 成功复用U的ID，只建唯一issuer/sub关联；set_unusable_password及token generation更新与关联同事务完成。
+2. 必要业务关联和权限不丢；旧密码不能登录，旧密码token不能续会话，返回EXTERNAL_AUTHENTICATION_REQUIRED或对应已禁模式原因，不降级后门。"
+TC221,身份与内容安全,R17 · OIDC 合同和首次身份关联关闭旧密码旁路,email_verified为false或缺失不能按邮箱自动合并本地账户,AC-17-2;AC-17-4;BD10;I16,P0,真实OIDC集成设计层；本地用户U同邮箱；email_verified=false与省略字段各独立provider签名fixture，无其他合法关联授权。,"1. 分别以两个fixture完成外部回调并尝试首次邮箱关联。
+2. 比较用户、identity、密码、业务关系及登录token。","1. 两种输入均不能自动合并U，返回Account INVALID或既有安全认证错误，不把未验证邮箱当已验证。
+2. U原密码和关联不变，无新用户/半identity或成功token，错误不泄露受限用户数据。"
+TC222,身份与内容安全,R17 · OIDC 合同和首次身份关联关闭旧密码旁路,缺失subject或邮箱的无效OIDC身份不创建半关联,AC-17-4;BD10;I16,P0,真实OIDC集成设计层；缺sub、空sub、缺email三个隔离签名fixture，其他安全字段有效。,"1. 逐个调用externalObtainAccessTokens尝试回调。
+2. 核对Account错误及用户/identity/密码变化。","1. 三者均稳定INVALID/既有认证错误，无合法身份时不以邮箱fallback成功。
+2. 无新增账户或部分关联、无密码清除和业务权限改变，响应不返回成功token。"
+TC223,身份与内容安全,R17 · OIDC 合同和首次身份关联关闭旧密码旁路,同issuer和sub重复登录稳定复用唯一身份不重做首次关联,AC-17-3;BD10;I16,P0,真实OIDC集成设计层；U已关联issuer I/sub s；合法重复授权，必要缓存可冷热分别准备。,"1. 依次在冷缓存和热缓存状态以I/s完成登录三次。
+2. 核对user ID、identity数量、业务关联及首次关联generation变更次数。","1. 每次均复用U，既有identity稳定，不每次当新用户。
+2. identity与账户不重复；只首关联执行本地密码关闭/对应generation提升，重复登录不反复破坏用户业务数据。"
+TC224,身份与内容安全,R17 · OIDC 合同和首次身份关联关闭旧密码旁路,identity唯一性在两个同身份并发回调下仍保持一个账户,AC-17-2;AC-17-3;AC-17-4;BD10;I16,P0,真实数据库并发集成设计层；U符合verified email关联；两个合法不同code映射同issuer/sub；设置事务竞争屏障，非UI mock。,"1. 并发提交两个首次合法回调并等待两事务结束。
+2. 查询identity、账户、密码及原业务关联。","1. 只一个事务建立关联；另一复用已建立U或返回稳定安全竞争错误，不出现原始IntegrityError/重复用户成功。
+2. 只一个issuer/sub identity绑定U；本地密码关闭完整、业务关系保留，无孤立identity或半事务。"
+TC225,身份与内容安全,R17 · OIDC 合同和首次身份关联关闭旧密码旁路,issuer不同的相同sub不会被当成同一外部身份,AC-17-3;AC-17-4;BD10;I16,P0,真实OIDC集成设计层；provider I1/sub s关联U1，I2/sub s关联U2；两个不同verified邮箱且scope独立。,"1. 分别通过I1和I2完成相同字符串sub的外部登录。
+2. 尝试以I2凭据读取U1身份或权限。","1. 唯一键包含provider issuer，分别复用U1/U2，不因sub相同交叉覆盖。
+2. I2不取得U1会话/权限，identity和本地用户关联保持独立。"
+TC226,身份与内容安全,R17 · OIDC 合同和首次身份关联关闭旧密码旁路,已关联subject的邮箱变更不会改绑其他本地用户,AC-17-3;AC-17-4;BD10;I16,P0,真实OIDC集成设计层；issuer/sub已绑定U，另一用户V占有新邮箱；独立子场景的新空闲verified邮箱与V邮箱回调。,"1. 同一issuer/sub分别使用空闲verified新邮箱和V的邮箱尝试后续登录。
+2. 核对返回身份、邮箱唯一性、U/V的订单和identity。","1. 身份始终以既有issuer/sub绑定U为准；空闲邮箱按现有安全更新规则处理，冲突邮箱按安全失败或保留原邮箱合同处理，不改绑V。
+2. 不创建重复账户，不覆盖V密码、邮箱或业务关系；冲突不形成半关联或签发V的token。此例只验证issuer/sub身份不变及事务安全，不要求未约定的邮箱冲突错误优先级。"
+TC227,身份与内容安全,R17 · OIDC 合同和首次身份关联关闭旧密码旁路,外部认证不放宽本地停用账户条件,AC-17-4;BD10;I16,P0,真实OIDC集成设计层；停用本地用户U与合法verified同邮箱首次回调；已关联后停用的U为独立子场景。,"1. 分别尝试停用用户的首次关联登录和已关联身份的后续登录。
+2. 核对token、账户激活状态与identity变化。","1. 均被既有安全账户条件拒绝，不能仅provider有效就自动启用U。
+2. 无成功会话或部分首次关联，用户仍停用；错误不含token和敏感身份。"
+TC228,身份与内容安全,R17 · OIDC 合同和首次身份关联关闭旧密码旁路,OIDC回调state nonce和redirect不合法时在关联前失败,AC-17-4;BD10;I16,P0,真实provider合同集成设计层；各子场景独立state/code；state篡改、缺state、nonce不匹配、未允许redirect四种fixture，沿既有provider安全流程。,"1. 逐个提交无效回调或生成请求，不绕过Core plugin。
+2. 核对失败响应以及用户/identity/密码和外部token存储。","1. 按既有state/nonce/redirect安全校验稳定拒绝，使用Account INVALID或真实JWT/认证错误，不编造新错误枚举。
+2. 不部分关联、清密码或成功签token；消息不回显授权code/state原串或client secret。"
+TC229,身份与内容安全,R17 · OIDC 合同和首次身份关联关闭旧密码旁路,无效ID token签名issuer audience或过期均不能关联账户,AC-17-4;BD10;I16,P0,真实OIDC安全集成设计层；受控JWKS与各自独立ID token fixture，分别错误签名、issuer、audience和expired；不使用真实token。,"1. 将四类无效token经provider回调交Core externalObtainAccessTokens验证。
+2. 检查错误和持久化副作用。","1. 各类均按provider验证/JWT类安全错误失败，expired不被当无过期token，不能仅读取email/sub就关联。
+2. 无用户/identity半写入或密码变更；失败返回不含完整token/JWKS secret。"
+TC230,身份与内容安全,R17 · OIDC 合同和首次身份关联关闭旧密码旁路,授权拒绝token交换失败和provider不可达均保持原关联事实,AC-17-4;BD10;FD06;I16,P0,真实集成故障设计层；受控provider返回用户拒绝、无效code、token端连接失败三个隔离场景；原本地用户和既有身份基线可读。,"1. 分别完成失败授权回调或token交换。
+2. 查看Core errors、Dashboard错误和用户/identity/密码基线。","1. 失败均明确可识别，不以authenticationData或HTTP200当登录成功。
+2. 不新建或部分错误关联，已有密码与业务关系保持；UI可恢复且日志/消息无敏感凭据原串。"
+TC231,身份与内容安全,R17 · OIDC 合同和首次身份关联关闭旧密码旁路,首次关联事务后段失败会回滚identity密码关闭和token签发,AC-17-2;AC-17-4;BD10;I16,P0,Core数据库故障集成设计层；合法verified关联U；后续可用事务故障注入点使generation或identity提交失败，不mock成功provider冒充关联。,"1. 合法回调进入首关联后在持久化事务后段注入失败。
+2. 检查账户、identity、password/generation与认证结果，再修复故障重试合法新code。","1. 认证返回真实安全失败，整个关联事务不半提交或先返回成功token。
+2. 失败原U/password/generation保持且无孤立identity；修复后的首关联可完整成功一次，业务关联不丢。"
+TC232,身份与内容安全,R17 · OIDC 合同和首次身份关联关闭旧密码旁路,已关联用户即使ENABLED也不能重置设置修改密码恢复后门,AC-17-2;AC-17-5;BD10;I15;I16,P0,真实认证集成设计层；U合法首关联且全局ENABLED；关联前重置token与password token及关联后的外部会话；每个入口隔离。,"1. 分别调用tokenCreate旧密码、requestPasswordReset、关联前token的setPassword、外部会话passwordChange及旧token refresh/verify。
+2. 核对U的密码与identity、邮件和签token。","1. 各password旁路均被EXTERNAL_AUTHENTICATION_REQUIRED或既有失效JWT安全错误阻断，ENABLED不重开U本地密码。
+2. 无密码重新启用、密码邮件或新密码会话；外部identity与业务关系不改变。"
+TC233,身份与内容安全,R17 · OIDC 合同和首次身份关联关闭旧密码旁路,已关联身份在全局三态变更后仍按provider认证而非密码策略误禁,AC-17-5;BD10;FD06;I15;I16,P0,真实Core/provider联调设计层；已关联客户U和员工S；有MANAGE_SETTINGS外部管理员；各mode独立合法外部凭据。,"1. 按CAS依次保存CUSTOMERS_ONLY、DISABLED、ENABLED，每次用U/S外部登录和externalRefresh/externalVerify。
+2. 每次直接重试已关联用户旧密码及重置入口，不经UI。","1. 有效外部认证在三态均遵provider合同可用，auth_method external不被policy generation无差别撤销。
+2. 旧密码不在任何模式恢复；DISABLED/员工CUSTOMERS_ONLY给相应policy原因，其余EXTERNAL_AUTHENTICATION_REQUIRED，不能只靠隐藏按钮。"
+TC234,身份与内容安全,R17 · OIDC 合同和首次身份关联关闭旧密码旁路,认证错误和前端不必要持久化不会泄露敏感token身份信息,AC-17-4;FD06;BD10;I16,P0,受控Core/provider/browser集成安全设计层；token、client-secret及敏感身份为可检索哨兵fixture；成功与失败分开，允许必要现有auth session存储。,"1. 完成合法登录、provider失败、refresh失败，收集错误响应、错误页面、日志展示、URL和扩展消息。
+2. 检查localStorage/sessionStorage以及现有必要认证cookie/session范围。","1. 错误、日志展示、URL或form message不含token/client-secret原串及不必要身份信息；成功token仅合法认证响应可见。
+2. 不新增无业务必要refreshToken持久化；最小必要session遵既有合同，不将全部认证token响应禁止当错误预期。"
+TC235,身份与内容安全,R18 · 富文本结构与链接安全在保存前校验,合法EditorJS固定block结构可保存并重读完整内容,AC-18-1;BD11;FD09;I17,P0,Core真实API设计层；MANAGE_PRODUCTS员工；商品P原description D0；受控URL与EditorJS对象通过JSONString编码。,"1. 以productUpdate提交blocks含paragraph、level=1及6的header、quote、list、image.file.url和embed.service/source/embed，顶层time/version可省、tunes={}。
+2. 重读P.description并在Dashboard呈现。","1. errors=[]，合法固定block及允许字段保存，无未知字段自动混入。
+2. 内容和合法链接、图片/嵌入及列表不丢；UI显示与Core一致，非所有链接被删除。"
+TC236,身份与内容安全,R18 · 富文本结构与链接安全在保存前校验,旧字符串列表与结构化嵌套列表均保留子项和合法meta,AC-18-1;FD09;BD11;I17,P0,真实Core和Dashboard联调设计层；有域编辑权限；旧字符串list与nested list为独立商品fixture。,"1. 分别保存items=[字符串]的legacy list，以及ordered/unordered/checklist结构化list，含content、子items、checked和合法start/counterType。
+2. 通过UI再编辑保存并重读所有深层子项及meta。","1. 两种列表均合法成功，nested与legacy不需强制互转。
+2. 深层子项及合法meta完整往返，不用convertEditorJSListBlocks降维只保留顶层content。"
+TC237,身份与内容安全,R18 · 富文本结构与链接安全在保存前校验,根item计为一的九层嵌套列表处于支持范围,AC-18-1;AC-18-5;FD09;BD11;I17,P0,真实Core/UI设计层；独立合法商品；list根item depth=1，每项只有一个子项，最深9。,"1. 提交九层list的description，末层content为depth-9哨兵且items=[]。
+2. 重读并在UI再保存。","1. 九层合法成功，无RICH_TEXT_TOO_DEEP。
+2. 末层哨兵和全路径保留，UI不裁剪层级。"
+TC238,身份与内容安全,R18 · 富文本结构与链接安全在保存前校验,十层嵌套列表包含边界可保存,AC-18-1;AC-18-5;FD09;BD11;I17,P0,真实Core/UI设计层；独立合法商品；根item=1、最深10且第十层无子item。,"1. 保存十层list，最深content为depth-10哨兵。
+2. 重读及Dashboard编辑保存后比对结构。","1. 最大支持深度10包含边界成功，不误以JSON对象层数计depth。
+2. 全部十层完整保留，Core与UI同边界。"
+TC239,身份与内容安全,R18 · 富文本结构与链接安全在保存前校验,十一层嵌套列表返回深度错误且不保存合法前段,AC-18-5;BD11;FD09;I17,P0,真实Core设计层；P原description D0；合法paragraph后接根item=1最深11的list。,"1. productUpdate提交混合合法paragraph和十一层list，同时修改商品name。
+2. 读取errors和P已保存description/name。","1. 返回RICH_TEXT_TOO_DEEP、field=description，message定位blocks/list深度位置，不回显危险原串。
+2. 整个业务保存失败，D0和原name保持，不保存前段或裁剪第11层后报成功。"
+TC240,身份与内容安全,R18 · 富文本结构与链接安全在保存前校验,缺失必要结构非法类型和数组null在清洗前拒绝,AC-18-2;BD11;I17,P0,Core集成设计层；P=D0；每类输入隔离；JSON本身合法以触发结构校验。,"1. 独立提交{}、blocks:null、blocks:{}、blocks:[null]、缺block.type、缺data、paragraph缺text、header.level=7及text为数组。
+2. 读取结构错误并重读P。","1. 每项返回INVALID_RICH_TEXT_STRUCTURE，field=description且message指出相应blocks路径/字段，不先宽松清洗成功。
+2. 原description保持，无部分写入或页面崩溃；非法形状不被当空内容。"
+TC241,身份与内容安全,R18 · 富文本结构与链接安全在保存前校验,顶层block data和非空tunes的未知字段均拒绝,AC-18-2;BD11;I17,P0,Core集成设计层；合法EditorJS基线；额外字段子场景独立。,"1. 分别加入顶层onload、block.extra、data未知键、tunes中的未配置键和未知block类型script；同结构空tunes={}作成功对照。
+2. 核对errors和原内容。","1. 未知或多余字段与block类型返回INVALID_RICH_TEXT_STRUCTURE；空tunes合法，不把它也误拒。
+2. 失败不静默删字段后报success，原内容保持且错误安全定位字段。"
+TC242,身份与内容安全,R18 · 富文本结构与链接安全在保存前校验,列表混合项空项和非法meta不被容错读取规则放行保存,AC-18-2;AC-18-5;BD11;I17,P0,Core集成设计层；P=D0；独立输入list.items混字符串与对象、含null、缺content、checked为字符串、meta.start=0。,"1. 逐项提交上述list输入。
+2. 核对结构错误、列表和其他商品字段。","1. 各非法形状返回INVALID_RICH_TEXT_STRUCTURE，定位items或meta；不因历史读取容错而允许新写入。
+2. 整个保存无部分改变，合法兄弟item不单独写入。"
+TC243,身份与内容安全,R18 · 富文本结构与链接安全在保存前校验,固定合法scheme和安全站内相对链接按规则保留,AC-18-1;AC-18-3;BD11;I17,P0,Core集成设计层；受控HTTP/HTTPS链接、mailto邮箱、tel号码和站内/catalog/item路径；HTML仅允许属性。,"1. 独立将http、https、mailto、tel及安全相对URL放入paragraph/quote/list content链接并保存。
+2. 重读链接并检查正规化后的href及正文。","1. 五种合法链接按固定合同成功，不因非http全部删除。
+2. href语义和正文保留，正规化不变成可执行scheme或协议相对外站。"
+TC244,身份与内容安全,R18 · 富文本结构与链接安全在保存前校验,javascript data file和未知scheme导致整次保存失败,AC-18-3;AC-18-5;BD11;I17,P0,Core安全设计层；仅受控不可外发的javascript/data/file/custom-scheme fixture；每项独立P=D0。,"1. 各输入以合法paragraph加含非法scheme链接的paragraph提交，并同时修改name。
+2. 核对errors及原description/name。","1. 各项返回UNSAFE_URL、field=description，message定位链接，不把href替为#invalid后宣告成功。
+2. D0与原name均不变，合法前段不部分保存，错误不回显可执行原串。"
+TC245,身份与内容安全,R18 · 富文本结构与链接安全在保存前校验,scheme大小写实体控制符和正规化混淆不能绕固定URL校验,AC-18-3;BD11;I17,P0,Core安全设计层；隔离fixture包含JaVaScRiPt、实体编码冒号/字母、scheme内控制符及正规化后成为危险scheme的输入。,"1. 分别将各混淆href放入合法EditorJS文本提交；对合法HTTPS大小写作为对照。
+2. 读取错误/保存结果并核对数据库内容。","1. 解码正规化后危险URL返回UNSAFE_URL，合法HTTPS对照可保留，不只匹配原始小写javascript。
+2. 危险子场景无写入，合法对照正常保存；不在message/log展示危险原串。"
+TC246,身份与内容安全,R18 · 富文本结构与链接安全在保存前校验,配置附加scheme不能扩大富文本固定协议白名单,AC-18-3;BD11;I17,P0,后续Core受控安全配置设计层；测试配置尝试附加data和custom scheme；本Stage不改配置或源码；独立原内容。,"1. 在后续测试配置环境分别提交附加scheme链接，并以https链接作对照。
+2. 重读内容和公开配置入口。","1. data/custom仍UNSAFE_URL，https仍合法，安全约束不因可配置extra schemes扩大。
+2. 失败保留原内容；UI不提供绕过固定scheme约束的扩协议入口。"
+TC247,身份与内容安全,R18 · 富文本结构与链接安全在保存前校验,image的file.url和embed URL应用同安全路径且不写ulr拼错字段,AC-18-1;AC-18-3;BD11;I17,P0,Core集成设计层；合法image HTTPS及相对站内URL、合法embed HTTP(S)和非法URL独立fixture；原内容D0。,"1. 分别提交合法image.file.url、合法embed.source/embed；再独立提交这些URL字段的危险scheme或带凭据/控制符输入。
+2. 重读成功和失败对象的JSON及错误。","1. 合法路径成功；非法URL在结构或安全URL层明确失败，image/embed不因非文本入口绕规则。
+2. 成功只更新file.url而不产生ulr；失败保持D0，error定位对应blocks URL字段。"
+TC248,身份与内容安全,R18 · 富文本结构与链接安全在保存前校验,合法链接HTML属性清洗保留正文而移除不允许属性,AC-18-3;BD11;FD09;I17,P0,Core/UI安全设计层；合法HTTPS href配受控onmouseover等非允许HTML属性；EditorJS结构无额外JSON键。,"1. 提交合法链接文本带非允许HTML属性，重读并渲染。
+2. 检查href、正文、事件属性和脚本执行哨兵。","1. 结构合法且URL安全按HTML固定allowlist清洗，不把JSON未知字段容错规则混用到HTML；合法链接仍能保存。
+2. 不允许事件属性不保留/执行，正文与安全href保留；不新增可执行HTML能力。"
+TC249,身份与内容安全,R18 · 富文本结构与链接安全在保存前校验,新窗口外链强制安全rel且不能通过opener控制来源页面,AC-18-4;FD09;BD11;I17,P0,真实Core和浏览器安全联调设计层；受控外站页面只能尝试修改测试来源页；rel缺省与rel=opener两个独立合法HTTPS链接fixture。,"1. 保存target=_blank的两种链接并重读href/target/rel。
+2. 在隔离浏览器打开外链，由受控页面尝试经window.opener改变来源页。","1. 保留合法外链，安全rel包含noopener noreferrer；不能保留具有opener控制效力的组合。
+2. 外链无法控制来源页，来源URL/编辑状态保持；不以删掉所有链接作为安全成功。"
+TC250,身份与内容安全,R18 · 富文本结构与链接安全在保存前校验,同请求多字段及多个block混合非法内容整体原子失败,AC-18-2;AC-18-3;AC-18-5;BD11;I17,P0,Core事务集成设计层；P原name=N0/description=D0；结构、unsafe URL、depth11三个隔离失败场景。,"1. 分别以name=N1及description合法前段/非法中段/合法后段执行一次productUpdate。
+2. 读取payload错误并核对name、所有description block及相关更新事件。","1. 每场景返回对应INVALID_RICH_TEXT_STRUCTURE/UNSAFE_URL/RICH_TEXT_TOO_DEEP，不把清洗后的部分内容作为成功结果。
+2. name与description完整保持N0/D0，不发成功业务更新；不臆定已有bulk接口整批事务规则。"
+TC251,身份与内容安全,R18 · 富文本结构与链接安全在保存前校验,商品页面集合配送和翻译直接API都执行权威富文本校验,AC-18-2;AC-18-3;AC-18-5;AC-18-6;BD11;I17,P0,真实Core多域集成设计层；独立Product/Page/Collection/ShippingMethod及相应翻译fixture；员工或获准App具有各域/翻译权限；原文可重读。,"1. 分别经productUpdate、pageUpdate、collectionUpdate、shippingPriceUpdate及product/page/collection/shippingPriceTranslate提交同一缺结构、危险URL、depth11输入，每种错误每入口隔离。
+2. 核对对应Product/Page/Collection/Shipping/TranslationErrorCode和原内容；修为合法内容再提交。","1. 所有description入口分别返回三对应安全码和可定位field/message；直接API与UI相同，不出现某域仅清洗后成功。
+2. 失败原内容不变，合法修复按权限成功；translation同规则，不把App授权当安全绕过。"
+TC252,身份与内容安全,R18 · 富文本结构与链接安全在保存前校验,前端非法富文本明确定位并保留draft供修复后真实保存,AC-18-6;FD09;BD11;I17,P0,真实Core/UI联调设计层；商品编辑页原D0；非法URL/结构/depth输入独立fixture；可在UI展示层mock错误以补定位单测，不替代联调。,"1. 从编辑页提交非法description，并另用直接API同输入对照。
+2. 按blocks路径提示修复为十层内合法EditorJS再手工保存、重读。","1. 两入口均失败且字段/链接/深度可定位，UI不toast保存成功、不污染已保存缓存；draft可修复。
+2. 修复后真实Core成功才更新baseline，nested子项保留；不把预览或历史搜索抽取容错当已保存成功。"
+TC253,App、扩展与 Webhook,R19 · App 安装、更新和历史扩展遵循当前合同,合法当前manifest安装后查询和渲染统一新扩展字段,AC-19-1;FD07;BD12;I18,P0,真实Core/worker/Dashboard及受控HTTPS manifest服务集成设计层；authenticated staff有MANAGE_APPS及可授予MANAGE_PRODUCTS；新唯一identifier。,"1. appFetchManifest读取合法id/version/name、PRODUCT_DETAILS_MORE_ACTIONS+POPUP及settings={}后，以非空appName/manifestUrl appInstall。
+2. 等待后续真实安装结果并重读App.extensions的mountName/targetName/settings，打开Dashboard扩展。","1. 预览校验成功；appInstall返回errors=[]及AppInstallation受理，尚非已安装成功。
+2. 作业SUCCESS后Core已安装App存在，查询和UI均同新合同，不显示旧mount/target/options为新写入字段。"
+TC254,App、扩展与 Webhook,R19 · App 安装、更新和历史扩展遵循当前合同,App扩展完整设置原子更新并以版本进行往返编辑,AC-19-1;FD07;BD12;I18,P0,真实Core/DB/UI设计层；有MANAGE_APPS及App scope；App A/version v，WIDGET GET扩展属于A；POST更新使用同origin可信tokenTargetUrl。,"1. appUpdate(id=A,input.extensions整组合法新label/url/mountName/targetName/settings={method:POST},expectedVersion=v)。
+2. 重读App.settingsVersion和全部扩展，在UI重新打开编辑与渲染目标。","1. errors=[]，整组更新成功且version递增，settings完整保存，不只抽取method后丢JSON。
+2. 编辑/查询/渲染同POST语义和新字段，其他合法扩展按提交组保留，不需要重装。"
+TC255,App、扩展与 Webhook,R19 · App 安装、更新和历史扩展遵循当前合同,可选tokenTargetUrl和其他安装信息省略仍允许无token合法安装,AC-19-2;BD12;FD07;I18,P0,真实安装集成设计层；新manifest只必需id/version/name及合法GET或POPUP；tokenTargetUrl、可选about/brand/permissions/webhooks/settings等按合同省略；各目标独立。,"1. 预览并安装省略可选信息的合法manifest，AppInstallInput省略activateAfterInstallation。
+2. 核对worker结果、permissions/settings/webhooks默认值、激活状态及所有HTTP请求。","1. 合法安装可受理并最终完成，不因tokenTargetUrl缺省失败；省略项显式正规化permissions/webhooks=[]、settings={}、GET方法默认GET。
+2. activateAfterInstallation按Base默认true；没有安装token投递请求，不返回或意外新建不必要token，UI不误报缺信息失败。"
+TC256,App、扩展与 Webhook,R19 · App 安装、更新和历史扩展遵循当前合同,App必填安装输入在执行前校验而非产生半安装作业,AC-19-1;AC-19-3;BD12;I18,P0,Core集成设计层；有MANAGE_APPS员工；appName/manifestUrl必填；各非法输入独立，无既有同identifier干扰。,"1. 独立提交appName或manifestUrl省略/null、显式空串、非法URL；permissions含null单独提交。
+2. 核对GraphQL/payload错误、manifest HTTP和AppInstallation/App数量。","1. 必填省略/null及permissions null项在GraphQL执行前失败；空串REQUIRED/INVALID、非法URL按App INVALID_URL_FORMAT等实际校验码，不宣告受理。
+2. 失败无manifest副作用或半安装App/扩展；错误field可修复，不泄露token。"
+TC257,App、扩展与 Webhook,R19 · App 安装、更新和历史扩展遵循当前合同,重复identifier拒绝安装或更新而更新自身identifier合法,AC-19-3;BD12;I18,P0,真实Core/DB设计层；已有有效App A identifier=a及App B identifier=b，均有扩展；有权员工；子场景独立。,"1. 安装manifest.id=a；另更新B.identifier=a；再对照更新A.identifier=a的合法自身变更。
+2. 重读App数量、identifier和扩展/settings。","1. 前两路径返回App UNIQUE及identifier字段原因；排除自身后第三合法，不误报重复。
+2. 失败不破坏A/B或新增同identifier有效App，扩展/settings原样保持。"
+TC258,App、扩展与 Webhook,R19 · App 安装、更新和历史扩展遵循当前合同,同identifier并发安装的数据库竞争归约为唯一业务错误,AC-19-3;BD12;I18,P0,真实数据库/worker并发设计层；两个合法manifest同新id但不同受控URL；有权员工；竞争屏障使预校验均未看到existing App。,"1. 并发安装并推进两个作业到identifier唯一约束竞争点。
+2. 重读有效App、扩展、安装作业及错误。","1. 至多一个有效App安装；另一以UNIQUE等明确同identifier失败归约，不外露原始DB异常或双成功。
+2. 只成功App的完整扩展/settings存在，无孤立半安装或重复identifier；作业事实不把失败标成功。"
+TC259,App、扩展与 Webhook,R19 · App 安装、更新和历史扩展遵循当前合同,manifest和扩展权限必须属于合法枚举及可授予App权限子集,AC-19-3;AC-19-5;BD12;I18,P0,Core集成设计层；员工有MANAGE_APPS和MANAGE_PRODUCTS但无MANAGE_STAFF；App权限MANAGE_PRODUCTS；独立非法权限fixture。,"1. 分别安装未知permission字符串、申请不可授予MANAGE_STAFF、扩展声明不在App内的MANAGE_TRANSLATIONS；更新同条件单独验证。
+2. 重读已有App及扩展权限。","1. 未知权限INVALID_PERMISSION，超员工可授予或扩展超App范围OUT_OF_SCOPE_PERMISSION；GraphQL非法enum由coercion提前失败。
+2. 无部分提权、扩展更新或安装；错误只显示允许的权限原因，不含token/受限设置。"
+TC260,App、扩展与 Webhook,R19 · App 安装、更新和历史扩展遵循当前合同,非法target组合未知settings和错误JSON均拒绝整组更新,AC-19-3;BD12;I18,P0,Core设计层；App A/version v和两个合法扩展；独立非法manifest及appUpdate输入fixture。,"1. 分别提交WIDGET配MORE_ACTIONS mount、POPUP settings={method:POST}、NEW_TAB method=PATCH、settings为字符串/数组/未知键及无法解析JSON；整组同时含合法兄弟扩展。
+2. 读取App错误并重读settingsVersion和全部扩展。","1. target/settings问题按App INVALID或INVALID_MANIFEST_FORMAT、GraphQL解析错误明确拒绝并定位extensions；不静默移除未知设置后成功。
+2. 合法兄弟也不部分更新，原扩展与version保持；安装失败不破坏其他有效App。"
+TC261,App、扩展与 Webhook,R19 · App 安装、更新和历史扩展遵循当前合同,需要token的POST扩展必须具有同完整origin的可信投递地址,AC-19-2;AC-19-3;BD12;I18,P0,真实安装安全集成设计层；NEW_TAB/WIDGET POST独立；受控HTTPS extension=https://app.fixture.invalid:8443/edit；缺URL、异scheme/host/port及同origin子场景隔离。,"1. 分别安装POST扩展配缺tokenTargetUrl、异scheme、异host、异port；以同scheme/host/port不同path合法配置作对照。
+2. 记录目标HTTP、作业及App数据。","1. 前四配置App INVALID，不因tokenTargetUrl可选就移除POST安全边界；同完整origin合法配置才可用。
+2. 拒绝配置不投递token或留下部分App；合法配置仅向受信投递目标发送，不将token公开。"
+TC262,App、扩展与 Webhook,R19 · App 安装、更新和历史扩展遵循当前合同,相对扩展URL按appUrl解析且APP_PAGE只接受安全相对路径,AC-19-1;AC-19-3;BD12;I18,P0,Core安全集成设计层；合法appUrl；APP_PAGE=/settings，GET/POST relative extension fixture；缺appUrl和protocol-relative子场景隔离。,"1. 安装合法APP_PAGE相对路径及有appUrl的相对GET/POST扩展；独立尝试非APP_PAGE相对URL缺appUrl、APP_PAGE绝对URL及双斜线/反斜线危险路径。
+2. 检查正规化URL、POST origin及失败副作用。","1. 合法Base相对路径例外与appUrl解析仍支持；危险或不可解析目标INVALID/实际URL错误，不把相对路径误指向Dashboard origin。
+2. POST继续执行完整origin校验；失败无token外发或部分安装，合法目标按合同渲染。"
+TC263,App、扩展与 Webhook,R19 · App 安装、更新和历史扩展遵循当前合同,安装token只在必要独立POST边界投递且不跟随redirect,AC-19-2;AC-19-5;BD12;I18,P0,真实受控HTTP安装集成设计层；明确需token POST目标；成功2xx、3xx异origin redirect、4xx安全error.message、连接失败各独立；敏感哨兵token。,"1. 推进安装token投递，记录JSON和来源头及各返回；3xx不访问Location。
+2. 查看manifest/settings/public响应、日志、AppInstallation以及失败重试token计数。","1. 必要POST body仅auth_token，Saleor-Domain/Api-Url/Schema-Version及兼容X-Saleor-Domain按Base，未虚构Saleor-Signature；2xx只表示token接收，非整个安装完成。
+2. redirect不跟随；失败作业真实失败且不无限新建token，所有公开错误/日志/settings不回显凭据，已有有效App不破坏。"
+TC264,App、扩展与 Webhook,R19 · App 安装、更新和历史扩展遵循当前合同,非创建凭据路径不返回新安装token且创建token受显式场景与权限约束,AC-19-2;AC-19-5;BD12;I18,P0,真实Core设计层；有权员工及无权身份隔离；appFetchManifest/appInstall/appUpdate/query与明确appCreate/appTokenCreate创建凭据场景分开；无额外boolean参数。,"1. 在预览、安装受理、更新和普通App查询中检查可选择字段和返回；明确授权创建凭据时才请求其authToken。
+2. 以无权身份重试创建或读取token相关路径。","1. AppInstall只返回AppInstallation/errors且不存在authToken字段；其他非创建路径不泄露新token，appCreate/TokenCreate仅真实明确创建凭据场景可返回。
+2. 无权限PERMISSION_DENIED，不从错误或settings泄露token；不能把Base有authToken读取字段当所有安装均需返回token。"
+TC265,App、扩展与 Webhook,R19 · App 安装、更新和历史扩展遵循当前合同,扩展版本缺省冲突省略和清空遵循CAS整组事务语义,AC-19-1;AC-19-3;FD07;BD12;I18,P0,Core/UI集成设计层；App A/version v已有扩展；缺version、旧version、省略extensions、extensions=[]及null独立基线。,"1. 提交扩展变更缺expectedVersion；另先成功变更到v+1后以v重发；独立只改name省extensions、以当前version提交[]及显式null。
+2. 读取各错误/结果及App扩展和缓存。","1. 缺version REQUIRED，旧version CONFLICT；省略extensions保留、[]合法清空；null按非法输入拒绝，不默认为[]。
+2. 失败原扩展/version保持，UI不自动拿新version覆盖；合法其他变更与清空仅按对应完整事务更新。"
+TC266,App、扩展与 Webhook,R19 · App 安装、更新和历史扩展遵循当前合同,他App扩展ID和混合法非法扩展不能造成部分替换,AC-19-3;AC-19-5;BD12;I18,P0,真实Core/DB设计层；有权但仅A scope；A/version v与B扩展ID；各事务故障/非法组隔离。,"1. appUpdate A整组包含一个合法A扩展和一个B扩展ID；独立在合法整组持久化后段注入事务失败。
+2. 重读A/B的扩展、settingsVersion和更新事件。","1. B ID不属于A时明确INVALID/OUT_OF_SCOPE_APP或受限NOT_FOUND，不挪用B；后段失败不被包为成功。
+2. A/B全部旧扩展和版本保持，无部分删除/替换或成功事件，错误不泄露B受限settings。"
+TC267,App、扩展与 Webhook,R19 · App 安装、更新和历史扩展遵循当前合同,历史mount target method迁移保留可恢复设置且重复迁移幂等,AC-19-4;AC-19-6;FD07;BD12;I18,P0,迁移专项待执行设计层；Base历史WIDGET/NEW_TAB http_target_method GET/POST、POPUP/APP_PAGE及已有JSON settings fixture；本Stage不执行迁移。,"1. 后续受控执行目标迁移并查询mountName/targetName/settings及deprecated只读别名。
+2. 直接编辑渲染迁移扩展，再重复迁移核对扩展数量和settings。","1. 已知method确定映射{method:GET/POST}，其他恢复为空对象；已有JSON原样保留，不伪造Base未存任意options。
+2. 无需重装可查/编/渲染，重复迁移不重复扩展或覆盖settings；无法恢复部分明确兼容说明。"
+TC268,App、扩展与 Webhook,R19 · App 安装、更新和历史扩展遵循当前合同,App修改和扩展读取同时校验权限对象范围及敏感信息,AC-19-5;FD07;BD12;I18,P0,真实API/UI设计层；匿名、客户、无MANAGE_APPS员工、仅A scope有权员工及App身份；A/B包含不同获准扩展，敏感哨兵凭据。,"1. 各身份直接安装/更新并通过apps/app/appExtensions/node相关入口读取扩展，单独探测B。
+2. 检查UI入口、错误及所有可见settings/token。","1. 安装须authenticated staff AND MANAGE_APPS，更新须MANAGE_APPS+scope；无权顶层PERMISSION_DENIED，受限对象按NOT_FOUND保护存在性。
+2. 只读获准扩展和合法settings，token/受限信息不从别名、错误或列表泄露；UI隐藏不是唯一防线。"
+TC269,App、扩展与 Webhook,R19 · App 安装、更新和历史扩展遵循当前合同,新manifest旧字段明确迁移错误而当前客户端不发送旧字段,AC-19-6;AC-19-3;FD07;BD12;I18,P0,Core/UI协议设计层；新manifest输入mount/target/options的旧形fixture；目标新生成客户端操作可静态或捕获请求核对。,"1. appFetchManifest/appInstall提交旧形新manifest，并对照合法mountName/targetName/settings。
+2. 捕获Dashboard查询/更新变量，检查目标SDL和错误映射。","1. 旧manifest输入App MIGRATION_REQUIRED，不静默丢options安装；合法新形按目标可用，历史DB只读别名仍明确deprecated。
+2. 新客户端使用新字段和AppExtensionSettingsInput，settings为JSON；不手改生成文件或继续提交旧字段；UI可解释迁移错误。"
+TC270,App、扩展与 Webhook,R19 · App 安装、更新和历史扩展遵循当前合同,安装受理预览token接收和失败均不伪装作最终installed,AC-19-1;AC-19-2;AC-19-3;FD07;BD12;I18,P0,真实worker/HTTP/UI集成设计层；作业可受控暂停；manifest下载成功、token2xx后失败、worker成功三个隔离路径。,"1. 完成预览与appInstall受理，暂停worker后刷新详情；推进到token2xx但后段失败，另独立推进完整成功。
+2. 查看AppInstallation.status/message与Core实际apps及UI安装标记，失败再按允许流程重试。","1. 预览、PENDING受理、token接收均不显示已安装；失败FAILED，只有SUCCESS及实际已安装App事实可标installed。
+2. UI安全显示错误/恢复，不污染安装缓存；重试不破坏旧App或重复有效扩展。"
+TC271,App、扩展与 Webhook,R20 · App 响应只更新对应当前表单,商品frame完成opt-in握手后的合法回应仅更新对应draft,AC-20-1;FD07;BD12;I19,P0,Dashboard/browser协议设计层；商品P已加载baseline；受控App frame F和指定origin/contentWindow；FormContext含frameId/requestId/contextVersion、PRODUCT/objectId/allowedFields/nullableFields；Core保存另作真实联调。,"1. Dashboard仅向F指定targetOrigin发送SALEOR_FORM_CONTEXT/formContext；F以匹配SALEOR_FORM_READY/formReady echo后发送SUCCESS values含name/description合法EditorJS。
+2. 查看P draft、dirty、ACK及已保存Core事实。","1. origin/source/IDs/version全验且ready后才受理，允许字段正确更新P当前draft，不更新其他商品。
+2. 返回SALEOR_FORM_ACK/status=APPLIED且可echo actionId，含义仅draft受理；baseline/数据库不变，无自动mutation或保存成功toast。"
+TC272,App、扩展与 Webhook,R20 · App 响应只更新对应当前表单,翻译frame同时绑定对象语言和仅允许的翻译字段,AC-20-1;FD07;I19,P0,Dashboard协议设计层；P的FR翻译已加载；TRANSLATION FormContext必须含languageCode及仅name/seoTitle/seoDescription/description允许字段；P的EN及商品表单有独立draft。,"1. 完成FR frame握手并发送合法TRANSLATION SUCCESS values。
+2. 切看FR、EN和商品基础表单及Core保存状态。","1. 仅P/FR当前翻译draft接收合法值，不接受商品slug等路径。
+2. EN及商品基础draft/baseline不变，FR尚未已保存；用户手工合法保存才写对应languageCode。"
+TC273,App、扩展与 Webhook,R20 · App 响应只更新对应当前表单,回应省略字段保持而SUCCESS空对象是合法no-op,AC-20-1;FD07;I19,P0,Dashboard协议设计层；独立已ready PRODUCT/TRANSLATION frame；当前字段有已保存值及用户dirty值；每子场景新request。,"1. 分别发送仅values={seoTitle:新值}的SUCCESS，以及values={}的SUCCESS。
+2. 核对未提供字段、dirty状态、ACK及业务请求次数。","1. 仅提供且允许字段改变，省略name/description等保持；空values合法无操作而非清空全表单。
+2. no-op不清dirty或保存，ACK仅受理；无自动业务动作或其他表单修改。"
+TC274,App、扩展与 Webhook,R20 · App 响应只更新对应当前表单,null只有同时满足消息schema本次nullable和Core规则才清除字段,AC-20-1;FD07;I19,P0,Dashboard协议设计层；新request隔离：PRODUCT description可清，TRANSLATION name/seo/description按Core可清；allowedFields及nullableFields均显式收窄。,"1. 发送PRODUCT description:null且在nullableFields；独立发送同字段未列nullable、PRODUCT name:null/slug:null、PRODUCT seoTitle:null及TRANSLATION合法nullable name:null。
+2. 核对整消息是否应用及原draft。","1. 合法description和获准translation null只清对应draft；未获nullable或values schema非法的null拒整消息，PRODUCT name/slug不允许nullable，PRODUCT seoTitle的schema仍只许string。
+2. 拒绝子场景所有字段保持，不部分应用其他合法值；省略和null不同，不把null自动当默认空串。"
+TC275,App、扩展与 Webhook,R20 · App 响应只更新对应当前表单,握手字段收窄阻止价格权限metadata和未授权路径写入,AC-20-1;AC-20-4;FD07;I19,P0,Dashboard安全协议设计层；PRODUCT allowedFields仅description；每子场景新ready request；受控禁止字段。,"1. 分别发送name虽属PRODUCT固定字段但未列allowedFields，以及price/permissions/metadata/nested路径和合法description的混合values。
+2. 检查所有draft、ACK与Core请求。","1. 每种超本次字段子集或固定allowlist输入拒整message，不只丢未知字段后应用description。
+2. draft/baseline不变，无Core mutation；错误本地拒绝安全显示，不泄露未开放字段数据。"
+TC276,App、扩展与 Webhook,R20 · App 响应只更新对应当前表单,字段验证失败只展示安全预览和定位而不合并draft或宣告保存,AC-20-2;FD07;I19,P0,Dashboard协议设计层；已ready PRODUCT frame；draft有用户dirty description；errors为非空field/code/message，previewValues合法安全且属本次允许字段。,"1. 发送VALIDATION_ERROR含errors=[name,INVALID,安全消息]及合法previewValues。
+2. 检查字段错误、preview、draft、baseline和FormAck，再在UI修正。","1. 错误定位name；preview仅明确展示待修正候选，不把整次回应标保存完成。
+2. 返回PREVIEWED语义且draft/baseline不自动合并；用户修正后仍走正常校验/保存，无成功toast或业务写入。"
+TC277,App、扩展与 Webhook,R20 · App 响应只更新对应当前表单,不安全预览错误形状或互斥status载荷拒绝整回应,AC-20-2;AC-20-4;FD07;I19;I17,P0,Dashboard安全协议设计层；每种新request隔离；VALIDATION_ERROR空errors/缺field/code、preview危险EditorJS、SUCCESS混errors、PERMISSION_ERROR含values fixture。,"1. 逐个发送违反FormMessage schema或安全规则的输入。
+2. 查看preview DOM、draft、消息处理异常和Core请求。","1. 全部本地拒整消息，危险preview不渲染，status对应必需/禁止字段严格校验。
+2. draft/baseline及其他表单保持，无页面throw崩溃和业务请求；不把验证失败包装为APPLIED。"
+TC278,App、扩展与 Webhook,R20 · App 响应只更新对应当前表单,权限错误和App关闭回应保持所有已保存及其他编辑事实,AC-20-3;FD07;I19,P0,Dashboard协议设计层；独立已ready frames；当前P与另一表单都有baseline/dirty；PERMISSION_ERROR和CLOSED分别不带values/preview/errors。,"1. 分别发送PERMISSION_ERROR或CLOSED合法回应。
+2. 查看权限提示/弹窗关闭、ACK和两表单状态。","1. 呈现对应权限或关闭状态，不当SUCCESS；permission拒绝/closed ACK遵协议。
+2. 不写draft或baseline，不清另一表单编辑，不调用保存；关闭不能污染后续新frame。"
+TC279,App、扩展与 Webhook,R20 · App 响应只更新对应当前表单,完整origin不匹配的message不能更新或获取业务ACK,AC-20-4;FD07;I19,P0,Dashboard/browser安全设计层；允许origin=https://app.fixture.invalid:8443；F已ready；异scheme、host、port、opaque null origin隔离。,"1. 从各非可信origin发送结构和IDs均匹配的form response，不能以同hostname替代origin。
+2. 观察draft、出站postMessage及页面。","1. 每种origin mismatch拒绝/忽略，不应用任何字段。
+2. 不向非可信来源发送含业务context ACK或token，页面稳定，原draft不变。"
+TC280,App、扩展与 Webhook,R20 · App 响应只更新对应当前表单,同origin其他窗口或其他frame的source不能冒用指定frame,AC-20-4;FD07;I19,P0,真实browser协议设计层；同origin F1/F2及window popup；F1当前ready；各子场景可信结构但source不等F1.contentWindow。,"1. F2、popup和source=null分别发F1 IDs的form response，再对照F1真正source合法响应。
+2. 核对F1/F2 draft与ACK。","1. 非匹配source均拒绝，合法F1 source才受理；仅origin相同不具授权效力。
+2. 拒绝不交叉写或泄露ACK，合法仅改F1对应draft。"
+TC281,App、扩展与 Webhook,R20 · App 响应只更新对应当前表单,未完成正确FormReady握手时任何表单回应均不应用,AC-20-4;FD07;I19,P0,Dashboard/browser协议设计层；已注册但未加载/ready frame；旧notifyReady与新opt-in区分；IDs固定受控fixture。,"1. ready前发送SUCCESS；另发送缺失或错request/version的FormReady后再次回应；旧notifyReady单独对照。
+2. 完成正确FormReady后以新request发送合法响应。","1. ready前及错误握手均拒绝，旧notifyReady不自动授权新formResult；未加载frame不能写当前表单。
+2. 正确opt-in握手后当前合法响应可改draft，旧已拒response不会被延后偷偷应用。"
+TC282,App、扩展与 Webhook,R20 · App 响应只更新对应当前表单,frame request version和formType任一关联标识错误均整消息拒绝,AC-20-4;FD07;I19,P0,Dashboard协议设计层；当前ready PRODUCT F/r/v；每子场景独立，分别错frameId/requestId/contextVersion/formType及缺必填/负version。,"1. 逐个只改一个关联标识发送合法其余内容。
+2. 检查draft、ACK和消息异常。","1. 每项均本地拒绝/明确忽略，不能靠actionId或同origin跳过IDs/version/formType校验。
+2. 不部分更新或page崩溃；不返回表示APPLIED的错误确认。"
+TC283,App、扩展与 Webhook,R20 · App 响应只更新对应当前表单,多frame合法并行响应只作用于各自当前对象语言表单,AC-20-1;AC-20-4;FD07;I19,P0,Dashboard/browser设计层；PRODUCT P1 F1和TRANSLATION P2/FR F2同时ready，独立request/version；F1/F2允许origin可相同。,"1. 交错发送F2翻译和F1商品合法响应。
+2. 检查各对象/语言draft、基线和ACK目标source。","1. 响应分别只应用到对应P1与P2/FR，不以最后打开frame或全局request污染。
+2. ACK各回固定targetOrigin/contentWindow，baseline无自动保存，其他表单保持。"
+TC284,App、扩展与 Webhook,R20 · App 响应只更新对应当前表单,重复相同回应只复用原ACK而同request不同结果被拒绝,AC-20-4;FD07;I19,P0,Dashboard协议设计层；ready request r；同原message重播与改变values的同r结果隔离；记录draft apply和业务动作计数。,"1. 合法SUCCESS应用一次后重播同message，再发送同r但不同values。
+2. 核对ACK、apply计数、dirty和Core mutation。","1. 同message只回完全相同已记录ACK不重apply；同request不同结果明确拒绝，不覆盖第一次draft。
+2. 每request最多一次应用，无重复业务/保存动作；replay不清用户随后dirty编辑。"
+TC285,App、扩展与 Webhook,R20 · App 响应只更新对应当前表单,未知action和错误envelope不会抛异常破坏页面,AC-20-4;FD07;I19,P0,Dashboard协议设计层；受控已ready frame；未知action、未知type、null/字符串消息、额外未知字段及SUCCESS缺values隔离。,"1. 逐个向message handler送入无效消息，再发送新request合法消息。
+2. 观察页面、draft和ACK。","1. 全部reject/ignore而不throw Unknown action type使page崩溃，不误读为旧action。
+2. 非法输入无状态改变；后续合法当前消息仍可用，旧actions仅沿自身安全合同。"
+TC286,App、扩展与 Webhook,R20 · App 响应只更新对应当前表单,切对象切语言关闭重开和frame重载的过期响应全部失效,AC-20-5;FD07;I19,P0,Dashboard/browser设计层；打开时F/r/v保存旧响应；切商品、切翻译语言、关闭重开、frame重载分别独立generation fixture。,"1. 各子场景改变context并生成新request/version，随后送达旧F/r/v SUCCESS。
+2. 完成新握手后发送当前合法响应。","1. 旧响应拒绝/忽略，不写新对象/语言或重开的draft；已移除frame不借旧contentWindow关联继续写。
+2. 当前合法响应仍能应用，无误缓存旧ACK为新请求成功，baseline保持真实已保存值。"
+TC287,App、扩展与 Webhook,R20 · App 响应只更新对应当前表单,用户继续编辑提升contextVersion后迟到App结果不能覆盖dirty值,AC-20-5;FD07;I19,P0,Dashboard表单设计层；P draft原name=N0；App打开时version v，用户随后输入Nuser并dirty；旧App结果Napp已持有。,"1. 用户在App响应前继续编辑，使contextVersion递增/旧request废止，然后送达旧SUCCESS。
+2. 重开当前上下文、接收合法新结果并按权限手工保存；真实Core拒绝权限的对照隔离。","1. 旧响应丢弃或提示重新打开，Nuser与其他dirty不被Napp覆盖，不静默merge过期值。
+2. 合法新draft仍需表单校验和手工Core成功才更新baseline；无权限保存失败保留draft/原事实，postMessage不是Core授权。"
+TC288,App、扩展与 Webhook,R20 · App 响应只更新对应当前表单,FormContext和ACK不携token私有metadata或非必要身份数据,AC-20-3;AC-20-4;FD07;I19,P0,browser安全协议设计层；受控敏感哨兵；PRODUCT/TRANSLATION opt-in消息；与Base必要App bridge鉴权握手单独区分。,"1. 捕获新FormContext、FormAck及重复/拒绝响应的出站postMessage。
+2. 核对允许origin、context字段和非可信source的消息。","1. form协议只含必要IDs/objectId/language/字段子集，不附token或private metadata，不把Base鉴权握手凭据复制到form消息。
+2. ACK固定targetOrigin不使用星号，非可信source不获带业务信息ACK；错误展示脱敏。"
+TC289,App、扩展与 Webhook,R21 · 自托管可使用扩展目录且区分加载失败,自托管按配置同源或HTTPS分组数组目录加载浏览筛选,AC-21-1;FD07;BD12;I20,P1,真实自托管browser/HTTP设计层；无旧marketplace服务；EXTENSIONS_API_URL指向受控同源目录或允许HTTPS目录；数组包含payments/taxes/cms/automation稳定id和APP/PLUGIN合法项。,"1. 打开ExploreExtensions读取配置URL的合法Catalog数组；各部署URL场景隔离。
+2. 按目录组、已有筛选和关键词浏览APP/PLUGIN，检查网络请求及安装事实。","1. 直接按分组数组合同加载，name.en仅显示而id作稳定组键，不依赖旧不可用地址或Base extensionCategories包装。
+2. 筛选只改变可见目录，不发安装/配置mutation，不把加载成功当installed。"
+TC290,App、扩展与 Webhook,R21 · 自托管可使用扩展目录且区分加载失败,未配置目录使用本地空数组并明确未配置而非网络错误,AC-21-1;AC-21-2;FD07;I20,P1,自托管Dashboard UI设计层；EXTENSIONS_API_URL省略；其他Core请求可正常独立mock，仅验证UI。,"1. 打开目录并查看数据/提示和目录HTTP次数。
+2. 恢复合法配置后重新加载。","1. 本地[]合法并明确未配置，不请求legacy唯一fallback、不伪装网络失败或安装成功。
+2. 配置后按当前URL正常加载，不残留未配置error；真实HTTP集成另需受控服务验证。"
+TC291,App、扩展与 Webhook,R21 · 自托管可使用扩展目录且区分加载失败,合法空目录和筛选无匹配显示正常空态,AC-21-2;FD07;I20,P1,Dashboard目录设计层；HTTP200 []、合法组extensions=[]、有项但关键词无匹配三独立fixture。,"1. 分别加载三种数据并应用无匹配筛选。
+2. 清除筛选后观察列表及错误区域。","1. 三类均合法empty，不标网络/schema错误，无匹配与目录未配置有对应区别。
+2. 有项场景清筛选恢复正常列表，空目录保持空；不产生安装状态或mutation。"
+TC292,App、扩展与 Webhook,R21 · 自托管可使用扩展目录且区分加载失败,网络CORS非成功HTTP和无效JSON显示局部错误及恢复入口,AC-21-2;FD07;I20,P1,受控HTTP/browser设计层；网络断开、CORS拒绝、404、500、非JSON正文各独立URL；UI mock仅补状态单测。,"1. 逐个加载失败目录数据源，观察目录区域与其他列表操作。
+2. 修复对应数据源后点击重试。","1. 各失败局部error并可恢复，不是“没有扩展”、不throw整个页面、不标安装成功。
+2. 成功重试clear旧error并显示真实目录，其他操作未被无关加载失败破坏。"
+TC293,App、扩展与 Webhook,R21 · 自托管可使用扩展目录且区分加载失败,Catalog必填discriminant空项和未知字段严格校验,AC-21-2;FD07;I20,P1,Dashboard schema设计层；各fixture隔离：缺name.en、空en、extensions含null、APP缺kind/manifestUrl/repositoryUrl、PLUGIN带APP字段、未知type、token额外键。,"1. 分别读取上述HTTP200但无效shape数组。
+2. 检查渲染、错误和任何后续安装请求。","1. 每种invalid schema明确error，不以成功空目录或部分危险item渲染替代；APP nullable字段仍必需出现。
+2. 不安装、不泄露额外token或错误原串，页面稳定且可重试。"
+TC294,App、扩展与 Webhook,R21 · 自托管可使用扩展目录且区分加载失败,重复组ID和组内扩展ID不会产生歧义覆盖列表,AC-21-1;AC-21-2;FD07;I20,P1,Dashboard目录runtime验证设计层；重复cms组id、同组重复app id两个隔离且其余shape合法的数组；本例仅覆盖组id重复和组内扩展id重复，不断言跨组同名规则。,"1. 加载两个重复fixture并尝试筛选/选择卡片。
+2. 修正为唯一id重试。","1. 重复按runtime目录错误拒绝，不last-write-wins或出现相同ID歧义安装入口。
+2. 合法唯一数据恢复显示且清错误，筛选定位正确item，不改变安装事实。"
+TC295,App、扩展与 Webhook,R21 · 自托管可使用扩展目录且区分加载失败,目录logo和链接执行URL安全校验并允许合同nullable链接,AC-21-1;AC-21-2;FD07;I20,P1,browser目录安全设计层；安全HTTP(S) logo/链接、APP manifestUrl/repositoryUrl=null对照；危险scheme、凭据、控制符URL独立fixture。,"1. 加载合法nullable APP与危险URL各目录并查看logo/外链/安装按钮。
+2. 尝试点击合法和拒绝项的链接。","1. 合法nullable链接可浏览且无地址按钮安全不可操作；危险logo/链接明确invalid目录错误而不执行URL。
+2. 无危险跳转或凭据外发，不将缺manifestUrl当合法安装完成；schema校验不冒充SSRF/origin授权。"
+TC296,App、扩展与 Webhook,R21 · 自托管可使用扩展目录且区分加载失败,目录配置切换abort和反序响应不覆盖当前generation,AC-21-1;AC-21-2;FD07;I20,P1,Dashboard UI异步设计层；URL A慢成功、B快成功，A失败与unmount独立场景；只mockfetch时序。,"1. 请求A后切配置B，先返回B再返回A；独立在卸载或abort后返回旧失败。
+2. 检查当前数据、loading/error与浏览上下文。","1. B当前generation才更新列表，A旧响应不覆盖；AbortController能取消则取消且guard仍生效。
+2. 旧abort/失败不污染B错误或已卸载state，页面不闪回旧目录、不产生安装动作。"
+TC297,App、扩展与 Webhook,R21 · 自托管可使用扩展目录且区分加载失败,HTTP304只复用同配置URL已验证缓存不把空body当空目录,AC-21-1;AC-21-2;FD07;I20,P1,受控HTTP缓存设计层；URL A已验证成功缓存、无缓存A和URL B不同配置三独立子场景。,"1. 三场景分别收到304无body。
+2. 检查目录数据、错误和重试入口。","1. 只有同URL A已有已验证缓存可复用；无缓存或其他URL缓存不可被304视为[]成功。
+2. 无适用缓存显示可恢复数据源错误，不混用B/A目录，installed不随304变化。"
+TC298,App、扩展与 Webhook,R21 · 自托管可使用扩展目录且区分加载失败,自托管有MANAGE_APPS身份可进入真实安装而不受Cloud-only门槛,AC-21-3;AC-21-4;FD07;BD12;I20;I18,P1,真实自托管Core/browser集成设计层；IS_CLOUD_INSTANCE=false；authenticated staff有MANAGE_APPS及可授予权限；合法目录APP manifestUrl。,"1. 从目录APP点击安装，进入现有安装页面并提交合法I18 appName/manifestUrl。
+2. 读取AppInstallation及Core实际App状态。","1. 无额外Cloud-only禁止，合法有权自托管沿GraphQL I18安装，不自建REST安装接口。
+2. 受理仅PENDING；真实SUCCESS后才installed，不把导航到安装页面算已安装。"
+TC299,App、扩展与 Webhook,R21 · 自托管可使用扩展目录且区分加载失败,无配置权限用户只读浏览且直接API仍拒安装配置,AC-21-3;FD07;BD12;I20;I18,P1,真实Core加UI设计层；可浏览目录员工无MANAGE_APPS/MANAGE_PLUGINS，另独立仅MANAGE_APPS和仅MANAGE_PLUGINS身份；合法APP/PLUGIN目录。,"1. 分别浏览筛选APP和PLUGIN，检查安装/配置按钮。
+2. 无权身份直接调用appInstall/appUpdate及既有pluginUpdate；分权身份对照各动作。","1. 浏览仍可用；APP动作仅MANAGE_APPS，PLUGIN配置仅MANAGE_PLUGINS，缺对应权限只读不因能浏览推断可配置。
+2. 无权API顶层PERMISSION_DENIED，原App/plugin保持；分权只开放对应合法动作，UI隐藏不替代Core权限。"
+TC300,App、扩展与 Webhook,R21 · 自托管可使用扩展目录且区分加载失败,installed查询加载失败或无权时显示unknown而不信目录布尔,AC-21-3;AC-21-4;FD07;I20,P1,Dashboard UI设计层；合法目录分别包含CatalogApp schema已声明的installed=true/appId伪值和installed=false提示字段，字段类型合法但内容不可信；Core installed查询loading、PERMISSION_DENIED、network失败各隔离。,"1. 加载目录同时使Core installed事实未可得，检查卡片安装标记/动作。
+2. 恢复获准完整installed查询，并与目录提示冲突对照。","1. 显示unknown/无法确认及对应loading/error，不默认未安装或信目录installed/appId为授权事实。
+2. 只以Core真实获准结果更新installed/AppId，目录布尔不能伪造已安装或错误作用对象。"
+TC301,App、扩展与 Webhook,R21 · 自托管可使用扩展目录且区分加载失败,安装事实完整分页后才判定目录App是否已安装,AC-21-1;AC-21-4;FD07;I20,P1,真实Core分页加UI设计层；101个以上获准已安装App，目标目录identifier位于第二页；每页至多目标SDL100；plugin列表若需分页同样隔离。,"1. 浏览目录并沿pageInfo.hasNextPage/endCursor读取所有获准installed页。
+2. 再设置第二页失败，查看该App状态；恢复后重试完整结果。","1. 第二页目标正确标installed，不只first100就误判未安装；游标无重复漏项。
+2. 不完整结果目标保持unknown而非可重复安装；完整成功才对照真实AppId/manifestUrl，失败不污染成功事实。"
+TC302,App、扩展与 Webhook,R21 · 自托管可使用扩展目录且区分加载失败,目录成功失败重试和筛选不改变实际安装状态,AC-21-4;FD07;I20,P1,真实Core事实加UI设计层；A已安装、B未安装；目录正常、错误、重试成功独立，捕获所有mutation。,"1. 反复加载目录、制造局部错误、重试并筛选A/B。
+2. 重读Core App/Installation及卡片标记。","1. 全程仅浏览/重试GET，不执行安装或plugin配置，不toast安装完成。
+2. A仍真实installed、B仍未安装或查询unknown，目录失败不伪造成功也不清真实安装事实。"
+TC303,App、扩展与 Webhook,R21 · 自托管可使用扩展目录且区分加载失败,实际安装PENDING FAILED SUCCESS分别更新正确目录状态,AC-21-4;FD07;BD12;I18;I20,P1,真实Core/worker/browser设计层；合法B目录安装作业；可控PENDING、FAILED、SUCCESS时序；已有A成功安装独立。,"1. 安装B受理后刷新目录；推进到失败并重试目录GET，再独立完成合法安装成功。
+2. 核对A/B标记和Core实际App查询。","1. B PENDING/FAILED均不标installed，目录GET重试不等安装重试；真实SUCCESS且App存在后B才更新。
+2. A不因B失败退未安装，状态与真实AppInstallation/Core一致，无虚假全局成功。"
+TC304,App、扩展与 Webhook,R22 · 按实际订阅解析，同步请求不等待完整异步载荷,同步订阅仅选择订单ID时不解析未选税务和配送字段,AC-22-1;BD13;I21,P0,真实Core同步Webhook集成设计层；获准App订阅OrderFilterShippingMethods仅order{id}；受控接收方返回合同合法同步结果；resolver与税务/配送HTTP计数可观测。,"1. 触发一次对应同步事件，订阅仅选择order{id}，不选shippingMethods、金额或地址相关字段。
+2. 检查实际payload、resolver轨迹及外部服务调用。","1. payload只包含实际选择内容，order ID正确，不先构造全量订单再裁剪。
+2. 未选税务/配送resolver及其外部调用为零；触发本身必需的同步接收方调用不被误算为禁止。"
+TC305,App、扩展与 Webhook,R22 · 按实际订阅解析，同步请求不等待完整异步载荷,同步selection实际fragment和别名按GraphQL语义解析而非全量展开,AC-22-1;BD13;I21,P0,Core同步集成设计层；获准App；使用目标SDL验证过的OrderFilterShippingMethods订阅，named fragment和inline fragment含order ID/别名但未选择税务/配送计算字段。,"1. 以named fragment展开、嵌套inline fragment和合法alias的订阅分别触发事件。
+2. 比对别名payload、实际字段resolver和外部调用计数。","1. 实际fragment选中字段正确解析并保留alias，不因只扫描表层selection漏字段或把整个fragment对象全解析。
+2. 未选字段不调用；重复同响应key按GraphQL合并，不因fragment重复解析放大服务调用。"
+TC306,App、扩展与 Webhook,R22 · 按实际订阅解析，同步请求不等待完整异步载荷,同步条件指令跳过字段和不匹配事件片段不触发resolver,AC-22-1;BD13;I21,P0,Core真实同步设计层；目标SDL合法订阅含@skip(if:true)、@include(if:false)及不匹配当前事件的片段；独立对照include=true。,"1. 触发当前事件并观察被skip/include排除字段与不匹配type片段；独立开启允许字段条件。
+2. 检查payload与相关resolver/服务调用。","1. 排除字段/片段不执行，不把文档中出现过的所有字段都解析；include=true仅执行真正选中内容。
+2. payload遵GraphQL条件语义；未实际选择税务/配送字段不发生对应调用，计数不因重复文档扫描增加。"
+TC307,App、扩展与 Webhook,R22 · 按实际订阅解析，同步请求不等待完整异步载荷,确实选中同步必要字段时保留原服务结果和防递归边界,AC-22-1;AC-22-4;BD13;I21,P0,真实同步Core/受控服务集成设计层；一个合法选择配送或税务必要字段的订阅及只选id对照；SyncWebhookControlContext有效；已记录现行调用上限。,"1. 分别执行选择必要字段和不选该字段的同步事件，受控服务返回合同正确结果。
+2. 重复读取同对象必要字段，检查结果、重入轨迹和调用计数。","1. 真正选中必要字段正常解析，不能为减少调用把合法结果置空或把同步处理强改异步。
+2. 遵现行控制上下文/缓存和调用上限，无税/配送递归循环或因重复解析放大负载；不新设次数SLA。"
+TC308,App、扩展与 Webhook,R22 · 按实际订阅解析，同步请求不等待完整异步载荷,没有对应订阅时业务请求不构造无用完整通知内容,AC-22-1;AC-22-3;BD13;I21,P0,真实Core设计层；订单更新合法且不需本操作固有税配送计算；无对应事件订阅、仅不相关订阅及停用Webhook三独立fixture。,"1. 分别执行一次正常订单业务更新。
+2. 观察payload builder、outbox/delivery和不相关税务/配送/通知HTTP。","1. 正常业务成功，不为无对应订阅预构造完整payload。
+2. 无无关delivery或服务调用；不把业务本身必要计算也禁掉，测量范围为通知附加工作。"
+TC309,App、扩展与 Webhook,R22 · 按实际订阅解析，同步请求不等待完整异步载荷,订单纯异步事件在业务请求结束前只持久化必要event并入队,AC-22-2;BD13;I21,P0,真实Core/DB/worker设计层；ORDER_CREATED和ORDER_UPDATED独立合法场景；仅async订阅；worker关闭eager并在payload构建入口设闸，不mock业务成功。,"1. 创建或更新订单，保持payload worker闸门关闭，等待业务GraphQL请求返回。
+2. 检查已提交业务、最小event/outbox/delivery，打开闸门推进真实worker。","1. 业务请求不等待完整async builder即返回对应业务结果；事务中必要event snapshot/recipe持久化、提交后入队。
+2. 闸门期间payloadState=WAITING且不显示成功；worker随后按真实subscription构建并投递合同内容，不用固定毫秒SLA判定。"
+TC310,App、扩展与 Webhook,R22 · 按实际订阅解析，同步请求不等待完整异步载荷,草稿订单纯异步创建更新删除事件不在业务线程构建完整载荷,AC-22-2;BD13;I21,P0,真实Core/worker集成设计层；DRAFT_ORDER_CREATED/UPDATED/DELETED各独立合法fixture，受控源删除snapshot；仅async订阅，暂停payload worker。,"1. 分别执行草稿创建/更新/删除并在worker未运行时读取业务结果及任务边界。
+2. 推进worker检查对应事件的order快照payload。","1. 各业务请求仅必要event/outbox，不等待完整payload，真实草稿状态符合业务动作。
+2. 随后按目标DraftOrder事件合同构建，删除不误读不存在live对象为空成功；不可恢复时明确构建失败，不伪装通知成功。"
+TC311,App、扩展与 Webhook,R22 · 按实际订阅解析，同步请求不等待完整异步载荷,履约纯异步事件在后台构建而不阻塞履约业务返回,AC-22-2;BD13;I21,P0,真实Core/worker设计层；FULFILLMENT_CREATED、TRACKING_NUMBER_UPDATED、CANCELED在独立允许状态订单；仅async订阅；worker非eager且可暂停。,"1. 分别执行合法履约业务，payload builder保持未运行。
+2. 核对履约/订单结果，推进worker并检查Fulfillment事件的fulfillment/order及选中字段。","1. 业务先返回并只完成必要事件持久化/入队，无完整async构建等待。
+2. 实际worker生成合同正确事件内容；notifyCustomer等仅在对应事件字段合同下出现，不统一伪造相同wrapper。"
+TC312,App、扩展与 Webhook,R22 · 按实际订阅解析，同步请求不等待完整异步载荷,纯异步通知附加工作不提前调用无关同步税务配送和通知服务,AC-22-3;BD13;I21,P0,真实Core设计层；订单/草稿/履约独立metadata或tracking等无需新税配送计算的合法操作；仅对应async订阅；无关sync endpoints可记录调用。,"1. 在worker暂停时分别执行业务请求，记录请求线程resolver及外部调用。
+2. 再推进async worker，区分payload构建与实际async投递阶段。","1. 业务线程无完整payload解析，无因async通知而提前触发无关同步税务/配送/通知。
+2. 后台只执行订阅需要工作与投递；不因构建订单全对象顺带触发无关sync，不能将本来必要业务计算误判为违反。"
+TC313,App、扩展与 Webhook,R22 · 按实际订阅解析，同步请求不等待完整异步载荷,混合同步异步订阅分别遵守必要等待与后台构建边界,AC-22-2;AC-22-3;BD13;I21,P0,真实Core/服务/worker设计层；同业务动作确需合法同步服务结果并有async订单订阅；sync受控先延后再返回，async builder另设闸门。,"1. 触发业务，先不返回同步结果，随后返回合法结果但保持async worker暂停。
+2. 观察业务返回后再运行async builder和投递。","1. 业务保留同步结果必要等待，收到合法同步结果后不再等待完整async payload即可返回。
+2. sync selection仅解析实际选中，async随后独立构建；不以异步ack替代同步税务/配送/交易合同结果。"
+TC314,App、扩展与 Webhook,R22 · 按实际订阅解析，同步请求不等待完整异步载荷,异步payload使用事件时金额配送及变化快照而非后来的live值,AC-22-2;BD13;I21,P0,真实DB/worker设计层；订单事件E1时金额和shippingMethodMetadata为S1；worker暂停；后续合法业务把live订单改为S2并产生独立E2。,"1. E1提交入队后改变live值为S2，再按受控顺序推进E1 worker。
+2. 比较E1 payload、E2 payload与各事件时snapshot/对象version。","1. E1从其持久化snapshot/recipe构建，金额/配送metadata/变化字段为S1，不读取S2当E1事实。
+2. E2对应S2，各事件不混；App敏感字段仍各自授权，不以共享私有全量snapshot直接外发。"
+TC315,App、扩展与 Webhook,R22 · 按实际订阅解析，同步请求不等待完整异步载荷,源对象排队后删除时从事件事实构建或明确失败而非空成功,AC-22-2;AC-22-5;BD13;I21,P0,真实Core/worker设计层；草稿删除或合法可删源对象；事件已有可恢复snapshot与故意缺不可恢复recipe两个隔离fixture。,"1. 事件提交后在worker前删除live源，随后运行builder。
+2. 读取delivery.payloadState/status/lastError与业务事实。","1. 可恢复场景用事件snapshot正确构建；无法恢复场景明确构建失败，不生成{}或空body伪装成功。
+2. 失败payloadState=FAILED且lastError安全可诊断，不标SUCCESS，也不回滚已合法完成业务或重做业务动作。"
+TC316,App、扩展与 Webhook,R22 · 按实际订阅解析，同步请求不等待完整异步载荷,业务事务回滚不留下可投递event或on_commit任务,AC-22-2;BD13;I21,P0,真实Core/数据库集成设计层；订单/草稿/履约业务在事务后段受控失败；已配置async订阅；任务队列可观测。,"1. 在业务event创建后、提交前注入事务失败，触发回滚。
+2. 检查业务对象、outbox/delivery、队列及接收方记录。","1. 业务返回真实失败，业务写入和同事务event回滚，不在未提交状态投递。
+2. 无可投递孤立event或on_commit任务、无HTTP通知；不发并不存在的业务结果。"
+TC317,App、扩展与 Webhook,R22 · 按实际订阅解析，同步请求不等待完整异步载荷,重复构建任务不会重复解析持久化payload或生成新业务事件,AC-22-4;BD13;I21,P0,真实worker/DB设计层；同event/webhook已有唯一delivery；重复投递builder task和并发builder两个隔离场景；resolver计数可观测。,"1. 对同delivery重复或并发执行payload构建任务，包含一次完成后再次任务。
+2. 检查event/delivery/payload数量和解析/外部调用轨迹。","1. 幂等取得已持久化结果或正确互斥；每event/webhook唯一delivery，不因任务重复创建新业务event。
+2. 不反复全量解析或超出现行重试/调用上限；已READY结果不被多次无意义构建覆盖。"
+TC318,App、扩展与 Webhook,R22 · 按实际订阅解析，同步请求不等待完整异步载荷,解析故障超时重试和熔断沿现行上限结束而不无限循环,AC-22-4;BD13;I21,P0,真实Core/worker受控故障设计层；执行时读取现行timeout/retry/backoff/circuit及队列配置；可控时钟/任务调度，不人为新增SLA数值。,"1. 独立使必要同步服务持续超时、async builder持续失败及现行熔断阈值达到，按既有配置推进到终止边界。
+2. 检查调用/任务次数、退避轨迹、失败状态和恢复条件。","1. 各路径遵现行配置超时/最大次数/指数退避/熔断，达到边界后稳定失败或熔断，不额外递归解析重试。
+2. 失败可诊断且不显示成功，不放大未订字段调用；恢复也按既有策略，不编造新的秒数或次数标准。"
+TC319,App、扩展与 Webhook,R22 · 按实际订阅解析，同步请求不等待完整异步载荷,异步未构建和构建失败状态与真实业务及delivery一致,AC-22-5;FD08;BD13;I21,P0,真实worker/Core加Dashboard设计层；订单业务已成功；builder暂停、受控失败、恢复构建成功三个时序；仅展示单测可mock状态。,"1. 先读取未运行worker的delivery，再使builder失败并读取payloadState/lastError和UI。
+2. 按获准重试恢复构建，保持HTTP投递未完成后再确认2xx。","1. 未构建WAITING、payload nullable不代表成功；构建失败FAILED及脱敏原因，业务仍显示已完成业务事实但通知未成功。
+2. 重建后READY/PENDING只待投递，只有确认HTTP成功才SUCCESS；重试仅通知不再执行业务。"
+TC320,App、扩展与 Webhook,R22 · 按实际订阅解析，同步请求不等待完整异步载荷,同事件不同App的selection和敏感上下文在后台构建时隔离,AC-22-1;AC-22-2;AC-22-3;BD13;I21,P0,真实Core/worker权限设计层；App A/B订阅同订单事件不同字段，A具必要tax/private事件权限，B仅普通可见字段；对象scope独立。,"1. 业务提交后推进A/B各delivery构建，交错任务以暴露共享request/dataloader上下文污染。
+2. 比对各payload、resolver和税配送附加调用。","1. 每delivery按该App真实selection和权限构建，B不继承A private/user/tax字段；不外发共享私有全量payload。
+2. 未选字段不执行，不因A/B共享上下文重复无关调用；受限字段按安全授权失败而非泄露。"
+TC321,App、扩展与 Webhook,R23 · delivery 独立失败、重试与事件触发准确,同一事件A失败不阻断B和C成功且自动重试只针对A,AC-23-1;BD13;FD08;I21,P0,真实Core/DB/worker/HTTP集成设计层；同event三获准App的webhook A/B/C；A先500后204、B/C为2xx；各delivery唯一，当前自动重试配置已读。,"1. 触发一次事件并推进A/B/C投递，A失败后按现行调度重试。
+2. 读取三delivery/attempt及接收方记录。","1. A失败仅影响A，B/C均成功不被异常短路；A独立退避重试最终可成功。
+2. B/C只收到其原delivery不随A重试重发，A保持同本地event/delivery身份且只增加自己的attempt。"
+TC322,App、扩展与 Webhook,R23 · delivery 独立失败、重试与事件触发准确,delivery构建异常也只影响目标接收方不拖住其他App,AC-23-1;AC-23-3;BD13;I21,P0,真实worker/DB设计层；同event A构建受控失败、B/C合法selection；各App独立上下文；无业务操作故障。,"1. 依次或并行推进三个delivery builder，让A抛受控解析错误。
+2. 读取各payloadState/status/lastError并重试A构建。","1. A为FAILED及安全原因，B/C继续生成和投递，不把整事件共享失败写给三者。
+2. A重建只目标条目，B/C成功保持；无新业务event或业务回滚。"
+TC323,App、扩展与 Webhook,R23 · delivery 独立失败、重试与事件触发准确,商品变体折扣价实质变化提交后产生一次既有更新事件,AC-23-2;BD13;I21,P0,"真实Core/价格计算/worker设计层；变体V在channel c有效折扣价100变80，受控地址不变且税率为0；获准App订阅ProductVariantUpdated内productVariant(channel:""c""){id pricing{price{net{amount currency} gross{amount currency}}}}；独立recipient。","1. 经合法促销/折扣业务使V在c生效折扣价100→80并提交，推进相关价格任务与事件。
+2. 检查本地业务event、每webhook delivery及原始HTTP payload/header。","1. 实质变化提交后一次PRODUCT_VARIANT_UPDATED / ProductVariantUpdated通知，不新增专用折扣价事件。
+2. 同一变体/channel读到正确80及币种、事件合同正确；每event/webhook一delivery，不把任务/recipient数误当重复业务事件。"
+TC324,App、扩展与 Webhook,R23 · delivery 独立失败、重试与事件触发准确,有效折扣价不变的保存和计算重跑不生成同样新事件,AC-23-2;BD13;I21,P0,真实价格/worker设计层；V当前有效折扣价80及价格version；无实质变化保存、重复计算任务及折扣规则改动但生效价未变三隔离fixture。,"1. 各场景执行保存或任务重跑。
+2. 核对价格事实及PRODUCT_VARIANT_UPDATED新增event/delivery数量。","1. 有效价格/版本语义无实质变化，不因每次save都发同样价格变化通知。
+2. 无该无变化动作新增价格业务event/delivery；不禁止其他确实发生的独立字段更新事件。"
+TC325,App、扩展与 Webhook,R23 · delivery 独立失败、重试与事件触发准确,价格事务回滚不发事件而重复提交重试保持原事件身份,AC-23-2;AC-23-4;BD13;I21,P0,真实Core/DB并发设计层；有效价格变化事务提交前故障及成功后delivery重投两个隔离场景；唯一outbox/delivery约束可查。,"1. 在价格变化事务提交前注入失败；另成功完成一次变化后重复builder/投递任务。
+2. 查看价格、event identity、delivery与通知记录。","1. 回滚时价格和event/outbox不提交、无通知；成功场景只一个本地业务event。
+2. 重投保留原event和delivery身份，不重新产生价格业务变化，网络可能重投的接收方仍需幂等。"
+TC326,App、扩展与 Webhook,R23 · delivery 独立失败、重试与事件触发准确,waiting ready processing retrying failed success显示精确投递阶段,AC-23-3;FD08;BD13;I21,P0,真实Core状态轨迹加UI设计层；payloadState WAITING/READY/FAILED和status PENDING/PROCESSING/RETRYING/FAILED/SUCCESS有对应受控fixture；UI单测可mock不代替worker。,"1. 逐步观察WAITING+PENDING、READY+PENDING、PROCESSING、RETRYING、FAILED及确认2xx后SUCCESS。
+2. 刷新delivery/attempt列表，查看payload和lastError安全显示。","1. 分别显示等待构建、待投递、执行中、重试中、失败、真实成功；payload=null绝非成功。
+2. lastError可空且脱敏；错误状态可定位，未确认投递不toast已通知成功，不被旧列表响应退回旧attempt。"
+TC327,App、扩展与 Webhook,R23 · delivery 独立失败、重试与事件触发准确,缺payload重试先重建内容而不直接失败或标成功,AC-23-3;AC-23-4;BD13;FD08;I21,P0,真实Core/worker设计层；失败delivery D payload缺失/构建FAILED，必要事件snapshot仍可用；有MANAGE_APPS及D scope；builder可暂停。,"1. eventDeliveryRetry(id=D)后暂停builder，查看响应和UI；随后运行重建再投递。
+2. 核对D identity、其他delivery和业务对象。","1. errors=[]只表示排队，先进入重建等待/重试而非沿Base缺payload直接终止或标SUCCESS；UI不说通知完成。
+2. READY后才发送，成功经确认；保留原event/D，其他delivery与业务不重做，失败重建给安全lastError。"
+TC328,App、扩展与 Webhook,R23 · delivery 独立失败、重试与事件触发准确,有权单条手工重试只重投目标而不重做订单和资金动作,AC-23-4;BD13;FD08;I21,P0,真实Core/worker/资金账集成设计层；已成功订单有一失败delivery D及成功B/C；员工MANAGE_APPS并有相关App/业务scope；记录订单数、金额、交易事件与业务通知。,"1. 手工eventDeliveryRetry(D)并推进受控接收方成功。
+2. 重读D/B/C、订单、资金/礼品卡账和完成业务事件。","1. 只D新增attempt并使用原事件/payload，受理不等投递成功；B/C不退pending或重发。
+2. 不新建订单、扣款退款、改变订单金额或重复完成业务动作；D成功仅通知事实。"
+TC329,App、扩展与 Webhook,R23 · delivery 独立失败、重试与事件触发准确,重复点击和已成功delivery重试不额外投递或重建业务事件,AC-23-4;BD13;FD08;I21,P0,真实Core/worker并发设计层；失败D后重复并发retry；另SUCCESS D独立fixture；当前客户端按钮loading与服务器状态约束都可查。,"1. 对失败D快速或并发提交两次eventDeliveryRetry，另对已成功D提交retry。
+2. 检查队列、attempt、其他delivery和UI结果。","1. 同D重复排队按合同拒绝或复用当前重试状态；已成功目标INVALID或保持同状态，不额外通知；不编新idempotency参数。
+2. 至多当前有效投递任务，不产生新event，不改其他条目；拒绝或复用当前状态均须不额外投递，不要求未约定的重复错误优先级。UI只锁目标行且不把无error受理当成功。"
+TC330,App、扩展与 Webhook,R23 · delivery 独立失败、重试与事件触发准确,无MANAGE_APPS或越App业务scope不能重试或读受限载荷,AC-23-5;BD13;FD08;I21,P0,真实API/UI权限设计层；客户、无MANAGE_APPS员工、有权但仅A scope员工与App身份；D属于B且含敏感哨兵。,"1. 各身份直接eventDeliveryRetry(D)，经webhook.eventDeliveries/node/attempt关联读取payload、lastError和headers。
+2. 查看UI重试入口和D队列状态。","1. 无动作权限顶层PERMISSION_DENIED，受限D按NOT_FOUND保护存在性；有MANAGE_APPS不自动获得所有App/业务scope。
+2. 不泄露受限payload/敏感headers/token，不排任务或改D，UI无权只读/隐藏并非唯一授权。"
+TC331,App、扩展与 Webhook,R23 · delivery 独立失败、重试与事件触发准确,各App载荷和重试始终维持其selection字段可见性,AC-23-5;BD13;I21,P0,真实Core/worker集成设计层；同event App A具对应tax必要私有字段权限、B无该权限；各订阅selection/对象渠道scope独立；B重试单独。,"1. 构建并投递A/B payload，再手工重试B。
+2. 比对三次原始payload及Core查询字段授权。","1. 各App仅获准selection及对象scope字段，HANDLE_TAXES不是全商店private读取权；B不继承A上下文。
+2. B重试仍同可见边界，不读共享私有全量payload；受限错误脱敏，不借重试扩大权限。"
+TC332,App、扩展与 Webhook,R23 · delivery 独立失败、重试与事件触发准确,已配置secret时Webhook签名使用原始JSON字节HMAC并保留兼容头,AC-23-1;AC-23-5;BD13;I21,P0,真实HTTP/密码学集成设计层；受控接收方和UTF-8 secret；payload含中文/空白次序哨兵；签名校验和接收账真实执行，无真实secret。,"1. 捕获原始request bytes，计算HMAC-SHA256(raw bytes,UTF-8 secret)小写hex并核对Saleor-Signature及兼容X-Saleor-Signature、Event/Domain/Api-Url。
+2. 篡改一个字节再用原签名交受控接收方验证。","1. 签名与raw bytes一致，来源及兼容头按合同相同；不先JSON重新序列化验签，不虚构event-id/delivery-id头。
+2. 篡改验证失败且接收方不执行业务；错误/attempt不暴露secret或token，安全成功仅针对真实合法投递。"
+TC333,App、扩展与 Webhook,R23 · delivery 独立失败、重试与事件触发准确,无secret的Webhook使用现有JWS公钥验证而非假HMAC或无签名,AC-23-5;BD13;I21,P0,真实Core/JWS接收方集成设计层；Webhook无secret；使用既有Saleor受控公钥配置；合法payload及篡改/错误key子场景隔离。,"1. 投递并用既有公钥对原始bytes的Saleor-Signature JWS验签。
+2. 独立用错误公钥或篡改body验证，检查接收业务账。","1. 合法无secret路径仍有Base JWT manager JWS且验证通过，不把空secret当HMAC或不验签。
+2. 错误key/body拒绝且不处理业务；不将可伪造来源header单独作为可信证明。"
+TC334,App、扩展与 Webhook,R23 · delivery 独立失败、重试与事件触发准确,HTTP未确认重投保持业务key和签名可验证且接收方不重复业务,AC-23-1;AC-23-2;AC-23-4;BD13;I21,P0,真实Core/受控接收方/worker设计层；接收方已验签并按既有payload对象业务key+处理账幂等；首投处理成功但模拟响应丢失，后续投递确认。,"1. 首投使Core未收到确认而接收方已处理，按现行策略重投同delivery。
+2. 检查本地event/delivery identity、签名、接收账和Core业务动作计数。","1. Core按未确认记录失败/重试，不谎称远端未执行；重投仍原本地事件和可核验签名/业务payload，不需不存在的event-id头。
+2. 受控消费者处理账只执行一次业务，Core不重复订单/资金动作；允许HTTP多投递，不声称网络exactly-once或JWS字符串每次必相同。"
+TC335,App、扩展与 Webhook,R23 · delivery 独立失败、重试与事件触发准确,redirect客户端错误服务错误和超时各遵现行独立重试策略,AC-23-1;AC-23-3;BD13;I21,P0,真实HTTP/worker设计层；A的302、400、500、连接超时及204独立fixture，B恒成功；读取现行超时/最大次数/退避配置。,"1. 逐个推进投递并按现行调度观察自动重试到终止或成功。
+2. 读取attempt/lastError、redirect目标访问计数和B状态。","1. 2xx如204成功；3xx不跟随且Base3xx/4xx不自动重试，500/超时按现行上限退避，不无限循环。
+2. 各失败原因安全可区分，B成功不受影响；超时是未确认而非假成功，不新增数值SLA。"
+TC336,App、扩展与 Webhook,R23 · delivery 独立失败、重试与事件触发准确,自定义headers不能覆盖来源签名头或从错误泄露凭据,AC-23-5;BD13;I21,P0,真实Webhook配置/HTTP安全设计层；合法至多5头、超5、key+value+2超998、非法键/控制符、覆盖X-Saleor-Signature及敏感Authorization哨兵隔离。,"1. 分别提交各customHeaders配置；合法场景投递，故障接收方回显敏感哨兵。
+2. 核对App/Webhook错误、实际传输头与payload/attempt/lastError/UI展示。","1. 合法Base头可用；越界/非法/保留来源签名冲突按INVALID_CUSTOM_HEADERS或真实配置错误拒绝，不允许伪造签名/来源。
+2. 敏感Authorization/token不出公开错误或不获准attempt展示；lastError脱敏，合法签名头不被覆盖。"
+TC337,App、扩展与 Webhook,R23 · delivery 独立失败、重试与事件触发准确,成功delivery最小审计刷新可读而payload和attempt按既有保留策略清理,AC-23-3;AC-23-4;BD13;FD08;I21,P0,真实Core/清理任务/UI设计层；确认2xx的D成功；后续按当前可配置保留策略推进清理，不制定任意天数；有权身份。,"1. 成功后立即刷新eventDeliveries/attempt列表。
+2. 按当前保留配置清理payload/attempt，再查询D和重试入口。","1. D仍可读SUCCESS及最小审计/确认事实，不沿Base立即删整delivery让界面无法确认。
+2. 清理遵现行策略且不把成功改WAITING/FAILED；成功条目不会因payload已清理被重新当可投递业务。"
+TC338,App、扩展与 Webhook,R23 · delivery 独立失败、重试与事件触发准确,保留Webhook失败告警查看与单条恢复但无AppProblems替代功能,AC-23-6;FD08;BD13;I21,P0,真实Core/UI合同设计层；有权App管理员；失败delivery及既有失败告警fixture；目标SDL和客户端操作/路由可静态核对。,"1. 制造一条真实Webhook失败，打开现有失败告警及delivery/attempt查看并按权限单条重试。
+2. 核对目标schema、生成操作、菜单与直接旧/隐藏路由是否暴露AppProblems类型/问题列表/创建关闭动作。","1. 原告警/错误查看保留且可定位状态/原因，重试只对应delivery，不扩为问题生命周期。
+2. 无AppProblems公开类型、字段、创建关闭操作或隐藏替代入口；不因裁剪独立增强删除现行失败告警。"
+TC339,历史资料、公开合同、权限及日常工作台,R24 · 订单保存成单时配送 public/private 元数据快照,结账成单保存配送公私快照并供订单履约及事件一致读取,AC-24-1;FD09;BD14;I22,P0,待执行真实 Core API/数据库/事件集成层；可重建渠道 A、MANAGE_ORDERS 员工、地址库存配送均合法且全额支付的 checkout；订阅 App 具备订单及对应私有字段权限。,"1. 设源配送 public={carrier:SF,service:next-day}、private={account:ship-secret}，完成 checkout 并记录订单 ID。
+2. 创建合法履约，读取 Order/Fulfillment 两类 shippingMethodMetadata 字段及对应成单/履约事件。","1. 仅生成一个订单，保存成单时公私字典的独立副本，资金、库存及完成事件不因快照额外重复。
+2. 获准读取的订单、履约及事件 public 均含 carrier=SF、service=next-day，private 均含 account=ship-secret；列表和项非 null，履约投影所属订单事实。"
+TC340,历史资料、公开合同、权限及日常工作台,R24 · 订单保存成单时配送 public/private 元数据快照,草稿完成捕获完成时配送资料而不是草稿创建时资料,AC-24-2;FD09;BD14;I22,P0,待执行真实 Core 集成；MANAGE_ORDERS 员工可见 A；可重建合法草稿，商品价格库存地址配送均有效，订单基础 metadata={draft:keep}。,"1. 创建草稿时源配送公私 rev=before；完成前分别改为 rev=at-complete，再调用 draftOrderComplete。
+2. 合法履约后重读订单、履约快照及订单基础 metadata。","1. 草稿合法完成一次，两个快照取 at-complete，不提前冻结 before。
+2. 订单与履约均取 at-complete，draft=keep 保留；金额及分配不因复制资料额外改变。"
+TC341,历史资料、公开合同、权限及日常工作台,R24 · 订单保存成单时配送 public/private 元数据快照,源配送修改只影响后续成单而不回写已有订单,AC-24-3;BD14;I22,P0,待执行真实成单与履约集成；独立 fixture 中 O1 的配送 public/private rev=1，另有合法 checkout C2 共用该源配送。,"1. 将源配送两个字典改为 rev=2，完成 C2 得到 O2。
+2. 分别读取 O1、O2 及各自履约快照。","1. O2 正常成单保存 rev=2，源更新没有写入 O1。
+2. O1 及其履约保持 rev=1，O2 及其履约为 rev=2，金额和事件事实互不串联。"
+TC342,历史资料、公开合同、权限及日常工作台,R24 · 订单保存成单时配送 public/private 元数据快照,源配送停用和删除均不清空历史订单及履约快照,AC-24-3;BD14;I22,P0,待执行真实 Core API/数据库；停用、真删除两个分支各重建带公私快照的已完成订单和履约，以及依赖同一源的未完成 checkout。,"1. 各分支分别停用或真删除源配送，再读取历史 Order/Fulfillment。
+2. 尝试使用已不可用源完成新的 checkout。","1. 两分支历史公私快照都逐键保持；即使 deliveryMethod 或 FK 为空也不清空快照，不删除历史金额及履约。
+2. 新请求按当前配送资格拒绝且不形成半订单，不将旧订单快照当成当前可用配送来源。"
+TC343,历史资料、公开合同、权限及日常工作台,R24 · 订单保存成单时配送 public/private 元数据快照,公共配送快照可读而无权私有读取以字段错误拒绝,AC-24-4;FD09;BD14;I22,P0,待执行真实 GraphQL 权限集成；可重建客户本人订单及履约、公私快照含唯一秘密 sentinel；隔离身份为 owner、只具源配送管理权限者、具 MANAGE_ORDERS 且有 A 范围员工。,"1. 各身份经其合法订单入口先只选择 public 快照，再选择 private 快照。
+2. 查看响应 errors、关联 Node/履约入口及 Dashboard 错误显示。","1. 合法可读订单的 public 值准确；仅有源配送权限不能替代订单私有权限，owner 无私有权限时出现顶层字段权限错误；获准员工可读 private。
+2. 无权分支不含秘密 key/value，错误不将权限拒绝伪装成功空值；UI 不展示私有内容。"
+TC344,历史资料、公开合同、权限及日常工作台,R24 · 订单保存成单时配送 public/private 元数据快照,配送事件与重试载荷不旁路私有快照授权,AC-24-1;AC-24-4;BD14;I22;I26,P0,待执行真实事件/outbox/载荷构建集成；两个 App 独立订阅同一合法订单事件，A 有对应 private 读取权限和渠道范围，B 仅获公开字段；订单私有快照含 sentinel。,"1. 成单后构建两个订阅载荷，并对 B 的合法 delivery 发起现行重试。
+2. 核对首次及重试载荷、错误与订单快照。","1. A 允许的字段等于成单快照；B 不能通过 selection、重试或构建错误获得 sentinel，B 的失败不污染 A。
+2. 重试保持原事件历史事实而非重新取当前源，错误及日志向 B 不泄露私有值；不以重试受理等同交付成功。"
+TC345,历史资料、公开合同、权限及日常工作台,R24 · 订单保存成单时配送 public/private 元数据快照,外部配送只有公共来源时私有快照稳定为空,AC-24-1;AC-24-2;AC-24-4;BD14;I22,P0,待执行真实 Core 与协议测试服务集成，不用 UI mock 代替后端；checkout、draft 两分支各建合法 fixture；外部配送响应只提供 public metadata={external:ok}，App 自身 private 和订单 private 含不同秘密。,"1. 分别用合法外部配送完成 checkout 和 draft。
+2. 获准员工读取订单及履约公私快照。","1. 两条路径 public 均复制 external=ok，不臆造外部协议没有的 private 来源。
+2. privateShippingMethodMetadata 均为 [] 而非 null；不混入 App、token、订单 private 或源配送税类资料。"
+TC346,历史资料、公开合同、权限及日常工作台,R24 · 订单保存成单时配送 public/private 元数据快照,无配送或无元数据对象返回非空类型的空列表,AC-24-1;AC-24-2;AC-24-5;BD14;I22,P0,待执行真实 Core；无配送数字商品合法订单、无元数据配送订单、合法自提订单三个隔离 fixture，且分别覆盖 checkout/draft 合法完成路径。,"1. 完成各 fixture 并以获准身份读取 Order 及适用履约的两个配送快照字段。
+2. 重复查询并刷新 Dashboard 详情。","1. 没有受支持配送元数据来源的字段为 []，不是 null、[null]、错误默认占位或其他对象资料。
+2. 结果稳定，页面不崩溃，也不因为空快照误判成单失败。"
+TC347,历史资料、公开合同、权限及日常工作台,R24 · 订单保存成单时配送 public/private 元数据快照,历史回填只使用可恢复证据并在重复执行时保持幂等,AC-24-5;BD14;I22,P0,未来迁移验收设计，当前 Stage 不执行；隔离基线库含有确切历史快照证据的 O1、无历史证据但当前源 rev=new 的 O2、源已删除的 O3、原有基础/税类元数据；先记录逐项基线。,"1. 未来按正式升级方案迁移并检查 O1/O2/O3 快照及原有基础资料。
+2. 未来按方案重复运行幂等回填并比较行数、快照、金额、事件和迁移记录。","1. O1 恢复确切旧值；O2/O3 两类快照保守为 []，不复制当前 rev=new；原有基础和税类元数据可读且不丢失。
+2. 没有重复快照、订单、事件或资金动作，已有值不回写，金额与原事实逐项不变；这不是本 Stage 已迁移的结论。"
+TC348,历史资料、公开合同、权限及日常工作台,R24 · 订单保存成单时配送 public/private 元数据快照,订单基础和配送税类编辑不覆盖只读配送快照,AC-24-6;FD09;BD14;I22;I23,P0,待执行真实 Core API/DB 和 Dashboard 网络契约；获准员工；订单 shipping 快照、shippingTaxClass 元数据、Order.metadata 分别设同名 key 的 ship/tax/order 三个不同值。,"1. 用合法 metadataUpdate 修改 Order 基础 key，再通过现行合法流程改变源税类元数据。
+2. 重读三类资料，并尝试将 shippingMethodMetadata 作为编辑输入或同名基础 key 保存。","1. 只修改指定基础资料及适用当前税类来源，历史配送快照仍为 ship，不相互复制。
+2. 不存在可写 shipping 快照输入；非法字段产生 GraphQL 错误且无写入；合法同名基础 key 只属于基础 metadata，不改变快照且不新增独立入口。"
+TC349,历史资料、公开合同、权限及日常工作台,R24 · 订单保存成单时配送 public/private 元数据快照,快照采集失败不留下半订单且重试不重复完成,AC-24-1;AC-24-2;BD14;I22,P0,待执行真实事务/数据库集成；checkout、draft 两分支各建合法 fixture；允许测试层在快照最终持久化处设置受控故障，业务存储与资金事实不 mock。,"1. 触发快照持久化故障并调用相应完成动作，检查订单、分配、完成标记和事件。
+2. 清除故障后重试同一业务完成请求，再重复同一请求。","1. 返回明确失败，最终成单事务回滚，无缺快照的半订单及重复完成事件；已存在支付事实不丢账、不额外扣款。
+2. 合法重试只形成一个完整订单与一致快照，后续重复按既有幂等结果处理，不重复分配或资金动作。"
+TC350,历史资料、公开合同、权限及日常工作台,R25 · 必要元数据基础读写与订单行内编辑保留,六类必要业务对象以合法键值原子保存并正确重读,AC-25-1;AC-25-2;FD09;BD14;I23,P0,待执行真实 Core API/DB；Checkout、CheckoutLine、draft Order、正常 Order、OrderLine、Fulfillment、ProductVariant 各重建独立 fixture；员工具有各对象所需 MANAGE_CHECKOUTS/MANAGE_ORDERS/MANAGE_PRODUCTS 与渠道范围，按对象读取初始 version=v。,"1. 分别调用 metadataBundle(id:合法 Relay ID)，再以 expectedVersion=v 保存 public k=public 与 private k=private。
+2. 使用同一获准身份经 bundle 和原对象基础字段重读。","1. 支持的对象各成功一次事务写入，errors=[]，返回正确对象 ID 和新的共享 version，公私字典不串写。
+2. 各入口得到同样公私键值；draft、CheckoutLine、ProductVariant 等现有能力没有被裁剪，金额、库存、订单状态不因 metadata 保存改变。"
+TC351,历史资料、公开合同、权限及日常工作台,R25 · 必要元数据基础读写与订单行内编辑保留,公共可读 bundle 的私有字段为 null 而不是伪造空列表,AC-25-1;AC-25-4;BD14;I23,P0,待执行真实 API 权限集成；重建 owner 可合法 public 读取的 checkout/line，真实 private 含 sentinel；owner 无 MANAGE_CHECKOUTS，另一员工具有实际私有读取权限。,"1. owner 和获准员工分别查询 metadataBundle(id) 的 id/version/metadata/privateMetadata。
+2. owner 再通过原对象 privateMetadata/privateMetafield/privateMetafields 等实际受支持入口请求私有值。","1. owner 得到正确 public 与 version，bundle.privateMetadata=null；获准员工获得实际 private，不把隐藏 private 伪装为空 []。
+2. 原私有入口依字段合同拒绝且不泄露 sentinel，bundle 的公共可读性不扩大原字段权限。"
+TC352,历史资料、公开合同、权限及日常工作台,R25 · 必要元数据基础读写与订单行内编辑保留,一次保存中的公私增改删在同一版本事务生效,AC-25-1;AC-25-3;FD09;BD14;I23,P0,"待执行真实事务/API/DB；获准员工；独立 Order 初始 public={keep:a,change:b,drop:c}、private={secretKeep:x,secretChange:y,secretDrop:z}，version=v。","1. 单次 metadataUpdate 同时 public upsert change=B/add=D、private upsert secretChange=Y/secretAdd=W、deleteKeys=[drop]、deletePrivateKeys=[secretDrop]，expectedVersion=v。
+2. 重读 bundle 并检查数据库版本及实际变更事件。","1. errors=[]，六类变化作为一次保存同时提交，不出现 public 成功而 private/删除失败的中间事实。
+2. public 为 keep=a/change=B/add=D，private 为 secretKeep=x/secretChange=Y/secretAdd=W；删除键不存在，共享版本只推进本次实质保存的版本，事件不因分拆动作重复。"
+TC353,历史资料、公开合同、权限及日常工作台,R25 · 必要元数据基础读写与订单行内编辑保留,省略和空列表保留原值而显式 null 被执行前拒绝,AC-25-1;AC-25-3;BD14;I23,P0,待执行真实 Core API/DB；各参数分支单独重建同一初始公私键值和 version=v 的 Order，获准员工；四列表为 metadata/privateMetadata/deleteKeys/deletePrivateKeys。,"1. 省略分支只合法改一个 public 键并省略其余列表；空列表分支四列表均 []；null 分支逐一将四列表中的一个显式设 null，其他提交包含待改值。
+2. 各分支重读全部字典及 version。","1. 省略分支只改指定键；[] 分支合法 no-op；每个显式 null 分支得到可定位 INVALID/REQUIRED 语义错误，不执行待改值。
+2. 省略字段原值保持；no-op 不产生虚假变更；null 分支所有原值及版本保持，无半写。"
+TC354,历史资料、公开合同、权限及日常工作台,R25 · 必要元数据基础读写与订单行内编辑保留,重复键与同键改删冲突及空键不会留下部分保存,AC-25-3;BD14;I23,P0,待执行真实 Core；每个参数分支独立重建字典和 version；获准员工；分支为 public 重复 upsert key、private 重复 key、同 public key 同时 upsert/delete、同 private key 同时改删、空字符串 key、public 值传 Int 而非 String、metadata 列表含 null 项。,"1. 每分支提交一个非法动作和另一个合法待改键，使用当前 expectedVersion。
+2. 读取两个字典、版本及事件。","1. 各分支给 INVALID 等可定位业务错误，不吞掉重复键或凭数组最后项决定结果；若输入类型本身不符则顶层 coercion 拒绝。
+2. 合法伴随动作同样未写，原字典和版本保持，没有变更事件；错误不回显 private 内容。"
+TC355,历史资料、公开合同、权限及日常工作台,R25 · 必要元数据基础读写与订单行内编辑保留,无私有编辑权限时混合公共保存整次拒绝,AC-25-3;AC-25-4;BD14;I23;I26,P0,待执行真实权限/API/DB；owner 合法编辑 checkout public 但无 MANAGE_CHECKOUTS；private upsert、private delete 两分支各重建 public=p0/private=secret0/version=v；另设只有 tax 事件必要读取权的 App。,"1. 分别以 owner 和 tax-only App 提交 public 改 p1 加非空 private upsert 或 delete。
+2. 获准员工重读目标公私字典和版本。","1. 非空动作分别校验实际编辑权限，无权得到顶层权限错误，tax 读取不授予编辑；不先保存 public 再报 private 失败。
+2. 全部原值和版本不变，响应及错误不泄露 secret0，UI 不显示整体保存成功。"
+TC356,历史资料、公开合同、权限及日常工作台,R25 · 必要元数据基础读写与订单行内编辑保留,单对象并发版本冲突不覆盖先完成的保存,AC-25-3;BD14;I23,P0,待执行真实数据库并发集成，不用 UI mock 证明 CAS；两个获准客户端读取同一 Order bundle version=v，原 public=a/private=b。,"1. 两个连接以 expectedVersion=v 并发提交不同公私字典，使用同步屏障控制两次请求都从旧基线出发。
+2. 重读最终 bundle 并核对两响应。","1. 最多一个实质保存成功；另一得到 Metadata CONFLICT，不靠后到请求覆盖先到值，不只冲突一半字典。
+2. 最终公私值完整属于胜者，版本一致，无混合状态及失败变更事件；失败客户端保留草稿并要求显式处理新基线。"
+TC357,历史资料、公开合同、权限及日常工作台,R25 · 必要元数据基础读写与订单行内编辑保留,旧四个元数据入口共用新入口版本和原子锁,AC-25-1;AC-25-3;BD14;I23,P0,待执行真实 API/DB 并发集成；updateMetadata/deleteMetadata/updatePrivateMetadata/deletePrivateMetadata 各使用隔离有可改删键的 fixture；获准员工先经新 bundle 读 version=v。,"1. 各分支先通过对应旧合法 mutation 产生实质改变，再用新 metadataUpdate 的旧 expectedVersion=v 写入另一值。
+2. 并发分支同时通过旧 upsert 和新 upsert 更新不同键，再重读。","1. 旧能力保持合法签名和权限并推进同一共享 version，新请求得到 CONFLICT，不能绕过旧入口产生的版本变化。
+2. 服务使用共同锁/写入语义，不以旧快照整字段覆盖另一个已保存键；最终只包含合法串行化结果，无 lost update 或私有越权。"
+TC358,历史资料、公开合同、权限及日常工作台,R25 · 必要元数据基础读写与订单行内编辑保留,多对象保存中任一错误使全部目标回滚,AC-25-3;BD14;I23,P0,待执行真实 metadataBulkUpdate/API/DB；每分支独立建 A/B/C 三个合法目标及版本，员工对 A/C 有权；B 分支分别为非法键、不存在 ID、错误类型 ID、无权限、旧 expectedVersion、受控持久化故障。,"1. 每分支提交三目标的公私改删，一项 B 触发所设错误。
+2. 获准身份重读所有目标，检查响应、版本、事件与独立 CheckoutMetadata 行。","1. 业务失败 metadataBundles=[] 且 errors 非空，输入索引/field 安全可定位；类型/权限失败按顶层合同拒绝，不伪造整批成功。
+2. A/B/C 原值和版本全保持，不先创建无效 CheckoutMetadata 行，不遗留部分保存或变更事件。"
+TC359,历史资料、公开合同、权限及日常工作台,R25 · 必要元数据基础读写与订单行内编辑保留,多对象输入空列表和重复目标在执行前拒绝,AC-25-3;BD14;I23,P0,待执行真实 Core；空数组、重复同一 Relay 对象、含 null 项、缺 expectedVersion 四个独立参数分支；一个具真实原值和版本的合法 Order；获准员工。,"1. 分别调用 metadataBulkUpdate(input:[])、重复目标数组、包含 null 的数组和缺必填版本的输入。
+2. 重读合法 Order 以及 metadata 存储行数。","1. [] 和重复目标按业务校验拒绝，失败 bundles=[]/errors 非空；null 项或缺必填由 SDL coercion 顶层拒绝，不执行数组遍历到崩溃。
+2. 字典、版本和行数不变，不重复处理同一对象，不产生事件。"
+TC360,历史资料、公开合同、权限及日常工作台,R25 · 必要元数据基础读写与订单行内编辑保留,订单行与商品变体现有编辑一次 bulk 保存而不暗中确认订单,AC-25-2;AC-25-3;FD09;FD10;BD14;I23,P0,待执行 Dashboard 网络契约与真实 Core 联调；合法 UNCONFIRMED Order 有 OrderLine 与关联 ProductVariant；员工兼具 MANAGE_ORDERS/MANAGE_PRODUCTS 和范围，读取各版本。,"1. 经现有订单行/变体编辑交互同时修改两对象公私键并保存，记录发送操作。
+2. 另重建相同 fixture，让 variant 版本在保存前变化，重复保存并重读订单状态及两对象。","1. 一个业务保存只发一个 metadataBulkUpdate，携两对象 version 和全部改删，不发拆分旧 mutation/Promise.all，不先发 orderConfirm；成功两对象都生效但订单仍 UNCONFIRMED。
+2. 冲突整批回滚且显示错误，订单状态仍 UNCONFIRMED；订单确认必须是用户独立明确动作，不能 metadata 失败但已确认。"
+TC361,历史资料、公开合同、权限及日常工作台,R25 · 必要元数据基础读写与订单行内编辑保留,父子对象反序 bulk 与成单并发遵守全局锁序,AC-25-3;BD14;BD15;I23,P0,待执行真实 PostgreSQL 事务并发集成；Checkout/CheckoutLine 以及 Order/OrderLine/Variant 两组独立 fixture；合法员工；可重建同步屏障和锁观测，不设未经合同承诺的时延 SLA。,"1. 两连接分别用正序和反序目标数组执行 bulk，同时第三连接执行适用完成/确认业务动作。
+2. 释放屏障并检查锁轨迹、响应和每个目标最终版本/值。","1. 先锁业务父对象，再同级按 type/pk 锁 metadata；不因传入数组顺序颠倒业务父子锁序，冲突或可重试事务失败不留下半写。
+2. 结果符合合法串行化或明确冲突，公私变化按整批提交，没有死锁导致的部分成功、重复成单或失败版本推进。"
+TC362,历史资料、公开合同、权限及日常工作台,R25 · 必要元数据基础读写与订单行内编辑保留,元数据编辑及其他读取入口不能改变或泄露配送快照,AC-25-4;BD14;I22;I23;I26,P0,待执行真实权限/API/事件集成；Order/Fulfillment shipping 快照含 sentinel，基础字典不含；无 private 权限身份具有合法 public 读取；获准身份可编辑基础 metadata。,"1. 获准身份通过新旧基础 metadata 入口写入名字为 shippingMethodMetadata 的普通 key；无权身份切换 Node、bundle、原 privateMetafield(s) 和事件 selection。
+2. 获准员工重读配送快照和基础字典，检查无权响应。","1. 同名 key 仅是基础字典键，不关联快照存储；每个无权私有读取按入口合同拒绝或 bundle 隐藏为 null，不通过 key 命名绕权。
+2. 只读快照保持原 sentinel，基础键值独立；无权返回、事件和错误不含快照秘密。"
+TC363,历史资料、公开合同、权限及日常工作台,R25 · 必要元数据基础读写与订单行内编辑保留,原有行内编辑保留且没有独立订单履约仓库元数据入口,AC-25-2;AC-25-5;FD09;FD10;BD14;I23,P0,待执行 Dashboard 路由/菜单/生成操作静态验收及获准用户联调；独立重建正常订单、行/变体、履约、仓库；现有 OrderMetadataDialog 只用于原订单行/变体业务。,"1. 检查订单详情行内编辑及现有订单行/变体交互并进行合法保存。
+2. 检查订单/履约/仓库菜单、URL action、路由、隐藏别名和生成客户端入口。","1. 必要基础 API 和现有行内/行变体编辑仍可访问并成功，不因组件名含 Dialog 被整体删除。
+2. 不新增独立元数据管理弹窗、页面、路由或隐藏等价入口；不能因 UI 裁剪删除必要 Core 基础能力。"
+TC364,历史资料、公开合同、权限及日常工作台,R26 · 公开输入执行前校验及业务失败语义统一,负时长和无时区时间在配置执行前失败,AC-26-1;BD15;I03;I24,P0,待执行真实 Core API/DB；具渠道修改权限的员工与独立渠道 fixture，读取当前 settingsVersion=v；每分支单独重建配置和任务基线。,"1. 逐分支提交 automaticCompletionDelay=-1 Minute、checkoutTtlBeforeReleasingFunds=-1 Hour、deleteExpiredOrdersAfter=-1 Day、automaticCompletionCutoffDate 无 Z/offset 或非法日期，受控配置附 expectedVersion=v。
+2. 对照分支提交对应 0 时长和带 offset 的合法时间，再重读配置、版本和任务。","1. 负数和非法时间按 coercion 或定位输入错误拒绝，配置/版本不变，不产生自动完成、释放资金或删除任务副作用。
+2. 合法 0 不被 truthiness 当成省略；带 offset 时间按 UTC 保存，字段含义分别保持，不把资金 cutoff 和自动完成 cutoff 混用。"
+TC365,历史资料、公开合同、权限及日常工作台,R26 · 公开输入执行前校验及业务失败语义统一,缺必填非法枚举和互斥组合不触发任何业务动作,AC-26-1;BD15;I24,P0,待执行真实 Core API/DB/外部协议测试服务；合法 HANDLE_PAYMENTS 员工及可执行 transaction；各参数分支独立恢复初始资金和请求记录。,"1. 分别提交 transactionRequestAction 缺 actionType、非法 actionType、id/token 均省略、id 与 token 指向不同交易。
+2. 另分别提交显式 amount=0、amount=-1 和非法金额类型，检查事件、余额与外部调用。","1. 缺必填/非法枚举由顶层 validation/coercion 拒绝；无定位参数或矛盾定位按可定位业务输入错误拒绝，不误操作另一交易。
+2. 显式零和负数不当作省略最大额度，所有非法输入无资金事件、reservation 或 provider 调用，也不部分写本地状态。"
+TC366,历史资料、公开合同、权限及日常工作台,R26 · 公开输入执行前校验及业务失败语义统一,Federation null 列表及 null 项由输入错误拒绝而不崩溃,AC-26-2;BD15;I24,P0,"待执行真实 GraphQL 请求层；隔离合法 User fixture 与有读取权身份；query 变量声明 representations:[_Any!]!；独立分支 null、[null]、[合法项,null]。","1. 依次在独立请求中提交三个非法变量分支。
+2. 检查 HTTP 响应、GraphQL errors 和执行副作用。","1. 每分支返回稳定顶层输入/coercion 错误及适用 locations/path，不进入 len/assert/字典索引运行时崩溃，不返回假成功 []。
+2. 错误无内部堆栈和私有信息，无部分解析造成的业务写入；HTTP 200 时客户端仍判请求失败。"
+TC367,历史资料、公开合同、权限及日常工作台,R26 · 公开输入执行前校验及业务失败语义统一,Federation 运行时检查对象类型 typename 和 key,AC-26-2;AC-26-5;BD15;I24,P0,待执行真实 Federation API；隔离 fixture 包括合法 User Relay ID、User.email 和 ProductVariant ID；每非法分支单独请求，身份具有相应合法对象读取权限。,"1. 逐项提交 representation 为字符串/数字/数组、缺 __typename、未知 __typename、User 缺可识别 key、User.id 使用 Variant Relay ID、User.id 为非法 key 类型。
+2. 提交合法 User.id 单项、User.email 单项、合法多实体数组和 [] 四个对照请求。","1. 各非法分支得到稳定 INPUT_ERROR 等输入错误和安全定位，不出现 KeyError/模型查找崩溃，不将错误 typename ID 定位为另一对象。
+2. 合法 key 正常解析获准实体且顺序对应 representations，[] 返回 []；输出按 [_Entity] 的原 nullable 合同处理，不臆造非空输出保证。"
+TC368,历史资料、公开合同、权限及日常工作台,R26 · 公开输入执行前校验及业务失败语义统一,错误过滤类型和非法数组项不会退化为全量或空页成功,AC-26-3;BD15;I24,P0,待执行真实 Order where 查询；MANAGE_ORDERS 员工及三个可见订单；独立分支为 ids:[null]、channelId.oneOf:[null]、number.eq 非 Int、AND:[null]、status 非法 enum、channelId.eq 错误 Relay typename。,"1. 各分支查询 orders，提供合法分页参数。
+2. 提交合法不匹配 number.eq 和合法空匹配条件作为对照。","1. 数组非空项和输入类型约束由 coercion/运行时输入校验明确拒绝，不忽略非法条件而返回全量，也不以 [] 掩盖错误。
+2. 合法无匹配无顶层错误并返回正常空 edges/count/pageInfo，可与非法输入明确区分。"
+TC369,历史资料、公开合同、权限及日常工作台,R26 · 公开输入执行前校验及业务失败语义统一,分页边界和游标组合校验与合法末页空结果分开,AC-26-3;BD15;I24,P0,待执行真实新分页查询及既有 orders/User.orders；重建固定排序、数量已知的可见对象；越界/组合分支分别隔离，不发明 Base 未改参数的新签名。,"1. 在适用新分页入口逐分支提交 first/last=0、-1、101、两者同时传、无所需分页、非法 cursor/错误 cursor 类型；对 Base 入口检查其合法签名下的非法边界。
+2. 以合法 first=1 和适用 first=100 查询，并继续到合法末尾 after cursor。","1. 新入口按恰一项且 1..100 校验；非法游标/组合稳定报错，不出现 assert、假 empty 或截断后成功；Base 未改签名保持合法兼容并拒绝危险参数。
+2. 合法页排序稳定、无重漏；末页之后 edges=[] 且 pageInfo 正确，无错误，不自动判为业务失败。"
+TC370,历史资料、公开合同、权限及日常工作台,R26 · 公开输入执行前校验及业务失败语义统一,订单 eq oneOf 及 AND OR 查询得到准确范围交集,AC-26-4;BD15;I24,P0,待执行真实 API/DB；可重建 A/B 两渠道，O1/A/userU、O2/A/userV、O3/B/userU 与不同 number/voucherCode；员工具 MANAGE_ORDERS 但仅 A 范围，客户 U 为自身订单 owner。,"1. 员工分别查询 number.eq、channelId.eq、user.oneOf，以及 AND:[channelId.eq=A,OR:[number.eq=O1号,number.eq=O2号]]，配合法分页。
+2. 请求包含 A/B ID 的 oneOf 和客户条件，重读 count/edges。","1. eq 单值、oneOf 数组和 AND/OR 均按明确 fixture 返回 O1/O2 中的正确集合，不能将 AND 误当 OR 或丢数组条件。
+2. 实际对象范围始终再取交集，不返回 O3 或其敏感 count；显式无权对象依安全权限/NOT_FOUND 合同处理，合法范围内无匹配才 empty。"
+TC371,历史资料、公开合同、权限及日常工作台,R26 · 公开输入执行前校验及业务失败语义统一,User.orders 保持合法签名与 owner 员工分页可见性,AC-26-4;BD15;I24;I26,P0,待执行真实 account/order GraphQL；可重建客户 U/V、U 正常订单两笔和草稿一笔、V 一笔；员工 MANAGE_STAFF 及实际订单读取范围，普通客户无员工权限。,"1. U 经合法本人 User 查询 orders(first:1) 并以 after 继续；获准员工使用相同仅 before/after/first/last 参数读取获准用户关联订单。
+2. V 请求 U 关联订单，员工请求范围外对象，并提交 User.orders(where 或 channel) 的非法操作作对照。","1. U 只看自身可见正常订单，不见无权草稿；员工仅获其真实可见范围，分页稳定无重漏。
+2. 越权稳定拒绝且不泄露订单/count；不存在 where/channel 参数由 schema validation 拒绝，不虚构新 User.orders 过滤能力。"
+TC372,历史资料、公开合同、权限及日常工作台,R26 · 公开输入执行前校验及业务失败语义统一,Relay ID checkout token UUID 和 channel slug 不互换定位,AC-26-5;BD15;I24,P0,待执行真实 API；独立重建 Order/Checkout/TransactionItem/ProductVariant 和渠道 slug，记录各 Relay ID 及真实 UUID token；每请求使用实际 target 参数并具足够合法权限。,"1. 逐分支把 Order Relay ID 传 transaction id、Checkout UUID 传 Order ID、编码 Relay 字符串传 UUID token、渠道 Relay ID 传 channel slug、slug 传 ID。
+2. 用对应正确标识重复合法请求；仅在已有明示旧适配器的入口单独验证兼容 token/旧 ID。","1. 错误 typename/类型以输入、NOT_FOUND 等公开合同拒绝，不剥出 PK 后误命中另一对象，不把 UUID/slug 任意互转。
+2. 正确标识定位正确对象；兼容只局限已明示 adapter，不扩展到 root ids、新 metadata ID 或无合同支持入口。"
+TC373,历史资料、公开合同、权限及日常工作台,R26 · 公开输入执行前校验及业务失败语义统一,HTTP 200 顶层错误 payload 错误和缺 data 均不显示保存成功,AC-26-6;AC-26-7;FD10;BD15;I24,P0,待执行 Dashboard 错误 adapter/交互单元层，可用 Apollo mock 控制 UI 响应，不替代真实 Core 校验；独立分支为顶层 validation error、PERMISSION_DENIED、payload.errors 非空、data 缺失/预期 payload 为 null。,"1. 每分支在合法编辑后收到对应 HTTP 200 响应，检查按钮、提示、dirty 草稿和缓存。
+2. 经真实 Core 分别制造对应 validation/权限/业务错误，核对 adapter 分层与字段定位。","1. 各分支为失败或未确认，不显示 Saved/Completed，不将 missing data 转 errors=[]；保留编辑且不把提交值写成功缓存。
+2. 类型/权限顶层和 payload field/code/message 均可处理；field=null 的非字段错误仍失败，映射与实际 Core 合同一致。"
+TC374,历史资料、公开合同、权限及日常工作台,R26 · 公开输入执行前校验及业务失败语义统一,资金 request 和失败事件以及异步 pending 不等于业务完成,AC-26-6;FD10;BD15;I24,P0,待执行真实后端状态联调及 UI adapter；资金授权/请求来自协议测试服务真实事件流程；独立资金分支 request、failure、success，另建受理未完成的 export/App 安装/通知任务，各状态按其实际字段。,"1. 分别返回 HTTP 200、errors=[]，但仅有 CHARGE_REQUEST/REFUND_REQUEST 或相应任务 pending/processing；随后发送实际失败事件/任务 FAILED。
+2. 在独立成功分支提供 CHARGE_SUCCESS/REFUND_SUCCESS 或任务实际 SUCCESS 与所需结果。","1. 仅显示受理/处理中，不能宣称已扣款/退款/安装/导出/通知完成；失败后显示失败事实，余额聚合不把 request 当 success，不编 PENDING 事件枚举。
+2. 仅有真实确认与相应完成结果才显示完成；不重复计资金，任务 errors=[] 或 URL 缺失不能单独成为完成依据。"
+TC375,历史资料、公开合同、权限及日常工作台,R26 · 公开输入执行前校验及业务失败语义统一,合法空事件和无匹配与未知内部错误分别表达,AC-26-6;AC-26-7;FD10;BD15;I24,P0,待执行真实查询错误集成及 UI 单元层；独立合法空 events/无匹配 fixture；另通过受控服务故障产生内部错误，UI mock 可模拟未来未知 enum/code。,"1. 读取合法无匹配列表与无事件对象，响应无顶层和 payload errors。
+2. 触发服务内部错误及未知业务 code，检查响应与 Dashboard。","1. 显示正常空状态，不因为 events=[]、nullable 旧 events 或 zero count 自动判失败。
+2. 未知/内部错误保守失败或未确认，不转成功 []/Saved；错误安全脱敏，无 SQL、凭据、token、private key/value 或敏感金额泄露。"
+TC376,历史资料、公开合同、权限及日常工作台,R26 · 公开输入执行前校验及业务失败语义统一,并发资金变化按最新额度拒绝越限且重试复用原动作,AC-26-8;BD15;I24,P0,待执行真实 PostgreSQL/API/provider 协议集成；HANDLE_PAYMENTS 员工和可退款已确认 100 USD transaction；两个连接读取同一可用额度，使用不同 key 及独立同 key 重试分支。,"1. 并发请求两笔各 80 USD 退款，在锁内先使一笔受理占用额度，再放行另一笔；查询 request/reservation/聚合。
+2. 重放已受理请求的同 key 同参数，再用同 key 改为不同金额。","1. 第二笔按最新剩余 20 USD 拒绝而不裁剪，不能各按旧 100 受理导致 160；无失败请求的额外占用或 provider 调用。
+2. 同参复用原动作不再退款或重复 reservation；异参明确幂等冲突，不覆盖已有事件或改变已发生资金事实。"
+TC377,历史资料、公开合同、权限及日常工作台,R26 · 公开输入执行前校验及业务失败语义统一,并发库存与订单状态变化不导致重复分配或半完成,AC-26-8;BD15;I24;I27,P0,待执行真实事务/API 并发集成；各分支重建库存只有 1 的可售商品和合法待完成对象；第二分支对象已由另连接完成/取消；足额资金事实保留。,"1. 两个不同对象并发争用最后 1 件库存完成，检查最新 Stock/allocation。
+2. 同一对象旧状态请求在另一连接完成或取消后继续执行，再重放成功请求。","1. 仅合法胜者分配，另一按最新库存拒绝，不超卖、不留半订单；既存资金不丢失。
+2. 按最新状态拒绝非法动作或返回既有幂等订单，不重复成单、扣款、分配或完成事件。"
+TC378,历史资料、公开合同、权限及日常工作台,R27 · 明确弃用、退出能力与当前客户端合同,配送弃用读取保留有效值并明确当前替代字段,AC-27-1;BD15;I25,P0,待执行 target/runtime SDL 与真实 API 对照；重建合法配送 checkout、订单以及 Warehouse 自提对象；具合法对象读取权限。,"1. 核对 Checkout.availableShippingMethods、Checkout.shippingMethod、Order.shippingMethod 的 deprecated 标记和替代说明。
+2. 在配送 fixture 同时读取旧字段和 shippingMethods/deliveryMethod，在自提 fixture 读取 deliveryMethod union。","1. 旧字段仍存在且指向正确替代路径，不将合法 deprecated 字段当已退出接口移除。
+2. 合法旧读取保留其合同值，当前字段准确；自提按 Warehouse union 解析，不为迎合旧 shippingMethod 伪造配送方式或清空 deliveryMethod。"
+TC379,历史资料、公开合同、权限及日常工作台,R27 · 明确弃用、退出能力与当前客户端合同,Payment.partial 和旧数字内容完整公开接口退出,AC-27-2;AC-27-6;FD10;BD15;I25,P0,待执行 schema/operation 静态及真实 GraphQL validation 验收；基线保留旧字段/类型名称清单，目标为冻结 target SDL；具相应业务权限，避免用无权掩盖 schema 缺失。,"1. 检查 Payment.partial、DigitalContent 系列公开类型/根 query/mutation、ProductVariant.digitalContent 和旧 Shop 数字下载设置。
+2. 提交含已退出字段/操作的基线请求，检查 Dashboard operation 源、生成客户端及网络请求。","1. 目标 runtime 不注册这些退出定义，不留等价别名、隐藏根入口或残余返回类型。
+2. 请求在 GraphQL validation 明确不存在，不返回成功空内容；Dashboard 不生成/发送退出操作，错误显示不是业务完成。"
+TC380,历史资料、公开合同、权限及日常工作台,R27 · 明确弃用、退出能力与当前客户端合同,退出旧支付插件拒绝新动作但历史支付仍可读取,AC-27-2;BD15;I25,P0,待执行真实 Core API/数据库/provider 调用观测；Adyen、NP Atobarai 两分支各重建旧 Payment/订单历史与新合法 checkout，具有相应管理权限；旧 provider 不应被注册为新动作来源。,"1. 通过现行支持的入口尝试以旧插件 gateway 初始化新支付或发起已退出的新动作。
+2. 读取原历史 Payment、交易事件和订单金额，并检查新 provider 调用/Payment 行。","1. 按具体 payload 支持的错误合同明确拒绝：Payment payload 使用 PAYMENT_ERROR 等 target 支持的退出错误，不能编 PaymentErrorCode.MIGRATION_REQUIRED；无成功空响应或新调用。
+2. 历史金额、状态、关联和事件仍可读，不因插件退役删除已发生事实；没有额外扣款、空壳新支付或历史重记。"
+TC381,历史资料、公开合同、权限及日常工作台,R27 · 明确弃用、退出能力与当前客户端合同,退出原生下载接口不阻断现行 App 数字商品业务,AC-27-2;BD15;I25;I27,P0,待执行真实合法 App 集成/API；可重建不需配送的数字商品、现行授权 App 和可完成 checkout，所需价格库存付款配置均合法；不依赖 DigitalContent。,"1. 经现行商品/checkout/成单合同完成数字商品业务，并让授权 App 处理其正常交付场景。
+2. 读取订单金额、付款、商品以及 App 正常业务结果。","1. 数字商品可正常销售及成单，不因没有已退出数字下载字段而强制配送或阻断合法流程。
+2. 金额和历史可读，现行 App 权限仍生效；不偷偷重新注册 DigitalContent 或旧 Shop 设置作为补救。"
+TC382,历史资料、公开合同、权限及日常工作台,R27 · 明确弃用、退出能力与当前客户端合同,四种当前查询导出使用实际输入并产出正确范围文件,AC-27-3;FD10;BD15;I13;I25,P0,待执行真实导出 query/job/文件集成；产品、礼品卡、voucher、voucher code 各独立 fixture，匹配数量超过一页且有范围外记录；员工具对应 domain 和 export 双权限，固定筛选和唯一 key。,"1. 分别显式调用 productsExport、giftCardsExport、vouchersExport 的合法 scope/fileType/idempotencyKey 及各自 where/filter 条件；voucherCodesExport 仅用其实际 voucherId/ids/fileType/key 字段，不传 scope。
+2. 记录受理的 exportFile，未来等待真实 worker 按正式状态完成并核对文件全部行和字段。","1. 各 query 返回真实 job 或明确业务错误，不伪造空响应；受理状态不是下载完成，输入契合 target 且 voucherCodes 不套其他输入类型。
+2. 只有 SUCCESS 且有效结果 URL 才完成；文件含全部获准匹配而非当前页，范围外和受限 full gift-card code 不泄露，币种金额不改变。"
+TC383,历史资料、公开合同、权限及日常工作台,R27 · 明确弃用、退出能力与当前客户端合同,导出查询只由显式动作调用且同 key 重放不重复建作业,AC-27-3;AC-27-6;FD10;I13;I25,P0,待执行 Dashboard 网络/缓存及真实 Core job 集成；获双权限员工，产品导出合法 fixture；同 key 同参、同 key 异参各隔离，记录 Apollo cache 和 export job 数。,"1. 打开和刷新列表但不点击导出，再显式导出并重复同 key 同参数请求；检查 fetch policy、HTTP 缓存及请求方法。
+2. 同 key 更改 effective 筛选再请求。","1. 列表加载不建导出 job；用户动作使用 no-cache，private/no-store 且不通过 GET/CDN 共享缓存创建作业，同 key 同参返回同一 job，不重复生成。
+2. 返回 Export INVALID 的幂等参数冲突且不重用错误文件，不新建/扩大范围；不把 query 当纯读自动重试出重复作业。"
+TC384,历史资料、公开合同、权限及日常工作台,R27 · 明确弃用、退出能力与当前客户端合同,三个真实旧导出 mutation 明示弃用并保持授权作业语义,AC-27-3;BD15;I13;I25,P0,待执行 target/runtime SDL 与真实导出集成；分别重建 exportProducts/exportGiftCards/exportVoucherCodes 的实际旧输入及获双权限身份；不假设旧输入含 idempotencyKey 或 scope。,"1. 核对三个旧 mutation 的 deprecated 替代说明并按其实际签名发起合法导出。
+2. 另以缺少 export 权限但具 domain 权限身份重复各兼容请求。","1. 旧路径按合同返回真实授权 job 和结果，不无说明返回 success empty；不存在虚构的旧 exportVouchers。
+2. 权限仍为对应双权限 AND，无权顶层拒绝、无新 job/文件/敏感内容，不能借兼容路径绕过当前导出限制。"
+TC385,历史资料、公开合同、权限及日常工作台,R27 · 明确弃用、退出能力与当前客户端合同,草稿创建与更新都以 voucherCode 生效并拒绝旧 voucher 写入,AC-27-4;FD10;BD15;I25,P0,待执行真实草稿/API/优惠集成；MANAGE_ORDERS 员工，合法渠道商品及有确定资格的 voucherCode，分别独立创建和更新 fixture；旧 voucher ID 有效。,"1. 以 DraftOrderCreateInput.voucherCode 创建并以 DraftOrderInput.voucherCode 更新合法草稿，读取优惠和总额。
+2. 在独立 fixture 分别提交旧 voucher 单独输入以及 voucher 与 voucherCode 同时输入，检查客户端当前操作。","1. 两条当前路径按实际优惠规则生效，金额与 Core 一致，查询能读当前 code；不重复应用优惠。
+2. 旧输入虽保留 deprecated，返回 Order MIGRATION_REQUIRED 且无创建/更新/优惠副作用，双输入不静默择一；Dashboard 不再发送旧 voucher。"
+TC386,历史资料、公开合同、权限及日常工作台,R27 · 明确弃用、退出能力与当前客户端合同,属性创建省略 slug 可生成而部分更新保留未传字段,AC-27-5;BD15;I25,P0,待执行真实 attribute API/DB；具对应 product/page 属性管理权限的员工；独立属性 fixture 记录 type、name、slug 与关联事实。,"1. 以合法 name/type 创建属性但省略 slug，再分别只更新 name、只更新一个允许配置字段。
+2. 重读属性类型、slug、名称及关联。","1. 创建成功并按现行规则生成合法唯一 slug，不要求用户重复提交本可缺省字段；部分更新只作用实际传入字段。
+2. 省略的 slug/type/其他字段保持，不清空或重置关联；type 不被错误地当成每次更新必填。"
+TC387,历史资料、公开合同、权限及日常工作台,R27 · 明确弃用、退出能力与当前客户端合同,属性显式 null 空值及真正缺必填均被拒绝,AC-27-5;BD15;I25,P0,待执行真实 attribute API/DB；获准员工；创建/更新每个参数分支分别重建，初始属性原值及关联可比较。,"1. 创建逐分支提交 name=null/空、slug=null/空、type=null/空/缺省、缺 name；更新分别显式 name=null/空、slug=null/空，伴随一个合法配置变化。
+2. 提交 AttributeUpdateInput 中不存在的 type 字段并重读所有 fixture。","1. 真正必填和非法 enum 由 coercion 拒绝，nullable 但业务禁用的 null/空以定位错误拒绝；不保存伴随变化或创建半属性。
+2. 更新 type 由 schema validation 拒绝，不编造可更新 type；所有失败原值/关联保持，不能以 null 绕过约束。"
+TC388,历史资料、公开合同、权限及日常工作台,R27 · 明确弃用、退出能力与当前客户端合同,AppInstall 必填及非空校验在任何安装副作用前完成,AC-27-5;BD15;I25,P0,待执行真实 App install API/DB/HTTP 协议服务观测；MANAGE_APPS 员工；缺省、null、空字符串分支各隔离，记录 App/安装任务/token/manifest 请求数。,"1. 分别省略或显式 null appName/manifestUrl，再分别传空 appName、空或非法 manifestUrl；附带其他合法字段。
+2. 使用合法非空 appName/manifestUrl 对照安装，并核对实际异步状态。","1. String! 缺省/null 在 coercion 阶段失败，非空和 URL 业务校验先于安装；无半 App、token、任务或非法 manifest 外部请求。
+2. 合法请求可按现行流程受理，只有实际完成才完成；不把 manifest 可选 tokenTargetUrl 编成 AppInstallInput 字段。"
+TC389,历史资料、公开合同、权限及日常工作台,R27 · 明确弃用、退出能力与当前客户端合同,运行时 schema 与 Dashboard 当前操作类型和错误映射一致,AC-27-6;FD10;BD15;I24;I25,P0,未来实施验收的静态契约设计，当前 Stage 不运行应用/codegen/build；提供冻结 target、未来 runtime SDL 及 Dashboard operation/生成产物；无写冻结材料。,"1. 未来对本轮操作执行 runtime/target 语义差异校验和 operation validation，并由正式流程生成客户端。
+2. 核对所有使用到的输入、nullable、enum、union 及错误 adapter，检查生成操作没有退出或非目标能力。","1. 本轮字段签名与目标一致，当前操作在真实 Core 可验证，不出现客户端可生成但后端不支持；保留未改 Base 的合法定义。
+2. metadata 使用 version，User.orders 不带不存在参数，PaymentError 不含虚构 code；新错误安全可处理，不重暴露 DigitalContent/AppProblems 等退出接口。"
+TC390,历史资料、公开合同、权限及日常工作台,R27 · 明确弃用、退出能力与当前客户端合同,空库未来迁移能初始化必要业务结构而不生成非目标增强,AC-27-7;BD15;I25,P0,仅未来迁移验收步骤，当前 Stage 不执行；将来创建全新隔离 PostgreSQL 数据库，使用正式发布迁移集和支持版本配置，不含业务 fixture。,"1. 未来从空库执行正式迁移，再通过真实 Core 创建最小渠道商品账户及基础 checkout/order/App/metadata fixture。
+2. 未来核对迁移状态、唯一约束、配置缺省及可读写能力。","1. 所有必要结构和默认配置可初始化，合法基础业务可读写，无依赖历史行而崩溃；不预设本次已成功运行。
+2. 迁移记录和约束一致，无非目标 AppProblems/高级 PageUser/异步媒体专用结构；初始化不产生真实资金调用或重复任务。"
+TC391,历史资料、公开合同、权限及日常工作台,R27 · 明确弃用、退出能力与当前客户端合同,旧库未来升级保留金额资金库存扩展与元数据历史含义,AC-27-7;BD14;BD15;I25,P0,仅未来隔离迁移设计，当前不执行；复制脱敏基线库，覆盖已完成/草稿订单、legacy Payment、TransactionItem/request/pending、礼品卡余额和占用、Stock/allocation、App/settings/extensions/授权、基础及配送历史 metadata；记录逐项主键金额币种状态和关系。,"1. 未来执行正式 expand/backfill 升级并通过 API/DB 对照全部基线事实。
+2. 未来重复幂等回填并核对资金外部调用、业务对象/事件数量、唯一约束和授权含义。","1. 已完成订单金额、支付/交易聚合、余额及 pending 占用、库存分配不变；App 扩展配置和 metadata 保留，不能从当前源伪造历史或扩大权限。
+2. 不重复扣款/退款/释放/分配，不重建已有业务事件，不丢主键或关系；旧等价导出授权按正式映射保留但不拓权，明确只是未来验收要求。"
+TC392,历史资料、公开合同、权限及日常工作台,R28 · 真实对象权限、员工删除和敏感字段保护,无订单员工删除真正移除账户及认证关联,AC-28-1;BD15;I26,P0,待执行真实 API/DB/认证集成；可重建具 MANAGE_STAFF 且可管理目标权限的操作员工、合法非自身非 superuser 目标，无历史订单且非最后可管理者；目标有会话/token 和权限组关联。,"1. 调用 staffDelete(id:目标 User Relay ID)，检查 payload.errors 和返回 user。
+2. 从 DB/获准列表/节点重读目标，并用其原有效认证尝试受保护请求。","1. errors=[] 表示合法删除受理成功，返回 user 可保留原 ID，不能据 payload.user 非空误判未删。
+2. User 真正不存在而非 is_staff=false，认证和应删关联失效；操作员工及其他合法账户保持，无权限残留。"
+TC393,历史资料、公开合同、权限及日常工作台,R28 · 真实对象权限、员工删除和敏感字段保护,有历史订单员工真删除同时保留历史账与履约,AC-28-1;BD15;I26,P0,待执行真实 Core/DB；获准可管理目标的 MANAGE_STAFF 员工；目标非自身非受保护者，有已完成/部分履约订单、Payment/TransactionItem/退款事件、历史 email/地址、订单 metadata/配送快照；记录金额币种关系。,"1. 删除该员工并重查 User 表及原认证。
+2. 读取各历史订单的 user、email/地址/金额、付款事件、履约和快照。","1. 目标账户真删除且认证失效，不沿 Base 有订单只撤 is_staff 的旧行为。
+2. Order.user 按 SET_NULL 为 null，但历史 email/地址/金额/付款/履约/快照逐项不变，不删除账、不改为新客户或重建订单。"
+TC394,历史资料、公开合同、权限及日常工作台,R28 · 真实对象权限、员工删除和敏感字段保护,删除员工安全解除有普通资金的未完成 checkout 关联,AC-28-1;BD15;I26,P0,待执行真实删除事务/API/DB；获准操作员工和合法目标；目标拥有未完成 checkout，含已确认普通支付、pending request/reservation、关联 TransactionItem/Payment、email/地址和 token；记录全量资金事实。,"1. 删除目标员工，检查 Checkout.user FK 及所有资金关系。
+2. 以剩余合法业务标识和获准身份读取 checkout/transaction，再按现行流程对账或完成可适用动作。","1. 在删除 User 前安全解除 checkout 关联，User 真删但 checkout 不被 CASCADE 删除；token/金额/币种/payment/transaction/request 占用仍在。
+2. 原资金可追溯并继续合法处理，不丢账、不重复收款、不把 pending 当可用或成功；删除不顺便释放已确认资金。"
+TC395,历史资料、公开合同、权限及日常工作台,R28 · 真实对象权限、员工删除和敏感字段保护,删除员工保留礼品卡余额占用与 checkout 来源事实,AC-28-1;BD15;I26,P0,待执行真实资金/删除事务集成；合法 staff 删除目标拥有未完成有钱 checkout；礼品卡余额 100 USD、该 checkout 已按正式语义占用 40 USD，含内建 authorization/transaction 和幂等 key；记录账本。,"1. 删除目标员工并读取 checkout、礼品卡、占用及交易来源。
+2. 以同一原业务 key 进行适用重放/对账，再检查可用余额和事件。","1. checkout.user=null 而 checkout/40 USD 占用与账本保持，余额含义不变；不能级联删除后凭空返还或扣除 40。
+2. 来源与幂等连续，不生成新 authorization 或重复扣款/释放，余额与 reservation 仅依实际后续动作变化，历史可审计。"
+TC396,历史资料、公开合同、权限及日常工作台,R28 · 真实对象权限、员工删除和敏感字段保护,自删无权超范围与受保护员工删除均保持账户权限,AC-28-2;BD15;I26,P0,待执行真实 account 权限集成；每分支重建账户和组，分支为自删、无 MANAGE_STAFF、App 删除员工、目标 superuser、目标非 staff、超可管理权限范围、删除最后可管理者；保存目标权限和认证基线。,"1. 各身份通过 staffDelete 请求对应目标。
+2. 重读目标、组权限、认证关联及操作员工。","1. 按实际 Base guard 分别返回 DELETE_OWN_ACCOUNT、权限错误、DELETE_SUPERUSER_ACCOUNT、DELETE_NON_STAFF_USER、OUT_OF_SCOPE_USER/OUT_OF_SCOPE_PERMISSION、LEFT_NOT_MANAGEABLE_PERMISSION 等可适用错误，不伪装成功。
+2. 所有拒绝分支账户、staff 标记、权限、认证和关联订单/checkout 完全保持；错误无范围外敏感数据泄露。"
+TC397,历史资料、公开合同、权限及日常工作台,R28 · 真实对象权限、员工删除和敏感字段保护,批量员工删除全合法才提交且任一非法目标 count 为零,AC-28-1;AC-28-2;BD15;I26,P0,待执行真实 staffBulkDelete/API/DB；两个隔离分支：全合法目标含有订单/有钱 checkout 的员工；混合分支含合法与自删或超 scope 目标；操作员可管理合法目标且非最后管理者。,"1. 在混合分支调用 staffBulkDelete(ids)，检查 count/errors 并重查全部目标。
+2. 在全合法分支调用同 mutation，检查所有用户及历史订单和有钱 checkout。","1. 沿 Base 先全体校验的原子语义，count=0、errors 非空、所有账户及权限保持；不编造逐条 results 或部分成功。
+2. count 等于实际删除合法目标数、errors=[]；账户真删，Order.user 解除且历史账保留，有钱 checkout 先安全解关联不级联丢失。"
+TC398,历史资料、公开合同、权限及日常工作台,R28 · 真实对象权限、员工删除和敏感字段保护,属性更新和 App 安装的页面与直接调用使用相同权限,AC-28-3;FD10;BD15;I25;I26,P0,待执行真实 API 授权和 Dashboard 联调；独立 product/page 属性与可安装 App fixture；身份矩阵为具有对应属性域权/只具另一域权/无管理权，App 安装有或无 MANAGE_APPS，App 请求权限还受实际 scope。,"1. 分别从正常页面、直接 mutation 和可用隐藏/重放请求路径更新属性或安装 App。
+2. 核对无权分支 DB/安装任务/HTTP 请求，以及合法分支真实生效结果。","1. 各入口同样按实际属性类别与 App 权限校验；无权明确权限错误，不以成功但未修改或仅隐藏按钮代替 Core guard。
+2. 失败属性不变、无半 App/token/manifest 调用；获准合法动作正常生效或真实进入安装状态，不因权限加固整体禁用业务。"
+TC399,历史资料、公开合同、权限及日常工作台,R28 · 真实对象权限、员工删除和敏感字段保护,当前与兼容导出均要求业务域和导出专用权限同时具备,AC-28-4;BD15;I13;I26,P0,待执行真实 query/mutation/job 权限矩阵；产品、礼品卡、voucher/code 各独立 fixture；每域身份为仅 domain、仅 export、两者都有、两者皆无，均控制真实对象范围。,"1. 对每种身份调用对应当前导出 query 与实际存在的旧兼容 mutation。
+2. 检查 job/file 行和文件内容，获准分支核对所有输出范围。","1. 仅两权同时具备才可创建/读取合法导出；MANAGE_PRODUCTS+MANAGE_PRODUCT_EXPORTS、MANAGE_GIFT_CARD+MANAGE_GIFT_CARD_EXPORTS、MANAGE_DISCOUNTS+MANAGE_VOUCHER_EXPORTS 为 AND，非 one-of。
+2. 无权分支顶层拒绝、无作业/文件/敏感数据，不返回假成功空文件；获准分支仍按对象/渠道范围收敛，不泄露受限礼品卡 full code。"
+TC400,历史资料、公开合同、权限及日常工作台,R28 · 真实对象权限、员工删除和敏感字段保护,导出文件和 worker 重验当前授权且 App 仅访问自己作业,AC-28-4;AC-28-6;BD15;I13;I26,P0,待执行真实导出后台/API/文件授权集成；获双权限员工创建 job 后可撤权限，App A/B 各有自己 job，另设范围外文件；记录有效筛选快照。,"1. 员工建 job 后撤去 export 或 domain 权限再让 worker 执行；另使用 App B 读取 A job/file/list/Node。
+2. 获准身份读取自己已成功作业并检查文件范围和下载状态。","1. worker 重验当下权限，不因入队时有权继续输出受限数据；失败状态与脱敏原因明确，B 不可读取 A 作业或从 count/error 探知内容。
+2. 合法 owner/domain/当下导出权同时满足才可读取；实际完成才可下载，effective scope 不被 worker 放大。"
+TC401,历史资料、公开合同、权限及日常工作台,R28 · 真实对象权限、员工删除和敏感字段保护,税务 App 只在对应授权 tax 事件读取必要敏感字段,AC-28-5;BD15;I22;I23;I26,P0,待执行真实 webhook selection/字段 guard/API 集成；HANDLE_TAXES App 订阅获准 checkout/order tax 事件，另有未订阅/错误事件或范围外 App；User/private metadata/配送 private 快照含不同 sentinel。,"1. 在对应授权 tax event 上按实际合同选择必要 user/private 字段并构建载荷。
+2. 以同一 tax-only App 发普通 User/Checkout/Order/metadataBundle 查询，并在无关事件/范围外对象选择相同敏感字段。","1. 仅事件所需且获准范围的字段可用，税计算正常，不把必要 tax 读一刀切禁止。
+2. HANDLE_TAXES 不等于全商店 MANAGE_USERS/MANAGE_CHECKOUTS/MANAGE_ORDERS；普通查询/无关事件按各自 guard 拒绝或 bundle private=null，不泄露任何 sentinel。"
+TC402,历史资料、公开合同、权限及日常工作台,R28 · 真实对象权限、员工删除和敏感字段保护,普通身份无法经敏感字段别名 Node 事件或错误绕权,AC-28-5;AC-28-6;BD15;I26,P0,待执行真实 API/事件权限矩阵；客户本人/他人、低权限员工、App 各独立身份；Checkout/Order.user、privateMetadata/privateMetafield/privateMetafields 及配送 private 字段设置秘密，另有渠道范围外对象。,"1. 分别从根查询、Node、嵌套关联、字段 alias、列表和实际 webhook selection 请求同一敏感资料。
+2. 对无权对象提交错误 key/非法输入并检查 errors、count 及日志向调用方展示内容。","1. 同一 scope/field guard 贯穿所有入口，别名和嵌套不授予新权限，合法 owner 仅有实际允许字段。
+2. 权限拒绝或安全 NOT_FOUND 明确而非假成功；错误、count 和载荷不回显秘密、地址、token 或受限金额。"
+TC403,历史资料、公开合同、权限及日常工作台,R28 · 真实对象权限、员工删除和敏感字段保护,客户员工和 App 的对象渠道仓库范围在详情列表动作中一致,AC-28-6;BD15;I24;I26,P0,待执行真实 scope/API/DB；独立建 A/B 渠道和 W1/W2 仓库、各自订单库存/客户/App 记录；身份为客户 U、仅 A/W1 范围员工、仅获对应域且对象归属受限 App。,"1. 用合法权限读取各身份的范围内 list/detail/count，再直接请求范围外 Relay ID 和关联对象。
+2. 尝试对范围外对象执行修改或导出，并检查数据库及后台任务。","1. 范围内结果准确，范围外详情按安全权限/NOT_FOUND 合同拒绝，列表/count 只含允许交集；客户不见他人或无权草稿。
+2. 拒绝不是操作成功或伪装全局无数据，数据库和任务无变化；可改 URL、仓库候选和错误内容不能成为绕权路径。"
+TC404,历史资料、公开合同、权限及日常工作台,R29 · 加载、编辑、保存与缓存遵循当前上下文,配置延迟加载空数据和错误状态不混为默认值,AC-29-1;FD01;FD10;I24,P0,待执行 Dashboard 组件/交互层；渠道、商店、商品分别使用可重建合法 fixture；Apollo mock 仅控制 UI 的延迟、loaded empty、nullable 关联、PERMISSION_DENIED、network error，不据此证明后端行为。,"1. 打开各配置页并延迟查询，观察首次和中间渲染。
+2. 独立分支分别返回合法空数据、合法部分 null、权限错误和网络错误，并点击适用重试。","1. 显示加载状态，不先闪现错误 false/0/空金额为已生效配置，不访问未就绪数据导致崩溃或误启用保存。
+2. loaded empty 与拒绝/网络错误分别表达，合法 null 有正常空状态；失败不当成功空值，重试仅重新获取当前上下文。"
+TC405,历史资料、公开合同、权限及日常工作台,R29 · 加载、编辑、保存与缓存遵循当前上下文,晚到查询只回填当前表单未改动字段,AC-29-2;FD01;FD10,P0,待执行 Dashboard form 单元/组件层；可重建 channel 配置初值，mock 只控制查询响应时序；字段含嵌套 checkoutSettings delay、switch、cutoff 和未编辑的名称。,"1. 初值载入后编辑 delay、switch、cutoff 并保持未保存，随后释放同 context 的晚到新查询，其中已编辑和未编辑字段都有变化。
+2. 继续编辑、撤销某字段至基线并再次回填，检查 dirtyFields 与提交数据。","1. dirty 的嵌套路径完整保留用户输入，仍 pristine 且适用字段才可回填；不能以服务端 props 变化覆盖整个嵌套对象。
+2. dirty 跟踪按字段和当前基线正确更新，不因为一字段变化清空其他 dirty；提交反映当前编辑而不是晚到快照。"
+TC406,历史资料、公开合同、权限及日常工作台,R29 · 加载、编辑、保存与缓存遵循当前上下文,切换渠道和表单区后旧响应不写入当前上下文,AC-29-3;AC-29-6;FD01;FD10,P0,待执行 Dashboard 时序交互层；A/B 渠道有不同 ID/设置/版本，可重建旧 A 查询和保存 pending；mock 仅用于 UI 响应反序。,"1. 在 A 发查询/保存后切至 B 或同渠道不同 formSection，编辑 B，再释放 A 的 query/success/error 响应。
+2. 快速 A→B→A 重新进入，释放第一轮 A 的旧 generation 响应。","1. contextKey 包含当前对象、渠道和表单区，旧 A 响应不能填 B、清 B dirty、弹 B 保存成功或替换错误。
+2. 即使 ID 又为 A，旧 requestGeneration 仍失效；只接受当前 generation 的适用数据，不把新会话恢复成旧编辑。"
+TC407,历史资料、公开合同、权限及日常工作台,R29 · 加载、编辑、保存与缓存遵循当前上下文,商品或商店上下文切换不沿用上一对象编辑和请求,AC-29-3;FD01;FD10,P0,待执行 Dashboard context 测试；商品 P1/P2、适用不同 shop/provider 配置上下文均有可区分字段；各分支独立 fixture，旧查询延迟由 UI mock 控制。,"1. 在 P1 或旧商店配置上下文开始编辑后切换对象/区块，创建当前新编辑，再到达旧对象查询。
+2. 执行当前保存并记录传入对象 ID、context 和适用版本。","1. 新对象显示自身事实，旧编辑与错误不自动迁入，离开未保存表单按现有确认规则处理，不丢用户选择。
+2. 只提交当前上下文，不把旧 ID/旧变量或旧响应绑定到新对象，列表与详情不串数据。"
+TC408,历史资料、公开合同、权限及日常工作台,R29 · 加载、编辑、保存与缓存遵循当前上下文,保存中的后续编辑不会被该次成功响应清除,AC-29-2;AC-29-4;AC-29-6;FD01;FD10,P0,待执行 Dashboard submission 测试；合法 channel 已载入 version=v，UI mock 延迟保存响应，真实后端生效事实另由联调验收；初始 delay=5。,"1. 改 delay=10 发起 submission S1，未响应时再改为 15，并修改另一字段。
+2. 返回 S1 的真实生效快照 delay=10/version=v1，再执行下一次显式保存。","1. S1 捕获不可变提交快照与 submissionId，后续编辑不反向改变 S1 变量。
+2. baseline 更新为 S1 生效值，但当前 15 和新增编辑保持 dirty，不清整张表；下一次提交用当前编辑及适用 v1，成功缓存不伪造 15 已生效。"
+TC409,历史资料、公开合同、权限及日常工作台,R29 · 加载、编辑、保存与缓存遵循当前上下文,成功保存以 Core 规范化值更新相关详情列表和基线,AC-29-4;FD01;FD10;I03,P0,待执行真实 Core/Dashboard 联调；可重建渠道配置、相关列表和详情 Apollo 缓存；获准员工与当前 settingsVersion=v，输入含服务端规范化时间/顺序等字段。,"1. 合法保存当前配置，记录 Core 返回或重读后的生效字段与新版本。
+2. 切换详情/列表再返回并刷新，检查 cache、baselineVersion、dirty 与实际 Core。","1. 仅无顶层/payload 错误且有预期有效结果才成功；基线以 Core 规范化结果为准，不直接把提交 draft 当权威。
+2. 所有相关视图与 Core 一致、版本一致；已提交且未再编辑字段清 dirty，未提交编辑不进入成功缓存。"
+TC410,历史资料、公开合同、权限及日常工作台,R29 · 加载、编辑、保存与缓存遵循当前上下文,权限网络字段和版本失败都保留生效缓存及可修正编辑,AC-29-5;FD01;FD10;I24,P0,待执行 Dashboard 失败矩阵及真实 Core 对应错误联调；每分支重建旧生效 S0、当前 draft S1 和缓存；分支为 PERMISSION_DENIED、网络未确认、字段 INVALID、CONFLICT。,"1. 保存 S1 并分别返回所设错误或中断通信。
+2. 检查详情/列表成功缓存、draft、按钮状态和错误提示，修正输入或显式刷新基线后重试。","1. 四分支均不显示 Saved，原因可区分；网络中断为未确认，不断言服务器必未写入或盲目重复危险动作。
+2. S0 或已确认的最新生效事实保持，S1 可继续修正且 dirty；不以失败提交污染缓存，冲突不自动拿新版本重发旧值，网络结果先按合同查询/对账。"
+TC411,历史资料、公开合同、权限及日常工作台,R29 · 加载、编辑、保存与缓存遵循当前上下文,反序保存响应不回退最新提交和通知状态,AC-29-6;FD01;FD10,P0,待执行 Dashboard submission/generation 交互层；每分支独立缓存和表单，响应快照有可比较版本；mock 仅制造已由服务器分别处理的 S1/S2 响应传输反序，不用 mock 证明 CAS。,"1. 按 S1 旧值、S2 新值顺序发适用合法提交，先返回 S2 最新成功，再返回 S1 旧成功。
+2. 另重建 fixture，先返回 S2 最新失败/当前新编辑，再返回 S1 旧成功或旧失败。","1. submissionId/version/generation 保护当前结果，表单、基线和通知不由旧成功回退，不错误清掉新 dirty。
+2. 旧成功不能把 S2 失败包装整体成功，旧失败也不覆盖当前错误或已保存事实；当前可继续重试且不隐式重提交。"
+TC412,历史资料、公开合同、权限及日常工作台,R29 · 加载、编辑、保存与缓存遵循当前上下文,迟到查询不能先经 Apollo 归一化缓存覆写较新版本,AC-29-2;AC-29-6;FD01;FD10,P0,待执行 Dashboard Apollo cache 集成单元层；重建 Channel 节点及 settingsVersion，旧 makeQuery cache-and-network/errorPolicy=all 风险可复现；mock 只延迟 UI 传输，保留真实 Apollo cache。,"1. 让 v 查询 pending，随后成功保存并缓存 v1，再释放旧 v 查询；保持另一个订阅同 Channel 的详情/列表组件挂载。
+2. 检查归一化 cache extract、所有订阅组件及再次进入页面，另测带 partial data/errors 的迟到响应。","1. 旧响应在写 cache 前受 no-cache 候选快照筛选或 version-aware 写策略保护，不仅拦 setState；所有订阅组件仍为 v1。
+2. 缓存本体和重入页面不回退，不将 partial error 数据写成成功事实；不同旧上下文同样不能污染当前节点。"
+TC413,历史资料、公开合同、权限及日常工作台,R29 · 加载、编辑、保存与缓存遵循当前上下文,两个真实客户端保存同一渠道旧版本只有一方成功,AC-29-5;AC-29-6;BD15;I03,P0,待执行真实 PostgreSQL/API 并发 CAS，不以 UI mock 替代；两获准员工读取同一 settingsVersion=v，分别准备不同 checkoutSettings/stockSettings。,"1. 两连接同步以 expectedVersion=v 提交受控配置更新。
+2. 读取 Channel 实际字段和 settingsVersion，并在失败客户端查看冲突处理。","1. 仅一请求成功，另一 CONFLICT；未提交部分字段不混入胜者，不以最后写入覆盖。
+2. 所有配置和版本完整对应胜者；失败者保留编辑并提供显式刷新/比较流程，不自动重拿新版本覆盖他人。"
+TC414,历史资料、公开合同、权限及日常工作台,R29 · 加载、编辑、保存与缓存遵循当前上下文,仓库完整顺序关系与渠道设置在一次 CAS 中共同保存,AC-29-4;AC-29-6;FD10;BD15;I03,P0,待执行真实 Core/Dashboard 联调；渠道关联 W1/W2、可新增 W3，具全部实际管理权限，读取 settingsVersion=v；有合法 checkoutSettings/stockSettings 改动。,"1. 一次页面保存同时移除 W1、添加 W3、提交 warehouseOrder=[W3,W2] 与设置，记录网络操作。
+2. 重读关联仓库顺序、设置及版本，并以合法业务检查实际分配顺序。","1. 只发一个 channelUpdate，input 包含 expectedVersion、关系修改、修改后完整 warehouseOrder 和设置；不先 update 再独立 reorder。
+2. 关系、完整顺序及设置同次生效并推进共享版本，业务使用新顺序；不存在 UI 显示保存但 reorder 尚未成功的半状态。"
+TC415,历史资料、公开合同、权限及日常工作台,R29 · 加载、编辑、保存与缓存遵循当前上下文,仓库顺序非法权限或旧版本使设置关系全部保持,AC-29-5;AC-29-6;FD10;BD15;I03,P0,待执行真实 API/DB；各分支重建 W1/W2 关联和设置；warehouseOrder 分支为重复 W1、缺漏 W2、外部 W3、显式 null、无权仓库，另设缺 expectedVersion 与 stale version；伴随设置/关系改动。,"1. 各分支单次 channelUpdate 提交所设非法输入和合法伴随变化。
+2. 重读设置、关联仓库、排序、版本及 Dashboard 成功缓存。","1. 每分支按 INVALID/REQUIRED/CONFLICT 或顶层权限合同失败，不将缺漏当相对 reorder，不接受 null 清序。
+2. 设置/关系/顺序/版本全保持，缓存不显示半成功，无独立 reorder 补偿请求或自动吞错。"
+TC416,历史资料、公开合同、权限及日常工作台,R29 · 加载、编辑、保存与缓存遵循当前上下文,旧仓库重排入口也推进共享配置版本防止过期覆盖,AC-29-5;AC-29-6;BD15;I03,P0,待执行真实 Core API/DB；具权限员工和关联 W1/W2 的渠道，当前 settingsVersion=v；旧 reorder 兼容入口按 target 原签名合法使用，新客户端已持有 v。,"1. 经旧合法 warehouse reorder 改为 W2/W1，再用 expectedVersion=v 提交新 channelUpdate，包含旧顺序及新设置。
+2. 读取最终顺序、设置和版本，检查新客户端冲突显示。","1. 旧入口保持适用权限/锁且推进同一 settingsVersion，新客户端旧版本请求 CONFLICT，不能无声把旧顺序写回。
+2. W2/W1 和已生效设置保持，失败草稿可显式比较后重提，不把兼容入口变为绕过 CAS 的后门。"
+TC417,历史资料、公开合同、权限及日常工作台,R30 · 重量、媒体、折扣、订单日期准确，草稿动作有资格控制,不同来源单位的等价重量转换为商店单位后相同,AC-30-1;FD10;BD15;I27,P0,待执行重量转换单元及真实 Product/Variant API 联调；获 MANAGE_PRODUCTS 员工；各分支隔离 fixture：shop KG 下来源 1 KG/1000 G，shop KG 下 1 TONNE/1000 KG，shop LB 下 1 LB/16 OZ，shop OZ 下 1 LB/16 OZ。,"1. 读取各对象完整 Weight.value/unit 并进入编辑，检查转换后的输入数值和单位标签。
+2. 不改变真实重量保存，记录 WeightScalar 提交值并重读 Weight。","1. 各等价组分别显示 1 KG、1000 KG、1 LB、16 OZ；使用来源 unit 到 Shop.defaultWeightUnit 的真实换算，不裸 value 改标签。
+2. 提交按 shop 单位的 WeightScalar，而非编造 {value,unit} 输入；重读保持等价重量，无 1000 倍或 16 倍放大缩小。"
+TC418,历史资料、公开合同、权限及日常工作台,R30 · 重量、媒体、折扣、订单日期准确，草稿动作有资格控制,重量编辑往返只按服务端精度量化一次并保留空值含义,AC-30-1;FD10;BD15;I27,P0,待执行真实 Product/Variant 与 Dashboard 联调；各分支独立 source/shop 单位 fixture，含 1 LB→KG 的非整转换、可空重量、显式零重量；记录 Core 单位转换和允许输出精度。,"1. 编辑并保存非整转换重量，再不修改连续打开/保存/重读两次。
+2. 分别测试空输入与合法零值并检查网络变量及重读。","1. 采用精确单位换算再按 Core 规则一次量化，显示与提交不反复从已格式化字符串二次换算；同一 shop 单位重复保存不累计漂移或数量级变化。
+2. 空值按现行可空/继承语义处理，0 不因 truthiness 当作空；不以 parseFloat 替代转换，失败时原真实重量不被改写。"
+TC419,历史资料、公开合同、权限及日常工作台,R30 · 重量、媒体、折扣、订单日期准确，草稿动作有资格控制,本地上传与同步外链图片按实际 API 完成状态展示,AC-30-2;FD10;BD15;I27,P0,待执行真实 productMediaCreate/存储及 Dashboard 联调；MANAGE_PRODUCTS 员工，独立商品；合法本地图片 Upload 与协议测试服务的同步可取图片 URL 两分支，记录媒体数。,"1. 分别通过正常界面上传本地图片及提交同步 mediaUrl，观察实际请求和响应。
+2. 成功后刷新商品媒体列表并检查媒体 ID、类型、缩略图和原图 URL。","1. 按 Upload 或 mediaUrl 的现行输入执行，正常加载仅对应实际请求，不引入持久异步抓图 pending 状态。
+2. 成功媒体与 API 返回一致，刷新可读且不重复创建，不经专用 proxy/fallback 补出假成功。"
+TC420,历史资料、公开合同、权限及日常工作台,R30 · 重量、媒体、折扣、订单日期准确，草稿动作有资格控制,视频 oEmbed 与普通媒体失败不触发异步抓图回退,AC-30-2;FD10;BD15;I27,P0,待执行真实媒体 API/协议服务和 Dashboard 联调；每分支独立商品/媒体基线；合法受支持视频/oEmbed、无效图片、非法 URL、不受支持 provider、普通服务失败，权限均合法。,"1. 逐分支调用现行 mediaUrl 创建，读取实际 payload errors/顶层错误和结果。
+2. 检查 UI 错误提示、媒体行、后台专用任务及网络 fallback 请求。","1. 合法视频/oEmbed 正常创建并展示；非法分支按实际 ProductMedia error enum 定位失败，不把任何 HTTP 响应都当完成。
+2. 错误分支不留假成功媒体，不增异步 pending/503 专用状态、抓图任务、proxy 或 fallback；普通失败仍可正常重试。"
+TC421,历史资料、公开合同、权限及日常工作台,R30 · 重量、媒体、折扣、订单日期准确，草稿动作有资格控制,不同币种精度的折扣含税未税金额以 Core 为权威,AC-30-3;FD10;BD15;I27,P0,待执行真实定价/API 与 Dashboard 联调；每币种独立配置已验证的商品/订单折扣和税 fixture，响应权威金额：USD net=90.00/tax=18.00/gross=108.00，JPY net=900/tax=90/gross=990，KWD net=1.234/tax=0.062/gross=1.296；记录优惠明细。,"1. 读取商品价格/折扣和订单明细总计，展示金额后刷新并切换对应合法渠道。
+2. 检查币种小数位、net/gross/tax、折扣行与最终总计及网络提交。","1. 每个展示值与相应 Core Money/TaxedMoney 及折扣明细一致，不跨渠道沿用上一币种值。
+2. USD 两位、JPY 零位、KWD 三位遵币种精度；不固定两位，不把折扣/税再次扣加，不以客户端浮点回写改变已生效金额。"
+TC422,历史资料、公开合同、权限及日常工作台,R30 · 重量、媒体、折扣、订单日期准确，草稿动作有资格控制,行级和订单级优惠礼品卡与税费不会被客户端重复计算,AC-30-3;FD10;BD15;I27,P0,待执行真实订单金额/Dashboard 联调；重建含数量>1、行级和订单级折扣、配送税、礼品卡支付的合法订单，Core 提供各行单价/行总计、discounts、subtotal/shipping/total、payment 聚合；保存所有精确基线。,"1. 查看商品折扣、订单行、汇总及支付区，并触发不改变定价的 metadata 保存或刷新。
+2. 比较展示、请求金额与原 Core 金额及礼品卡余额。","1. 数量折扣、含税/未税和配送税按服务端口径显示，支付抵扣与商品优惠分别表达，total 不重复减礼品卡或优惠。
+2. 非金额编辑不重算或改写金额/余额；各次显示仍等于 Core 基线，不因格式化、浮点或单位转换多扣一次。"
+TC423,历史资料、公开合同、权限及日常工作台,R30 · 重量、媒体、折扣、订单日期准确，草稿动作有资格控制,跨日跨月的订单标签与历史分组采用同一时区日期,AC-30-4;FD10;I27,P0,待执行日期转换单元及真实订单历史 UI；每分支独立固定时钟和 locale，API DateTime 保 UTC；事件为 2026-03-01T00:30:00Z 和 2026-01-31T23:30:00Z，时区分别 America/Los_Angeles 与 Asia/Shanghai，locale 分别 en-US/zh-CN。,"1. 展示订单日期与事件历史，检查 plain label、tooltip、日期组 key/标题。
+2. 切换所用 timezone/locale 后重新展示并核对 API 原时间。","1. Los_Angeles 的 03-01T00:30Z 属 2 月 28 日，Shanghai 的 01-31T23:30Z 属 2 月 1 日；同一事件所有标签和组使用同一当地日期，不按 UTC 分组。
+2. 切换后标签与分组一起更新，格式按 locale，原 DateTime 不改写；不把展示转换持久化成新时间。"
+TC424,历史资料、公开合同、权限及日常工作台,R30 · 重量、媒体、折扣、订单日期准确，草稿动作有资格控制,夏令时跳时与重叠小时不误分组丢事件或改变排序,AC-30-4;FD10;I27,P0,待执行日期/历史 UI；独立固定时钟 fixture，timezone America/New_York；春季事件为 2026-03-08T06:59Z/07:01Z，秋季为 2026-11-01T05:30Z/06:30Z，各自有不同 event ID。,"1. 按原事件时间展示两个日期的历史，核对时间标签及日期分组。
+2. 刷新并切换 locale，检查两次本地 01:30 的事件数量和先后。","1. 春季分别为 03-08 的 01:59/03:01，秋季两事件均属 11-01；不存在伪造 02:xx、错一天或同一天拆成 UTC 组。
+2. 两个秋季事件都保留且按真实时刻稳定排序，不按本地时间字符串去重；locale 只改格式不改归组和事件事实。"
+TC425,历史资料、公开合同、权限及日常工作台,R30 · 重量、媒体、折扣、订单日期准确，草稿动作有资格控制,草稿加载及渠道停用时对应动作禁用并说明原因,AC-30-5;FD10;BD15;I27,P0,待执行真实 Core/Dashboard 联调；MANAGE_ORDERS 员工，合法草稿渠道可停用；初次资格查询延迟仅由 UI mock 控制，真实停用 fixture 单独重建。,"1. 延迟渠道/资格加载，再返回渠道 inactive，检查添加商品和完成按钮及说明并尝试点击。
+2. 绕过 UI 直接提交受停用限制的相应 Core mutation。","1. 未知资格不先激活危险动作，inactive 时按适用动作禁用并给可理解原因，不发送已知非法业务请求。
+2. Core 按最新 CHANNEL_INACTIVE 等实际错误拒绝，无加行/成单/库存分配或资金副作用；UI disabled 不是唯一校验。"
+TC426,历史资料、公开合同、权限及日常工作台,R30 · 重量、媒体、折扣、订单日期准确，草稿动作有资格控制,不可售缺价格库存和配送配置使草稿动作按适用条件拒绝,AC-30-5;FD10;BD15;I27,P0,待执行真实 Core/Dashboard；各参数分支独立草稿与获准员工，渠道 active；分支为无已发布商品、商品未达可购买日期、缺 channel 价格、完成所需库存不足、需配送但无有效地址/方式/必要配置；不把仅完成所需条件强加普通加行。,"1. 加载当前商品/渠道/资格事实，检查对应添加商品或完成动作禁用和原因，观察是否发出已知非法请求。
+2. 直接调用同一非法动作并核对订单行、金额、分配、事件。","1. 按实际动作和 fixture 禁用，有明确不可售/缺价格/库存/配送等原因；合法可加行与不可完成可分别表达，不只统一 disabled。
+2. Core 以 PRODUCT_NOT_PUBLISHED、PRODUCT_UNAVAILABLE_FOR_PURCHASE、INSUFFICIENT_STOCK、SHIPPING_METHOD_REQUIRED 等适用实际错误拒绝，不编造错误码，不产生部分行或半完成。"
+TC427,历史资料、公开合同、权限及日常工作台,R30 · 重量、媒体、折扣、订单日期准确，草稿动作有资格控制,切换正常渠道恢复草稿动作且旧渠道响应不能复活错误资格,AC-30-5;AC-30-6;FD01;FD10;BD15;I27,P0,待执行真实 Core/Dashboard 联调；A 渠道 inactive/不可售，B active 且商品价格库存配送配置合法，C 不合法；各分支独立 fixture，旧查询延迟仅 UI 控制。,"1. 从 A 切 B，等最新 B 资格成功后添加商品并合法完成草稿。
+2. 另分支从 B 切 C，最后才到达 B 的旧可用响应并尝试当前完成。","1. 原因清除且适用动作恢复，按 B 当前价格、库存和配送完成一次，不残留 A 的禁用状态。
+2. 旧 B 响应不能启用 C 动作、错误定价或提交 B 变量；C 保持禁用且 Core 仍拒绝非法完成。"
+TC428,历史资料、公开合同、权限及日常工作台,R30 · 重量、媒体、折扣、订单日期准确，草稿动作有资格控制,合法草稿完成仍以最新库存配送事实检查并防重复分配,AC-30-6;BD15;I27,P0,待执行真实 Core PostgreSQL/API 并发集成；合法 B 渠道草稿已显示可完成，员工有权限；两个隔离分支分别在提交前耗尽最后库存或使已选配送失效，另有完全合法成功对照。,"1. 在资格加载后改变库存或配送最新事实，再调用 draftOrderComplete。
+2. 合法对照完成后重放完成请求并检查订单、Stock/allocation、金额和事件。","1. Core 在最终事务按最新事实拒绝越限/失效配送，不依旧 UI 资格继续成单，不留下半订单、额外占用或资金损失。
+2. 正常条件能完成且遵正式库存来源和配送规则，重复请求按既有完成语义返回或拒绝，不重复分配、扣款或完成事件。"
+TC429,历史资料、公开合同、权限及日常工作台,R31 · 裁剪独立增强不破坏普通业务能力,App Problems 在全部公开和隐藏入口中均不暴露,AC-31-1;AC-31-5;FD10;BD15;I25,P0,未来发布静态/路由/真实 validation 验收；可取得 runtime SDL、target、Dashboard operation/生成客户端、路由/menu、任务注册和发布差异；有足够 App 权限以避免权限错误掩盖入口存在。,"1. 检查 App Problems 对应类型、字段、问题列表、创建/关闭 mutation 及等价别名，核对 Dashboard 菜单、隐藏 route/action、生成操作和专用后台任务。
+2. 对基线曾存在或差异中可疑的 App Problems 请求/URL 进行未来 validation/路由验收。","1. 所有边界不注册或不导出等价问题管理能力，不以改名、alias、隐藏菜单、task 或 generated 文件恢复。
+2. 不存在的 GraphQL 操作明确 validation 失败，URL 不呈现问题管理功能；不把受权限暂时隐藏当成能力已裁剪。"
+TC430,历史资料、公开合同、权限及日常工作台,R31 · 裁剪独立增强不破坏普通业务能力,裁剪 App Problems 后现行 Webhook 失败告警和单条重试仍可用,AC-31-1;AC-31-4;FD10;BD15;I21;I25,P0,待执行真实 Webhook delivery/API/Dashboard 联调；MANAGE_APPS 且对应 App/scope 获准员工；可重建 payload READY 的失败 delivery 和需重建 payload 的失败 delivery。,"1. 查看现行 Webhook 失败告警/详情并发起单条 eventDeliveryRetry。
+2. 未来让真实构建/发送流程执行，检查原事件、payload/delivery 状态及告警变化。","1. 失败事实可见，合法重试被受理且不需 App Problems 列表/创建问题；无 errors 仅表示排队。
+2. 缺 payload 先重建，实际状态决定成功/失败，保持原事件；裁剪不移除失败告警或扩大跨 App 读取权限。"
+TC431,历史资料、公开合同、权限及日常工作台,R31 · 裁剪独立增强不破坏普通业务能力,普通单变体创建保留必填属性与权限失败定位,AC-31-2;BD15;I27,P0,待执行真实 productVariantCreate/API/DB；hasVariants=true 商品类型含必填颜色属性，合法产品无相同组合；各分支独立，身份为 MANAGE_PRODUCTS 员工或无产品管理权者。,"1. 合法分支传 product、唯一 SKU、attributes 含必填颜色；非法分支分别缺 attributes、attributes=[] 漏必填、赋非 variant 属性或无权限。
+2. 重读 ProductVariant、属性赋值及库存，并检查错误定位。","1. 合法普通创建成功；缺非空输入为 coercion 错误，漏必填为 REQUIRED，非 variant 属性为 ATTRIBUTE_CANNOT_BE_ASSIGNED，无权为权限错误，均按实际 payload 合同定位。
+2. 只合法分支增加一个正确变体及指定库存；失败不留半变体/属性/库存，不依赖独立生成器才可创建。"
+TC432,历史资料、公开合同、权限及日常工作台,R31 · 裁剪独立增强不破坏普通业务能力,hasVariants 兼容保留普通非配置产品并拒绝非法属性赋值,AC-31-2;BD15;I27,P0,待执行真实 ProductType/Product/Variant API 与 Dashboard；hasVariants=false 和 true 两种独立 fixture；false 类型可能遗留 variant 属性定义但不接受其赋值，员工具 MANAGE_PRODUCTS。,"1. 在 hasVariants=false 产品走正常产品/默认变体管理及合法 attributes=[] 的普通变体能力；独立分支尝试赋非空 variant attributes。
+2. 切到 true 类型的独立 fixture 进行正常多变体管理，读取 hasVariants 与底层变体。","1. false 只简化管理而非没有底层变体，合法基础能力保留；非空属性赋值按 Base INVALID 拒绝，不能误删 hasVariants 或允许非法配置。
+2. true 正常支持区分属性/多变体，不能把独立生成器裁剪扩大为禁止所有变体；两类字段和默认变体事实保持。"
+TC433,历史资料、公开合同、权限及日常工作台,R31 · 裁剪独立增强不破坏普通业务能力,普通批量变体创建按明确错误策略保存且无生成器任务,AC-31-2;BD15;I27,P0,待执行真实 productVariantBulkCreate/API/DB；获 MANAGE_PRODUCTS 员工，合法 product、可区分属性组合和 SKU；全合法、混有非法行两个隔离 fixture，显式 errorPolicy=REJECT_EVERYTHING。,"1. 全合法分支提交两条普通 ProductVariantBulkCreateInput；非法分支一合法行加一漏必填/重复组合行，均使用指定策略。
+2. 重读变体/属性/库存并检查错误行定位、任务注册和 UI。","1. 全合法成功创建两条；混合分支按 REJECT_EVERYTHING 整批拒绝且错误定位到实际行/字段，不替其他 ErrorPolicy 编造相同原子规则。
+2. 合法数据完整，失败分支无任何新变体/库存；普通 bulk 不新增独立 generator 页面、菜单、任务或生成中状态。"
+TC434,历史资料、公开合同、权限及日常工作台,R31 · 裁剪独立增强不破坏普通业务能力,独立变体生成器没有公开路由隐藏操作或专用后台状态,AC-31-2;AC-31-6;FD10;BD15;I25;I27,P0,未来发布差异/注册表静态验收；MANAGE_PRODUCTS 用户；可取得 Dashboard 路由/menu、URL action、生成操作、Core task/state/type 注册；普通单/bulk 创建作为保留对照。,"1. 检查独立 generator 路由、隐藏 URL、别名按钮、专用 query/mutation/task/status 及相关新迁移。
+2. 从正常商品详情进行普通单变体与普通批量创建。","1. 不存在等价独立生成器及其专用后台任务/状态，不以关闭菜单但保留可直达路由交付。
+2. 正常创建仍使用原业务 API，可按权限/属性成功或定位失败，裁剪不误删必要组件和能力。"
+TC435,历史资料、公开合同、权限及日常工作台,R31 · 裁剪独立增强不破坏普通业务能力,普通媒体能力保留而异步抓图专用入口状态和回退均不存在,AC-31-3;FD10;BD15;I25;I27,P0,待执行真实媒体联调及未来发布静态验收；获 MANAGE_PRODUCTS 员工；本地 Upload、同步外链图片、受支持视频/oEmbed 各隔离商品，另有普通非法 URL fixture。,"1. 分别完成三个正常媒体路径并触发普通失败，刷新读取实际媒体结果。
+2. 检查 schema/generated/client routes/task/迁移与网络路径有无异步抓图 pending、专用 503/proxy/fallback。","1. 三个合法路径按实际 API 正常可用，失败按普通媒体 errors 显示，不把外链一并禁用。
+2. 不存在专用异步抓图交付和隐藏重试/回退入口；正常请求 loading 和普通网络错误可保留，不能将其误判为被排除持久状态。"
+TC436,历史资料、公开合同、权限及日常工作台,R31 · 裁剪独立增强不破坏普通业务能力,Page User 基础搜索保留且高级前缀相关度与 RANK 不公开,AC-31-4;AC-31-5;BD15;I12;I25,P0,待执行真实 Page/User 搜索与静态 schema/task/迁移验收；获相应管理权限员工，Page 的 title/slug/content 与 User 姓名/email 有可区分组合词 fixture，另有范围外客户；锁定固定数据集。,"1. 按 Page title/slug/content、User 基础组合词进行合法搜索并分页，检查权限范围。
+2. 检查 Page/User 公开输入/sort enum、generated 操作及隐藏 aliases，尝试不存在的高级 prefix/vector/relevance/RANK 参数，并检查专用索引任务迁移。","1. 基础查询返回准确可见对象，合法无匹配 empty，不因排除高级搜索关闭现有基础组合词能力。
+2. 非目标增强字段/排序不注册，非法操作明确 validation 失败；没有为两者新增专用向量/前缀/相关度索引、维护任务或迁移。"
+TC437,历史资料、公开合同、权限及日常工作台,R31 · 裁剪独立增强不破坏普通业务能力,四主体增强搜索与商品引用更新不被 Page User 裁剪误删,AC-31-4;BD15;I12;I25,P0,待执行真实搜索/API/现行更新任务集成；product/order/giftCard/checkout 四主体各有合法管理 scope 和可重建搜索 fixture；含被 Product 引用的 Page，匹配词及独立字段边界已知。,"1. 在四主体分别使用合法主体搜索及其适用 RANK，核对允许词语/短语/末词前缀和稳定分页。
+2. 修改被引用 Page 的真实字段，未来执行现行正式更新任务后重查对应 Product 搜索。","1. 四主体的目标增强仍按各自合同可用且受 scope 限制，不因 Page/User 增强排除一并删除；不扩展到不支持的主体参数。
+2. 商品引用更新仍反映最新事实，旧 worker 不回退结果；不为保留引用传播新增 Page/User 高级搜索交付，也不编造秒级 SLA。"
+TC438,历史资料、公开合同、权限及日常工作台,R31 · 裁剪独立增强不破坏普通业务能力,基础交易定位事件展示和稳定分页保留且高级过滤排序退出,AC-31-4;AC-31-5;BD15;I11;I25,P0,待执行真实 transaction/transactions API 与静态 schema/task/索引验收；HANDLE_PAYMENTS 且对象范围获准身份；fixture 包括 orderIds/checkoutIds/sourceCheckoutId/ids、PSP reference、App identifier 可定位交易，事件有空和非空两种。,"1. 以 RootTransactionFilterInput 实际五字段按单项/组合查询并稳定分页，读取 transaction 及 events。
+2. 提交 root 交易日期/事件类型或日期/sortBy 非目标参数，核对 schema/generated/aliases 和专用索引任务。","1. 基础定位准确且按稳定 PK 分页，既有事件展示正常，events=[] 为合法结果；Order 内部 TransactionFilterInput 不与 root 混用。
+2. 非目标参数明确 validation 失败，不暴露专用排序/筛选或专用索引任务；不能误删 OrderWhereInput 合法 createdAt/updatedAt 或交易事件读取。"
+TC439,历史资料、公开合同、权限及日常工作台,R31 · 裁剪独立增强不破坏普通业务能力,基础和订单行内元数据保留而独立三对象管理入口全部隐藏边界也退出,AC-31-4;AC-31-5;FD09;FD10;BD14;I23;I25,P0,待执行真实 metadata/Dashboard 联调与路由/generated 静态验收；获准员工，重建 Order、OrderLine/Variant、Fulfillment、Warehouse；保留现有行变体业务交互作为对照。,"1. 通过基础 API、订单详情行内及现有订单行/变体交互完成合法公私改删。
+2. 检查 Order/Fulfillment/Warehouse 独立 metadata 管理弹窗、route/menu/URL action、别名及生成操作。","1. 必要读取和原子编辑能力正常，不能仅因组件名含 Dialog 删除现有订单行/变体交互。
+2. 无新增独立三对象元数据管理入口或隐藏等价功能；基础 API 本身保留不算重新交付独立 UI。"
+TC440,历史资料、公开合同、权限及日常工作台,R31 · 裁剪独立增强不破坏普通业务能力,发布差异没有非目标专用交付但保留必要迁移授权及一致性,AC-31-6;BD14;BD15;I24;I25;I26;I27,P0,未来发布差异审查设计，当前 Stage 不执行产品测试或迁移；将来取得相对冻结 Base 的正式文件差异、schema/route/menu/task/migration/type 注册清单及对应主体验收证据。,"1. 逐项将新增专用 UI/任务/迁移/公开类型映射到主体需求和合同，检查 AppProblems、PageUser 高级、交易高级、generator、异步抓图、独立 metadata 是否借内部名义混入。
+2. 反向核对主体所需历史兼容/输入校验/权限/CAS/金额库存一致性仍有实现和验收，不把依赖 CI 遥测内部重构本身当业务完成。","1. 无无法归属主体或明确排除能力的新增专用交付，隐藏注册同样不通过；一般必要内部重构不被无依据禁止。
+2. 必要历史迁移、授权、原子保存及资金库存保护不因裁剪取消；缺主体证据即阻止验收，不把静态扫描等同真实业务测试通过。"

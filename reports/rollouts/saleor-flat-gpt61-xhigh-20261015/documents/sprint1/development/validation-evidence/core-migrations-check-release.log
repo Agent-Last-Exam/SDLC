@@ -1,0 +1,3 @@
+/workspace/repos/saleor/saleor/settings.py:257: UserWarning: SECRET_KEY not configured, using a random temporary key.
+  warnings.warn(
+No changes detected

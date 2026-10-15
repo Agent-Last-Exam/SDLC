@@ -1,0 +1,98 @@
+{
+  "workflow_status": "stopped_at_boundary",
+  "stopped_after": "sprint1/development",
+  "business_acceptance": "not_passed",
+  "stages": [
+    {
+      "stage": "sprint1/prd",
+      "session_id": "ff93b650-b787-4ab3-a78b-f38098b3b44e",
+      "hashes_verified": true,
+      "files": {
+        "prd.md": "36f9a3bdbfd1aa757ad7f3f996249cd8a7be050adfd89f0edb06389a494f817f"
+      },
+      "native_role_verified": true,
+      "child_transcripts": 4
+    },
+    {
+      "stage": "sprint1/tech-design",
+      "session_id": "ea28bfa0-817e-4bb2-bd97-a36fc51a7ae4",
+      "hashes_verified": true,
+      "files": {
+        "interface-contract.md": "2c2ad3c93781fdc663a3087d08f4af61f9c6412fcdd4f82ac49d817bcf1bc78d",
+        "frontend-design.md": "d451afe6013e21c439a38d5a4148a817d5413fefe1fdaa2601327d9a98c009c3",
+        "backend-design.md": "b26668429d41b853070b1022350ae4cb180a570665a78de33d27b230fb41b0be",
+        "target-schema.graphql": "6cb76420a340f69a679974980d86ece711391ade710bffdb52679b3f47a750a7",
+        "interfaces/app-boundaries.schema.json": "2cb90601625841e7a57a99ba50c849d67288bf53ebc136ecc566f195e0253d1c",
+        "interfaces/app-http.openapi.yaml": "710c2e37117a06a8e5fcb2453f3d161de7f0c86801a48237962c3c6b3d4899d3"
+      },
+      "native_role_verified": true,
+      "child_transcripts": 3
+    },
+    {
+      "stage": "sprint1/test-design",
+      "session_id": "15da765f-96b2-4327-92b5-cd0092298cc5",
+      "hashes_verified": true,
+      "files": {
+        "test-cases.v1.csv": "eb90368d92fc922b9a7d1a5e0ed86d01c0cb38282c48069b12bc5c40a6de5457"
+      },
+      "native_role_verified": true,
+      "child_transcripts": 6
+    },
+    {
+      "stage": "sprint1/development",
+      "session_id": "4816d43d-e4ff-4fe6-a3c2-a3876a343154",
+      "hashes_verified": true,
+      "files": {
+        "code-snapshot-manifest.json": "9c9b697527584cc2481a44f0ac4906e15a311e21685d7c08afd00efa59bb69f1",
+        "test-handoff.md": "0c6c4aecb0317fb6d542005e1563f9521428b5e3f0b1905c974acd8f0fc6da48",
+        "validation-evidence/dashboard-check-types-delivery.log": "ebd1a022268514cfd3bdbdf28f01665f0cffd7c4fbeb978b625cf3e105689991",
+        "validation-evidence/core-migrate-release.log": "d50517f5265b650b9a1d15a68f1f751ac4b9e0157920f09cb8c99c7b4b5e0444",
+        "validation-evidence/core-sprint1-tests-delivery.log": "f70ae1e42ec7c34a26d947c7861b8674bdd5b7f259f7caa62c85e3937c62d09b",
+        "validation-evidence/core-public-integration-final.log": "2560a686d04f3a88dc227b198c1a8400c1961426def4cfb9eb7dad913e46b2a6",
+        "validation-evidence/dashboard-last-fixes-tests.log": "39c9cd7ab33780878c6fd3a8419df97e92f9f9d3b4c9a435cddea565a0e60a10",
+        "validation-evidence/schema-doc-classification.log": "3974d59e828e2325fa0176b3d3272e0f6329888f614894eacb284716c43c30f6",
+        "validation-evidence/dashboard-changed-eslint-release.log": "fdc5e9fe9e88ea9a18732c445dbcfa79a595b63c363300f27f749d78e59b015d",
+        "validation-evidence/index.json": "d5ea17cda04d1580765a57eb44ba356035b8c3554a8376a74e5a41509fdfc51e",
+        "validation-evidence/dashboard-final-test-paths.txt": "4ee7b40cbe82dd961e52acaf955f04c1f84836a466f80a811ed4bbcf6698b3a8",
+        "validation-evidence/dashboard-diff-check-delivery.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "validation-evidence/core-check-release.log": "8c78caf036fa150bdacb031fb861edc8db350981e3ffaa830da95e207ff67a9e",
+        "validation-evidence/dashboard-knip-final.log": "dc2ae1eee02ca24ae73f8ae96e557ae018f603067faef34fa6b56c931792bfa8",
+        "validation-evidence/core-sprint1-test-paths.txt": "3f8216d45424fa59301de8a36dccc6736945e165669cef980f3368dfa739a79d",
+        "validation-evidence/core-diff-check-delivery.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "validation-evidence/dashboard-changed-tests-release.log": "2821391c617d25742329b48f2056f62bbef14a9291a2748d6a1ae38b30a6b013",
+        "validation-evidence/schema-full-diff.json": "71a79f40e599f732fef42ce0a91eb55b6310b53088d1f59084e647404744c99f",
+        "validation-evidence/dashboard-build-delivery.log": "4799de5f20449d5e33264be5d3ae534f29aaecb1299f8761f6b7b63ae56b7f2e",
+        "validation-evidence/core-contract-post-schema.log": "c5bee5d6f56fcaeea90fecc78fac82350aaf205f56d03cf5d3fdb0bd95128075",
+        "validation-evidence/schema-full-check-final.log": "ca47c35c8bd880e017be495c41b917161eb105b1ffed3294477433643a2b6de1",
+        "validation-evidence/core-cost-map-release.log": "92563f0e90b2b6e3cea697b07309d8878f4c6cb75045ec1c7a83cf39293561fd",
+        "validation-evidence/core-ruff-delivery.log": "488d333a2e33d84e44c5f71012ad4f5e447e0290193b8da7876d388c2f38604e",
+        "validation-evidence/dashboard-generate-delivery.log": "71e3e316ba67d566706086126761fd24620063f9de0ff86ac881ef07921de7d5",
+        "validation-evidence/schema-check-final.log": "13e70bbbb66d3251c9c82ebd0a8a24b5c21686e772b43293eb7434d9c6102f2e",
+        "validation-evidence/dashboard-extract-final.log": "cbb84728396f73c23af9881953bde54f01975bc176ac9b08961a5cd1ccf26bf5",
+        "validation-evidence/core-migrations-check-release.log": "d90ef8d7b9088f796c28dbda245f8f8bfd460205d80485079789fee2103c918e",
+        "validation-evidence/core-empty-migrate-delivery.log": "422b56f1ee860bbac79ce9e272900b4163718ac2ab3efe2d9dc63498bf0eef04"
+      },
+      "native_role_verified": true,
+      "child_transcripts": 15
+    }
+  ],
+  "candidate_archive_sha256": "a32df417e0a92f0f7957aaaad32b59ee21de5673e430656e8e78ebcc4ad38193",
+  "code_changes": {
+    "saleor": {
+      "tracked_changed_files": 193,
+      "untracked_files": 84,
+      "patch_bytes": 1611904,
+      "baseline_commit": "c864e66b8e537d30732ddba62d3a4c47e49e4a3e",
+      "patch_apply_check_against_baseline": true
+    },
+    "saleor-dashboard": {
+      "tracked_changed_files": 306,
+      "untracked_files": 97,
+      "patch_bytes": 3071184,
+      "baseline_commit": "aebb2401b5079fbbb8c60150289d1896c108feca",
+      "patch_apply_check_against_baseline": true
+    }
+  },
+  "candidate_archive_hash_verified": true,
+  "candidate_inventory_manifest_verified": true
+}

@@ -1,0 +1,121 @@
+npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> saleor-dashboard@3.22.9 knip
+> knip --reporter markdown
+
+[log] Enabling service worker...
+[error] [sentry-vite-plugin] Warning: No auth token provided. Will not create release. Please set the `authToken` option. You can find information on how to generate a Sentry auth token here: https://docs.sentry.io/api/auth/
+[error] [sentry-vite-plugin] Warning: No auth token provided. Will not upload source maps. Please set the `authToken` option. You can find information on how to generate a Sentry auth token here: https://docs.sentry.io/api/auth/
+[log] Enabling service worker...
+[error] [sentry-vite-plugin] Warning: No auth token provided. Will not create release. Please set the `authToken` option. You can find information on how to generate a Sentry auth token here: https://docs.sentry.io/api/auth/
+[error] [sentry-vite-plugin] Warning: No auth token provided. Will not upload source maps. Please set the `authToken` option. You can find information on how to generate a Sentry auth token here: https://docs.sentry.io/api/auth/
+[log] # Knip report
+
+[log] ## Unused files (7)
+
+[log] * src/components/MetadataHookForm/index.ts
+[log] * src/extensions/components/ExtensionsButtonSelector/ExtensionsButtonSelector.tsx
+[log] * src/extensions/domain/permission.ts
+[log] * src/extensions/isUrlAbsolute.ts
+[log] * src/orders/components/OrderPayment/styles.ts
+[log] * src/orders/components/OrderTransactionGiftCard/messages.ts
+[log] * src/orders/components/OrderUsedGiftCards/index.ts
+[log]
+[log] ## Unused devDependencies (9)
+
+[log] | Name                                        | Location           | Severity |
+[log] | :------------------------------------------ | :----------------- | :------- |
+[log] | @mizdra/graphql-codegen-typescript-fabbrica | package.json:151:6 | error    |
+[log] | @vitest/browser-playwright                  | package.json:177:6 | error    |
+[log] | graphql-lint-unused-fields                  | package.json:200:6 | error    |
+[log] | @storybook/addon-vitest                     | package.json:156:6 | error    |
+[log] | eslint-plugin-storybook                     | package.json:194:6 | error    |
+[log] | @storybook/addon-mcp                        | package.json:155:6 | error    |
+[log] | @vitest/coverage-v8                         | package.json:178:6 | error    |
+[log] | chromatic                                   | package.json:179:6 | error    |
+[log] | vitest                                      | package.json:215:6 | error    |
+[log]
+[log] ## Unlisted dependencies (1)
+
+[log] | Name                      | Location                               | Severity |
+[log] | :------------------------ | :------------------------------------- | :------- |
+[log] | @typescript-eslint/parser | lint/rules/named-styles.test.cjs:43:28 | warn     |
+[log]
+[log] ## Unused exports (23)
+
+[log] | Name                                | Location                                                                | Severity |
+[log] | :---------------------------------- | :---------------------------------------------------------------------- | :------- |
+[log] | areAddressInputFieldsModified       | src/siteSettings/components/SiteSettingsPage/SiteSettingsPage.tsx:60:17 | warn     |
+[log] | mapOrderActionsToTransactionActions | src/orders/components/OrderTransactionPayment/utils.ts:127:14           | warn     |
+[log] | emptyExtensionSettingsSchema        | src/extensions/domain/app-extension-manifest-options.ts:10:14           | warn     |
+[log] | hasExportConstraints                | src/components/ConditionalFilter/ScopedExportDialog.tsx:12:14           | warn     |
+[log] | scopedExportInput                   | src/components/ConditionalFilter/ScopedExportDialog.tsx:18:14           | warn     |
+[log] | getGiftCardAmount                   | src/orders/components/OrderTransactionGiftCard/utils.ts:15:14           | warn     |
+[log] | mapPaymentToTransactionEvents       | src/orders/components/OrderTransactionPayment/utils.ts:82:14            | warn     |
+[log] | getTransactionAmount                | src/orders/components/OrderTransactionPayment/utils.ts:17:14            | warn     |
+[log] | scopedExportFile                    | src/components/ConditionalFilter/useScopedExport.ts:62:14               | warn     |
+[log] | extractOrderGiftCardUsedAmount      | src/orders/components/OrderSummaryCard/utils.ts:12:14                   | warn     |
+[log] | CONTROL_DEFAULTS                    | src/components/ConditionalFilter/controlsType.ts:3:14                   | warn     |
+[log] | getTaxTypeText                      | src/orders/components/OrderSummaryCard/utils.ts:60:14                   | warn     |
+[log] | orderPaymentMessages                | src/orders/components/OrderPayment/messages.ts:3:14                     | warn     |
+[log] | extractRefundedAmount               | src/orders/components/OrderPayment/utils.ts:10:14                       | warn     |
+[log] | ProductVariantCacheManagerSingleton | src/attributes/utils/productVariantCache.ts:8:14                        | warn     |
+[log] | MAX_SEARCH_LENGTH                   | src/components/ConditionalFilter/search.ts:1:14                         | warn     |
+[log] | obtainChannelFromFilter             | src/products/views/ProductList/utils.ts:20:14                           | warn     |
+[log] | getDraftVariantQuantities           | src/orders/hooks/useDraftEligibility.ts:8:14                            | warn     |
+[log] | clean                               | src/components/RichTextEditor/utils.ts:8:23                             | warn     |
+[log] | MetadataNoMemo                      | src/components/Metadata/Metadata.tsx:41:14                              | warn     |
+[log] | MAX_RICH_TEXT_DEPTH                 | src/utils/richText/validation.ts:4:14                                   | warn     |
+[log] | prepareMoney                        | src/orders/utils/data.ts:417:14                                         | warn     |
+[log] | testIntlConfig                      | testUtils/intl.ts:4:14                                                  | warn     |
+[log]
+[log] ## Unused exported types (14)
+
+[log] | Name                           | Location                                                                            | Severity |
+[log] | :----------------------------- | :---------------------------------------------------------------------------------- | :------- |
+[log] | OrderPaymentOrTransactionProps | src/orders/components/OrderPaymentOrTransaction/OrderPaymentOrTransaction.tsx:12:18 | warn     |
+[log] | UseAppFormExtensionOptions     | src/extensions/components/AppExtensionContext/useAppFormExtension.ts:13:18          | warn     |
+[log] | AppFormBinding                 | src/extensions/components/AppExtensionContext/useAppFormExtension.ts:71:3           | warn     |
+[log] | FormType                       | src/extensions/components/AppExtensionContext/useAppFormExtension.ts:74:3           | warn     |
+[log] | AppExtensionManifestOptions    | src/extensions/domain/app-extension-manifest-options.ts:16:13                       | warn     |
+[log] | AppExtensionManifest           | src/extensions/domain/app-extension-manifest.ts:56:13                               | warn     |
+[log] | SearchValidationError          | src/components/ConditionalFilter/search.ts:3:13                                     | warn     |
+[log] | ProductExportScope             | src/products/views/ProductList/export.ts:13:18                                      | warn     |
+[log] | RichTextErrorCode              | src/utils/richText/validation.ts:6:13                                               | warn     |
+[log] | MetadataTarget                 | src/hooks/useMetadataBundles.ts:17:18                                               | warn     |
+[log] | MetadataUpdateInput            | src/hooks/useMetadataUpdate.ts:15:18                                                | warn     |
+[log] | MetadataDraft                  | src/hooks/useMetadataUpdate.ts:10:18                                                | warn     |
+[log] | SessionPolicyCode              | src/graphql/sessionPolicy.ts:9:13                                                   | warn     |
+[log] | APIExtensionsResponse          | src/extensions/types.ts:48:13                                                       | warn     |
+[log]
+[log] ## Duplicate exports (26)
+
+[log] | Name                                                                            | Location                                                      | Severity |
+[log] | :------------------------------------------------------------------------------ | :------------------------------------------------------------ | :------- |
+[log] | OrderCancelDialog|default                                                       | src/orders/components/OrderCancelDialog/OrderCancelDialog.tsx | warn     |
+[log] | TableButtonWrapper|default                                                      | src/components/TableButtonWrapper/TableButtonWrapper.tsx      | warn     |
+[log] | TextInputValuesHandler|NoopValuesHandler                                        | src/components/ConditionalFilter/API/Handler.ts               | warn     |
+[log] | FilterTab|default                                                               | src/components/TableFilter/FilterTab.tsx                      | warn     |
+[log] | ControlledCheckbox|default                                                      | src/components/ControlledCheckbox.tsx                         | warn     |
+[log] | getExtensionItemsForOverviewCreate|getExtensionsItemsForDiscountOverviewActions | src/extensions/getExtensionsItems.ts                          | warn     |
+[log] | Timeline|default                                                                | src/components/Timeline/Timeline.tsx                          | warn     |
+[log] | useRichText|default                                                             | src/utils/richText/useRichText.ts                             | warn     |
+[log] | DateTime|default                                                                | src/components/Date/DateTime.tsx                              | warn     |
+[log] | CardSpacer|default                                                              | src/components/CardSpacer.tsx                                 | warn     |
+[log] | FormSpacer|default                                                              | src/components/FormSpacer.tsx                                 | warn     |
+[log] | permissionGroupAddPath|permissionGroupAddUrl                                    | src/permissionGroups/urls.ts                                  | warn     |
+[log] | Grid|default                                                                    | src/components/Grid/Grid.tsx                                  | warn     |
+[log] | productsMocks|default                                                           | testUtils/mocks/products.ts                                   | warn     |
+[log] | attributeSection|attributeListPath                                              | src/attributes/urls.ts                                        | warn     |
+[log] | warehouseSection|warehouseListPath                                              | src/warehouses/urls.ts                                        | warn     |
+[log] | warehouseAddPath|warehouseAddUrl                                                | src/warehouses/urls.ts                                        | warn     |
+[log] | pageTypeAddPath|pageTypeAddUrl                                                  | src/modelTypes/urls.ts                                        | warn     |
+[log] | customerAddPath|customerAddUrl                                                  | src/customers/urls.ts                                         | warn     |
+[log] | Hr|default                                                                      | src/components/Hr.tsx                                         | warn     |
+[log] | channelsSection|channelsListPath                                                | src/channels/urls.ts                                          | warn     |
+[log] | modelingSection|pageListPath                                                    | src/modeling/urls.ts                                          | warn     |
+[log] | channelAddPath|channelAddUrl                                                    | src/channels/urls.ts                                          | warn     |
+[log] | passwordResetSuccessPath|passwordResetSuccessUrl                                | src/auth/urls.ts                                              | warn     |
+[log] | passwordResetPath|passwordResetUrl                                              | src/auth/urls.ts                                              | warn     |
+[log] | NotFound|default                                                                | src/NotFound.tsx                                              | warn     |
+[log]
