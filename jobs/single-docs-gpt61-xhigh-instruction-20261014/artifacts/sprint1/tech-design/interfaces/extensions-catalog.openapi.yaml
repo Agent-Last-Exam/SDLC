@@ -1,0 +1,99 @@
+openapi: 3.0.3
+info:
+  title: 自托管扩展目录（I18）
+  version: 1.0.0
+  description: 由部署方提供的只读静态 JSON；本设计不宣称已有目录上线。Dashboard 优先使用 EXTENSIONS_CATALOG_URL，未设置则读取同源 extensions/catalog.json。无外部旧 marketplace 依赖，不发送 Saleor token。
+servers:
+  - url: /
+paths:
+  /extensions/catalog.json:
+    get:
+      operationId: readExtensionsCatalog
+      summary: 浏览扩展目录
+      security: []
+      responses:
+        '200':
+          description: 已加载；extensionCategories 为空数组表示合法空目录，不代表安装完成
+          headers:
+            ETag:
+              schema: {type: string}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Catalog'}
+        '304':
+          description: 仅在条件请求且本地有同一来源有效缓存时可复用；无缓存需重取
+        '404':
+          description: 目录未部署；展示配置错误而非空目录
+        '503':
+          description: 目录暂不可用；保留已加载数据并标记陈旧，不自动安装
+components:
+  schemas:
+    Catalog:
+      type: object
+      additionalProperties: false
+      required: [version, extensionCategories]
+      properties:
+        version: {type: string, enum: ['1']}
+        extensionCategories:
+          type: array
+          maxItems: 4
+          items: {$ref: '#/components/schemas/Category'}
+    LocalizedText:
+      type: object
+      required: [en]
+      additionalProperties: {type: string}
+      properties:
+        en: {type: string, minLength: 1, maxLength: 2000}
+    Category:
+      type: object
+      additionalProperties: false
+      required: [id, name, extensions]
+      properties:
+        id: {type: string, enum: [payments, taxes, cms, automation]}
+        name: {$ref: '#/components/schemas/LocalizedText'}
+        extensions:
+          type: array
+          maxItems: 500
+          items: {$ref: '#/components/schemas/Extension'}
+    LogoSource:
+      type: object
+      additionalProperties: false
+      required: [source]
+      properties:
+        source: {type: string, format: uri-reference}
+    Logo:
+      type: object
+      additionalProperties: false
+      required: [light, dark]
+      properties:
+        light: {$ref: '#/components/schemas/LogoSource'}
+        dark: {$ref: '#/components/schemas/LogoSource'}
+    Extension:
+      oneOf:
+        - {$ref: '#/components/schemas/AppExtension'}
+        - {$ref: '#/components/schemas/PluginExtension'}
+    AppExtension:
+      type: object
+      additionalProperties: false
+      required: [id, type, kind, name, description, manifestUrl, repositoryUrl]
+      properties:
+        id: {type: string, minLength: 1, maxLength: 256}
+        type: {type: string, enum: [APP]}
+        kind: {type: string, enum: [OFFICIAL, OSS]}
+        name: {$ref: '#/components/schemas/LocalizedText'}
+        description: {$ref: '#/components/schemas/LocalizedText'}
+        logo: {$ref: '#/components/schemas/Logo'}
+        manifestUrl: {type: string, nullable: true, format: uri}
+        repositoryUrl: {type: string, nullable: true, format: uri}
+        disabled: {type: boolean, default: false}
+    PluginExtension:
+      type: object
+      additionalProperties: false
+      required: [id, type, name, description]
+      properties:
+        id: {type: string, minLength: 1, maxLength: 256}
+        type: {type: string, enum: [PLUGIN]}
+        name: {$ref: '#/components/schemas/LocalizedText'}
+        description: {$ref: '#/components/schemas/LocalizedText'}
+        logo: {$ref: '#/components/schemas/Logo'}
+        disabled: {type: boolean, default: false}

@@ -17,6 +17,7 @@ import tempfile
 import tomllib
 
 import yaml
+from runtime.workflow_timeouts import harbor_timeout_sec
 
 HERE = Path(__file__).resolve().parents[1]
 DEFAULTS = Path(__file__).resolve().parent / "defaults"
@@ -51,16 +52,13 @@ def validate_run(run, path):
     if run.get("agent") != {"adapter": "claude_code"}:
         raise ValueError(f"Unsupported agent adapter in {path.name}")
     execution = run["execution"]
-    expected_execution = {"max_cost_usd"} | (
+    expected_execution = (
         set(HIERARCHICAL_BUDGETS) if mode == "hierarchical" else {"subagents"}
     )
     if set(execution) != expected_execution:
         raise ValueError(
             f"{path.name}: execution fields must be {sorted(expected_execution)}"
         )
-    cost = execution.get("max_cost_usd")
-    if type(cost) not in (int, float) or isinstance(cost, bool) or cost <= 0:
-        raise ValueError(f"{path.name}: max_cost_usd must be a positive number")
     if mode == "hierarchical":
         for key in HIERARCHICAL_BUDGETS:
             if type(execution.get(key)) is not int or execution[key] <= 0:
@@ -151,7 +149,7 @@ def derive_base_revisions(manifest):
     return derived
 
 
-def generated_task_toml(task_toml, mode):
+def generated_task_toml(task_toml, mode, agent_timeout_sec=10800.0):
     environment = task_toml["environment"]
     name, task_id = task_toml["task"]["name"], task_toml["metadata"]["task_id"]
     for value in (name, task_id):
@@ -169,7 +167,7 @@ source_task = "{task_id}"
 scope = "Workflow rollout; benchmark verifier remains owned by the source task"
 
 [agent]
-timeout_sec = 10800.0
+timeout_sec = {float(agent_timeout_sec)}
 network_mode = "public"
 user = "root"
 
@@ -308,11 +306,15 @@ def compile_workflow(mode, task, verify_repos=True, contract_path=CONTRACT):
                 input_workspace_paths[name] = workspace_value
     required_input_paths = {
         "instruction": "instruction.md",
+        "business_conversations": "business-conversations.md",
         "base_revisions": "base-revisions.json",
         "repos": "repos",
     }
     if set(contract["inputs"]) != set(required_input_paths):
-        raise ValueError("Local SDLC requires exactly instruction, base_revisions and repos inputs")
+        raise ValueError("Local SDLC requires exactly instruction, business_conversations, base_revisions and repos inputs")
+    for name in ("instruction", "business_conversations"):
+        if not Path(sources["inputs"][name]).read_text().strip():
+            raise ValueError(f"Business input must not be empty: {name}")
     if verify_repos and repos_source == "host" and not Path(sources["inputs"]["repos"]).is_dir():
         raise ValueError("Repository snapshot root is not a directory")
     if input_workspace_paths != required_input_paths:
@@ -330,6 +332,8 @@ def compile_workflow(mode, task, verify_repos=True, contract_path=CONTRACT):
     stage_ids = set()
     output_paths = set()
     for stage in contract["stages"]:
+        if not {"input:instruction", "input:business_conversations"}.issubset(stage["inputs"]):
+            raise ValueError(f"Stage {stage['id']} must include both business inputs")
         sid = stage["id"]
         if not re.fullmatch(r"[a-z0-9_-]+/[a-z0-9_-]+", sid) or sid in stage_ids:
             raise ValueError(f"Invalid or duplicate stage: {sid}")
@@ -409,6 +413,10 @@ def compile_workflow(mode, task, verify_repos=True, contract_path=CONTRACT):
     )
     if image:
         harbor_generated["Dockerfile"] = generated_dockerfile(image, revisions)
+        if mode in {"single", "flat"}:
+            harbor_generated["task.toml"] = generated_task_toml(
+                task_toml, mode, harbor_timeout_sec(stages)
+            )
     if verify_repos and repos_source == "host":
         for name, revision in revisions.items():
             repo = Path(sources["inputs"]["repos"]) / name

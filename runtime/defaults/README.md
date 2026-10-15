@@ -11,16 +11,16 @@ runtime 拥有的角色、模板和交付契约。task 包不携带这些文件�
 | workflows/lifecycle.yaml | 交付契约：11 个 Stage 的输入接线与产物路径 |
 
 `--mode` 直接选择对应的 yaml，该文件的 `contract:` 指向 `lifecycle.yaml`。三个模式共享
-同一份契约。yaml 是配置来源，不是待核对的副本：运行器只做 schema 校验（预算为正数、
+同一份契约。yaml 是配置来源，不是待核对的副本：运行器只做 schema 校验（执行上限为正数、
 `max_concurrency <= max_members` 等），不再和代码常量对账。
 
 `mode` 字段必须与文件名一致 —— 控制器按 mode 分支，不一致会执行成另一个模式。
 
-`max_cost_usd` 是整个 run 的成本上限，三个模式都必须声明。成本取自 Agent 自己上报的
+三个模式均不设置美元预算，也不按费用终止运行。费用统计保留，取自 Agent 上报的
 `total_cost_usd`（`claude-code.jsonl` 的 result 事件）：Single/Flat 在每个 Stage 封存后累加，
-Hierarchical 在每个 Lead 回合和它派出的 assignment 后累加。超限即 `budget_exhausted`，
-已完成的 Stage 和 revision 保留。被拒绝的 Lead 计划同样计费 —— 产生它的模型调用已经花了钱。
-未上报成本的阶段按"未知"处理，不记为 0 也不凭空计数。
+Hierarchical 在每个 Lead 回合和它派出的 assignment 后累加，仅用于报告。
+被拒绝的 Lead 计划同样计入费用。未上报成本的阶段按“未知”处理，不凭空估算费用。
+旧自定义运行配置中的 `max_cost_usd` 字段需要移除，配置校验会拒绝该字段。
 
 执行上限方面，Single/Flat 严格单向推进，每个 Stage 执行一次，没有需要配置的上限；QA 轮数由
 `lifecycle.yaml` 的 `stages:` 决定（Controller 取 QA Stage 的最大 `round`），不在别处声明。

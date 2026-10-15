@@ -1,0 +1,2892 @@
+diff --git a/.changeset/consistent-configuration-authentication.md b/.changeset/consistent-configuration-authentication.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..5b4335195a43322966dd0f529f2283efd907ab59
+--- /dev/null
++++ b/.changeset/consistent-configuration-authentication.md
+@@ -0,0 +1,9 @@
++---
++"saleor-dashboard": patch
++---
++
++Add password authentication policy controls to shop settings and respect the active policy on login and password recovery pages. Handle failed or incomplete authentication responses without redirecting as if authentication succeeded, and remove callback credentials from browser history.
++
++Expose channel stock availability strategy and automatic checkout completion configuration, including delay and creation-time cutoff. Saving these settings does not report that background processing has completed.
++
++Preserve unsaved configuration edits across refetches, reject duplicate submissions while a request is pending, and report incomplete configuration or warehouse reorder results as failures rather than successful saves.
+diff --git a/eslint.config.mjs b/eslint.config.mjs
+index ea7362b02a46321154b39df1b93ca948cb0bd20e..0b11df8d4e3fad07da3d18a2043eb92b0f29bd64 100644
+--- a/eslint.config.mjs
++++ b/eslint.config.mjs
+@@ -36,7 +36,7 @@ export default tseslint.config(
+   tseslint.configs.recommended, // Note: we can migrate to rules using TypeScript types
+   react.configs.flat.recommended,
+   react.configs.flat["jsx-runtime"],
+-  reactHooks.configs["recommended-latest"],
++  reactHooks.configs.flat["recommended-latest"],
+   reactRefresh.configs.vite,
+   reactYouMightNotNeedAnEffect.configs.recommended,
+ 
+diff --git a/locale/defaultMessages.json b/locale/defaultMessages.json
+index 50ffdb313c5dda1c11a53e9136cb6e6be9922eae..0e0409f9a43c6f425039b9422b3896bf782061c3 100644
+--- a/locale/defaultMessages.json
++++ b/locale/defaultMessages.json
+@@ -442,6 +442,9 @@
+     "context": "alert message",
+     "string": "For subscription"
+   },
++  "0ZI2mr": {
++    "string": "Automatic completion delay (minutes)"
++  },
+   "0a0fLZ": {
+     "context": "countries list menu label when no countries are assigned",
+     "string": "There are no countries assigned"
+@@ -1126,6 +1129,9 @@
+   "5BajZK": {
+     "string": "View and update your site settings"
+   },
++  "5DGxTy": {
++    "string": "No sign-in methods are configured. Contact your store administrator."
++  },
+   "5FSIZp": {
+     "string": "Create new attribute"
+   },
+@@ -1530,6 +1536,9 @@
+     "context": "Installed extensions column name",
+     "string": "Extension Name"
+   },
++  "7khqwr": {
++    "string": "Loading sign-in settings…"
++  },
+   "7l5Bh9": {
+     "string": "{counter,plural,one{Are you sure you want to delete this product?} other{Are you sure you want to delete {displayQuantity} products?}}"
+   },
+@@ -1541,6 +1550,9 @@
+     "context": "action",
+     "string": "Include postal codes"
+   },
++  "7r2Cxn": {
++    "string": "Eligible checkouts must be fully paid or authorized and meet all customer, address, delivery and stock requirements. The last change must be strictly older than the delay (0–10080 minutes). The cutoff includes checkouts created at or after that time; it is not a stop time. Saving settings does not mean an order has been created."
++  },
+   "7scATx": {
+     "context": "select title",
+     "string": "Select channels you want for {contentType} to be available on"
+@@ -1942,6 +1954,9 @@
+     "context": "error message",
+     "string": "Max value cannot be less than min value"
+   },
++  "AeIQzj": {
++    "string": "Password authentication"
++  },
+   "Aeq79M": {
+     "context": "PluginDetailsChannelsCard no channels subtitle",
+     "string": "Plugin’s settings are set common across all channels"
+@@ -2572,6 +2587,9 @@
+     "context": "checkbox gift cards label description",
+     "string": "When activated non-shippable gift cards will be automatically set as fulfilled and sent to customer"
+   },
++  "EgeWfW": {
++    "string": "Enter whole minutes from 0 to 10080 and a valid local date and time, or clear the cutoff."
++  },
+   "Egyh2T": {
+     "context": "section header",
+     "string": "Plugin Settings"
+@@ -3517,6 +3535,9 @@
+   "JqiqNj": {
+     "string": "Something went wrong"
+   },
++  "JrKKd4": {
++    "string": "This channel was changed by another administrator. Your edits have been kept. Reload the latest settings before trying again."
++  },
+   "Jsh6+U": {
+     "context": "product type is digital or physical",
+     "string": "Type"
+@@ -4231,6 +4252,9 @@
+     "context": "amount of refunded money",
+     "string": "Amount"
+   },
++  "OiVRZn": {
++    "string": "Settings were not fully saved. If another administrator changed them, reload before trying again. Your edits have been kept."
++  },
+   "OrMr/k": {
+     "context": "window title",
+     "string": "Create Channel"
+@@ -4355,6 +4379,9 @@
+     "context": "WarehousesSection select field label",
+     "string": "Warehouse"
+   },
++  "PW25BX": {
++    "string": "Customers and staff"
++  },
+   "PX2zWy": {
+     "context": "customer is not set in draft order",
+     "string": "Not set"
+@@ -5258,6 +5285,9 @@
+     "context": "section title for reference types selector",
+     "string": "Reference Types"
+   },
++  "UxKJWE": {
++    "string": "Customers only"
++  },
+   "UxOcKE": {
+     "context": "order history message",
+     "string": "Transaction charge requested"
+@@ -7424,6 +7454,9 @@
+   "ixjvkM": {
+     "string": "We’ve created your default token. Make sure to copy your new personal access token now. You won’t be able to see it again."
+   },
++  "j/2TYf": {
++    "string": "Checkout creation cutoff (local time)"
++  },
+   "j/Oo0B": {
+     "context": "bulk actions button label",
+     "string": "Publish"
+@@ -7447,6 +7480,9 @@
+     "context": "checkbox label",
+     "string": "Set gift card expiration period"
+   },
++  "j3js1H": {
++    "string": "Controls which warehouses supply stock, not allocation priority. Changing warehouse links affects future checks, not existing allocations."
++  },
+   "j3yE7I": {
+     "context": "order history message",
+     "string": "Shipping tracking number was sent to customer"
+@@ -7606,6 +7642,9 @@
+     "context": "tooltip content when product is in preorder",
+     "string": "This product is still in preorder. You will be able to fulfill it after it reaches it’s release date"
+   },
++  "k73+hc": {
++    "string": "Legacy: shipping zones and country"
++  },
+   "kAAlGL": {
+     "string": "Rules"
+   },
+@@ -8276,6 +8315,9 @@
+   "o68j+t": {
+     "string": "Search staff members..."
+   },
++  "o6NRQj": {
++    "string": "Warehouses directly linked to this channel"
++  },
+   "o7ePJQ": {
+     "string": "Go to customers"
+   },
+@@ -8892,6 +8934,9 @@
+     "context": "search label",
+     "string": "Search products"
+   },
++  "s78Y56": {
++    "string": "Unable to load sign-in settings. Reload to try again."
++  },
+   "s8FlDW": {
+     "context": "hide error log label in notification",
+     "string": "Hide log"
+@@ -8944,6 +8989,9 @@
+     "context": "link to docs in add custom extensions page subheader",
+     "string": "manifest format"
+   },
++  "sY9o/g": {
++    "string": "Password authentication for staff is disabled. Use a configured external sign-in method or contact your administrator."
++  },
+   "sZ27WU": {
+     "context": "error message",
+     "string": "Only pre-authorized payments can be voided"
+@@ -9037,6 +9085,9 @@
+     "context": "voucher status",
+     "string": "Expired"
+   },
++  "tBbnO2": {
++    "string": "This setting controls password sign-in, password reset and password changes. Restricting staff sign-in also invalidates existing password sessions. Configure and verify an external sign-in method before disabling staff passwords."
++  },
+   "tCLTCb": {
+     "context": "tab name",
+     "string": "All products"
+@@ -9614,6 +9665,9 @@
+   "wQdR8M": {
+     "string": "Add search engine title and description to make this category easier to find"
+   },
++  "wSo0Iy": {
++    "string": "Stock availability"
++  },
+   "wTHjt3": {
+     "string": "Search Orders..."
+   },
+diff --git a/schema.graphql b/schema.graphql
+index 2306a3fa7c2f22b03a9f33e0be00d2efb7b1d484..795e9d5b944bbf3a2a96f61eeefd6c098ad72cd8 100644
+--- a/schema.graphql
++++ b/schema.graphql
+@@ -3026,30 +3026,12 @@ type AppExtension implements Node @doc(category: "Apps") {
+   url: String!
+ 
+   """Place where given extension will be mounted."""
+-  mount: AppExtensionMountEnum! @deprecated(reason: "Use `mountName` instead.")
++  mount: AppExtensionMountEnum! @deprecated(reason: "Use mountName.")
+ 
+   """Type of way how app extension will be opened."""
+-  target: AppExtensionTargetEnum! @deprecated(reason: "Use `targetName` instead.")
+-
+-  """
+-  Name of the extension mount point in the dashboard. Replaces `mount`
+-  
+-  Added in Saleor 3.22.
+-  """
++  target: AppExtensionTargetEnum! @deprecated(reason: "Use targetName.")
+   mountName: String!
+-
+-  """
+-  Name of the extension target in the dashboard. Replaces `target`
+-  
+-  Added in Saleor 3.22.
+-  """
+   targetName: String!
+-
+-  """
+-  App extension settings. Replaces `options` field.
+-  
+-  Added in Saleor 3.22.
+-  """
+   settings: JSON!
+ 
+   """The app assigned to app extension."""
+@@ -3063,7 +3045,7 @@ type AppExtension implements Node @doc(category: "Apps") {
+   
+   Added in Saleor 3.22.
+   """
+-  options: AppExtensionPossibleOptions @deprecated(reason: "Use `settings` field instead.")
++  options: AppExtensionPossibleOptions @deprecated(reason: "Use settings; legacy widgetTarget/newTabTarget mapping is preserved.")
+ }
+ 
+ """All places where app extension can be mounted."""
+@@ -3139,13 +3121,13 @@ union AppExtensionPossibleOptions = AppExtensionOptionsWidget | AppExtensionOpti
+ """Represents the options for an app extension."""
+ type AppExtensionOptionsWidget @doc(category: "Apps") {
+   """Options for displaying a Widget"""
+-  widgetTarget: WidgetTargetOptions @deprecated(reason: "Use `settings` field directly.")
++  widgetTarget: WidgetTargetOptions
+ }
+ 
+ """Represents the WIDGET target options for an app extension."""
+ type WidgetTargetOptions @doc(category: "Apps") {
+   """HTTP method for Widget target (GET or POST)"""
+-  method: HttpMethod! @deprecated(reason: "Use `settings` field directly.")
++  method: HttpMethod!
+ }
+ 
+ enum HttpMethod {
+@@ -3156,13 +3138,13 @@ enum HttpMethod {
+ """Represents the options for an app extension."""
+ type AppExtensionOptionsNewTab @doc(category: "Apps") {
+   """Options controlling behavior of the NEW_TAB extension target"""
+-  newTabTarget: NewTabTargetOptions @deprecated(reason: "Use `settings` field directly.")
++  newTabTarget: NewTabTargetOptions
+ }
+ 
+ """Represents the NEW_TAB target options for an app extension."""
+ type NewTabTargetOptions @doc(category: "Apps") {
+   """HTTP method for New Tab target (GET or POST)"""
+-  method: HttpMethod! @deprecated(reason: "Use `settings` field directly.")
++  method: HttpMethod!
+ }
+ 
+ """Represents the app's brand data."""
+@@ -4867,6 +4849,9 @@ type Channel implements Node & ObjectWithMetadata @doc(category: "Channels") {
+   """
+   metafields(keys: [String!]): Metadata
+ 
++  "\\n\\nRequires one of the following permissions: MANAGE_CHANNELS."
++  settingsRevision: String!
++
+   """Slug of the channel."""
+   slug: String!
+ 
+@@ -5327,12 +5312,19 @@ enum WeightUnitsEnum {
+ 
+ """Represents the channel stock settings."""
+ type StockSettings @doc(category: "Products") {
++  availabilityStrategy: StockAvailabilityStrategyEnum!
++
+   """
+   Allocation strategy defines the preference of warehouses for allocations and reservations.
+   """
+   allocationStrategy: AllocationStrategyEnum!
+ }
+ 
++enum StockAvailabilityStrategyEnum @doc(category: "Products") {
++  LEGACY
++  CHANNEL_WAREHOUSES
++}
++
+ """
+ Determine the allocation strategy for the channel.
+ 
+@@ -5434,6 +5426,9 @@ scalar Hour
+ 
+ """Represents the channel-specific checkout settings."""
+ type CheckoutSettings {
++  automaticCompletionDelay: Minute!
++  automaticCompletionCutoff: DateTime
++
+   """
+   Default `true`. Determines if the checkout mutations should use legacy error flow. In legacy flow, all mutations can raise an exception unrelated to the requested action - (e.g. out-of-stock exception when updating checkoutShippingAddress.) If `false`, the errors will be aggregated in `checkout.problems` field. Some of the `problems` can block the finalizing checkout process. The legacy flow will be removed in Saleor 4.0. The flow with `checkout.problems` will be the default one.
+   """
+@@ -9945,6 +9940,10 @@ type Shop implements ObjectWithMetadata {
+   Public metadata. Use `keys` to control which fields you want to include. The default is to include everything.
+   """
+   metafields(keys: [String!]): Metadata
++  passwordAuthenticationMode: PasswordAuthenticationModeEnum!
++
++  "\\n\\nRequires one of the following permissions: MANAGE_SETTINGS."
++  settingsRevision: String!
+ 
+   """ID of the shop."""
+   id: ID!
+@@ -10149,6 +10148,12 @@ type Shop implements ObjectWithMetadata {
+   chargeTaxesOnShipping: Boolean! @deprecated(reason: "Use `ShippingMethodType.taxClass` to determine whether taxes are calculated for shipping methods; if a tax class is set, the taxes will be calculated, otherwise no tax rate will be applied.")
+ }
+ 
++enum PasswordAuthenticationModeEnum @doc(category: "Authentication") {
++  ENABLED
++  CUSTOMERS_ONLY
++  DISABLED
++}
++
+ """
+ Available payment gateway backend with configuration necessary to setup client.
+ """
+@@ -11193,6 +11198,9 @@ type Order implements Node & ObjectWithMetadata @doc(category: "Orders") {
+   Public metadata. Use `keys` to control which fields you want to include. The default is to include everything.
+   """
+   metafields(keys: [String!]): Metadata
++  shippingMethodMetadata: [MetadataItem!]!
++  shippingMethodPrivateMetadata: [MetadataItem!]!
++  shippingMetadataSnapshotStatus: ShippingMetadataSnapshotStatusEnum!
+ 
+   """Date and time when the order was created."""
+   created: DateTime!
+@@ -11480,6 +11488,12 @@ type Order implements Node & ObjectWithMetadata @doc(category: "Orders") {
+   totalRemainingGrant: Money!
+ }
+ 
++enum ShippingMetadataSnapshotStatusEnum @doc(category: "Orders") {
++  CAPTURED
++  LEGACY_PRESERVED
++  UNAVAILABLE
++}
++
+ enum OrderStatus @doc(category: "Orders") {
+   DRAFT
+   UNCONFIRMED
+@@ -11526,6 +11540,9 @@ type Fulfillment implements Node & ObjectWithMetadata @doc(category: "Orders") {
+   Public metadata. Use `keys` to control which fields you want to include. The default is to include everything.
+   """
+   metafields(keys: [String!]): Metadata
++  shippingMethodMetadata: [MetadataItem!]!
++  shippingMethodPrivateMetadata: [MetadataItem!]!
++  shippingMetadataSnapshotStatus: ShippingMetadataSnapshotStatusEnum!
+ 
+   """Sequence in which the fulfillments were created for an order."""
+   fulfillmentOrder: Int!
+@@ -18609,6 +18626,11 @@ type Mutation {
+     token: UUID @deprecated(reason: "Use `id` instead.")
+   ): CheckoutShippingMethodUpdate @doc(category: "Checkout") @webhookEventsInfo(asyncEvents: [CHECKOUT_UPDATED], syncEvents: [SHIPPING_LIST_METHODS_FOR_CHECKOUT]) @deprecated(reason: "Use `checkoutDeliveryMethodUpdate` instead.")
+ 
++  """
++  Recalculate delivery options without assigning or clearing the saved delivery method, changing updatedAt, or completing the checkout.
++  """
++  checkoutShippingRefresh(id: ID!): CheckoutShippingRefresh @doc(category: "Checkout")
++
+   """
+   Updates the delivery method (shipping method or pick up point) of the checkout. Updates the checkout shipping_address for click and collect delivery for a warehouse address. 
+   
+@@ -20560,6 +20582,7 @@ type ShopError @doc(category: "Shop") {
+ }
+ 
+ enum ShopErrorCode {
++  CONFLICT
+   ALREADY_EXISTS
+   CANNOT_FETCH_TAX_RATES
+   GRAPHQL_ERROR
+@@ -20638,6 +20661,9 @@ type ShopSettingsUpdate @doc(category: "Shop") @webhookEventsInfo(asyncEvents: [
+ }
+ 
+ input ShopSettingsInput {
++  passwordAuthenticationMode: PasswordAuthenticationModeEnum
++  expectedSettingsRevision: String
++
+   """Header text."""
+   headerText: String
+ 
+@@ -28075,6 +28101,9 @@ type CheckoutError @doc(category: "Checkout") {
+ }
+ 
+ enum CheckoutErrorCode @doc(category: "Checkout") {
++  SHIPPING_SERVICE_ERROR
++  CONFLICT
++  INTERNAL_ERROR
+   BILLING_ADDRESS_NOT_SET
+   CHECKOUT_NOT_FULLY_PAID
+   GRAPHQL_ERROR
+@@ -28574,6 +28603,19 @@ type CheckoutShippingMethodUpdate @doc(category: "Checkout") @webhookEventsInfo(
+   errors: [CheckoutError!]!
+ }
+ 
++"""
++Recalculate delivery options without assigning or clearing the saved delivery method, changing updatedAt, or completing the checkout.
++"""
++type CheckoutShippingRefresh @doc(category: "Checkout") {
++  checkout: Checkout
++  shippingMethods: [ShippingMethod!]!
++  collectionPoints: [Warehouse!]!
++  deliveryMethod: DeliveryMethod
++  selectedMethodValid: Boolean!
++  calculatedAt: DateTime!
++  errors: [CheckoutError!]!
++}
++
+ """
+ Updates the delivery method (shipping method or pick up point) of the checkout. Updates the checkout shipping_address for click and collect delivery for a warehouse address. 
+ 
+@@ -28691,6 +28733,7 @@ type ChannelError @doc(category: "Channels") {
+ }
+ 
+ enum ChannelErrorCode @doc(category: "Channels") {
++  CONFLICT
+   ALREADY_EXISTS
+   GRAPHQL_ERROR
+   INVALID
+@@ -28754,10 +28797,12 @@ input ChannelCreateInput @doc(category: "Channels") {
+ }
+ 
+ input StockSettingsInput @doc(category: "Products") {
++  availabilityStrategy: StockAvailabilityStrategyEnum
++
+   """
+   Allocation strategy options. Strategy defines the preference of warehouses for allocations and reservations.
+   """
+-  allocationStrategy: AllocationStrategyEnum!
++  allocationStrategy: AllocationStrategyEnum
+ }
+ 
+ input OrderSettingsInput @doc(category: "Orders") {
+@@ -28825,6 +28870,9 @@ input OrderSettingsInput @doc(category: "Orders") {
+ }
+ 
+ input CheckoutSettingsInput @doc(category: "Checkout") {
++  automaticCompletionDelay: Minute
++  automaticCompletionCutoff: DateTime
++
+   """
+   Default `true`. Determines if the checkout mutations should use legacy error flow. In legacy flow, all mutations can raise an exception unrelated to the requested action - (e.g. out-of-stock exception when updating checkoutShippingAddress.) If `false`, the errors will be aggregated in `checkout.problems` field. Some of the `problems` can block the finalizing checkout process. The legacy flow will be removed in Saleor 4.0. The flow with `checkout.problems` will be the default one.
+   """
+@@ -28919,6 +28967,7 @@ input ChannelUpdateInput @doc(category: "Channels") {
+ 
+   """The channel payment settings"""
+   paymentSettings: PaymentSettingsInput
++  expectedSettingsRevision: String
+ 
+   """Name of the channel."""
+   name: String
+@@ -29864,30 +29913,12 @@ type AppManifestExtension @doc(category: "Apps") {
+   url: String!
+ 
+   """Place where given extension will be mounted."""
+-  mount: AppExtensionMountEnum! @deprecated(reason: "Use `mountName` instead.")
++  mount: AppExtensionMountEnum! @deprecated(reason: "Use mountName.")
+ 
+   """Type of way how app extension will be opened."""
+-  target: AppExtensionTargetEnum! @deprecated(reason: "Use `targetName` instead.")
+-
+-  """
+-  Name of the extension mount point in the dashboard. Replaces `mount`
+-  
+-  Added in Saleor 3.22.
+-  """
++  target: AppExtensionTargetEnum! @deprecated(reason: "Use targetName.")
+   mountName: String!
+-
+-  """
+-  Name of the extension target in the dashboard. Replaces `target`
+-  
+-  Added in Saleor 3.22.
+-  """
+   targetName: String!
+-
+-  """
+-  JSON object with settings for this extension.
+-  
+-  Added in Saleor 3.22.
+-  """
+   settings: JSON!
+ }
+ 
+@@ -30015,6 +30046,8 @@ type AccountError @doc(category: "Users") {
+ }
+ 
+ enum AccountErrorCode @doc(category: "Users") {
++  PASSWORD_AUTHENTICATION_DISABLED
++  PASSWORD_AUTHENTICATION_RESTRICTED
+   ACTIVATE_OWN_ACCOUNT
+   ACTIVATE_SUPERUSER_ACCOUNT
+   DUPLICATED_INPUT_ITEM
+diff --git a/src/auth/components/LoginPage/LoginPage.tsx b/src/auth/components/LoginPage/LoginPage.tsx
+index 14df8302972d72ce0714e0a0edf67c925662b1ca..60d79d76ebd354517f624eaa9ddaea7d95c5f753 100644
+--- a/src/auth/components/LoginPage/LoginPage.tsx
++++ b/src/auth/components/LoginPage/LoginPage.tsx
+@@ -26,6 +26,8 @@ interface LoginCardProps {
+   onExternalAuthentication: (pluginId: string) => void;
+   onSubmit: (event: LoginFormData) => SubmitPromise;
+   lastLoginMethod: LastLoginMethod;
++  passwordLoginAllowed?: boolean;
++  policyError?: boolean;
+ }
+ 
+ const LoginPage = (props: LoginCardProps) => {
+@@ -37,6 +39,8 @@ const LoginPage = (props: LoginCardProps) => {
+     onExternalAuthentication,
+     onSubmit,
+     lastLoginMethod,
++    passwordLoginAllowed = true,
++    policyError = false,
+   } = props;
+   const classes = useStyles(props);
+   const intl = useIntl();
+@@ -65,73 +69,99 @@ const LoginPage = (props: LoginCardProps) => {
+               <Text color="critical2">{getErrorMessage(error, intl)}</Text>
+             </Box>
+           ))}
+-          <Input
+-            autoFocus
+-            width="100%"
+-            autoComplete="email"
+-            label={intl.formatMessage(commonMessages.email)}
+-            id="email"
+-            name="email"
+-            onChange={handleChange}
+-            value={data.email}
+-            data-test-id="email"
+-            spellCheck={false}
+-            disabled={disabled}
+-            required
+-          />
+-          <FormSpacer />
+-          <Input
+-            width="100%"
+-            label={intl.formatMessage({
+-              id: "5sg7KC",
+-              defaultMessage: "Password",
+-            })}
+-            id="password"
+-            name="password"
+-            autoComplete="current-password"
+-            onChange={handleChange}
+-            type={showPassword ? "text" : "password"}
+-            value={data.password}
+-            data-test-id="password"
+-            spellCheck={false}
+-            disabled={disabled}
+-            endAdornment={
+-              <Button
+-                icon={
+-                  <EyeIcon onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />
+-                }
+-                onMouseDown={() => setShowPassword(true)}
+-                onMouseUp={() => setShowPassword(false)}
+-                variant="tertiary"
+-                type="button"
+-              />
+-            }
+-            required
+-          />
+-          <Link to={passwordResetUrl}>
+-            <Text className={classes.link} fontSize={3} data-test-id="reset-password-link">
++          {policyError && (
++            <Text color="critical1">
+               <FormattedMessage
+-                id="3tbL7x"
+-                defaultMessage="Forgot password?"
+-                description="description"
++                id="s78Y56"
++                defaultMessage="Unable to load sign-in settings. Reload to try again."
+               />
+             </Text>
+-          </Link>
++          )}
++          {!loading &&
++            !policyError &&
++            !passwordLoginAllowed &&
++            externalAuthentications.length === 0 && (
++              <Text>
++                <FormattedMessage
++                  id="5DGxTy"
++                  defaultMessage="No sign-in methods are configured. Contact your store administrator."
++                />
++              </Text>
++            )}
++          {passwordLoginAllowed && (
++            <>
++              <Input
++                autoFocus
++                width="100%"
++                autoComplete="email"
++                label={intl.formatMessage(commonMessages.email)}
++                id="email"
++                name="email"
++                onChange={handleChange}
++                value={data.email}
++                data-test-id="email"
++                spellCheck={false}
++                disabled={disabled}
++                required
++              />
++              <FormSpacer />
++              <Input
++                width="100%"
++                label={intl.formatMessage({
++                  id: "5sg7KC",
++                  defaultMessage: "Password",
++                })}
++                id="password"
++                name="password"
++                autoComplete="current-password"
++                onChange={handleChange}
++                type={showPassword ? "text" : "password"}
++                value={data.password}
++                data-test-id="password"
++                spellCheck={false}
++                disabled={disabled}
++                endAdornment={
++                  <Button
++                    icon={
++                      <EyeIcon
++                        onPointerEnterCapture={undefined}
++                        onPointerLeaveCapture={undefined}
++                      />
++                    }
++                    onMouseDown={() => setShowPassword(true)}
++                    onMouseUp={() => setShowPassword(false)}
++                    variant="tertiary"
++                    type="button"
++                  />
++                }
++                required
++              />
++              <Link to={passwordResetUrl}>
++                <Text className={classes.link} fontSize={3} data-test-id="reset-password-link">
++                  <FormattedMessage
++                    id="3tbL7x"
++                    defaultMessage="Forgot password?"
++                    description="description"
++                  />
++                </Text>
++              </Link>
+ 
+-          <div className={classes.buttonContainer}>
+-            <ButtonWithLoader
+-              width="100%"
+-              disabled={disabled}
+-              variant="primary"
+-              type="submit"
+-              transitionState={loading ? "loading" : "default"}
+-              data-test-id="submit"
+-              position="relative"
+-            >
+-              {showLastLoginIndicatorForPassword && <LastLoginIndicator />}
+-              <FormattedMessage id="AubJ/S" defaultMessage="Sign in" description="button" />
+-            </ButtonWithLoader>
+-          </div>
++              <div className={classes.buttonContainer}>
++                <ButtonWithLoader
++                  width="100%"
++                  disabled={disabled}
++                  variant="primary"
++                  type="submit"
++                  transitionState={loading ? "loading" : "default"}
++                  data-test-id="submit"
++                  position="relative"
++                >
++                  {showLastLoginIndicatorForPassword && <LastLoginIndicator />}
++                  <FormattedMessage id="AubJ/S" defaultMessage="Sign in" description="button" />
++                </ButtonWithLoader>
++              </div>
++            </>
++          )}
+           {externalAuthentications.map(externalAuthentication => (
+             <Fragment key={externalAuthentication.id}>
+               <FormSpacer />
+diff --git a/src/auth/components/PasswordPolicyGate.tsx b/src/auth/components/PasswordPolicyGate.tsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..b6a520a1c8c3d1883ce29542831e20b4cff9e598
+--- /dev/null
++++ b/src/auth/components/PasswordPolicyGate.tsx
+@@ -0,0 +1,45 @@
++import {
++  PasswordAuthenticationModeEnum,
++  useAvailableExternalAuthenticationsQuery,
++} from "@dashboard/graphql";
++import { Text } from "@saleor/macaw-ui-next";
++import { ReactNode } from "react";
++import { FormattedMessage } from "react-intl";
++
++export const PasswordPolicyGate = ({ children }: { children: ReactNode }) => {
++  const { data, loading, error } = useAvailableExternalAuthenticationsQuery({
++    fetchPolicy: "network-only",
++  });
++
++  if (loading) {
++    return (
++      <Text>
++        <FormattedMessage id="7khqwr" defaultMessage="Loading sign-in settings…" />
++      </Text>
++    );
++  }
++
++  if (error || !data?.shop) {
++    return (
++      <Text>
++        <FormattedMessage
++          id="s78Y56"
++          defaultMessage="Unable to load sign-in settings. Reload to try again."
++        />
++      </Text>
++    );
++  }
++
++  if (data.shop.passwordAuthenticationMode !== PasswordAuthenticationModeEnum.ENABLED) {
++    return (
++      <Text>
++        <FormattedMessage
++          id="sY9o/g"
++          defaultMessage="Password authentication for staff is disabled. Use a configured external sign-in method or contact your administrator."
++        />
++      </Text>
++    );
++  }
++
++  return <>{children}</>;
++};
+diff --git a/src/auth/queries.ts b/src/auth/queries.ts
+index eca6f8b4b1a73a892cd78a960e9fdd6b4cdfb44c..3a9f84f7414d6c158f5cb664f9e70ef2a73bc114 100644
+--- a/src/auth/queries.ts
++++ b/src/auth/queries.ts
+@@ -3,6 +3,7 @@ import { gql } from "@apollo/client";
+ export const availableExternalAuthentications = gql`
+   query AvailableExternalAuthentications {
+     shop {
++      passwordAuthenticationMode
+       availableExternalAuthentications {
+         id
+         name
+diff --git a/src/auth/views/Login.tsx b/src/auth/views/Login.tsx
+index 4291c2004b2e60ee7313e2ef948a34482dcd5463..26191640e75948378ad993586fa82a717319d24b 100644
+--- a/src/auth/views/Login.tsx
++++ b/src/auth/views/Login.tsx
+@@ -1,7 +1,10 @@
+-import { useAvailableExternalAuthenticationsLazyQuery } from "@dashboard/graphql";
++import {
++  PasswordAuthenticationModeEnum,
++  useAvailableExternalAuthenticationsLazyQuery,
++} from "@dashboard/graphql";
+ import useNavigator from "@dashboard/hooks/useNavigator";
+ import { getAppMountUriForRedirect } from "@dashboard/utils/urls";
+-import { useEffect } from "react";
++import { useEffect, useRef, useState } from "react";
+ import urlJoin from "url-join";
+ import useRouter from "use-react-router";
+ 
+@@ -10,6 +13,7 @@ import LoginPage from "../components/LoginPage";
+ import { LoginFormData } from "../components/LoginPage/types";
+ import { useAuthParameters } from "../hooks/useAuthParameters";
+ import { useLastLoginMethod } from "../hooks/useLastLoginMethod";
++import { UserContextError } from "../types";
+ import { loginCallbackPath, LoginUrlQueryParams } from "../urls";
+ 
+ interface LoginViewProps {
+@@ -23,8 +27,8 @@ const LoginView = ({ params }: LoginViewProps) => {
+     useUser();
+   const [
+     queryExternalAuthentications,
+-    { data: externalAuthentications, loading: externalAuthenticationsLoading },
+-  ] = useAvailableExternalAuthenticationsLazyQuery();
++    { data: externalAuthentications, loading: externalAuthenticationsLoading, error: policyError },
++  ] = useAvailableExternalAuthenticationsLazyQuery({ fetchPolicy: "network-only" });
+   const {
+     fallbackUri,
+     requestedExternalPluginId,
+@@ -33,42 +37,101 @@ const LoginView = ({ params }: LoginViewProps) => {
+     setRequestedExternalPluginId,
+   } = useAuthParameters();
+   const { lastLoginMethod, setLastLoginMethod } = useLastLoginMethod();
++  const [localErrors, setLocalErrors] = useState<UserContextError[]>([]);
++  const callbackStarted = useRef(false);
+ 
+   const handleSubmit = async (data: LoginFormData) => {
+-    if (!login) {
+-      return;
+-    }
++    setLocalErrors([]);
+ 
+-    const result = await login(data.email, data.password);
+-    const errors = result?.errors || [];
++    try {
++      const result = await login?.(data.email, data.password);
+ 
+-    if (errors.length === 0) {
+-      setLastLoginMethod("password");
+-    }
++      if (result?.token && result.user && result.errors.length === 0) {
++        setLastLoginMethod("password");
++
++        return [];
++      }
+ 
+-    return errors;
++      if (!result || !result.errors.length) {
++        setLocalErrors([UserContextError.unknownLoginError]);
++      }
++
++      return result?.errors;
++    } catch {
++      setLocalErrors([UserContextError.serverError]);
++    }
+   };
+   const handleRequestExternalAuthentication = async (pluginId: string) => {
+-    setFallbackUri(location.pathname);
++    setLocalErrors([]);
++
++    try {
++      const result = await requestLoginByExternalPlugin?.(pluginId, {
++        redirectUri: urlJoin(
++          window.location.origin,
++          getAppMountUriForRedirect(),
++          loginCallbackPath,
++        ),
++      });
+ 
+-    const result = await requestLoginByExternalPlugin!(pluginId, {
+-      redirectUri: urlJoin(window.location.origin, getAppMountUriForRedirect(), loginCallbackPath),
+-    });
+-    const data = JSON.parse(result?.authenticationData || "");
++      if (!result?.authenticationData || result.errors.length) {
++        throw new Error("External authentication unavailable");
++      }
+ 
+-    if (data && !result?.errors?.length) {
++      const data = JSON.parse(result.authenticationData);
++      const authorizationUrl = new URL(data.authorizationUrl);
++      const localDevelopment =
++        authorizationUrl.protocol === "http:" &&
++        ["localhost", "127.0.0.1", "[::1]"].includes(authorizationUrl.hostname);
++
++      if (
++        (authorizationUrl.protocol !== "https:" && !localDevelopment) ||
++        authorizationUrl.username ||
++        authorizationUrl.password
++      ) {
++        throw new Error("Invalid authorization URL");
++      }
++
++      setFallbackUri(location.pathname);
+       setRequestedExternalPluginId(pluginId);
+-      window.location.href = data.authorizationUrl;
++      window.location.assign(authorizationUrl.href);
++    } catch {
++      setRequestedExternalPluginId(null);
++      setFallbackUri(null);
++      setLocalErrors([UserContextError.externalLoginError]);
+     }
+   };
+   const handleExternalAuthentication = async (code: string, state: string) => {
+-    await loginByExternalPlugin!(requestedExternalPluginId, {
+-      code,
+-      state,
+-    });
+-    setRequestedExternalPluginId(null);
+-    navigate(fallbackUri);
+-    setFallbackUri(null);
++    // Keep callback credentials only in this request's closure, not browser history.
++    window.history.replaceState(window.history.state, "", window.location.pathname);
++
++    try {
++      if (!requestedExternalPluginId || !loginByExternalPlugin) {
++        throw new Error("Missing authentication context");
++      }
++
++      const result = await loginByExternalPlugin(requestedExternalPluginId, { code, state });
++
++      if (!result?.token || !result.user || result.errors.length) {
++        throw new Error("External authentication failed");
++      }
++
++      const fallback = new URL(fallbackUri, window.location.origin);
++      const safeFallback =
++        fallback.origin === window.location.origin &&
++        fallbackUri.startsWith("/") &&
++        !fallbackUri.startsWith("//") &&
++        !Array.from(fallbackUri).some(
++          character => character === "\\" || character.charCodeAt(0) < 32,
++        );
++
++      navigate(safeFallback ? `${fallback.pathname}${fallback.search}${fallback.hash}` : "/");
++    } catch {
++      setLocalErrors([UserContextError.externalLoginError]);
++      queryExternalAuthentications();
++    } finally {
++      setRequestedExternalPluginId(null);
++      setFallbackUri(null);
++    }
+   };
+ 
+   useEffect(() => {
+@@ -84,20 +147,21 @@ const LoginView = ({ params }: LoginViewProps) => {
+     const externalAuthParamsExist = code && state && isCallbackPath;
+     const externalAuthNotPerformed = !authenticating && !errors.length;
+ 
+-    if (externalAuthParamsExist && externalAuthNotPerformed) {
++    if (externalAuthParamsExist && externalAuthNotPerformed && !callbackStarted.current) {
++      callbackStarted.current = true;
+       handleExternalAuthentication(code, state);
+     }
+-
+-    return () => {
+-      setRequestedExternalPluginId(null);
+-      setFallbackUri(null);
+-    };
+-  }, []);
++  }, [params, isCallbackPath, authenticating, errors]);
+ 
+   return (
+     <LoginPage
+-      errors={errors}
+-      disabled={authenticating}
++      errors={[...errors, ...localErrors]}
++      disabled={authenticating || externalAuthenticationsLoading || !externalAuthentications?.shop}
++      passwordLoginAllowed={
++        externalAuthentications?.shop?.passwordAuthenticationMode ===
++          PasswordAuthenticationModeEnum.ENABLED && !policyError
++      }
++      policyError={!!policyError}
+       externalAuthentications={externalAuthentications?.shop?.availableExternalAuthentications}
+       loading={externalAuthenticationsLoading || authenticating}
+       onExternalAuthentication={handleRequestExternalAuthentication}
+diff --git a/src/auth/views/NewPassword.tsx b/src/auth/views/NewPassword.tsx
+index 92a75b8f4e90ecd1ae38f49ac62eb5e2b5a4aa6b..0d894ab1efcfae71bc4ef05770f12cade9702d1f 100644
+--- a/src/auth/views/NewPassword.tsx
++++ b/src/auth/views/NewPassword.tsx
+@@ -1,38 +1,82 @@
+-import { AccountErrorFragment } from "@dashboard/graphql";
++import { AccountErrorCode, AccountErrorFragment } from "@dashboard/graphql";
+ import useNavigator from "@dashboard/hooks/useNavigator";
+ import { useAuth } from "@saleor/sdk";
+ import { parse as parseQs } from "qs";
+-import { useState } from "react";
++import { useEffect, useRef, useState } from "react";
+ import { RouteComponentProps } from "react-router";
+ 
+ import NewPasswordPage, { NewPasswordPageFormData } from "../components/NewPasswordPage";
+-import { NewPasswordUrlQueryParams } from "../urls";
++import { PasswordPolicyGate } from "../components/PasswordPolicyGate";
+ 
+ const NewPassword = ({ location }: RouteComponentProps) => {
+   const navigate = useNavigator();
+   const { setPassword } = useAuth();
+   const [loading, setLoading] = useState(false);
+   const [errors, setErrors] = useState<AccountErrorFragment[]>([]);
+-  const params: NewPasswordUrlQueryParams = parseQs(location.search.substr(1)) as any;
++  const [params] = useState(() => {
++    const query = parseQs(location.search.substr(1));
++
++    return {
++      email: typeof query.email === "string" ? query.email : undefined,
++      token: typeof query.token === "string" ? query.token : undefined,
++    };
++  });
++  const submitting = useRef(false);
++
++  useEffect(() => {
++    window.history.replaceState(window.history.state, "", window.location.pathname);
++  }, []);
++
+   const handleSubmit = async (data: NewPasswordPageFormData) => {
++    if (submitting.current) {
++      return;
++    }
++
++    submitting.current = true;
+     setLoading(true);
+ 
+-    const result = await setPassword({
+-      email: params.email,
+-      password: data.password,
+-      token: params.token,
+-    });
+-    const errors = (result.data?.setPassword?.errors || []) as AccountErrorFragment[];
++    try {
++      if (typeof params.email !== "string" || typeof params.token !== "string") {
++        throw new Error("Invalid reset link");
++      }
++
++      const result = await setPassword({
++        email: params.email,
++        password: data.password,
++        token: params.token,
++      });
++      const payload = result.data?.setPassword;
++
++      if (!payload || (!payload.errors.length && !payload.user)) {
++        throw new Error("Missing password reset result");
++      }
+ 
+-    setErrors(errors);
+-    setLoading(false);
++      setErrors(payload.errors as AccountErrorFragment[]);
+ 
+-    if (!errors.length) {
+-      navigate("/", { replace: true });
++      if (payload.errors.length === 0 && payload.user) {
++        navigate("/", { replace: true });
++      }
++    } catch {
++      setErrors([
++        {
++          __typename: "AccountError",
++          field: null,
++          message: null,
++          addressType: null,
++          code: AccountErrorCode.INVALID,
++        },
++      ]);
++    } finally {
++      submitting.current = false;
++      setLoading(false);
+     }
+   };
+ 
+-  return <NewPasswordPage errors={errors} loading={loading} onSubmit={handleSubmit} />;
++  return (
++    <PasswordPolicyGate>
++      <NewPasswordPage errors={errors} loading={loading} onSubmit={handleSubmit} />
++    </PasswordPolicyGate>
++  );
+ };
+ 
+ NewPassword.displayName = "NewPassword";
+diff --git a/src/auth/views/ResetPassword.tsx b/src/auth/views/ResetPassword.tsx
+index 1560a5fcaaf6bbd1ffaf2f155dd62b1a7190b762..5b2f265ff7a292cdb45eb8e18d41e3af5c3980d8 100644
+--- a/src/auth/views/ResetPassword.tsx
++++ b/src/auth/views/ResetPassword.tsx
+@@ -1,10 +1,10 @@
+-import { useRequestPasswordResetMutation } from "@dashboard/graphql";
++import { AccountErrorCode, useRequestPasswordResetMutation } from "@dashboard/graphql";
+ import useNavigator from "@dashboard/hooks/useNavigator";
+ import { commonMessages } from "@dashboard/intl";
+-import { extractMutationErrors } from "@dashboard/misc";
+-import { useState } from "react";
++import { useRef, useState } from "react";
+ import { useIntl } from "react-intl";
+ 
++import { PasswordPolicyGate } from "../components/PasswordPolicyGate";
+ import ResetPasswordPage, { ResetPasswordPageFormData } from "../components/ResetPasswordPage";
+ import { passwordResetSuccessUrl } from "../urls";
+ import { getNewPasswordResetRedirectUrl } from "../utils";
+@@ -13,31 +13,58 @@ const ResetPasswordView = () => {
+   const [error, setError] = useState<string>();
+   const navigate = useNavigator();
+   const intl = useIntl();
+-  const [requestPasswordReset, requestPasswordResetOpts] = useRequestPasswordResetMutation({
+-    onCompleted: data => {
+-      if (data?.requestPasswordReset?.errors.length === 0) {
+-        navigate(passwordResetSuccessUrl);
+-      } else {
+-        setError(intl.formatMessage(commonMessages.somethingWentWrong));
+-      }
+-    },
+-  });
+-  const handleSubmit = (data: ResetPasswordPageFormData) =>
+-    extractMutationErrors(
+-      requestPasswordReset({
++  const [requestPasswordReset, requestPasswordResetOpts] = useRequestPasswordResetMutation();
++  const submitting = useRef(false);
++  const [loading, setLoading] = useState(false);
++  const handleSubmit = async (data: ResetPasswordPageFormData) => {
++    if (submitting.current) {
++      return [AccountErrorCode.INVALID];
++    }
++
++    submitting.current = true;
++    setLoading(true);
++    setError(undefined);
++
++    try {
++      const result = await requestPasswordReset({
+         variables: {
+           email: data.email,
+           redirectUrl: getNewPasswordResetRedirectUrl(),
+         },
+-      }),
+-    );
++      });
++      const payload = result.data?.requestPasswordReset;
++
++      if (!payload || result.errors?.length) {
++        throw new Error("Missing password reset result");
++      }
++
++      if (payload.errors.length) {
++        setError(intl.formatMessage(commonMessages.somethingWentWrong));
++
++        return payload.errors.map(error => error.code);
++      }
++
++      navigate(passwordResetSuccessUrl);
++
++      return [];
++    } catch {
++      setError(intl.formatMessage(commonMessages.somethingWentWrong));
++
++      return [AccountErrorCode.INVALID];
++    } finally {
++      submitting.current = false;
++      setLoading(false);
++    }
++  };
+ 
+   return (
+-    <ResetPasswordPage
+-      disabled={requestPasswordResetOpts.loading}
+-      error={error as string}
+-      onSubmit={handleSubmit}
+-    />
++    <PasswordPolicyGate>
++      <ResetPasswordPage
++        disabled={loading || requestPasswordResetOpts.loading}
++        error={error as string}
++        onSubmit={handleSubmit}
++      />
++    </PasswordPolicyGate>
+   );
+ };
+ 
+diff --git a/src/channels/completionSettings.ts b/src/channels/completionSettings.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..16fc043dc88e6fda5f2251a8783af71142ac5eb3
+--- /dev/null
++++ b/src/channels/completionSettings.ts
+@@ -0,0 +1,39 @@
++export const toLocalDateTimeInput = (value?: string | null): string => {
++  if (!value) {
++    return "";
++  }
++
++  const date = new Date(value);
++
++  if (!Number.isFinite(date.getTime())) {
++    return "";
++  }
++
++  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
++
++  return local.toISOString().slice(0, 16);
++};
++
++export const isValidCompletionDelay = (value?: string) =>
++  value === undefined || (/^\d+$/.test(value) && Number(value) <= 10080);
++
++export const isValidCompletionCutoff = (value?: string) =>
++  !value || Number.isFinite(new Date(value).getTime());
++
++export const getCompletionSettingsInput = (
++  data: { automaticCompletionDelay?: string; automaticCompletionCutoff?: string },
++  saved?: { automaticCompletionDelay: number; automaticCompletionCutoff?: string | null },
++) => ({
++  ...(data.automaticCompletionDelay !== undefined &&
++  Number(data.automaticCompletionDelay) !== saved?.automaticCompletionDelay
++    ? { automaticCompletionDelay: Number(data.automaticCompletionDelay) }
++    : {}),
++  ...(data.automaticCompletionCutoff !== undefined &&
++  data.automaticCompletionCutoff !== toLocalDateTimeInput(saved?.automaticCompletionCutoff)
++    ? {
++        automaticCompletionCutoff: data.automaticCompletionCutoff
++          ? new Date(data.automaticCompletionCutoff).toISOString()
++          : null,
++      }
++    : {}),
++});
+diff --git a/src/channels/components/ChannelForm/ChannelForm.tsx b/src/channels/components/ChannelForm/ChannelForm.tsx
+index f483f5ed01fa592fb5054ed519ba751aceea9543..d21695c05504510d78fb14f05673cdfe5ab921be 100644
+--- a/src/channels/components/ChannelForm/ChannelForm.tsx
++++ b/src/channels/components/ChannelForm/ChannelForm.tsx
+@@ -10,6 +10,7 @@ import {
+   ChannelErrorFragment,
+   CountryCode,
+   MarkAsPaidStrategyEnum,
++  StockAvailabilityStrategyEnum,
+   StockSettingsInput,
+   TransactionFlowStrategyEnum,
+ } from "@dashboard/graphql";
+@@ -42,6 +43,10 @@ export interface FormData extends StockSettingsInput {
+   allowUnpaidOrders: boolean;
+   defaultTransactionFlowStrategy: TransactionFlowStrategyEnum;
+   automaticallyCompleteCheckouts: boolean;
++  automaticCompletionDelay?: string;
++  automaticCompletionCutoff?: string;
++  availabilityStrategy?: StockAvailabilityStrategyEnum;
++  settingsRevision?: string;
+ }
+ 
+ interface ChannelFormProps {
+@@ -78,7 +83,15 @@ export const ChannelForm = ({
+   const intl = useIntl();
+   const [, copy] = useClipboard();
+   const formErrors = getFormErrors<keyof FormData, ChannelErrorFragment>(
+-    ["name", "slug", "currencyCode", "defaultCountry", "deleteExpiredOrdersAfter"],
++    [
++      "name",
++      "slug",
++      "currencyCode",
++      "defaultCountry",
++      "deleteExpiredOrdersAfter",
++      "automaticCompletionDelay",
++      "automaticCompletionCutoff",
++    ],
+     errors,
+   );
+   const renderCurrencySelection = currencyCodes && typeof onCurrencyCodeChange === "function";
+@@ -222,6 +235,66 @@ export const ChannelForm = ({
+           isChecked={data.automaticallyCompleteCheckouts}
+           disabled={disabled}
+         />
++        <Box />
++        <Box padding={6} display="flex" flexDirection="column" gap={4}>
++          <Input
++            name="automaticCompletionDelay"
++            type="number"
++            min={0}
++            max={10080}
++            value={data.automaticCompletionDelay ?? ""}
++            disabled={disabled}
++            error={!!formErrors.automaticCompletionDelay}
++            label={intl.formatMessage(messages.completionDelay)}
++            onChange={onChange}
++          />
++          <Input
++            name="automaticCompletionCutoff"
++            type="datetime-local"
++            value={data.automaticCompletionCutoff ?? ""}
++            disabled={disabled}
++            error={!!formErrors.automaticCompletionCutoff}
++            label={intl.formatMessage(messages.completionCutoff)}
++            onChange={onChange}
++          />
++          <Text size={2}>
++            <FormattedMessage {...messages.completionPolicy} />
++          </Text>
++          {(formErrors.automaticCompletionDelay || formErrors.automaticCompletionCutoff) && (
++            <Text color="critical1">
++              <FormattedMessage {...messages.invalidCompletionSettings} />
++            </Text>
++          )}
++          <Combobox
++            name="availabilityStrategy"
++            label={intl.formatMessage(messages.availabilityStrategy)}
++            disabled={disabled}
++            fetchOptions={() => undefined}
++            options={[
++              {
++                value: StockAvailabilityStrategyEnum.LEGACY,
++                label: intl.formatMessage(messages.legacyAvailability),
++              },
++              {
++                value: StockAvailabilityStrategyEnum.CHANNEL_WAREHOUSES,
++                label: intl.formatMessage(messages.directAvailability),
++              },
++            ]}
++            value={{
++              value: data.availabilityStrategy ?? "",
++              label:
++                data.availabilityStrategy === StockAvailabilityStrategyEnum.CHANNEL_WAREHOUSES
++                  ? intl.formatMessage(messages.directAvailability)
++                  : data.availabilityStrategy === StockAvailabilityStrategyEnum.LEGACY
++                    ? intl.formatMessage(messages.legacyAvailability)
++                    : "",
++            }}
++            onChange={onChange}
++          />
++          <Text size={2}>
++            <FormattedMessage {...messages.availabilityDescription} />
++          </Text>
++        </Box>
+       </Box>
+     </>
+   );
+diff --git a/src/channels/components/ChannelForm/messages.ts b/src/channels/components/ChannelForm/messages.ts
+index d9d2b947e805e55580d7870298dfd64dd4194fcc..392921d6bd455137460bb313f60c43cb5b94f9e9 100644
+--- a/src/channels/components/ChannelForm/messages.ts
++++ b/src/channels/components/ChannelForm/messages.ts
+@@ -1,6 +1,41 @@
+ import { defineMessages } from "react-intl";
+ 
+ export const messages = defineMessages({
++  availabilityStrategy: {
++    defaultMessage: "Stock availability",
++    id: "wSo0Iy",
++  },
++  legacyAvailability: {
++    defaultMessage: "Legacy: shipping zones and country",
++    id: "k73+hc",
++  },
++  directAvailability: {
++    defaultMessage: "Warehouses directly linked to this channel",
++    id: "o6NRQj",
++  },
++  availabilityDescription: {
++    defaultMessage:
++      "Controls which warehouses supply stock, not allocation priority. Changing warehouse links affects future checks, not existing allocations.",
++    id: "j3js1H",
++  },
++  completionDelay: {
++    defaultMessage: "Automatic completion delay (minutes)",
++    id: "0ZI2mr",
++  },
++  completionCutoff: {
++    defaultMessage: "Checkout creation cutoff (local time)",
++    id: "j/2TYf",
++  },
++  completionPolicy: {
++    defaultMessage:
++      "Eligible checkouts must be fully paid or authorized and meet all customer, address, delivery and stock requirements. The last change must be strictly older than the delay (0–10080 minutes). The cutoff includes checkouts created at or after that time; it is not a stop time. Saving settings does not mean an order has been created.",
++    id: "7r2Cxn",
++  },
++  invalidCompletionSettings: {
++    defaultMessage:
++      "Enter whole minutes from 0 to 10080 and a valid local date and time, or clear the cutoff.",
++    id: "EgeWfW",
++  },
+   channelName: {
+     id: "UymotP",
+     defaultMessage: "Channel name",
+diff --git a/src/channels/pages/ChannelDetailsPage/ChannelDetailsPage.tsx b/src/channels/pages/ChannelDetailsPage/ChannelDetailsPage.tsx
+index ea27205d84dab665774a156c628b36cf89411a3a..02948a69db1f0095c9a99c4d81c80527bc24e3e5 100644
+--- a/src/channels/pages/ChannelDetailsPage/ChannelDetailsPage.tsx
++++ b/src/channels/pages/ChannelDetailsPage/ChannelDetailsPage.tsx
+@@ -1,4 +1,5 @@
+ // @ts-strict-ignore
++import { toLocalDateTimeInput } from "@dashboard/channels/completionSettings";
+ import ChannelAllocationStrategy from "@dashboard/channels/components/ChannelAllocationStrategy";
+ import ShippingZones from "@dashboard/channels/components/ShippingZones";
+ import Warehouses from "@dashboard/channels/components/Warehouses";
+@@ -20,6 +21,7 @@ import {
+   PermissionEnum,
+   SearchShippingZonesQuery,
+   SearchWarehousesQuery,
++  StockAvailabilityStrategyEnum,
+   StockSettingsInput,
+ } from "@dashboard/graphql";
+ import {
+@@ -132,7 +134,14 @@ const ChannelDetailsPage = function <TErrors extends ChannelErrorFragment[]>({
+     deleteExpiredOrdersAfter: orderSettings?.deleteExpiredOrdersAfter,
+     allowUnpaidOrders: orderSettings?.allowUnpaidOrders,
+     defaultTransactionFlowStrategy: paymentSettings?.defaultTransactionFlowStrategy,
+-    automaticallyCompleteCheckouts: checkoutSettings?.automaticallyCompleteFullyPaidCheckouts,
++    automaticallyCompleteCheckouts:
++      checkoutSettings?.automaticallyCompleteFullyPaidCheckouts ?? false,
++    automaticCompletionDelay: String(checkoutSettings?.automaticCompletionDelay ?? 0),
++    automaticCompletionCutoff: toLocalDateTimeInput(checkoutSettings?.automaticCompletionCutoff),
++    availabilityStrategy:
++      stockSettings?.availabilityStrategy ??
++      (channel ? undefined : StockAvailabilityStrategyEnum.LEGACY),
++    settingsRevision: channel?.settingsRevision,
+   };
+   const getFilteredShippingZonesChoices = (
+     shippingZonesToDisplay: ChannelShippingZones,
+@@ -160,7 +169,13 @@ const ChannelDetailsPage = function <TErrors extends ChannelErrorFragment[]>({
+   };
+ 
+   return (
+-    <Form confirmLeave onSubmit={handleSubmit} initial={initialData}>
++    <Form
++      key={channel?.id ?? "create"}
++      preserveDirty
++      confirmLeave
++      onSubmit={handleSubmit}
++      initial={initialData}
++    >
+       {({ change, data, submit, set, triggerChange }) => {
+         const handleCurrencyCodeSelect = createSingleAutocompleteSelectHandler(
+           change,
+diff --git a/src/channels/validation.ts b/src/channels/validation.ts
+index 0a8ce514db673fa9c2cd10b81e4eb551fd735bf0..7e6a862e732ec55c231a5452c0741481c1ddc926 100644
+--- a/src/channels/validation.ts
++++ b/src/channels/validation.ts
+@@ -1,5 +1,6 @@
+ import { ChannelErrorCode, ChannelErrorFragment } from "@dashboard/graphql";
+ 
++import { isValidCompletionCutoff, isValidCompletionDelay } from "./completionSettings";
+ import { FormData } from "./components/ChannelForm";
+ 
+ const createEmptyRequiredError = (field: string): ChannelErrorFragment => ({
+@@ -28,5 +29,19 @@ export const validateChannelFormData = (data: FormData) => {
+     errors = [...errors, createEmptyRequiredError("defaultCountry")];
+   }
+ 
++  if (!isValidCompletionDelay(data.automaticCompletionDelay)) {
++    errors.push({
++      ...createEmptyRequiredError("automaticCompletionDelay"),
++      code: ChannelErrorCode.INVALID,
++    });
++  }
++
++  if (!isValidCompletionCutoff(data.automaticCompletionCutoff)) {
++    errors.push({
++      ...createEmptyRequiredError("automaticCompletionCutoff"),
++      code: ChannelErrorCode.INVALID,
++    });
++  }
++
+   return errors;
+ };
+diff --git a/src/channels/views/ChannelCreate/ChannelCreate.tsx b/src/channels/views/ChannelCreate/ChannelCreate.tsx
+index 6cfeece18ec576454c68160dd99870eb6fc4d05e..26d4c724ebd3df5d7c158a00ff49b3fa6f43e2d7 100644
+--- a/src/channels/views/ChannelCreate/ChannelCreate.tsx
++++ b/src/channels/views/ChannelCreate/ChannelCreate.tsx
+@@ -1,4 +1,5 @@
+ // @ts-strict-ignore
++import { getCompletionSettingsInput } from "@dashboard/channels/completionSettings";
+ import { FormData } from "@dashboard/channels/components/ChannelForm/ChannelForm";
+ import { WindowTitle } from "@dashboard/components/WindowTitle";
+ import {
+@@ -74,6 +75,9 @@ const ChannelCreateView = () => {
+     warehousesIdsToAdd,
+     warehousesToDisplay,
+     automaticallyCompleteCheckouts,
++    automaticCompletionDelay,
++    automaticCompletionCutoff,
++    availabilityStrategy,
+   }: FormData) => {
+     const input: ChannelCreateInput = {
+       name,
+@@ -84,6 +88,7 @@ const ChannelCreateView = () => {
+       addWarehouses: warehousesIdsToAdd,
+       stockSettings: {
+         allocationStrategy,
++        availabilityStrategy,
+       },
+       paymentSettings: {
+         defaultTransactionFlowStrategy,
+@@ -95,6 +100,7 @@ const ChannelCreateView = () => {
+       },
+       checkoutSettings: {
+         automaticallyCompleteFullyPaidCheckouts: automaticallyCompleteCheckouts,
++        ...getCompletionSettingsInput({ automaticCompletionDelay, automaticCompletionCutoff }),
+       },
+     };
+ 
+diff --git a/src/channels/views/ChannelDetails/ChannelDetails.tsx b/src/channels/views/ChannelDetails/ChannelDetails.tsx
+index 5599c37cb1388126325a22618d4039db93478cb4..f37e06ec491b46b8572deace9b4f5f0207c3cb8d 100644
+--- a/src/channels/views/ChannelDetails/ChannelDetails.tsx
++++ b/src/channels/views/ChannelDetails/ChannelDetails.tsx
+@@ -1,4 +1,5 @@
+ // @ts-strict-ignore
++import { getCompletionSettingsInput } from "@dashboard/channels/completionSettings";
+ import ChannelDeleteDialog from "@dashboard/channels/components/ChannelDeleteDialog";
+ import { FormData } from "@dashboard/channels/components/ChannelForm/ChannelForm";
+ import { getChannelsCurrencyChoices } from "@dashboard/channels/utils";
+@@ -6,8 +7,8 @@ import { useChannelWarehousesReorder } from "@dashboard/channels/views/ChannelDe
+ import { WindowTitle } from "@dashboard/components/WindowTitle";
+ import {
+   ChannelDeleteMutation,
++  ChannelErrorCode,
+   ChannelErrorFragment,
+-  ChannelUpdateMutation,
+   useChannelActivateMutation,
+   useChannelDeactivateMutation,
+   useChannelDeleteMutation,
+@@ -20,10 +21,12 @@ import useNavigator from "@dashboard/hooks/useNavigator";
+ import useNotifier from "@dashboard/hooks/useNotifier";
+ import { getDefaultNotifierSuccessErrorData } from "@dashboard/hooks/useNotifier/utils";
+ import useShop from "@dashboard/hooks/useShop";
+-import { extractMutationErrors } from "@dashboard/misc";
++import { commonMessages } from "@dashboard/intl";
++import { getConfigurationMutationErrors } from "@dashboard/utils/configurationMutation";
+ import getChannelsErrorMessage from "@dashboard/utils/errors/channels";
+ import createDialogActionHandlers from "@dashboard/utils/handlers/dialogActionHandlers";
+ import { mapEdgesToItems } from "@dashboard/utils/maps";
++import { useState } from "react";
+ import { useIntl } from "react-intl";
+ 
+ import ChannelDetailsPage from "../../pages/ChannelDetailsPage";
+@@ -48,10 +51,8 @@ const ChannelDetails = ({ id, params }: ChannelDetailsProps) => {
+     ChannelUrlQueryParams
+   >(navigate, params => channelUrl(id, params), params);
+ 
+-  const [updateChannel, updateChannelOpts] = useChannelUpdateMutation({
+-    onCompleted: ({ channelUpdate: { errors } }: ChannelUpdateMutation) =>
+-      notify(getDefaultNotifierSuccessErrorData(errors, intl)),
+-  });
++  const [updateChannel, updateChannelOpts] = useChannelUpdateMutation();
++  const [saveErrors, setSaveErrors] = useState<ChannelErrorFragment[]>([]);
+ 
+   const { data, loading } = useChannelQuery({
+     displayLoader: true,
+@@ -102,47 +103,76 @@ const ChannelDetails = ({ id, params }: ChannelDetailsProps) => {
+     warehousesIdsToRemove,
+     warehousesToDisplay,
+     automaticallyCompleteCheckouts,
++    automaticCompletionDelay,
++    automaticCompletionCutoff,
++    availabilityStrategy,
++    settingsRevision,
+   }: FormData) => {
+-    const updateChannelMutation = updateChannel({
+-      variables: {
+-        id: data?.channel.id,
+-        input: {
+-          name,
+-          checkoutSettings: {
+-            automaticallyCompleteFullyPaidCheckouts: automaticallyCompleteCheckouts,
+-          },
+-          slug,
+-          defaultCountry,
+-          addShippingZones: shippingZonesIdsToAdd,
+-          removeShippingZones: shippingZonesIdsToRemove,
+-          addWarehouses: warehousesIdsToAdd,
+-          removeWarehouses: warehousesIdsToRemove,
+-          stockSettings: {
+-            allocationStrategy,
+-          },
+-          paymentSettings: {
+-            defaultTransactionFlowStrategy,
+-          },
+-          orderSettings: {
+-            markAsPaidStrategy,
+-            deleteExpiredOrdersAfter,
+-            allowUnpaidOrders,
++    const fallback: ChannelErrorFragment = {
++      __typename: "ChannelError",
++      code: ChannelErrorCode.GRAPHQL_ERROR,
++      field: null,
++      message: intl.formatMessage(commonMessages.somethingWentWrong),
++    };
++    let errors: ChannelErrorFragment[];
++
++    try {
++      const resultChannel = await updateChannel({
++        variables: {
++          id,
++          input: {
++            name,
++            expectedSettingsRevision: settingsRevision,
++            checkoutSettings: {
++              automaticallyCompleteFullyPaidCheckouts: automaticallyCompleteCheckouts,
++              ...getCompletionSettingsInput(
++                { automaticCompletionDelay, automaticCompletionCutoff },
++                data?.channel?.checkoutSettings,
++              ),
++            },
++            slug,
++            defaultCountry,
++            addShippingZones: shippingZonesIdsToAdd,
++            removeShippingZones: shippingZonesIdsToRemove,
++            addWarehouses: warehousesIdsToAdd,
++            removeWarehouses: warehousesIdsToRemove,
++            stockSettings: {
++              allocationStrategy,
++              availabilityStrategy,
++            },
++            paymentSettings: {
++              defaultTransactionFlowStrategy,
++            },
++            orderSettings: {
++              markAsPaidStrategy,
++              deleteExpiredOrdersAfter,
++              allowUnpaidOrders,
++            },
+           },
+         },
+-      },
+-    });
++      });
++      const payload = resultChannel.data?.channelUpdate;
+ 
+-    const resultChannel = await updateChannelMutation;
+-    const errors = await extractMutationErrors(updateChannelMutation);
++      errors = getConfigurationMutationErrors(
++        resultChannel,
++        [payload && { errors: payload.errors, resource: payload.channel }],
++        fallback,
++      );
+ 
+-    if (!errors?.length) {
+-      await reorderChannelWarehouses({
+-        channelId: id,
+-        warehousesToDisplay,
+-        warehouses: resultChannel.data?.channelUpdate.channel?.warehouses,
+-      });
++      if (!errors.length) {
++        errors = await reorderChannelWarehouses({
++          channelId: id,
++          warehousesToDisplay,
++          warehouses: payload.channel.warehouses,
++        });
++      }
++    } catch {
++      errors = [fallback];
+     }
+ 
++    setSaveErrors(errors);
++    notify(getDefaultNotifierSuccessErrorData(errors, intl));
++
+     return errors;
+   };
+ 
+@@ -238,7 +268,7 @@ const ChannelDetails = ({ id, params }: ChannelDetailsProps) => {
+           channelsShippingZonesLoading
+         }
+         disabledStatus={activateChannelOpts.loading || deactivateChannelOpts.loading}
+-        errors={updateChannelOpts?.data?.channelUpdate?.errors || []}
++        errors={saveErrors}
+         onDelete={() => openModal("remove")}
+         onSubmit={handleSubmit}
+         updateChannelStatus={() =>
+diff --git a/src/channels/views/ChannelDetails/useChannelWarehouseReorder.ts b/src/channels/views/ChannelDetails/useChannelWarehouseReorder.ts
+index c27dcd4a9598be91e0df157917543d8bbc9889c2..a5840dd04d3bf61a2d7afba6c446f959b1d6f26f 100644
+--- a/src/channels/views/ChannelDetails/useChannelWarehouseReorder.ts
++++ b/src/channels/views/ChannelDetails/useChannelWarehouseReorder.ts
+@@ -1,31 +1,21 @@
+ import { ChannelWarehouse } from "@dashboard/channels/pages/ChannelDetailsPage/types";
+ import { calculateItemsOrderMoves } from "@dashboard/channels/views/ChannelDetails/handlers";
+-import { useChannelReorderWarehousesMutation, WarehouseFragment } from "@dashboard/graphql";
+-import useNotifier from "@dashboard/hooks/useNotifier";
+-import getChannelsErrorMessage from "@dashboard/utils/errors/channels";
++import {
++  ChannelErrorCode,
++  ChannelErrorFragment,
++  useChannelReorderWarehousesMutation,
++  WarehouseFragment,
++} from "@dashboard/graphql";
++import { commonMessages } from "@dashboard/intl";
++import { getConfigurationMutationErrors } from "@dashboard/utils/configurationMutation";
+ import { useIntl } from "react-intl";
+ 
+ export const useChannelWarehousesReorder = () => {
+-  const notify = useNotifier();
+   const intl = useIntl();
+-
+   const [reorderChannelWarehouses, reorderChannelWarehousesOpts] =
+-    useChannelReorderWarehousesMutation({
+-      onCompleted: data => {
+-        const errors = data?.channelReorderWarehouses?.errors ?? [];
+-
+-        if (errors.length) {
+-          errors.forEach(error =>
+-            notify({
+-              status: "error",
+-              text: getChannelsErrorMessage(error, intl),
+-            }),
+-          );
+-        }
+-      },
+-    });
+-
+-  const handleChannelWarehousesReorder = ({
++    useChannelReorderWarehousesMutation();
++
++  const handleChannelWarehousesReorder = async ({
+     warehousesToDisplay,
+     warehouses,
+     channelId,
+@@ -33,19 +23,41 @@ export const useChannelWarehousesReorder = () => {
+     channelId: string;
+     warehouses: WarehouseFragment[];
+     warehousesToDisplay: ChannelWarehouse[];
+-  }) => {
++  }): Promise<ChannelErrorFragment[]> => {
++    const fallback: ChannelErrorFragment = {
++      __typename: "ChannelError",
++      code: ChannelErrorCode.GRAPHQL_ERROR,
++      field: null,
++      message: intl.formatMessage(commonMessages.somethingWentWrong),
++    };
++
++    if (!warehouses) {
++      return [fallback];
++    }
++
+     const moves = calculateItemsOrderMoves(warehouses, warehousesToDisplay);
+ 
+     if (!moves.length) {
+-      return;
++      return [];
+     }
+ 
+-    return reorderChannelWarehouses({
+-      variables: {
+-        channelId,
+-        moves,
+-      },
+-    });
++    try {
++      const result = await reorderChannelWarehouses({
++        variables: {
++          channelId,
++          moves,
++        },
++      });
++      const payload = result.data?.channelReorderWarehouses;
++
++      return getConfigurationMutationErrors(
++        result,
++        [payload && { errors: payload.errors, resource: payload.channel }],
++        fallback,
++      );
++    } catch {
++      return [fallback];
++    }
+   };
+ 
+   return {
+diff --git a/src/components/Datagrid/Datagrid.tsx b/src/components/Datagrid/Datagrid.tsx
+index 1284fd9be4f102a3c828451476e52899c540fa8c..af3b0eccc1960fad0ccdd131e0454d950f819dd0 100644
+--- a/src/components/Datagrid/Datagrid.tsx
++++ b/src/components/Datagrid/Datagrid.tsx
+@@ -8,6 +8,7 @@ import DataEditor, {
+   DataEditorProps,
+   DataEditorRef,
+   EditableGridCell,
++  GetRowThemeCallback,
+   GridCell,
+   GridColumn,
+   GridSelection,
+@@ -15,7 +16,6 @@ import DataEditor, {
+   Item,
+   Theme,
+ } from "@glideapps/glide-data-grid";
+-import { GetRowThemeCallback } from "@glideapps/glide-data-grid/dist/ts/data-grid/data-grid-render";
+ import { CircularProgress } from "@material-ui/core";
+ import { Box, Text, useTheme } from "@saleor/macaw-ui-next";
+ import clsx from "clsx";
+@@ -231,7 +231,7 @@ const Datagrid = ({
+       availableColumns,
+       getCellContent,
+       areCellsDirty,
+-      themeValues.colors.background.accent1,
++      theme,
+       themeValues.colors.background.critical1,
+       getCellError,
+     ],
+@@ -293,7 +293,7 @@ const Datagrid = ({
+         rowAnchorRef.current.dispatchEvent(clickEvent);
+       }
+     },
+-    [rowMarkers, onRowClick, handleRowHover, rowAnchorRef],
++    [rowMarkers, onRowClick, handleRowHover, rowAnchorRef, availableColumns],
+   );
+   const handleGridSelectionChange = (gridSelection: GridSelection) => {
+     // In readonly we not allow selecting cells, but we allow selcting column
+@@ -325,7 +325,7 @@ const Datagrid = ({
+ 
+       return overrideTheme;
+     },
+-    [hoverRow, readonly, themeValues],
++    [hoverRow, readonly, themeValues, theme],
+   );
+   const handleHeaderClicked = useCallback(
+     (colIndex: number, event: HeaderClickedEventArgs) => {
+@@ -391,27 +391,32 @@ const Datagrid = ({
+   );
+   // Hide the link when scrolling over it so that the scroll/wheel events go through to the Datagrid
+   // Show the link quickly after the last scroll/wheel event
+-  const hideLinkAndShowAfterDelay = useCallback(
+-    (() => {
+-      let timer: ReturnType<typeof setTimeout> | null = null;
++  const rowAnchorTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
++  const hideLinkAndShowAfterDelay = useCallback(() => {
++    if (rowAnchorTimer.current) {
++      clearTimeout(rowAnchorTimer.current);
++    }
+ 
+-      return () => {
+-        if (timer) {
+-          clearTimeout(timer);
+-        }
++    if (rowAnchorRef.current) {
++      rowAnchorRef.current.style.display = "none";
++    }
+ 
+-        if (rowAnchorRef.current) {
+-          rowAnchorRef.current.style.display = "none";
+-        }
++    rowAnchorTimer.current = setTimeout(() => {
++      rowAnchorTimer.current = null;
+ 
+-        timer = setTimeout(() => {
+-          if (rowAnchorRef.current) {
+-            rowAnchorRef.current.style.display = "block";
+-          }
+-        }, 100);
+-      };
+-    })(),
+-    [rowAnchorRef],
++      if (rowAnchorRef.current) {
++        rowAnchorRef.current.style.display = "block";
++      }
++    }, 100);
++  }, [rowAnchorRef]);
++
++  useEffect(
++    () => () => {
++      if (rowAnchorTimer.current) {
++        clearTimeout(rowAnchorTimer.current);
++      }
++    },
++    [],
+   );
+ 
+   if (loading) {
+diff --git a/src/components/Form/Form.tsx b/src/components/Form/Form.tsx
+index 95af1c48d6af2c5134e86e91da200f7d0c162459..6c20a165d09c7e9f1c7172584dc72115ea0003dc 100644
+--- a/src/components/Form/Form.tsx
++++ b/src/components/Form/Form.tsx
+@@ -16,6 +16,7 @@ interface FormProps<TData, TErrors>
+   formId?: FormId;
+   checkIfSaveIsDisabled?: CheckIfSaveIsDisabledFnType<TData>;
+   mergeData?: boolean;
++  preserveDirty?: boolean;
+ }
+ 
+ /** @deprecated Use react-hook-form instead */
+@@ -29,6 +30,7 @@ function Form<TData, Terrors>({
+   checkIfSaveIsDisabled,
+   disabled,
+   mergeData,
++  preserveDirty,
+   ...rest
+ }: FormProps<TData, Terrors>) {
+   const renderProps = useForm(initial, onSubmit, {
+@@ -37,6 +39,7 @@ function Form<TData, Terrors>({
+     checkIfSaveIsDisabled,
+     disabled,
+     mergeData,
++    preserveDirty,
+   });
+ 
+   function handleSubmit(event?: React.FormEvent<HTMLFormElement>, cb?: () => void) {
+diff --git a/src/fragments/channels.ts b/src/fragments/channels.ts
+index bcb233a565ffa268bab12208058125022bb3b710..d931c973df046ce290988aaf69c86f685be2e056 100644
+--- a/src/fragments/channels.ts
++++ b/src/fragments/channels.ts
+@@ -29,6 +29,10 @@ export const channelDetailsFragment = gql`
+   fragment ChannelDetails on Channel {
+     ...Channel
+     hasOrders
++    settingsRevision
++    stockSettings {
++      availabilityStrategy
++    }
+     warehouses {
+       ...Warehouse
+     }
+@@ -42,6 +46,8 @@ export const channelDetailsFragment = gql`
+     }
+     checkoutSettings {
+       automaticallyCompleteFullyPaidCheckouts
++      automaticCompletionDelay
++      automaticCompletionCutoff
+     }
+   }
+ `;
+diff --git a/src/graphql/hooks.generated.ts b/src/graphql/hooks.generated.ts
+index 61438eb176c2d07bbffa68af27814d384916b1a6..16c5794fe95299b0be97af925bfefd5e46002c12 100644
+--- a/src/graphql/hooks.generated.ts
++++ b/src/graphql/hooks.generated.ts
+@@ -358,6 +358,10 @@ export const ChannelDetailsFragmentDoc = gql`
+     fragment ChannelDetails on Channel {
+   ...Channel
+   hasOrders
++  settingsRevision
++  stockSettings {
++    availabilityStrategy
++  }
+   warehouses {
+     ...Warehouse
+   }
+@@ -371,6 +375,8 @@ export const ChannelDetailsFragmentDoc = gql`
+   }
+   checkoutSettings {
+     automaticallyCompleteFullyPaidCheckouts
++    automaticCompletionDelay
++    automaticCompletionCutoff
+   }
+ }
+     ${ChannelFragmentDoc}
+@@ -4197,6 +4203,7 @@ export type RequestPasswordResetMutationOptions = Apollo.BaseMutationOptions<Typ
+ export const AvailableExternalAuthenticationsDocument = gql`
+     query AvailableExternalAuthentications {
+   shop {
++    passwordAuthenticationMode
+     availableExternalAuthentications {
+       id
+       name
+@@ -18160,6 +18167,8 @@ export const ShopSettingsUpdateDocument = gql`
+     }
+     shop {
+       ...Shop
++      passwordAuthenticationMode
++      settingsRevision
+     }
+   }
+   shopAddressUpdate(input: $addressInput) {
+@@ -18290,6 +18299,8 @@ export const SiteSettingsDocument = gql`
+     query SiteSettings {
+   shop {
+     ...Shop
++    passwordAuthenticationMode
++    settingsRevision
+   }
+ }
+     ${ShopFragmentDoc}`;
+diff --git a/src/graphql/typePolicies.generated.ts b/src/graphql/typePolicies.generated.ts
+index 476aba0b872fd3c54d0a8a694e84f52c9e030644..cb1c76bbfa093b09cc77e25fb8a5b57ff912d4b1 100644
+--- a/src/graphql/typePolicies.generated.ts
++++ b/src/graphql/typePolicies.generated.ts
+@@ -1072,7 +1072,7 @@ export type CategoryUpdatedFieldPolicy = {
+ 	recipient?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	version?: FieldPolicy<any> | FieldReadFunction<any>
+ };
+-export type ChannelKeySpecifier = ('availableShippingMethodsPerCountry' | 'checkoutSettings' | 'countries' | 'currencyCode' | 'defaultCountry' | 'hasOrders' | 'id' | 'isActive' | 'metadata' | 'metafield' | 'metafields' | 'name' | 'orderSettings' | 'paymentSettings' | 'privateMetadata' | 'privateMetafield' | 'privateMetafields' | 'slug' | 'stockSettings' | 'taxConfiguration' | 'warehouses' | ChannelKeySpecifier)[];
++export type ChannelKeySpecifier = ('availableShippingMethodsPerCountry' | 'checkoutSettings' | 'countries' | 'currencyCode' | 'defaultCountry' | 'hasOrders' | 'id' | 'isActive' | 'metadata' | 'metafield' | 'metafields' | 'name' | 'orderSettings' | 'paymentSettings' | 'privateMetadata' | 'privateMetafield' | 'privateMetafields' | 'settingsRevision' | 'slug' | 'stockSettings' | 'taxConfiguration' | 'warehouses' | ChannelKeySpecifier)[];
+ export type ChannelFieldPolicy = {
+ 	availableShippingMethodsPerCountry?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	checkoutSettings?: FieldPolicy<any> | FieldReadFunction<any>,
+@@ -1091,6 +1091,7 @@ export type ChannelFieldPolicy = {
+ 	privateMetadata?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	privateMetafield?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	privateMetafields?: FieldPolicy<any> | FieldReadFunction<any>,
++	settingsRevision?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	slug?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	stockSettings?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	taxConfiguration?: FieldPolicy<any> | FieldReadFunction<any>,
+@@ -1448,8 +1449,10 @@ export type CheckoutRemovePromoCodeFieldPolicy = {
+ 	checkoutErrors?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	errors?: FieldPolicy<any> | FieldReadFunction<any>
+ };
+-export type CheckoutSettingsKeySpecifier = ('automaticallyCompleteFullyPaidCheckouts' | 'useLegacyErrorFlow' | CheckoutSettingsKeySpecifier)[];
++export type CheckoutSettingsKeySpecifier = ('automaticCompletionCutoff' | 'automaticCompletionDelay' | 'automaticallyCompleteFullyPaidCheckouts' | 'useLegacyErrorFlow' | CheckoutSettingsKeySpecifier)[];
+ export type CheckoutSettingsFieldPolicy = {
++	automaticCompletionCutoff?: FieldPolicy<any> | FieldReadFunction<any>,
++	automaticCompletionDelay?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	automaticallyCompleteFullyPaidCheckouts?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	useLegacyErrorFlow?: FieldPolicy<any> | FieldReadFunction<any>
+ };
+@@ -1465,6 +1468,16 @@ export type CheckoutShippingMethodUpdateFieldPolicy = {
+ 	checkoutErrors?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	errors?: FieldPolicy<any> | FieldReadFunction<any>
+ };
++export type CheckoutShippingRefreshKeySpecifier = ('calculatedAt' | 'checkout' | 'collectionPoints' | 'deliveryMethod' | 'errors' | 'selectedMethodValid' | 'shippingMethods' | CheckoutShippingRefreshKeySpecifier)[];
++export type CheckoutShippingRefreshFieldPolicy = {
++	calculatedAt?: FieldPolicy<any> | FieldReadFunction<any>,
++	checkout?: FieldPolicy<any> | FieldReadFunction<any>,
++	collectionPoints?: FieldPolicy<any> | FieldReadFunction<any>,
++	deliveryMethod?: FieldPolicy<any> | FieldReadFunction<any>,
++	errors?: FieldPolicy<any> | FieldReadFunction<any>,
++	selectedMethodValid?: FieldPolicy<any> | FieldReadFunction<any>,
++	shippingMethods?: FieldPolicy<any> | FieldReadFunction<any>
++};
+ export type CheckoutUpdatedKeySpecifier = ('checkout' | 'issuedAt' | 'issuingPrincipal' | 'recipient' | 'version' | CheckoutUpdatedKeySpecifier)[];
+ export type CheckoutUpdatedFieldPolicy = {
+ 	checkout?: FieldPolicy<any> | FieldReadFunction<any>,
+@@ -2093,7 +2106,7 @@ export type FileUploadFieldPolicy = {
+ 	uploadErrors?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	uploadedFile?: FieldPolicy<any> | FieldReadFunction<any>
+ };
+-export type FulfillmentKeySpecifier = ('created' | 'fulfillmentOrder' | 'id' | 'lines' | 'metadata' | 'metafield' | 'metafields' | 'privateMetadata' | 'privateMetafield' | 'privateMetafields' | 'shippingRefundedAmount' | 'status' | 'statusDisplay' | 'totalRefundedAmount' | 'trackingNumber' | 'warehouse' | FulfillmentKeySpecifier)[];
++export type FulfillmentKeySpecifier = ('created' | 'fulfillmentOrder' | 'id' | 'lines' | 'metadata' | 'metafield' | 'metafields' | 'privateMetadata' | 'privateMetafield' | 'privateMetafields' | 'shippingMetadataSnapshotStatus' | 'shippingMethodMetadata' | 'shippingMethodPrivateMetadata' | 'shippingRefundedAmount' | 'status' | 'statusDisplay' | 'totalRefundedAmount' | 'trackingNumber' | 'warehouse' | FulfillmentKeySpecifier)[];
+ export type FulfillmentFieldPolicy = {
+ 	created?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	fulfillmentOrder?: FieldPolicy<any> | FieldReadFunction<any>,
+@@ -2105,6 +2118,9 @@ export type FulfillmentFieldPolicy = {
+ 	privateMetadata?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	privateMetafield?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	privateMetafields?: FieldPolicy<any> | FieldReadFunction<any>,
++	shippingMetadataSnapshotStatus?: FieldPolicy<any> | FieldReadFunction<any>,
++	shippingMethodMetadata?: FieldPolicy<any> | FieldReadFunction<any>,
++	shippingMethodPrivateMetadata?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	shippingRefundedAmount?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	status?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	statusDisplay?: FieldPolicy<any> | FieldReadFunction<any>,
+@@ -2813,7 +2829,7 @@ export type MoneyRangeFieldPolicy = {
+ 	start?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	stop?: FieldPolicy<any> | FieldReadFunction<any>
+ };
+-export type MutationKeySpecifier = ('accountAddressCreate' | 'accountAddressDelete' | 'accountAddressUpdate' | 'accountDelete' | 'accountRegister' | 'accountRequestDeletion' | 'accountSetDefaultAddress' | 'accountUpdate' | 'addressCreate' | 'addressDelete' | 'addressSetDefault' | 'addressUpdate' | 'appActivate' | 'appCreate' | 'appDeactivate' | 'appDelete' | 'appDeleteFailedInstallation' | 'appFetchManifest' | 'appInstall' | 'appReenableSyncWebhooks' | 'appRetryInstall' | 'appTokenCreate' | 'appTokenDelete' | 'appTokenVerify' | 'appUpdate' | 'assignNavigation' | 'assignWarehouseShippingZone' | 'attributeBulkCreate' | 'attributeBulkDelete' | 'attributeBulkTranslate' | 'attributeBulkUpdate' | 'attributeCreate' | 'attributeDelete' | 'attributeReorderValues' | 'attributeTranslate' | 'attributeUpdate' | 'attributeValueBulkDelete' | 'attributeValueBulkTranslate' | 'attributeValueCreate' | 'attributeValueDelete' | 'attributeValueTranslate' | 'attributeValueUpdate' | 'categoryBulkDelete' | 'categoryCreate' | 'categoryDelete' | 'categoryTranslate' | 'categoryUpdate' | 'channelActivate' | 'channelCreate' | 'channelDeactivate' | 'channelDelete' | 'channelReorderWarehouses' | 'channelUpdate' | 'checkoutAddPromoCode' | 'checkoutBillingAddressUpdate' | 'checkoutComplete' | 'checkoutCreate' | 'checkoutCreateFromOrder' | 'checkoutCustomerAttach' | 'checkoutCustomerDetach' | 'checkoutCustomerNoteUpdate' | 'checkoutDeliveryMethodUpdate' | 'checkoutEmailUpdate' | 'checkoutLanguageCodeUpdate' | 'checkoutLineDelete' | 'checkoutLinesAdd' | 'checkoutLinesDelete' | 'checkoutLinesUpdate' | 'checkoutPaymentCreate' | 'checkoutRemovePromoCode' | 'checkoutShippingAddressUpdate' | 'checkoutShippingMethodUpdate' | 'collectionAddProducts' | 'collectionBulkDelete' | 'collectionChannelListingUpdate' | 'collectionCreate' | 'collectionDelete' | 'collectionRemoveProducts' | 'collectionReorderProducts' | 'collectionTranslate' | 'collectionUpdate' | 'confirmAccount' | 'confirmEmailChange' | 'createWarehouse' | 'customerBulkDelete' | 'customerBulkUpdate' | 'customerCreate' | 'customerDelete' | 'customerUpdate' | 'deleteMetadata' | 'deletePrivateMetadata' | 'deleteWarehouse' | 'digitalContentCreate' | 'digitalContentDelete' | 'digitalContentUpdate' | 'digitalContentUrlCreate' | 'draftOrderBulkDelete' | 'draftOrderComplete' | 'draftOrderCreate' | 'draftOrderDelete' | 'draftOrderLinesBulkDelete' | 'draftOrderUpdate' | 'eventDeliveryRetry' | 'exportGiftCards' | 'exportProducts' | 'exportVoucherCodes' | 'externalAuthenticationUrl' | 'externalLogout' | 'externalNotificationTrigger' | 'externalObtainAccessTokens' | 'externalRefresh' | 'externalVerify' | 'fileUpload' | 'giftCardActivate' | 'giftCardAddNote' | 'giftCardBulkActivate' | 'giftCardBulkCreate' | 'giftCardBulkDeactivate' | 'giftCardBulkDelete' | 'giftCardCreate' | 'giftCardDeactivate' | 'giftCardDelete' | 'giftCardResend' | 'giftCardSettingsUpdate' | 'giftCardUpdate' | 'invoiceCreate' | 'invoiceDelete' | 'invoiceRequest' | 'invoiceRequestDelete' | 'invoiceSendNotification' | 'invoiceUpdate' | 'menuBulkDelete' | 'menuCreate' | 'menuDelete' | 'menuItemBulkDelete' | 'menuItemCreate' | 'menuItemDelete' | 'menuItemMove' | 'menuItemTranslate' | 'menuItemUpdate' | 'menuUpdate' | 'orderAddNote' | 'orderBulkCancel' | 'orderBulkCreate' | 'orderCancel' | 'orderCapture' | 'orderConfirm' | 'orderCreateFromCheckout' | 'orderDiscountAdd' | 'orderDiscountDelete' | 'orderDiscountUpdate' | 'orderFulfill' | 'orderFulfillmentApprove' | 'orderFulfillmentCancel' | 'orderFulfillmentRefundProducts' | 'orderFulfillmentReturnProducts' | 'orderFulfillmentUpdateTracking' | 'orderGrantRefundCreate' | 'orderGrantRefundUpdate' | 'orderLineDelete' | 'orderLineDiscountRemove' | 'orderLineDiscountUpdate' | 'orderLineUpdate' | 'orderLinesCreate' | 'orderMarkAsPaid' | 'orderNoteAdd' | 'orderNoteUpdate' | 'orderRefund' | 'orderSettingsUpdate' | 'orderUpdate' | 'orderUpdateShipping' | 'orderVoid' | 'pageAttributeAssign' | 'pageAttributeUnassign' | 'pageBulkDelete' | 'pageBulkPublish' | 'pageCreate' | 'pageDelete' | 'pageReorderAttributeValues' | 'pageTranslate' | 'pageTypeBulkDelete' | 'pageTypeCreate' | 'pageTypeDelete' | 'pageTypeReorderAttributes' | 'pageTypeUpdate' | 'pageUpdate' | 'passwordChange' | 'paymentCapture' | 'paymentCheckBalance' | 'paymentGatewayInitialize' | 'paymentGatewayInitializeTokenization' | 'paymentInitialize' | 'paymentMethodInitializeTokenization' | 'paymentMethodProcessTokenization' | 'paymentRefund' | 'paymentVoid' | 'permissionGroupCreate' | 'permissionGroupDelete' | 'permissionGroupUpdate' | 'pluginUpdate' | 'productAttributeAssign' | 'productAttributeAssignmentUpdate' | 'productAttributeUnassign' | 'productBulkCreate' | 'productBulkDelete' | 'productBulkTranslate' | 'productChannelListingUpdate' | 'productCreate' | 'productDelete' | 'productMediaBulkDelete' | 'productMediaCreate' | 'productMediaDelete' | 'productMediaReorder' | 'productMediaUpdate' | 'productReorderAttributeValues' | 'productTranslate' | 'productTypeBulkDelete' | 'productTypeCreate' | 'productTypeDelete' | 'productTypeReorderAttributes' | 'productTypeUpdate' | 'productUpdate' | 'productVariantBulkCreate' | 'productVariantBulkDelete' | 'productVariantBulkTranslate' | 'productVariantBulkUpdate' | 'productVariantChannelListingUpdate' | 'productVariantCreate' | 'productVariantDelete' | 'productVariantPreorderDeactivate' | 'productVariantReorder' | 'productVariantReorderAttributeValues' | 'productVariantSetDefault' | 'productVariantStocksCreate' | 'productVariantStocksDelete' | 'productVariantStocksUpdate' | 'productVariantTranslate' | 'productVariantUpdate' | 'promotionBulkDelete' | 'promotionCreate' | 'promotionDelete' | 'promotionRuleCreate' | 'promotionRuleDelete' | 'promotionRuleTranslate' | 'promotionRuleUpdate' | 'promotionTranslate' | 'promotionUpdate' | 'refundReasonReferenceClear' | 'refundSettingsUpdate' | 'requestEmailChange' | 'requestPasswordReset' | 'saleBulkDelete' | 'saleCataloguesAdd' | 'saleCataloguesRemove' | 'saleChannelListingUpdate' | 'saleCreate' | 'saleDelete' | 'saleTranslate' | 'saleUpdate' | 'sendConfirmationEmail' | 'setPassword' | 'shippingMethodChannelListingUpdate' | 'shippingPriceBulkDelete' | 'shippingPriceCreate' | 'shippingPriceDelete' | 'shippingPriceExcludeProducts' | 'shippingPriceRemoveProductFromExclude' | 'shippingPriceTranslate' | 'shippingPriceUpdate' | 'shippingZoneBulkDelete' | 'shippingZoneCreate' | 'shippingZoneDelete' | 'shippingZoneUpdate' | 'shopAddressUpdate' | 'shopDomainUpdate' | 'shopFetchTaxRates' | 'shopSettingsTranslate' | 'shopSettingsUpdate' | 'staffBulkDelete' | 'staffCreate' | 'staffDelete' | 'staffNotificationRecipientCreate' | 'staffNotificationRecipientDelete' | 'staffNotificationRecipientUpdate' | 'staffUpdate' | 'stockBulkUpdate' | 'storedPaymentMethodRequestDelete' | 'taxClassCreate' | 'taxClassDelete' | 'taxClassUpdate' | 'taxConfigurationUpdate' | 'taxCountryConfigurationDelete' | 'taxCountryConfigurationUpdate' | 'taxExemptionManage' | 'tokenCreate' | 'tokenRefresh' | 'tokenVerify' | 'tokensDeactivateAll' | 'transactionCreate' | 'transactionEventReport' | 'transactionInitialize' | 'transactionProcess' | 'transactionRequestAction' | 'transactionRequestRefundForGrantedRefund' | 'transactionUpdate' | 'unassignWarehouseShippingZone' | 'updateMetadata' | 'updatePrivateMetadata' | 'updateWarehouse' | 'userAvatarDelete' | 'userAvatarUpdate' | 'userBulkSetActive' | 'variantMediaAssign' | 'variantMediaUnassign' | 'voucherBulkDelete' | 'voucherCataloguesAdd' | 'voucherCataloguesRemove' | 'voucherChannelListingUpdate' | 'voucherCodeBulkDelete' | 'voucherCreate' | 'voucherDelete' | 'voucherTranslate' | 'voucherUpdate' | 'webhookCreate' | 'webhookDelete' | 'webhookDryRun' | 'webhookTrigger' | 'webhookUpdate' | MutationKeySpecifier)[];
++export type MutationKeySpecifier = ('accountAddressCreate' | 'accountAddressDelete' | 'accountAddressUpdate' | 'accountDelete' | 'accountRegister' | 'accountRequestDeletion' | 'accountSetDefaultAddress' | 'accountUpdate' | 'addressCreate' | 'addressDelete' | 'addressSetDefault' | 'addressUpdate' | 'appActivate' | 'appCreate' | 'appDeactivate' | 'appDelete' | 'appDeleteFailedInstallation' | 'appFetchManifest' | 'appInstall' | 'appReenableSyncWebhooks' | 'appRetryInstall' | 'appTokenCreate' | 'appTokenDelete' | 'appTokenVerify' | 'appUpdate' | 'assignNavigation' | 'assignWarehouseShippingZone' | 'attributeBulkCreate' | 'attributeBulkDelete' | 'attributeBulkTranslate' | 'attributeBulkUpdate' | 'attributeCreate' | 'attributeDelete' | 'attributeReorderValues' | 'attributeTranslate' | 'attributeUpdate' | 'attributeValueBulkDelete' | 'attributeValueBulkTranslate' | 'attributeValueCreate' | 'attributeValueDelete' | 'attributeValueTranslate' | 'attributeValueUpdate' | 'categoryBulkDelete' | 'categoryCreate' | 'categoryDelete' | 'categoryTranslate' | 'categoryUpdate' | 'channelActivate' | 'channelCreate' | 'channelDeactivate' | 'channelDelete' | 'channelReorderWarehouses' | 'channelUpdate' | 'checkoutAddPromoCode' | 'checkoutBillingAddressUpdate' | 'checkoutComplete' | 'checkoutCreate' | 'checkoutCreateFromOrder' | 'checkoutCustomerAttach' | 'checkoutCustomerDetach' | 'checkoutCustomerNoteUpdate' | 'checkoutDeliveryMethodUpdate' | 'checkoutEmailUpdate' | 'checkoutLanguageCodeUpdate' | 'checkoutLineDelete' | 'checkoutLinesAdd' | 'checkoutLinesDelete' | 'checkoutLinesUpdate' | 'checkoutPaymentCreate' | 'checkoutRemovePromoCode' | 'checkoutShippingAddressUpdate' | 'checkoutShippingMethodUpdate' | 'checkoutShippingRefresh' | 'collectionAddProducts' | 'collectionBulkDelete' | 'collectionChannelListingUpdate' | 'collectionCreate' | 'collectionDelete' | 'collectionRemoveProducts' | 'collectionReorderProducts' | 'collectionTranslate' | 'collectionUpdate' | 'confirmAccount' | 'confirmEmailChange' | 'createWarehouse' | 'customerBulkDelete' | 'customerBulkUpdate' | 'customerCreate' | 'customerDelete' | 'customerUpdate' | 'deleteMetadata' | 'deletePrivateMetadata' | 'deleteWarehouse' | 'digitalContentCreate' | 'digitalContentDelete' | 'digitalContentUpdate' | 'digitalContentUrlCreate' | 'draftOrderBulkDelete' | 'draftOrderComplete' | 'draftOrderCreate' | 'draftOrderDelete' | 'draftOrderLinesBulkDelete' | 'draftOrderUpdate' | 'eventDeliveryRetry' | 'exportGiftCards' | 'exportProducts' | 'exportVoucherCodes' | 'externalAuthenticationUrl' | 'externalLogout' | 'externalNotificationTrigger' | 'externalObtainAccessTokens' | 'externalRefresh' | 'externalVerify' | 'fileUpload' | 'giftCardActivate' | 'giftCardAddNote' | 'giftCardBulkActivate' | 'giftCardBulkCreate' | 'giftCardBulkDeactivate' | 'giftCardBulkDelete' | 'giftCardCreate' | 'giftCardDeactivate' | 'giftCardDelete' | 'giftCardResend' | 'giftCardSettingsUpdate' | 'giftCardUpdate' | 'invoiceCreate' | 'invoiceDelete' | 'invoiceRequest' | 'invoiceRequestDelete' | 'invoiceSendNotification' | 'invoiceUpdate' | 'menuBulkDelete' | 'menuCreate' | 'menuDelete' | 'menuItemBulkDelete' | 'menuItemCreate' | 'menuItemDelete' | 'menuItemMove' | 'menuItemTranslate' | 'menuItemUpdate' | 'menuUpdate' | 'orderAddNote' | 'orderBulkCancel' | 'orderBulkCreate' | 'orderCancel' | 'orderCapture' | 'orderConfirm' | 'orderCreateFromCheckout' | 'orderDiscountAdd' | 'orderDiscountDelete' | 'orderDiscountUpdate' | 'orderFulfill' | 'orderFulfillmentApprove' | 'orderFulfillmentCancel' | 'orderFulfillmentRefundProducts' | 'orderFulfillmentReturnProducts' | 'orderFulfillmentUpdateTracking' | 'orderGrantRefundCreate' | 'orderGrantRefundUpdate' | 'orderLineDelete' | 'orderLineDiscountRemove' | 'orderLineDiscountUpdate' | 'orderLineUpdate' | 'orderLinesCreate' | 'orderMarkAsPaid' | 'orderNoteAdd' | 'orderNoteUpdate' | 'orderRefund' | 'orderSettingsUpdate' | 'orderUpdate' | 'orderUpdateShipping' | 'orderVoid' | 'pageAttributeAssign' | 'pageAttributeUnassign' | 'pageBulkDelete' | 'pageBulkPublish' | 'pageCreate' | 'pageDelete' | 'pageReorderAttributeValues' | 'pageTranslate' | 'pageTypeBulkDelete' | 'pageTypeCreate' | 'pageTypeDelete' | 'pageTypeReorderAttributes' | 'pageTypeUpdate' | 'pageUpdate' | 'passwordChange' | 'paymentCapture' | 'paymentCheckBalance' | 'paymentGatewayInitialize' | 'paymentGatewayInitializeTokenization' | 'paymentInitialize' | 'paymentMethodInitializeTokenization' | 'paymentMethodProcessTokenization' | 'paymentRefund' | 'paymentVoid' | 'permissionGroupCreate' | 'permissionGroupDelete' | 'permissionGroupUpdate' | 'pluginUpdate' | 'productAttributeAssign' | 'productAttributeAssignmentUpdate' | 'productAttributeUnassign' | 'productBulkCreate' | 'productBulkDelete' | 'productBulkTranslate' | 'productChannelListingUpdate' | 'productCreate' | 'productDelete' | 'productMediaBulkDelete' | 'productMediaCreate' | 'productMediaDelete' | 'productMediaReorder' | 'productMediaUpdate' | 'productReorderAttributeValues' | 'productTranslate' | 'productTypeBulkDelete' | 'productTypeCreate' | 'productTypeDelete' | 'productTypeReorderAttributes' | 'productTypeUpdate' | 'productUpdate' | 'productVariantBulkCreate' | 'productVariantBulkDelete' | 'productVariantBulkTranslate' | 'productVariantBulkUpdate' | 'productVariantChannelListingUpdate' | 'productVariantCreate' | 'productVariantDelete' | 'productVariantPreorderDeactivate' | 'productVariantReorder' | 'productVariantReorderAttributeValues' | 'productVariantSetDefault' | 'productVariantStocksCreate' | 'productVariantStocksDelete' | 'productVariantStocksUpdate' | 'productVariantTranslate' | 'productVariantUpdate' | 'promotionBulkDelete' | 'promotionCreate' | 'promotionDelete' | 'promotionRuleCreate' | 'promotionRuleDelete' | 'promotionRuleTranslate' | 'promotionRuleUpdate' | 'promotionTranslate' | 'promotionUpdate' | 'refundReasonReferenceClear' | 'refundSettingsUpdate' | 'requestEmailChange' | 'requestPasswordReset' | 'saleBulkDelete' | 'saleCataloguesAdd' | 'saleCataloguesRemove' | 'saleChannelListingUpdate' | 'saleCreate' | 'saleDelete' | 'saleTranslate' | 'saleUpdate' | 'sendConfirmationEmail' | 'setPassword' | 'shippingMethodChannelListingUpdate' | 'shippingPriceBulkDelete' | 'shippingPriceCreate' | 'shippingPriceDelete' | 'shippingPriceExcludeProducts' | 'shippingPriceRemoveProductFromExclude' | 'shippingPriceTranslate' | 'shippingPriceUpdate' | 'shippingZoneBulkDelete' | 'shippingZoneCreate' | 'shippingZoneDelete' | 'shippingZoneUpdate' | 'shopAddressUpdate' | 'shopDomainUpdate' | 'shopFetchTaxRates' | 'shopSettingsTranslate' | 'shopSettingsUpdate' | 'staffBulkDelete' | 'staffCreate' | 'staffDelete' | 'staffNotificationRecipientCreate' | 'staffNotificationRecipientDelete' | 'staffNotificationRecipientUpdate' | 'staffUpdate' | 'stockBulkUpdate' | 'storedPaymentMethodRequestDelete' | 'taxClassCreate' | 'taxClassDelete' | 'taxClassUpdate' | 'taxConfigurationUpdate' | 'taxCountryConfigurationDelete' | 'taxCountryConfigurationUpdate' | 'taxExemptionManage' | 'tokenCreate' | 'tokenRefresh' | 'tokenVerify' | 'tokensDeactivateAll' | 'transactionCreate' | 'transactionEventReport' | 'transactionInitialize' | 'transactionProcess' | 'transactionRequestAction' | 'transactionRequestRefundForGrantedRefund' | 'transactionUpdate' | 'unassignWarehouseShippingZone' | 'updateMetadata' | 'updatePrivateMetadata' | 'updateWarehouse' | 'userAvatarDelete' | 'userAvatarUpdate' | 'userBulkSetActive' | 'variantMediaAssign' | 'variantMediaUnassign' | 'voucherBulkDelete' | 'voucherCataloguesAdd' | 'voucherCataloguesRemove' | 'voucherChannelListingUpdate' | 'voucherCodeBulkDelete' | 'voucherCreate' | 'voucherDelete' | 'voucherTranslate' | 'voucherUpdate' | 'webhookCreate' | 'webhookDelete' | 'webhookDryRun' | 'webhookTrigger' | 'webhookUpdate' | MutationKeySpecifier)[];
+ export type MutationFieldPolicy = {
+ 	accountAddressCreate?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	accountAddressDelete?: FieldPolicy<any> | FieldReadFunction<any>,
+@@ -2887,6 +2903,7 @@ export type MutationFieldPolicy = {
+ 	checkoutRemovePromoCode?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	checkoutShippingAddressUpdate?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	checkoutShippingMethodUpdate?: FieldPolicy<any> | FieldReadFunction<any>,
++	checkoutShippingRefresh?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	collectionAddProducts?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	collectionBulkDelete?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	collectionChannelListingUpdate?: FieldPolicy<any> | FieldReadFunction<any>,
+@@ -3166,7 +3183,7 @@ export type ObjectWithMetadataFieldPolicy = {
+ 	privateMetafield?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	privateMetafields?: FieldPolicy<any> | FieldReadFunction<any>
+ };
+-export type OrderKeySpecifier = ('actions' | 'authorizeStatus' | 'availableCollectionPoints' | 'availableShippingMethods' | 'billingAddress' | 'canFinalize' | 'channel' | 'chargeStatus' | 'checkoutId' | 'collectionPointName' | 'created' | 'customerNote' | 'deliveryMethod' | 'discount' | 'discountName' | 'discounts' | 'displayGrossPrices' | 'errors' | 'events' | 'externalReference' | 'fulfillments' | 'giftCards' | 'grantedRefunds' | 'id' | 'invoices' | 'isPaid' | 'isShippingRequired' | 'languageCode' | 'languageCodeEnum' | 'lines' | 'metadata' | 'metafield' | 'metafields' | 'number' | 'origin' | 'original' | 'paymentStatus' | 'paymentStatusDisplay' | 'payments' | 'privateMetadata' | 'privateMetafield' | 'privateMetafields' | 'redirectUrl' | 'shippingAddress' | 'shippingMethod' | 'shippingMethodName' | 'shippingMethods' | 'shippingPrice' | 'shippingTaxClass' | 'shippingTaxClassMetadata' | 'shippingTaxClassName' | 'shippingTaxClassPrivateMetadata' | 'shippingTaxRate' | 'status' | 'statusDisplay' | 'subtotal' | 'taxExemption' | 'token' | 'total' | 'totalAuthorizePending' | 'totalAuthorized' | 'totalBalance' | 'totalCancelPending' | 'totalCanceled' | 'totalCaptured' | 'totalChargePending' | 'totalCharged' | 'totalGrantedRefund' | 'totalRefundPending' | 'totalRefunded' | 'totalRemainingGrant' | 'trackingClientId' | 'transactions' | 'translatedDiscountName' | 'undiscountedShippingPrice' | 'undiscountedTotal' | 'updatedAt' | 'user' | 'userEmail' | 'voucher' | 'voucherCode' | 'weight' | OrderKeySpecifier)[];
++export type OrderKeySpecifier = ('actions' | 'authorizeStatus' | 'availableCollectionPoints' | 'availableShippingMethods' | 'billingAddress' | 'canFinalize' | 'channel' | 'chargeStatus' | 'checkoutId' | 'collectionPointName' | 'created' | 'customerNote' | 'deliveryMethod' | 'discount' | 'discountName' | 'discounts' | 'displayGrossPrices' | 'errors' | 'events' | 'externalReference' | 'fulfillments' | 'giftCards' | 'grantedRefunds' | 'id' | 'invoices' | 'isPaid' | 'isShippingRequired' | 'languageCode' | 'languageCodeEnum' | 'lines' | 'metadata' | 'metafield' | 'metafields' | 'number' | 'origin' | 'original' | 'paymentStatus' | 'paymentStatusDisplay' | 'payments' | 'privateMetadata' | 'privateMetafield' | 'privateMetafields' | 'redirectUrl' | 'shippingAddress' | 'shippingMetadataSnapshotStatus' | 'shippingMethod' | 'shippingMethodMetadata' | 'shippingMethodName' | 'shippingMethodPrivateMetadata' | 'shippingMethods' | 'shippingPrice' | 'shippingTaxClass' | 'shippingTaxClassMetadata' | 'shippingTaxClassName' | 'shippingTaxClassPrivateMetadata' | 'shippingTaxRate' | 'status' | 'statusDisplay' | 'subtotal' | 'taxExemption' | 'token' | 'total' | 'totalAuthorizePending' | 'totalAuthorized' | 'totalBalance' | 'totalCancelPending' | 'totalCanceled' | 'totalCaptured' | 'totalChargePending' | 'totalCharged' | 'totalGrantedRefund' | 'totalRefundPending' | 'totalRefunded' | 'totalRemainingGrant' | 'trackingClientId' | 'transactions' | 'translatedDiscountName' | 'undiscountedShippingPrice' | 'undiscountedTotal' | 'updatedAt' | 'user' | 'userEmail' | 'voucher' | 'voucherCode' | 'weight' | OrderKeySpecifier)[];
+ export type OrderFieldPolicy = {
+ 	actions?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	authorizeStatus?: FieldPolicy<any> | FieldReadFunction<any>,
+@@ -3212,8 +3229,11 @@ export type OrderFieldPolicy = {
+ 	privateMetafields?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	redirectUrl?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	shippingAddress?: FieldPolicy<any> | FieldReadFunction<any>,
++	shippingMetadataSnapshotStatus?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	shippingMethod?: FieldPolicy<any> | FieldReadFunction<any>,
++	shippingMethodMetadata?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	shippingMethodName?: FieldPolicy<any> | FieldReadFunction<any>,
++	shippingMethodPrivateMetadata?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	shippingMethods?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	shippingPrice?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	shippingTaxClass?: FieldPolicy<any> | FieldReadFunction<any>,
+@@ -5928,7 +5948,7 @@ export type ShippingZoneUpdatedFieldPolicy = {
+ 	shippingZone?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	version?: FieldPolicy<any> | FieldReadFunction<any>
+ };
+-export type ShopKeySpecifier = ('allowLoginWithoutConfirmation' | 'automaticFulfillmentDigitalProducts' | 'availableExternalAuthentications' | 'availablePaymentGateways' | 'availableShippingMethods' | 'availableTaxApps' | 'channelCurrencies' | 'chargeTaxesOnShipping' | 'companyAddress' | 'countries' | 'customerSetPasswordUrl' | 'defaultCountry' | 'defaultDigitalMaxDownloads' | 'defaultDigitalUrlValidDays' | 'defaultMailSenderAddress' | 'defaultMailSenderName' | 'defaultWeightUnit' | 'description' | 'displayGrossPrices' | 'domain' | 'enableAccountConfirmationByEmail' | 'fulfillmentAllowUnpaid' | 'fulfillmentAutoApprove' | 'headerText' | 'id' | 'includeTaxesInPrices' | 'languages' | 'limitQuantityPerCheckout' | 'limits' | 'metadata' | 'metafield' | 'metafields' | 'name' | 'permissions' | 'phonePrefixes' | 'privateMetadata' | 'privateMetafield' | 'privateMetafields' | 'reserveStockDurationAnonymousUser' | 'reserveStockDurationAuthenticatedUser' | 'schemaVersion' | 'staffNotificationRecipients' | 'trackInventoryByDefault' | 'translation' | 'version' | ShopKeySpecifier)[];
++export type ShopKeySpecifier = ('allowLoginWithoutConfirmation' | 'automaticFulfillmentDigitalProducts' | 'availableExternalAuthentications' | 'availablePaymentGateways' | 'availableShippingMethods' | 'availableTaxApps' | 'channelCurrencies' | 'chargeTaxesOnShipping' | 'companyAddress' | 'countries' | 'customerSetPasswordUrl' | 'defaultCountry' | 'defaultDigitalMaxDownloads' | 'defaultDigitalUrlValidDays' | 'defaultMailSenderAddress' | 'defaultMailSenderName' | 'defaultWeightUnit' | 'description' | 'displayGrossPrices' | 'domain' | 'enableAccountConfirmationByEmail' | 'fulfillmentAllowUnpaid' | 'fulfillmentAutoApprove' | 'headerText' | 'id' | 'includeTaxesInPrices' | 'languages' | 'limitQuantityPerCheckout' | 'limits' | 'metadata' | 'metafield' | 'metafields' | 'name' | 'passwordAuthenticationMode' | 'permissions' | 'phonePrefixes' | 'privateMetadata' | 'privateMetafield' | 'privateMetafields' | 'reserveStockDurationAnonymousUser' | 'reserveStockDurationAuthenticatedUser' | 'schemaVersion' | 'settingsRevision' | 'staffNotificationRecipients' | 'trackInventoryByDefault' | 'translation' | 'version' | ShopKeySpecifier)[];
+ export type ShopFieldPolicy = {
+ 	allowLoginWithoutConfirmation?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	automaticFulfillmentDigitalProducts?: FieldPolicy<any> | FieldReadFunction<any>,
+@@ -5963,6 +5983,7 @@ export type ShopFieldPolicy = {
+ 	metafield?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	metafields?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	name?: FieldPolicy<any> | FieldReadFunction<any>,
++	passwordAuthenticationMode?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	permissions?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	phonePrefixes?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	privateMetadata?: FieldPolicy<any> | FieldReadFunction<any>,
+@@ -5971,6 +5992,7 @@ export type ShopFieldPolicy = {
+ 	reserveStockDurationAnonymousUser?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	reserveStockDurationAuthenticatedUser?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	schemaVersion?: FieldPolicy<any> | FieldReadFunction<any>,
++	settingsRevision?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	staffNotificationRecipients?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	trackInventoryByDefault?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	translation?: FieldPolicy<any> | FieldReadFunction<any>,
+@@ -6165,9 +6187,10 @@ export type StockErrorFieldPolicy = {
+ 	field?: FieldPolicy<any> | FieldReadFunction<any>,
+ 	message?: FieldPolicy<any> | FieldReadFunction<any>
+ };
+-export type StockSettingsKeySpecifier = ('allocationStrategy' | StockSettingsKeySpecifier)[];
++export type StockSettingsKeySpecifier = ('allocationStrategy' | 'availabilityStrategy' | StockSettingsKeySpecifier)[];
+ export type StockSettingsFieldPolicy = {
+-	allocationStrategy?: FieldPolicy<any> | FieldReadFunction<any>
++	allocationStrategy?: FieldPolicy<any> | FieldReadFunction<any>,
++	availabilityStrategy?: FieldPolicy<any> | FieldReadFunction<any>
+ };
+ export type StoredPaymentMethodKeySpecifier = ('creditCardInfo' | 'data' | 'gateway' | 'id' | 'name' | 'paymentMethodId' | 'supportedPaymentFlows' | 'type' | StoredPaymentMethodKeySpecifier)[];
+ export type StoredPaymentMethodFieldPolicy = {
+@@ -7975,6 +7998,10 @@ export type StrictTypedTypePolicies = {
+ 		keyFields?: false | CheckoutShippingMethodUpdateKeySpecifier | (() => undefined | CheckoutShippingMethodUpdateKeySpecifier),
+ 		fields?: CheckoutShippingMethodUpdateFieldPolicy,
+ 	},
++	CheckoutShippingRefresh?: Omit<TypePolicy, "fields" | "keyFields"> & {
++		keyFields?: false | CheckoutShippingRefreshKeySpecifier | (() => undefined | CheckoutShippingRefreshKeySpecifier),
++		fields?: CheckoutShippingRefreshFieldPolicy,
++	},
+ 	CheckoutUpdated?: Omit<TypePolicy, "fields" | "keyFields"> & {
+ 		keyFields?: false | CheckoutUpdatedKeySpecifier | (() => undefined | CheckoutUpdatedKeySpecifier),
+ 		fields?: CheckoutUpdatedFieldPolicy,
+diff --git a/src/graphql/types.generated.ts b/src/graphql/types.generated.ts
+index 4185f80cc6c7923c4f9a562abf9a4d010094a4a3..6493449fe4748a30bb4b3843f2230b58e763840c 100644
+--- a/src/graphql/types.generated.ts
++++ b/src/graphql/types.generated.ts
+@@ -104,6 +104,8 @@ export enum AccountErrorCode {
+   OUT_OF_SCOPE_GROUP = 'OUT_OF_SCOPE_GROUP',
+   OUT_OF_SCOPE_PERMISSION = 'OUT_OF_SCOPE_PERMISSION',
+   OUT_OF_SCOPE_USER = 'OUT_OF_SCOPE_USER',
++  PASSWORD_AUTHENTICATION_DISABLED = 'PASSWORD_AUTHENTICATION_DISABLED',
++  PASSWORD_AUTHENTICATION_RESTRICTED = 'PASSWORD_AUTHENTICATION_RESTRICTED',
+   PASSWORD_ENTIRELY_NUMERIC = 'PASSWORD_ENTIRELY_NUMERIC',
+   PASSWORD_RESET_ALREADY_REQUESTED = 'PASSWORD_RESET_ALREADY_REQUESTED',
+   PASSWORD_TOO_COMMON = 'PASSWORD_TOO_COMMON',
+@@ -1118,6 +1120,7 @@ export enum ChannelErrorCode {
+   ALREADY_EXISTS = 'ALREADY_EXISTS',
+   CHANNELS_CURRENCY_MUST_BE_THE_SAME = 'CHANNELS_CURRENCY_MUST_BE_THE_SAME',
+   CHANNEL_WITH_ORDERS = 'CHANNEL_WITH_ORDERS',
++  CONFLICT = 'CONFLICT',
+   DUPLICATED_INPUT_ITEM = 'DUPLICATED_INPUT_ITEM',
+   GRAPHQL_ERROR = 'GRAPHQL_ERROR',
+   INVALID = 'INVALID',
+@@ -1148,6 +1151,7 @@ export type ChannelUpdateInput = {
+   checkoutSettings?: InputMaybe<CheckoutSettingsInput>;
+   /** Default country for the channel. Default country can be used in checkout to determine the stock quantities or calculate taxes when the country was not explicitly provided. */
+   defaultCountry?: InputMaybe<CountryCode>;
++  expectedSettingsRevision?: InputMaybe<Scalars['String']>;
+   /** Determine if channel will be set active or not. */
+   isActive?: InputMaybe<Scalars['Boolean']>;
+   /**
+@@ -1298,12 +1302,14 @@ export enum CheckoutErrorCode {
+   BILLING_ADDRESS_NOT_SET = 'BILLING_ADDRESS_NOT_SET',
+   CHANNEL_INACTIVE = 'CHANNEL_INACTIVE',
+   CHECKOUT_NOT_FULLY_PAID = 'CHECKOUT_NOT_FULLY_PAID',
++  CONFLICT = 'CONFLICT',
+   DELIVERY_METHOD_NOT_APPLICABLE = 'DELIVERY_METHOD_NOT_APPLICABLE',
+   EMAIL_NOT_SET = 'EMAIL_NOT_SET',
+   GIFT_CARD_NOT_APPLICABLE = 'GIFT_CARD_NOT_APPLICABLE',
+   GRAPHQL_ERROR = 'GRAPHQL_ERROR',
+   INACTIVE_PAYMENT = 'INACTIVE_PAYMENT',
+   INSUFFICIENT_STOCK = 'INSUFFICIENT_STOCK',
++  INTERNAL_ERROR = 'INTERNAL_ERROR',
+   INVALID = 'INVALID',
+   INVALID_SHIPPING_METHOD = 'INVALID_SHIPPING_METHOD',
+   MISSING_ADDRESS_DATA = 'MISSING_ADDRESS_DATA',
+@@ -1322,6 +1328,7 @@ export enum CheckoutErrorCode {
+   SHIPPING_METHOD_NOT_APPLICABLE = 'SHIPPING_METHOD_NOT_APPLICABLE',
+   SHIPPING_METHOD_NOT_SET = 'SHIPPING_METHOD_NOT_SET',
+   SHIPPING_NOT_REQUIRED = 'SHIPPING_NOT_REQUIRED',
++  SHIPPING_SERVICE_ERROR = 'SHIPPING_SERVICE_ERROR',
+   TAX_ERROR = 'TAX_ERROR',
+   UNAVAILABLE_VARIANT_IN_CHANNEL = 'UNAVAILABLE_VARIANT_IN_CHANNEL',
+   UNIQUE = 'UNIQUE',
+@@ -1380,6 +1387,8 @@ export type CheckoutLineUpdateInput = {
+ };
+ 
+ export type CheckoutSettingsInput = {
++  automaticCompletionCutoff?: InputMaybe<Scalars['DateTime']>;
++  automaticCompletionDelay?: InputMaybe<Scalars['Minute']>;
+   /**
+    * Default `false`. Determines if the paid checkouts should be automatically completed. This setting applies only to checkouts where payment was processed through transactions.When enabled, the checkout will be automatically completed once the checkout `charge_status` reaches `FULL`. This occurs when the total sum of charged and authorized transaction amounts equals or exceeds the checkout's total amount.
+    *
+@@ -5051,6 +5060,12 @@ export type PageWhereInput = {
+   slug?: InputMaybe<StringFilterInput>;
+ };
+ 
++export enum PasswordAuthenticationModeEnum {
++  CUSTOMERS_ONLY = 'CUSTOMERS_ONLY',
++  DISABLED = 'DISABLED',
++  ENABLED = 'ENABLED'
++}
++
+ export enum PaymentChargeStatusEnum {
+   CANCELLED = 'CANCELLED',
+   FULLY_CHARGED = 'FULLY_CHARGED',
+@@ -6690,6 +6705,12 @@ export enum ShippingErrorCode {
+   UNIQUE = 'UNIQUE'
+ }
+ 
++export enum ShippingMetadataSnapshotStatusEnum {
++  CAPTURED = 'CAPTURED',
++  LEGACY_PRESERVED = 'LEGACY_PRESERVED',
++  UNAVAILABLE = 'UNAVAILABLE'
++}
++
+ export type ShippingMethodChannelListingAddInput = {
+   /** ID of a channel. */
+   channelId: Scalars['ID'];
+@@ -6804,6 +6825,7 @@ export type ShippingZoneUpdateInput = {
+ export enum ShopErrorCode {
+   ALREADY_EXISTS = 'ALREADY_EXISTS',
+   CANNOT_FETCH_TAX_RATES = 'CANNOT_FETCH_TAX_RATES',
++  CONFLICT = 'CONFLICT',
+   GRAPHQL_ERROR = 'GRAPHQL_ERROR',
+   INVALID = 'INVALID',
+   NOT_FOUND = 'NOT_FOUND',
+@@ -6842,6 +6864,7 @@ export type ShopSettingsInput = {
+   displayGrossPrices?: InputMaybe<Scalars['Boolean']>;
+   /** Enable automatic account confirmation by email. */
+   enableAccountConfirmationByEmail?: InputMaybe<Scalars['Boolean']>;
++  expectedSettingsRevision?: InputMaybe<Scalars['String']>;
+   /** Enable ability to approve fulfillments which are unpaid. */
+   fulfillmentAllowUnpaid?: InputMaybe<Scalars['Boolean']>;
+   /** Enable automatic approval of all new fulfillments. */
+@@ -6861,6 +6884,7 @@ export type ShopSettingsInput = {
+    * Warning: never store sensitive information, including financial data such as credit card details.
+    */
+   metadata?: InputMaybe<Array<MetadataInput>>;
++  passwordAuthenticationMode?: InputMaybe<PasswordAuthenticationModeEnum>;
+   /**
+    * Shop private metadata. Requires permissions to modify and to read the metadata of the object it's attached to.
+    *
+@@ -6975,6 +6999,11 @@ export enum StockAvailability {
+   OUT_OF_STOCK = 'OUT_OF_STOCK'
+ }
+ 
++export enum StockAvailabilityStrategyEnum {
++  CHANNEL_WAREHOUSES = 'CHANNEL_WAREHOUSES',
++  LEGACY = 'LEGACY'
++}
++
+ export enum StockBulkUpdateErrorCode {
+   GRAPHQL_ERROR = 'GRAPHQL_ERROR',
+   INVALID = 'INVALID',
+@@ -7018,7 +7047,8 @@ export type StockInput = {
+ 
+ export type StockSettingsInput = {
+   /** Allocation strategy options. Strategy defines the preference of warehouses for allocations and reservations. */
+-  allocationStrategy: AllocationStrategyEnum;
++  allocationStrategy?: InputMaybe<AllocationStrategyEnum>;
++  availabilityStrategy?: InputMaybe<StockAvailabilityStrategyEnum>;
+ };
+ 
+ export type StockUpdateInput = {
+@@ -8939,7 +8969,7 @@ export type RequestPasswordResetMutation = { __typename: 'Mutation', requestPass
+ export type AvailableExternalAuthenticationsQueryVariables = Exact<{ [key: string]: never; }>;
+ 
+ 
+-export type AvailableExternalAuthenticationsQuery = { __typename: 'Query', shop: { __typename: 'Shop', availableExternalAuthentications: Array<{ __typename: 'ExternalAuthentication', id: string, name: string | null }> } };
++export type AvailableExternalAuthenticationsQuery = { __typename: 'Query', shop: { __typename: 'Shop', passwordAuthenticationMode: PasswordAuthenticationModeEnum, availableExternalAuthentications: Array<{ __typename: 'ExternalAuthentication', id: string, name: string | null }> } };
+ 
+ export type UserDetailsQueryVariables = Exact<{ [key: string]: never; }>;
+ 
+@@ -9004,7 +9034,7 @@ export type ChannelCreateMutationVariables = Exact<{
+ }>;
+ 
+ 
+-export type ChannelCreateMutation = { __typename: 'Mutation', channelCreate: { __typename: 'ChannelCreate', channel: { __typename: 'Channel', hasOrders: boolean, id: string, isActive: boolean, name: string, slug: string, currencyCode: string, warehouses: Array<{ __typename: 'Warehouse', id: string, name: string }>, orderSettings: { __typename: 'OrderSettings', markAsPaidStrategy: MarkAsPaidStrategyEnum, deleteExpiredOrdersAfter: any, allowUnpaidOrders: boolean }, paymentSettings: { __typename: 'PaymentSettings', defaultTransactionFlowStrategy: TransactionFlowStrategyEnum }, checkoutSettings: { __typename: 'CheckoutSettings', automaticallyCompleteFullyPaidCheckouts: boolean }, defaultCountry: { __typename: 'CountryDisplay', code: string, country: string }, stockSettings: { __typename: 'StockSettings', allocationStrategy: AllocationStrategyEnum } } | null, errors: Array<{ __typename: 'ChannelError', code: ChannelErrorCode, field: string | null, message: string | null }> } | null };
++export type ChannelCreateMutation = { __typename: 'Mutation', channelCreate: { __typename: 'ChannelCreate', channel: { __typename: 'Channel', hasOrders: boolean, settingsRevision: string, id: string, isActive: boolean, name: string, slug: string, currencyCode: string, stockSettings: { __typename: 'StockSettings', availabilityStrategy: StockAvailabilityStrategyEnum, allocationStrategy: AllocationStrategyEnum }, warehouses: Array<{ __typename: 'Warehouse', id: string, name: string }>, orderSettings: { __typename: 'OrderSettings', markAsPaidStrategy: MarkAsPaidStrategyEnum, deleteExpiredOrdersAfter: any, allowUnpaidOrders: boolean }, paymentSettings: { __typename: 'PaymentSettings', defaultTransactionFlowStrategy: TransactionFlowStrategyEnum }, checkoutSettings: { __typename: 'CheckoutSettings', automaticallyCompleteFullyPaidCheckouts: boolean, automaticCompletionDelay: any, automaticCompletionCutoff: any | null }, defaultCountry: { __typename: 'CountryDisplay', code: string, country: string } } | null, errors: Array<{ __typename: 'ChannelError', code: ChannelErrorCode, field: string | null, message: string | null }> } | null };
+ 
+ export type ChannelUpdateMutationVariables = Exact<{
+   id: Scalars['ID'];
+@@ -9012,7 +9042,7 @@ export type ChannelUpdateMutationVariables = Exact<{
+ }>;
+ 
+ 
+-export type ChannelUpdateMutation = { __typename: 'Mutation', channelUpdate: { __typename: 'ChannelUpdate', channel: { __typename: 'Channel', hasOrders: boolean, id: string, isActive: boolean, name: string, slug: string, currencyCode: string, warehouses: Array<{ __typename: 'Warehouse', id: string, name: string }>, orderSettings: { __typename: 'OrderSettings', markAsPaidStrategy: MarkAsPaidStrategyEnum, deleteExpiredOrdersAfter: any, allowUnpaidOrders: boolean }, paymentSettings: { __typename: 'PaymentSettings', defaultTransactionFlowStrategy: TransactionFlowStrategyEnum }, checkoutSettings: { __typename: 'CheckoutSettings', automaticallyCompleteFullyPaidCheckouts: boolean }, defaultCountry: { __typename: 'CountryDisplay', code: string, country: string }, stockSettings: { __typename: 'StockSettings', allocationStrategy: AllocationStrategyEnum } } | null, errors: Array<{ __typename: 'ChannelError', code: ChannelErrorCode, field: string | null, message: string | null }> } | null };
++export type ChannelUpdateMutation = { __typename: 'Mutation', channelUpdate: { __typename: 'ChannelUpdate', channel: { __typename: 'Channel', hasOrders: boolean, settingsRevision: string, id: string, isActive: boolean, name: string, slug: string, currencyCode: string, stockSettings: { __typename: 'StockSettings', availabilityStrategy: StockAvailabilityStrategyEnum, allocationStrategy: AllocationStrategyEnum }, warehouses: Array<{ __typename: 'Warehouse', id: string, name: string }>, orderSettings: { __typename: 'OrderSettings', markAsPaidStrategy: MarkAsPaidStrategyEnum, deleteExpiredOrdersAfter: any, allowUnpaidOrders: boolean }, paymentSettings: { __typename: 'PaymentSettings', defaultTransactionFlowStrategy: TransactionFlowStrategyEnum }, checkoutSettings: { __typename: 'CheckoutSettings', automaticallyCompleteFullyPaidCheckouts: boolean, automaticCompletionDelay: any, automaticCompletionCutoff: any | null }, defaultCountry: { __typename: 'CountryDisplay', code: string, country: string } } | null, errors: Array<{ __typename: 'ChannelError', code: ChannelErrorCode, field: string | null, message: string | null }> } | null };
+ 
+ export type ChannelDeleteMutationVariables = Exact<{
+   id: Scalars['ID'];
+@@ -9027,14 +9057,14 @@ export type ChannelActivateMutationVariables = Exact<{
+ }>;
+ 
+ 
+-export type ChannelActivateMutation = { __typename: 'Mutation', channelActivate: { __typename: 'ChannelActivate', channel: { __typename: 'Channel', hasOrders: boolean, id: string, isActive: boolean, name: string, slug: string, currencyCode: string, warehouses: Array<{ __typename: 'Warehouse', id: string, name: string }>, orderSettings: { __typename: 'OrderSettings', markAsPaidStrategy: MarkAsPaidStrategyEnum, deleteExpiredOrdersAfter: any, allowUnpaidOrders: boolean }, paymentSettings: { __typename: 'PaymentSettings', defaultTransactionFlowStrategy: TransactionFlowStrategyEnum }, checkoutSettings: { __typename: 'CheckoutSettings', automaticallyCompleteFullyPaidCheckouts: boolean }, defaultCountry: { __typename: 'CountryDisplay', code: string, country: string }, stockSettings: { __typename: 'StockSettings', allocationStrategy: AllocationStrategyEnum } } | null, errors: Array<{ __typename: 'ChannelError', code: ChannelErrorCode, field: string | null, message: string | null }> } | null };
++export type ChannelActivateMutation = { __typename: 'Mutation', channelActivate: { __typename: 'ChannelActivate', channel: { __typename: 'Channel', hasOrders: boolean, settingsRevision: string, id: string, isActive: boolean, name: string, slug: string, currencyCode: string, stockSettings: { __typename: 'StockSettings', availabilityStrategy: StockAvailabilityStrategyEnum, allocationStrategy: AllocationStrategyEnum }, warehouses: Array<{ __typename: 'Warehouse', id: string, name: string }>, orderSettings: { __typename: 'OrderSettings', markAsPaidStrategy: MarkAsPaidStrategyEnum, deleteExpiredOrdersAfter: any, allowUnpaidOrders: boolean }, paymentSettings: { __typename: 'PaymentSettings', defaultTransactionFlowStrategy: TransactionFlowStrategyEnum }, checkoutSettings: { __typename: 'CheckoutSettings', automaticallyCompleteFullyPaidCheckouts: boolean, automaticCompletionDelay: any, automaticCompletionCutoff: any | null }, defaultCountry: { __typename: 'CountryDisplay', code: string, country: string } } | null, errors: Array<{ __typename: 'ChannelError', code: ChannelErrorCode, field: string | null, message: string | null }> } | null };
+ 
+ export type ChannelDeactivateMutationVariables = Exact<{
+   id: Scalars['ID'];
+ }>;
+ 
+ 
+-export type ChannelDeactivateMutation = { __typename: 'Mutation', channelDeactivate: { __typename: 'ChannelDeactivate', channel: { __typename: 'Channel', hasOrders: boolean, id: string, isActive: boolean, name: string, slug: string, currencyCode: string, warehouses: Array<{ __typename: 'Warehouse', id: string, name: string }>, orderSettings: { __typename: 'OrderSettings', markAsPaidStrategy: MarkAsPaidStrategyEnum, deleteExpiredOrdersAfter: any, allowUnpaidOrders: boolean }, paymentSettings: { __typename: 'PaymentSettings', defaultTransactionFlowStrategy: TransactionFlowStrategyEnum }, checkoutSettings: { __typename: 'CheckoutSettings', automaticallyCompleteFullyPaidCheckouts: boolean }, defaultCountry: { __typename: 'CountryDisplay', code: string, country: string }, stockSettings: { __typename: 'StockSettings', allocationStrategy: AllocationStrategyEnum } } | null, errors: Array<{ __typename: 'ChannelError', code: ChannelErrorCode, field: string | null, message: string | null }> } | null };
++export type ChannelDeactivateMutation = { __typename: 'Mutation', channelDeactivate: { __typename: 'ChannelDeactivate', channel: { __typename: 'Channel', hasOrders: boolean, settingsRevision: string, id: string, isActive: boolean, name: string, slug: string, currencyCode: string, stockSettings: { __typename: 'StockSettings', availabilityStrategy: StockAvailabilityStrategyEnum, allocationStrategy: AllocationStrategyEnum }, warehouses: Array<{ __typename: 'Warehouse', id: string, name: string }>, orderSettings: { __typename: 'OrderSettings', markAsPaidStrategy: MarkAsPaidStrategyEnum, deleteExpiredOrdersAfter: any, allowUnpaidOrders: boolean }, paymentSettings: { __typename: 'PaymentSettings', defaultTransactionFlowStrategy: TransactionFlowStrategyEnum }, checkoutSettings: { __typename: 'CheckoutSettings', automaticallyCompleteFullyPaidCheckouts: boolean, automaticCompletionDelay: any, automaticCompletionCutoff: any | null }, defaultCountry: { __typename: 'CountryDisplay', code: string, country: string } } | null, errors: Array<{ __typename: 'ChannelError', code: ChannelErrorCode, field: string | null, message: string | null }> } | null };
+ 
+ export type ChannelReorderWarehousesMutationVariables = Exact<{
+   channelId: Scalars['ID'];
+@@ -9042,7 +9072,7 @@ export type ChannelReorderWarehousesMutationVariables = Exact<{
+ }>;
+ 
+ 
+-export type ChannelReorderWarehousesMutation = { __typename: 'Mutation', channelReorderWarehouses: { __typename: 'ChannelReorderWarehouses', channel: { __typename: 'Channel', hasOrders: boolean, id: string, isActive: boolean, name: string, slug: string, currencyCode: string, warehouses: Array<{ __typename: 'Warehouse', id: string, name: string }>, orderSettings: { __typename: 'OrderSettings', markAsPaidStrategy: MarkAsPaidStrategyEnum, deleteExpiredOrdersAfter: any, allowUnpaidOrders: boolean }, paymentSettings: { __typename: 'PaymentSettings', defaultTransactionFlowStrategy: TransactionFlowStrategyEnum }, checkoutSettings: { __typename: 'CheckoutSettings', automaticallyCompleteFullyPaidCheckouts: boolean }, defaultCountry: { __typename: 'CountryDisplay', code: string, country: string }, stockSettings: { __typename: 'StockSettings', allocationStrategy: AllocationStrategyEnum } } | null, errors: Array<{ __typename: 'ChannelError', code: ChannelErrorCode, field: string | null, message: string | null }> } | null };
++export type ChannelReorderWarehousesMutation = { __typename: 'Mutation', channelReorderWarehouses: { __typename: 'ChannelReorderWarehouses', channel: { __typename: 'Channel', hasOrders: boolean, settingsRevision: string, id: string, isActive: boolean, name: string, slug: string, currencyCode: string, stockSettings: { __typename: 'StockSettings', availabilityStrategy: StockAvailabilityStrategyEnum, allocationStrategy: AllocationStrategyEnum }, warehouses: Array<{ __typename: 'Warehouse', id: string, name: string }>, orderSettings: { __typename: 'OrderSettings', markAsPaidStrategy: MarkAsPaidStrategyEnum, deleteExpiredOrdersAfter: any, allowUnpaidOrders: boolean }, paymentSettings: { __typename: 'PaymentSettings', defaultTransactionFlowStrategy: TransactionFlowStrategyEnum }, checkoutSettings: { __typename: 'CheckoutSettings', automaticallyCompleteFullyPaidCheckouts: boolean, automaticCompletionDelay: any, automaticCompletionCutoff: any | null }, defaultCountry: { __typename: 'CountryDisplay', code: string, country: string } } | null, errors: Array<{ __typename: 'ChannelError', code: ChannelErrorCode, field: string | null, message: string | null }> } | null };
+ 
+ export type BaseChannelsQueryVariables = Exact<{ [key: string]: never; }>;
+ 
+@@ -9052,14 +9082,14 @@ export type BaseChannelsQuery = { __typename: 'Query', channels: Array<{ __typen
+ export type ChannelsQueryVariables = Exact<{ [key: string]: never; }>;
+ 
+ 
+-export type ChannelsQuery = { __typename: 'Query', channels: Array<{ __typename: 'Channel', hasOrders: boolean, id: string, isActive: boolean, name: string, slug: string, currencyCode: string, warehouses: Array<{ __typename: 'Warehouse', id: string, name: string }>, orderSettings: { __typename: 'OrderSettings', markAsPaidStrategy: MarkAsPaidStrategyEnum, deleteExpiredOrdersAfter: any, allowUnpaidOrders: boolean }, paymentSettings: { __typename: 'PaymentSettings', defaultTransactionFlowStrategy: TransactionFlowStrategyEnum }, checkoutSettings: { __typename: 'CheckoutSettings', automaticallyCompleteFullyPaidCheckouts: boolean }, defaultCountry: { __typename: 'CountryDisplay', code: string, country: string }, stockSettings: { __typename: 'StockSettings', allocationStrategy: AllocationStrategyEnum } }> | null };
++export type ChannelsQuery = { __typename: 'Query', channels: Array<{ __typename: 'Channel', hasOrders: boolean, settingsRevision: string, id: string, isActive: boolean, name: string, slug: string, currencyCode: string, stockSettings: { __typename: 'StockSettings', availabilityStrategy: StockAvailabilityStrategyEnum, allocationStrategy: AllocationStrategyEnum }, warehouses: Array<{ __typename: 'Warehouse', id: string, name: string }>, orderSettings: { __typename: 'OrderSettings', markAsPaidStrategy: MarkAsPaidStrategyEnum, deleteExpiredOrdersAfter: any, allowUnpaidOrders: boolean }, paymentSettings: { __typename: 'PaymentSettings', defaultTransactionFlowStrategy: TransactionFlowStrategyEnum }, checkoutSettings: { __typename: 'CheckoutSettings', automaticallyCompleteFullyPaidCheckouts: boolean, automaticCompletionDelay: any, automaticCompletionCutoff: any | null }, defaultCountry: { __typename: 'CountryDisplay', code: string, country: string } }> | null };
+ 
+ export type ChannelQueryVariables = Exact<{
+   id: Scalars['ID'];
+ }>;
+ 
+ 
+-export type ChannelQuery = { __typename: 'Query', channel: { __typename: 'Channel', hasOrders: boolean, id: string, isActive: boolean, name: string, slug: string, currencyCode: string, warehouses: Array<{ __typename: 'Warehouse', id: string, name: string }>, orderSettings: { __typename: 'OrderSettings', markAsPaidStrategy: MarkAsPaidStrategyEnum, deleteExpiredOrdersAfter: any, allowUnpaidOrders: boolean }, paymentSettings: { __typename: 'PaymentSettings', defaultTransactionFlowStrategy: TransactionFlowStrategyEnum }, checkoutSettings: { __typename: 'CheckoutSettings', automaticallyCompleteFullyPaidCheckouts: boolean }, defaultCountry: { __typename: 'CountryDisplay', code: string, country: string }, stockSettings: { __typename: 'StockSettings', allocationStrategy: AllocationStrategyEnum } } | null };
++export type ChannelQuery = { __typename: 'Query', channel: { __typename: 'Channel', hasOrders: boolean, settingsRevision: string, id: string, isActive: boolean, name: string, slug: string, currencyCode: string, stockSettings: { __typename: 'StockSettings', availabilityStrategy: StockAvailabilityStrategyEnum, allocationStrategy: AllocationStrategyEnum }, warehouses: Array<{ __typename: 'Warehouse', id: string, name: string }>, orderSettings: { __typename: 'OrderSettings', markAsPaidStrategy: MarkAsPaidStrategyEnum, deleteExpiredOrdersAfter: any, allowUnpaidOrders: boolean }, paymentSettings: { __typename: 'PaymentSettings', defaultTransactionFlowStrategy: TransactionFlowStrategyEnum }, checkoutSettings: { __typename: 'CheckoutSettings', automaticallyCompleteFullyPaidCheckouts: boolean, automaticCompletionDelay: any, automaticCompletionCutoff: any | null }, defaultCountry: { __typename: 'CountryDisplay', code: string, country: string } } | null };
+ 
+ export type CollectionUpdateMutationVariables = Exact<{
+   id: Scalars['ID'];
+@@ -10038,7 +10068,7 @@ export type ChannelErrorFragment = { __typename: 'ChannelError', code: ChannelEr
+ 
+ export type ChannelFragment = { __typename: 'Channel', id: string, isActive: boolean, name: string, slug: string, currencyCode: string, defaultCountry: { __typename: 'CountryDisplay', code: string, country: string }, stockSettings: { __typename: 'StockSettings', allocationStrategy: AllocationStrategyEnum } };
+ 
+-export type ChannelDetailsFragment = { __typename: 'Channel', hasOrders: boolean, id: string, isActive: boolean, name: string, slug: string, currencyCode: string, warehouses: Array<{ __typename: 'Warehouse', id: string, name: string }>, orderSettings: { __typename: 'OrderSettings', markAsPaidStrategy: MarkAsPaidStrategyEnum, deleteExpiredOrdersAfter: any, allowUnpaidOrders: boolean }, paymentSettings: { __typename: 'PaymentSettings', defaultTransactionFlowStrategy: TransactionFlowStrategyEnum }, checkoutSettings: { __typename: 'CheckoutSettings', automaticallyCompleteFullyPaidCheckouts: boolean }, defaultCountry: { __typename: 'CountryDisplay', code: string, country: string }, stockSettings: { __typename: 'StockSettings', allocationStrategy: AllocationStrategyEnum } };
++export type ChannelDetailsFragment = { __typename: 'Channel', hasOrders: boolean, settingsRevision: string, id: string, isActive: boolean, name: string, slug: string, currencyCode: string, stockSettings: { __typename: 'StockSettings', availabilityStrategy: StockAvailabilityStrategyEnum, allocationStrategy: AllocationStrategyEnum }, warehouses: Array<{ __typename: 'Warehouse', id: string, name: string }>, orderSettings: { __typename: 'OrderSettings', markAsPaidStrategy: MarkAsPaidStrategyEnum, deleteExpiredOrdersAfter: any, allowUnpaidOrders: boolean }, paymentSettings: { __typename: 'PaymentSettings', defaultTransactionFlowStrategy: TransactionFlowStrategyEnum }, checkoutSettings: { __typename: 'CheckoutSettings', automaticallyCompleteFullyPaidCheckouts: boolean, automaticCompletionDelay: any, automaticCompletionCutoff: any | null }, defaultCountry: { __typename: 'CountryDisplay', code: string, country: string } };
+ 
+ export type CollectionFragment = { __typename: 'Collection', id: string, name: string, channelListings: Array<{ __typename: 'CollectionChannelListing', isPublished: boolean, publishedAt: any | null, channel: { __typename: 'Channel', id: string, name: string } }> | null };
+ 
+@@ -12110,7 +12140,7 @@ export type ShopSettingsUpdateMutationVariables = Exact<{
+ }>;
+ 
+ 
+-export type ShopSettingsUpdateMutation = { __typename: 'Mutation', shopSettingsUpdate: { __typename: 'ShopSettingsUpdate', errors: Array<{ __typename: 'ShopError', code: ShopErrorCode, field: string | null, message: string | null }>, shop: { __typename: 'Shop', customerSetPasswordUrl: string | null, defaultMailSenderAddress: string | null, defaultMailSenderName: string | null, description: string | null, name: string, reserveStockDurationAnonymousUser: number | null, reserveStockDurationAuthenticatedUser: number | null, limitQuantityPerCheckout: number | null, enableAccountConfirmationByEmail: boolean | null, companyAddress: { __typename: 'Address', city: string, cityArea: string, companyName: string, countryArea: string, firstName: string, id: string, lastName: string, phone: string | null, postalCode: string, streetAddress1: string, streetAddress2: string, country: { __typename: 'CountryDisplay', code: string, country: string } } | null, countries: Array<{ __typename: 'CountryDisplay', code: string, country: string }>, domain: { __typename: 'Domain', host: string } } | null } | null, shopAddressUpdate: { __typename: 'ShopAddressUpdate', errors: Array<{ __typename: 'ShopError', code: ShopErrorCode, field: string | null, message: string | null }>, shop: { __typename: 'Shop', companyAddress: { __typename: 'Address', city: string, cityArea: string, companyName: string, countryArea: string, firstName: string, id: string, lastName: string, phone: string | null, postalCode: string, streetAddress1: string, streetAddress2: string, country: { __typename: 'CountryDisplay', code: string, country: string } } | null } | null } | null };
++export type ShopSettingsUpdateMutation = { __typename: 'Mutation', shopSettingsUpdate: { __typename: 'ShopSettingsUpdate', errors: Array<{ __typename: 'ShopError', code: ShopErrorCode, field: string | null, message: string | null }>, shop: { __typename: 'Shop', passwordAuthenticationMode: PasswordAuthenticationModeEnum, settingsRevision: string, customerSetPasswordUrl: string | null, defaultMailSenderAddress: string | null, defaultMailSenderName: string | null, description: string | null, name: string, reserveStockDurationAnonymousUser: number | null, reserveStockDurationAuthenticatedUser: number | null, limitQuantityPerCheckout: number | null, enableAccountConfirmationByEmail: boolean | null, companyAddress: { __typename: 'Address', city: string, cityArea: string, companyName: string, countryArea: string, firstName: string, id: string, lastName: string, phone: string | null, postalCode: string, streetAddress1: string, streetAddress2: string, country: { __typename: 'CountryDisplay', code: string, country: string } } | null, countries: Array<{ __typename: 'CountryDisplay', code: string, country: string }>, domain: { __typename: 'Domain', host: string } } | null } | null, shopAddressUpdate: { __typename: 'ShopAddressUpdate', errors: Array<{ __typename: 'ShopError', code: ShopErrorCode, field: string | null, message: string | null }>, shop: { __typename: 'Shop', companyAddress: { __typename: 'Address', city: string, cityArea: string, companyName: string, countryArea: string, firstName: string, id: string, lastName: string, phone: string | null, postalCode: string, streetAddress1: string, streetAddress2: string, country: { __typename: 'CountryDisplay', code: string, country: string } } | null } | null } | null };
+ 
+ export type RefundSettingsUpdateMutationVariables = Exact<{
+   refundSettingsInput: RefundSettingsUpdateInput;
+@@ -12127,7 +12157,7 @@ export type RefundReasonReferenceClearMutation = { __typename: 'Mutation', refun
+ export type SiteSettingsQueryVariables = Exact<{ [key: string]: never; }>;
+ 
+ 
+-export type SiteSettingsQuery = { __typename: 'Query', shop: { __typename: 'Shop', customerSetPasswordUrl: string | null, defaultMailSenderAddress: string | null, defaultMailSenderName: string | null, description: string | null, name: string, reserveStockDurationAnonymousUser: number | null, reserveStockDurationAuthenticatedUser: number | null, limitQuantityPerCheckout: number | null, enableAccountConfirmationByEmail: boolean | null, companyAddress: { __typename: 'Address', city: string, cityArea: string, companyName: string, countryArea: string, firstName: string, id: string, lastName: string, phone: string | null, postalCode: string, streetAddress1: string, streetAddress2: string, country: { __typename: 'CountryDisplay', code: string, country: string } } | null, countries: Array<{ __typename: 'CountryDisplay', code: string, country: string }>, domain: { __typename: 'Domain', host: string } } };
++export type SiteSettingsQuery = { __typename: 'Query', shop: { __typename: 'Shop', passwordAuthenticationMode: PasswordAuthenticationModeEnum, settingsRevision: string, customerSetPasswordUrl: string | null, defaultMailSenderAddress: string | null, defaultMailSenderName: string | null, description: string | null, name: string, reserveStockDurationAnonymousUser: number | null, reserveStockDurationAuthenticatedUser: number | null, limitQuantityPerCheckout: number | null, enableAccountConfirmationByEmail: boolean | null, companyAddress: { __typename: 'Address', city: string, cityArea: string, companyName: string, countryArea: string, firstName: string, id: string, lastName: string, phone: string | null, postalCode: string, streetAddress1: string, streetAddress2: string, country: { __typename: 'CountryDisplay', code: string, country: string } } | null, countries: Array<{ __typename: 'CountryDisplay', code: string, country: string }>, domain: { __typename: 'Domain', host: string } } };
+ 
+ export type StaffMemberAddMutationVariables = Exact<{
+   input: StaffCreateInput;
+diff --git a/src/hooks/useForm/index.ts b/src/hooks/useForm/index.ts
+index 1ca2392c096b4d489c9dec2529df2cba0de754e9..40ea2fd3844ed5bc1b503a623a3fe4fb24a5d846 100644
+--- a/src/hooks/useForm/index.ts
++++ b/src/hooks/useForm/index.ts
+@@ -8,7 +8,7 @@ import useHandleFormSubmit from "@dashboard/hooks/useHandleFormSubmit";
+ import { toggle } from "@dashboard/utils/lists";
+ import isEqual from "lodash/isEqual";
+ import omit from "lodash/omit";
+-import { useEffect, useState } from "react";
++import { useEffect, useRef, useState } from "react";
+ import * as React from "react";
+ 
+ import useStateFromProps from "./../useStateFromProps";
+@@ -41,6 +41,7 @@ interface UseFormOpts<T> {
+   checkIfSaveIsDisabled?: CheckIfSaveIsDisabledFnType<T>;
+   disabled?: boolean;
+   mergeData?: boolean;
++  preserveDirty?: boolean;
+ }
+ 
+ /** @deprecated Use react-hook-form instead */
+@@ -100,11 +101,52 @@ function useForm<T extends FormData, TErrors>(
+     checkIfSaveIsDisabled,
+     disabled,
+     mergeData = true,
++    preserveDirty = false,
+   } = opts;
++  const latestInitial = useRef(initialData);
++  const acceptedInitial = useRef(initialData);
++  const mounted = useRef(true);
++
++  latestInitial.current = initialData;
++
+   const [errors, setErrors] = useState<FormErrors<T>>({});
+   const [data, setData] = useStateFromProps(initialData, {
+-    mergeFunc: mergeData ? merge : undefined,
++    mergeFunc: preserveDirty
++      ? (_previous, state, incoming) => {
++          const baseline = acceptedInitial.current;
++          const hasEdits = !isEqual(baseline, state);
++          const nextBaseline = { ...baseline };
++          const next = Object.keys(incoming).reduce(
++            (result, key) => {
++              if (isEqual(state[key], baseline[key]) && !(key === "settingsRevision" && hasEdits)) {
++                result[key as keyof T] = incoming[key];
++                nextBaseline[key as keyof T] = incoming[key];
++              }
++
++              return result;
++            },
++            { ...state },
++          );
++
++          acceptedInitial.current = nextBaseline;
++
++          return next;
++        }
++      : mergeData
++        ? merge
++        : undefined,
+   });
++  const latestData = useRef(data);
++  const submitting = useRef(false);
++
++  latestData.current = data;
++  useEffect(() => {
++    mounted.current = true;
++
++    return () => {
++      mounted.current = false;
++    };
++  }, []);
+ 
+   const { add: addChanged, clean: cleanChanged, data: changed } = useChangedData<T>(data);
+ 
+@@ -128,7 +170,15 @@ function useForm<T extends FormData, TErrors>(
+   const handleFormSubmit = useHandleFormSubmit({
+     formId,
+     onSubmit,
++    preserveDirty,
+   });
++
++  useEffect(() => {
++    if (preserveDirty && confirmLeave) {
++      setIsFormDirtyInExitDialog(!isEqual(data, acceptedInitial.current));
++    }
++  }, [data, preserveDirty, confirmLeave]);
++
+   const handleSetChanged = (value = true) => {
+     if (confirmLeave) {
+       setIsFormDirtyInExitDialog(value);
+@@ -206,6 +256,7 @@ function useForm<T extends FormData, TErrors>(
+   }
+ 
+   function reset() {
++    acceptedInitial.current = initialData;
+     setData(initialData);
+   }
+ 
+@@ -217,10 +268,43 @@ function useForm<T extends FormData, TErrors>(
+   }
+ 
+   async function submit() {
+-    if (typeof onSubmit === "function" && !Object.keys(errors).length) {
+-      const result = handleFormSubmit(data);
+-
+-      return result;
++    if (typeof onSubmit === "function" && !Object.keys(errors).length && !submitting.current) {
++      const snapshot = data;
++
++      submitting.current = true;
++
++      try {
++        const result = await handleFormSubmit(snapshot);
++
++        if (preserveDirty && mounted.current && result?.length === 0) {
++          // Accept a cache revision only when its values match this submission.
++          // An unrelated refetch during the save is not the mutation's receipt.
++          const saved = isEqual(
++            omit(latestInitial.current, "settingsRevision"),
++            omit(snapshot, "settingsRevision"),
++          )
++            ? latestInitial.current
++            : snapshot;
++          const next = Object.keys(saved).reduce(
++            (next, key) => {
++              if (isEqual(latestData.current[key], snapshot[key]) || key === "settingsRevision") {
++                next[key as keyof T] = saved[key];
++              }
++
++              return next;
++            },
++            { ...latestData.current },
++          );
++
++          acceptedInitial.current = { ...saved };
++          setData(next);
++          handleSetChanged(!isEqual(next, saved));
++        }
++
++        return result;
++      } finally {
++        submitting.current = false;
++      }
+     }
+ 
+     return [];
+diff --git a/src/hooks/useHandleFormSubmit.ts b/src/hooks/useHandleFormSubmit.ts
+index 6368652e7315c2040db71f1ca4946517c7b58e81..7318c15c6d89e6d988560ae63f0bf02dfd8d342f 100644
+--- a/src/hooks/useHandleFormSubmit.ts
++++ b/src/hooks/useHandleFormSubmit.ts
+@@ -6,11 +6,13 @@ import { useContext } from "react";
+ interface UseHandleFormSubmitProps<TData, TError> {
+   formId?: FormId;
+   onSubmit?: (data: TData) => SubmitPromise<TError[]> | void;
++  preserveDirty?: boolean;
+ }
+ 
+ function useHandleFormSubmit<TData, TErrors>({
+   formId,
+   onSubmit,
++  preserveDirty = false,
+ }: UseHandleFormSubmitProps<TData, TErrors>) {
+   const { setIsSubmitting, setIsDirty } = useExitFormDialog({
+     formId,
+@@ -24,23 +26,27 @@ function useHandleFormSubmit<TData, TErrors>({
+       messageContext.clearErrorNotifications();
+     }
+ 
+-    const result = onSubmit ? onSubmit(data) : null;
++    try {
++      const result = onSubmit ? onSubmit(data) : null;
+ 
+-    if (!result) {
+-      return [];
+-    }
++      if (!result) {
++        return [];
++      }
+ 
+-    const errors = await result;
++      const errors = await result;
+ 
+-    setIsSubmitting(false);
++      if (errors?.length === 0) {
++        if (!preserveDirty) {
++          setIsDirty(false);
++        }
+ 
+-    if (errors?.length === 0) {
+-      setIsDirty(false);
++        return [];
++      }
+ 
+-      return [];
++      return errors;
++    } finally {
++      setIsSubmitting(false);
+     }
+-
+-    return errors;
+   }
+ 
+   return handleFormSubmit;
+diff --git a/src/orders/components/OrderReturnPage/components/TransactionSubmitCard/RefundShipmentCheckbox.tsx b/src/orders/components/OrderReturnPage/components/TransactionSubmitCard/RefundShipmentCheckbox.tsx
+index 7d4c5c656f47132a44227d55ed3b93af82ca31ec..d3ddbd162e4fd74719f94862ef11d57fb464f305 100644
+--- a/src/orders/components/OrderReturnPage/components/TransactionSubmitCard/RefundShipmentCheckbox.tsx
++++ b/src/orders/components/OrderReturnPage/components/TransactionSubmitCard/RefundShipmentCheckbox.tsx
+@@ -1,8 +1,7 @@
+ import { FormChange } from "@dashboard/hooks/useForm";
+ import { IMoney } from "@dashboard/utils/intl";
+ import { Checkbox, Text } from "@saleor/macaw-ui-next";
+-import { CheckedState } from "@saleor/macaw-ui-next/dist/components/Checkbox/Checkbox";
+-import { useCallback } from "react";
++import { ComponentProps, useCallback } from "react";
+ import { FormattedMessage } from "react-intl";
+ 
+ import { submitCardMessages } from "./messages";
+@@ -23,7 +22,7 @@ const RefundShipmentCheckbox = ({
+   onChange,
+ }: RefundShipmentCheckboxProps) => {
+   const handleRefundShipmentCosts = useCallback(
+-    (checked: CheckedState) => {
++    (checked: Parameters<NonNullable<ComponentProps<typeof Checkbox>["onCheckedChange"]>>[0]) => {
+       onChange({
+         target: {
+           name: "refundShipmentCosts",
+diff --git a/src/siteSettings/components/SiteSettingsPage/SiteSettingsPage.tsx b/src/siteSettings/components/SiteSettingsPage/SiteSettingsPage.tsx
+index bccaf7353c8a183d475864728f13953a38c0adba..164926cec34f5d08cb0527ffd7a540c9facbcd8c 100644
+--- a/src/siteSettings/components/SiteSettingsPage/SiteSettingsPage.tsx
++++ b/src/siteSettings/components/SiteSettingsPage/SiteSettingsPage.tsx
+@@ -2,6 +2,7 @@
+ import { createCountryHandler } from "@dashboard/components/AddressEdit/createCountryHandler";
+ import { TopNav } from "@dashboard/components/AppLayout/TopNav";
+ import { DashboardCard } from "@dashboard/components/Card";
++import { Combobox } from "@dashboard/components/Combobox";
+ import CompanyAddressInput from "@dashboard/components/CompanyAddressInput";
+ import { ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
+ import Form from "@dashboard/components/Form";
+@@ -9,7 +10,11 @@ import { DetailPageLayout } from "@dashboard/components/Layouts";
+ import PageSectionHeader from "@dashboard/components/PageSectionHeader";
+ import { Savebar } from "@dashboard/components/Savebar";
+ import { configurationMenuUrl } from "@dashboard/configuration";
+-import { ShopErrorFragment, SiteSettingsQuery } from "@dashboard/graphql";
++import {
++  PasswordAuthenticationModeEnum,
++  ShopErrorFragment,
++  SiteSettingsQuery,
++} from "@dashboard/graphql";
+ import useAddressValidation from "@dashboard/hooks/useAddressValidation";
+ import { SubmitPromise } from "@dashboard/hooks/useForm";
+ import useNavigator from "@dashboard/hooks/useNavigator";
+@@ -18,7 +23,7 @@ import { commonMessages } from "@dashboard/intl";
+ import createSingleAutocompleteSelectHandler from "@dashboard/utils/handlers/singleAutocompleteSelectChangeHandler";
+ import { mapCountriesToChoices } from "@dashboard/utils/maps";
+ import { Box, Checkbox, Divider, Text } from "@saleor/macaw-ui-next";
+-import { useIntl } from "react-intl";
++import { FormattedMessage, useIntl } from "react-intl";
+ 
+ import SiteCheckoutSettingsCard from "../SiteCheckoutSettingsCard";
+ import { messages } from "./messages";
+@@ -40,6 +45,8 @@ export interface SiteSettingsPageFormData extends SiteSettingsPageAddressFormDat
+   reserveStockDurationAuthenticatedUser: number;
+   limitQuantityPerCheckout: number;
+   emailConfirmation: boolean;
++  passwordAuthenticationMode?: PasswordAuthenticationModeEnum;
++  settingsRevision?: string;
+ }
+ 
+ interface SiteSettingsPageProps {
+@@ -92,10 +99,13 @@ const SiteSettingsPage = (props: SiteSettingsPageProps) => {
+     reserveStockDurationAuthenticatedUser: shop?.reserveStockDurationAuthenticatedUser ?? 0,
+     limitQuantityPerCheckout: shop?.limitQuantityPerCheckout ?? 0,
+     emailConfirmation: shop?.enableAccountConfirmationByEmail ?? false,
++    passwordAuthenticationMode: shop?.passwordAuthenticationMode,
++    settingsRevision: shop?.settingsRevision,
+   };
+ 
+   return (
+     <Form
++      preserveDirty
+       initial={initialForm}
+       onSubmit={data => {
+         const submitFunc = areAddressInputFieldsModified(data) ? handleSubmitWithAddress : onSubmit;
+@@ -125,6 +135,61 @@ const SiteSettingsPage = (props: SiteSettingsPageProps) => {
+             />
+             <DetailPageLayout.Content>
+               <Box gap={2}>
++                <DashboardCard>
++                  <DashboardCard.Content>
++                    <Combobox
++                      name="passwordAuthenticationMode"
++                      disabled={disabled || !shop?.settingsRevision}
++                      fetchOptions={() => undefined}
++                      label={intl.formatMessage({
++                        id: "AeIQzj",
++                        defaultMessage: "Password authentication",
++                      })}
++                      options={[
++                        {
++                          value: PasswordAuthenticationModeEnum.ENABLED,
++                          label: intl.formatMessage({
++                            id: "PW25BX",
++                            defaultMessage: "Customers and staff",
++                          }),
++                        },
++                        {
++                          value: PasswordAuthenticationModeEnum.CUSTOMERS_ONLY,
++                          label: intl.formatMessage({
++                            id: "UxKJWE",
++                            defaultMessage: "Customers only",
++                          }),
++                        },
++                        {
++                          value: PasswordAuthenticationModeEnum.DISABLED,
++                          label: intl.formatMessage({
++                            id: "tthToS",
++                            defaultMessage: "Disabled",
++                          }),
++                        },
++                      ]}
++                      value={{
++                        value: data.passwordAuthenticationMode ?? "",
++                        label: data.passwordAuthenticationMode ?? "",
++                      }}
++                      onChange={change}
++                    />
++                    <Text size={2}>
++                      <FormattedMessage
++                        id="tBbnO2"
++                        defaultMessage="This setting controls password sign-in, password reset and password changes. Restricting staff sign-in also invalidates existing password sessions. Configure and verify an external sign-in method before disabling staff passwords."
++                      />
++                    </Text>
++                    {errors.length > 0 && (
++                      <Text color="critical1">
++                        <FormattedMessage
++                          id="OiVRZn"
++                          defaultMessage="Settings were not fully saved. If another administrator changed them, reload before trying again. Your edits have been kept."
++                        />
++                      </Text>
++                    )}
++                  </DashboardCard.Content>
++                </DashboardCard>
+                 <Box display="grid" __gridTemplateColumns="1fr 3fr" paddingLeft={6}>
+                   <PageSectionHeader
+                     title={intl.formatMessage(messages.sectionCheckoutTitle)}
+diff --git a/src/siteSettings/mutations.ts b/src/siteSettings/mutations.ts
+index e91eac2649bd20c9e9c6ba064ed9c7478c58e5d3..4d7ffa6e2f31849f5c9c0de4d20b10c52cf0c100 100644
+--- a/src/siteSettings/mutations.ts
++++ b/src/siteSettings/mutations.ts
+@@ -8,6 +8,8 @@ export const shopSettingsUpdate = gql`
+       }
+       shop {
+         ...Shop
++        passwordAuthenticationMode
++        settingsRevision
+       }
+     }
+     shopAddressUpdate(input: $addressInput) {
+diff --git a/src/siteSettings/queries.ts b/src/siteSettings/queries.ts
+index 67ca2255c483e7b156de50bec9cd26bb42b8005c..aa530d26accae297579c150c4d49086fd6c218d1 100644
+--- a/src/siteSettings/queries.ts
++++ b/src/siteSettings/queries.ts
+@@ -4,6 +4,8 @@ export const siteSettings = gql`
+   query SiteSettings {
+     shop {
+       ...Shop
++      passwordAuthenticationMode
++      settingsRevision
+     }
+   }
+ `;
+diff --git a/src/siteSettings/views/index.tsx b/src/siteSettings/views/index.tsx
+index 3439259556c7db6a438ce3407c9b401e9e8ac6eb..4ef2ae12e9217c85588ec0617a3475d6348cfaae 100644
+--- a/src/siteSettings/views/index.tsx
++++ b/src/siteSettings/views/index.tsx
+@@ -1,14 +1,19 @@
+ import { WindowTitle } from "@dashboard/components/WindowTitle";
+ import {
+   CountryCode,
++  ShopErrorCode,
++  ShopErrorFragment,
+   useShopSettingsUpdateMutation,
+   useSiteSettingsQuery,
+ } from "@dashboard/graphql";
+ import useNotifier from "@dashboard/hooks/useNotifier";
++import { getDefaultNotifierSuccessErrorData } from "@dashboard/hooks/useNotifier/utils";
+ import { commonMessages, sectionNames } from "@dashboard/intl";
++import { getConfigurationMutationErrors } from "@dashboard/utils/configurationMutation";
++import { useState } from "react";
+ import { useIntl } from "react-intl";
+ 
+-import { extractMutationErrors, findInEnum } from "../../misc";
++import { findInEnum } from "../../misc";
+ import SiteSettingsPage, {
+   areAddressInputFieldsModified,
+   SiteSettingsPageFormData,
+@@ -20,23 +25,8 @@ const SiteSettings = () => {
+   const siteSettings = useSiteSettingsQuery({
+     displayLoader: true,
+   });
+-  const [updateShopSettings, updateShopSettingsOpts] = useShopSettingsUpdateMutation({
+-    onCompleted: data => {
+-      if (
+-        [...(data?.shopAddressUpdate?.errors || []), ...(data?.shopSettingsUpdate?.errors || [])]
+-          .length === 0
+-      ) {
+-        notify({
+-          status: "success",
+-          text: intl.formatMessage(commonMessages.savedChanges),
+-        });
+-      }
+-    },
+-  });
+-  const errors = [
+-    ...(updateShopSettingsOpts.data?.shopSettingsUpdate?.errors || []),
+-    ...(updateShopSettingsOpts.data?.shopAddressUpdate?.errors || []),
+-  ];
++  const [updateShopSettings, updateShopSettingsOpts] = useShopSettingsUpdateMutation();
++  const [errors, setErrors] = useState<ShopErrorFragment[]>([]);
+   const loading = siteSettings.loading || updateShopSettingsOpts.loading;
+   const handleUpdateShopSettings = async (data: SiteSettingsPageFormData) => {
+     const addressInput = areAddressInputFieldsModified(data)
+@@ -54,11 +44,21 @@ const SiteSettings = () => {
+           companyName: data.companyName,
+         };
+ 
+-    return extractMutationErrors(
+-      updateShopSettings({
++    const fallback: ShopErrorFragment = {
++      __typename: "ShopError",
++      code: ShopErrorCode.GRAPHQL_ERROR,
++      field: null,
++      message: intl.formatMessage(commonMessages.somethingWentWrong),
++    };
++    let errors: ShopErrorFragment[];
++
++    try {
++      const result = await updateShopSettings({
+         variables: {
+           addressInput,
+           shopSettingsInput: {
++            passwordAuthenticationMode: data.passwordAuthenticationMode,
++            expectedSettingsRevision: data.settingsRevision,
+             description: data.description,
+             reserveStockDurationAnonymousUser: data.reserveStockDurationAnonymousUser || null,
+             reserveStockDurationAuthenticatedUser:
+@@ -67,8 +67,30 @@ const SiteSettings = () => {
+             limitQuantityPerCheckout: data.limitQuantityPerCheckout || null,
+           },
+         },
+-      }),
+-    );
++      });
++
++      errors = getConfigurationMutationErrors(
++        result,
++        [
++          result.data?.shopSettingsUpdate && {
++            errors: result.data.shopSettingsUpdate.errors,
++            resource: result.data.shopSettingsUpdate.shop,
++          },
++          result.data?.shopAddressUpdate && {
++            errors: result.data.shopAddressUpdate.errors,
++            resource: result.data.shopAddressUpdate.shop,
++          },
++        ],
++        fallback,
++      );
++    } catch {
++      errors = [fallback];
++    }
++
++    setErrors(errors);
++    notify(getDefaultNotifierSuccessErrorData(errors, intl));
++
++    return errors;
+   };
+ 
+   return (
+diff --git a/src/utils/configurationMutation.ts b/src/utils/configurationMutation.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..740409f3699b08a516c38584294168776515cda2
+--- /dev/null
++++ b/src/utils/configurationMutation.ts
+@@ -0,0 +1,24 @@
++import { FetchResult } from "@apollo/client";
++
++type ConfigurationPayload<TError> = {
++  errors: readonly TError[];
++  resource: unknown;
++};
++
++export function getConfigurationMutationErrors<TError>(
++  result: Pick<FetchResult, "errors">,
++  payloads: ReadonlyArray<ConfigurationPayload<TError> | null | undefined>,
++  fallback: TError,
++): TError[] {
++  const errors = payloads.flatMap(payload => payload?.errors ?? []);
++  const invalidResult =
++    result.errors?.length ||
++    payloads.length === 0 ||
++    payloads.some(payload => !payload || !Array.isArray(payload.errors) || !payload.resource);
++
++  if (invalidResult && errors.length === 0) {
++    return [fallback];
++  }
++
++  return errors;
++}
+diff --git a/src/utils/errors/channels.ts b/src/utils/errors/channels.ts
+index 21353d826152ddaf90fe1e7162ffc23f91e215eb..12d5cb33e998952e418468df1e40a8e903a8541b 100644
+--- a/src/utils/errors/channels.ts
++++ b/src/utils/errors/channels.ts
+@@ -24,6 +24,12 @@ function getChannelsErrorMessage(
+ ): string | undefined {
+   if (err) {
+     switch (err.code) {
++      case ChannelErrorCode.CONFLICT:
++        return intl.formatMessage({
++          id: "JrKKd4",
++          defaultMessage:
++            "This channel was changed by another administrator. Your edits have been kept. Reload the latest settings before trying again.",
++        });
+       case ChannelErrorCode.ALREADY_EXISTS:
+         return intl.formatMessage(messages.channelAlreadyExist);
+       case ChannelErrorCode.UNIQUE:
+diff --git a/tsconfig.json b/tsconfig.json
+index 8232d41d1ee08e1132c1ed87c699823b8b62fb4a..222a05f79af64b71463ea23d42d392628879d6a2 100644
+--- a/tsconfig.json
++++ b/tsconfig.json
+@@ -9,7 +9,7 @@
+     "sourceMap": true,
+     "target": "ES2020",
+     "module": "es2020",
+-    "moduleResolution": "node",
++    "moduleResolution": "bundler",
+     "downlevelIteration": true,
+     "strict": false,
+     "resolveJsonModule": true,
+@@ -19,11 +19,20 @@
+       }
+     ],
+     "paths": {
++      "dotenv": ["node_modules/dotenv/types/index.d.ts"],
++      "@glideapps/glide-data-grid-cells": [
++        "node_modules/@glideapps/glide-data-grid-cells/dist/ts/index.d.ts"
++      ],
+       "@assets/*": ["assets/*"],
+       "@locale/*": ["locale/*"],
+       "@dashboard/*": ["src/*"],
+       "@test/*": ["testUtils/*"]
+     }
+   },
++  "ts-node": {
++    "compilerOptions": {
++      "moduleResolution": "node"
++    }
++  },
+   "exclude": ["node_modules", "playwright"]
+ }

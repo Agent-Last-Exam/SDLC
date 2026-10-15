@@ -12,6 +12,4 @@ execution:
   max_assignments: 64
   max_revisions_per_stage: 8
   max_actions_per_turn: 12
-  # Spend ceiling for the whole run, checked after every Lead turn.
-  max_cost_usd: 50.0
 # 共享 stages 是工作类别与交付契约；此模式不把它解释为固定游标。

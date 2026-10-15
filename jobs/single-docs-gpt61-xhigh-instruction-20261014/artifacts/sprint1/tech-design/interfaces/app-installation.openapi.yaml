@@ -1,0 +1,115 @@
+openapi: 3.1.0
+info:
+  title: App manifest 获取与可选安装 token 交接（I16）
+  version: 1.0.0
+  description: >-
+    App 提供端点，Core 通过现行 HTTPClient 访问；路径为示例，实际由 manifestUrl 与 tokenTargetUrl 决定。
+    manifest HTTP GET 适用于新安装与显式 appUpdate(manifestUrl) 升级。JSON Schema 描述规范化后的当前字段；
+    历史 mount/target/options 先受约束映射，双组冲突拒绝。安装 token 交接仅在配置且确需时进行，
+    缺省 tokenTargetUrl 不创建/投递长期 token。升级不轮换或返回安装 token。
+servers:
+  - url: https://app.example.invalid
+paths:
+  /manifest.json:
+    get:
+      operationId: fetchAppManifest
+      summary: 获取完整 App manifest
+      security: []
+      description: >-
+        请求不发送商店 JWT、App bearer 或安装 token。Core 不跟随重定向，继续现有 SSRF、URL 与超时限制。
+        收到 JSON 后先规范化，再应用完整 schema、URL/target/settings、权限子集、标识唯一性、
+        requiredSaleorVersion 和 subscriptionQuery 校验；HTTP 200 不是安装/升级成功。
+      parameters:
+        - in: header
+          name: Saleor-Schema-Version
+          required: true
+          schema: {type: string, minLength: 1}
+          description: 当前运行 Core 的 schema 版本，沿给定 Base 请求头
+      responses:
+        '200':
+          description: 完整 manifest；没有 tokenTargetUrl 是合法可选项缺省
+          content:
+            application/json:
+              schema:
+                $ref: './app-manifest.schema.json'
+        '400':
+          description: App 拒绝请求；Core 返回脱敏的 manifest 获取错误
+        '404':
+          description: manifestUrl 指向不存在资源，不当成空 manifest
+        '503':
+          description: App 暂不可用；安装任务/更新报告失败，已有配置不变
+  /register:
+    post:
+      operationId: acceptInstallationToken
+      summary: 接收仅属于该配置目标的安装 token
+      security: []
+      description: >-
+        仅新安装且 tokenTargetUrl 已配置并确需交接时调用，沿现行 POST JSON 合同。
+        tokenTargetUrl 与允许的 App 来源由 Core 校验，生产使用 HTTPS，不重定向。
+        以下域/版本头是上下文而非可独立信任的鉴权凭据，接收方不得依据任意调用者伪造头接管 App。
+        不向 Dashboard 响应返回该 token，不记录请求体/敏感错误。未确认的交接导致安装 Job 失败；
+        清理本次未成功安装的 token，不删除任何先前已安装 App。
+      parameters:
+        - in: header
+          name: Saleor-Domain
+          required: true
+          schema: {type: string, minLength: 1}
+        - in: header
+          name: Saleor-Api-Url
+          required: true
+          schema: {type: string, format: uri}
+        - in: header
+          name: Saleor-Schema-Version
+          required: true
+          schema: {type: string, minLength: 1}
+        - in: header
+          name: X-Saleor-Domain
+          required: false
+          schema: {type: string}
+          description: 沿现行兼容头，值与 Saleor-Domain 一致
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [auth_token]
+              properties:
+                auth_token:
+                  type: string
+                  minLength: 1
+                  writeOnly: true
+                  description: 本次安装的受限 App token，敏感值不得写入日志或浏览器持久化
+      responses:
+        '200':
+          description: token 交接确认；不等于目录加载或 Dashboard 保存完成
+          content:
+            application/json:
+              schema: {type: object, additionalProperties: true}
+        '204':
+          description: 无响应体的合法交接确认
+        '400':
+          description: App 拒绝非法安装信息；Core 脱敏后映射为安装失败
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ErrorResponse'}
+        '401':
+          description: 接收方拒绝当前交接，不能改用另一个高权限 token 重试
+        '503':
+          description: 接收方暂不可用；沿现行有界任务重试，无 token 泄露
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [error]
+      additionalProperties: true
+      properties:
+        error:
+          type: object
+          required: [message]
+          additionalProperties: true
+          properties:
+            message:
+              type: string
+              description: 兼容现行 error.message；Core 不直接展示可能含 secret 的接收方原文

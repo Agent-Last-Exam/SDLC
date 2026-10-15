@@ -9,7 +9,7 @@ import re
 from typing import Any
 
 
-ROOTS = {"candidate", "public", "base", "templates", "private"}
+ROOTS = {"candidate", "inputs", "public", "base", "templates", "private"}
 AGGREGATIONS = {"min_group_pass_rate", "weighted_pass_rate", "all_pass"}
 
 

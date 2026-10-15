@@ -10,7 +10,7 @@ from unittest.mock import patch
 from runtime.prepare_workflow import CONTRACT, DEFAULTS, HERE, compile_workflow
 
 PRUNED = HERE / 'tasks/saleor-3.23-pruned'
-from runtime.workflow_controller import Controller, stage_routing
+from runtime.workflow_controller import Controller, stage_routing, digest
 from runtime.workflow_smoke import SmokeBackend, write_stage_fixture
 from runtime.local_deployment import validate_manifest
 from runtime.workspace_snapshot import inventory
@@ -104,6 +104,24 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
         controller = Controller(self.config, self.workspace, self.root / 'control', backend)
         return await controller.run(), backend
 
+    async def test_document_checkpoint_continues_only_qa_on_original_session(self):
+        self.config['stages'] = self.config['stages'][:3]
+        backend = LifecycleBackend(self.workspace)
+        controller = Controller(self.config, self.workspace, self.root / 'control', backend,
+                                stop_after_stage='sprint1/test-design')
+        for stage in self.config['stages'][:2]:
+            directory = controller.directory / 'accepted' / stage['stage_id']
+            write_stage_fixture(directory, stage, self.workspace, 'pass')
+            hashes = {str(p.relative_to(directory)): digest(p) for p in directory.rglob('*') if p.is_file()}
+            controller.freeze_baseline(stage, hashes)
+            controller.state['stages'].append({'id': stage['stage_id'], 'role': stage['role'], 'status': 'accepted', 'outputs': hashes})
+        controller.accepted_prd = controller.directory / 'accepted/sprint1/prd/prd.md'
+        controller.state.update(cursor=2, principal_session='single-native-session')
+        state = await controller.run()
+        self.assertEqual([call[0] for call in backend.calls], ['sprint1/test-design'])
+        self.assertEqual(backend.calls[0][1], 'single-native-session')
+        self.assertEqual(state['status'], 'stopped_at_boundary')
+
     async def test_container_smoke_copies_repository_fixture_inside_container(self):
         class Result:
             return_code = 0
@@ -151,25 +169,26 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
             '/workspace/artifacts/sprint1/tech-design/target-schema.graphql',
         ])
 
-    async def test_cost_budget_stops_before_the_next_stage(self):
-        config = copy.deepcopy(self.config)
-        config['run']['execution']['max_cost_usd'] = 1.0
-        # Each Stage reports 0.6; the second crosses the ceiling.
-        backend = LifecycleBackend(self.workspace, stage_cost=0.6)
-        state = await Controller(
-            config, self.workspace, self.root / 'cost', backend
-        ).run()
-        self.assertEqual(state['status'], 'budget_exhausted')
-        self.assertFalse(state['delivery_complete'])
-        self.assertEqual(state['cost_usd'], 1.2)
-        # Two Stages ran and both kept their accepted outputs.
-        self.assertEqual(len(state['stages']), 2)
-        self.assertTrue(all(s['status'] == 'accepted' for s in state['stages']))
-        self.assertEqual(state['cursor'], 2)
+    async def test_reported_cost_does_not_stop_single_or_flat(self):
+        for mode in ('single', 'flat'):
+            with self.subTest(mode=mode):
+                config = copy.deepcopy(self.config)
+                config['mode'] = mode
+                config['run']['mode'] = mode
+                backend = LifecycleBackend(
+                    self.workspace, stage_cost=60.0, new_session_per_call=(mode == 'flat')
+                )
+                state = await Controller(
+                    config, self.workspace, self.root / ('cost-' + mode), backend
+                ).run()
+                self.assertEqual(state['status'], 'complete')
+                self.assertTrue(state['delivery_complete'])
+                self.assertGreater(state['cost_usd'], 50.0)
+                self.assertEqual(state['cost_usd'], 60.0 * len(state['stages']))
+                self.assertTrue(all(s['status'] == 'accepted' for s in state['stages']))
+                self.assertNotIn('max_cost_usd', state)
 
     async def test_run_without_reported_cost_is_not_charged(self):
-        config = copy.deepcopy(self.config)
-        config['run']['execution']['max_cost_usd'] = 0.01
         state, _ = await self.run_case(scenario='pass')
         self.assertEqual(state['cost_usd'], 0.0)
         self.assertEqual(state['status'], 'complete')
@@ -248,6 +267,10 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
         self.assertFalse((accepted / 'sprint2/test-design').exists())
         case_ref = 'artifact:sprint1/test-design/test_cases'
         first_hash = state['stages'][5]['input_sha256'][case_ref]
+        for index in (3, 8):
+            self.assertEqual(first_hash, state['stages'][index]['input_sha256'][case_ref])
+            self.assertIn('/workspace/artifacts/sprint1/test-design/test-cases.v1.csv',
+                          backend.calls[index][2])
         self.assertEqual(first_hash, state['stages'][-1]['input_sha256'][case_ref])
         self.assertIn('/workspace/artifacts/sprint1/test-design/test-cases.v1.csv', backend.calls[-1][2])
 

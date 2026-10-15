@@ -42,6 +42,7 @@ class TaskFixture(unittest.TestCase):
         self.task = self.root / "frozen"
         (self.task / "env").mkdir(parents=True)
         (self.task / "instruction.md").write_text("Business need\n")
+        (self.task / "business-conversations.md").write_text("Business decisions\n")
         (self.task / "task.toml").write_text(TASK_TOML)
         (self.task / "env/manifest.json").write_text(json.dumps({"repositories": {
             "saleor": {"agent_baseline_commit": "c" * 40},
@@ -62,6 +63,90 @@ class TaskFixture(unittest.TestCase):
         )
 
 class ModeProfileTests(TaskFixture):
+    def test_document_only_preserves_subagent_policy(self):
+        import contextlib
+        import io
+        from unittest.mock import patch
+        from runtime import run_workflow
+
+        for mode, enabled in ((m, e) for m in ("single", "flat") for e in (True, False)):
+            with self.subTest(mode=mode, enabled=enabled):
+                compiled = self.compile(mode)
+                compiled["run"]["execution"]["subagents"]["enabled"] = enabled
+                name = f"document-only-{mode}-{enabled}"
+                args = ["run_workflow", "--task", str(self.task), "--mode", mode, "--document-only",
+                        "--prepare-only", "--job-name", name]
+                with patch.object(run_workflow, "HERE", self.root), \
+                        patch.object(run_workflow, "compile_workflow", return_value=compiled), \
+                        patch("sys.argv", args), contextlib.redirect_stdout(io.StringIO()):
+                    self.assertEqual(run_workflow.main(), 0)
+                prepared = self.root / ".prepared" / name
+                resolved = json.loads((prepared / "resolved-workflow.json").read_text())
+                self.assertEqual(resolved["run"]["execution"]["subagents"]["enabled"], enabled)
+                self.assertEqual([s["role"] for s in resolved["stages"]],
+                                 ["pm", "architect", "qa-design"])
+                recipe = json.loads((prepared / "job.json").read_text())
+                self.assertEqual(recipe["agents"][0]["kwargs"]["stop_after_stage"],
+                                 "sprint1/test-design")
+                self.assertEqual(recipe["agents"][0]["kwargs"]["stage_timeout_sec"], 14400)
+                self.assertGreater(recipe["agents"][0]["override_timeout_sec"], 3 * 14400)
+
+    def test_resume_recipe_preserves_checkpoint_and_selected_policy(self):
+        import contextlib
+        import io
+        from unittest.mock import patch
+        from runtime import run_workflow
+
+        source = self.root / "trial"
+        args = ["run_workflow", "--task", str(self.task), "--mode", "flat", "--prepare-only",
+                "--resume-from", str(source), "--stop-after-stage", "sprint1/development",
+                "--job-name", "resume-recipe", "--model", "selected"]
+        with patch.object(run_workflow, "HERE", self.root), \
+                patch.object(run_workflow, "compile_workflow", return_value=self.compile("flat")), \
+                patch("runtime.workflow_checkpoint.validate_checkpoint", return_value={"cursor": 3}), \
+                patch("sys.argv", args), contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(run_workflow.main(), 0)
+        recipe = json.loads((self.root / ".prepared/resume-recipe/job.json").read_text())
+        agent = recipe["agents"][0]
+        self.assertEqual(agent["kwargs"]["resume_from"], str(source))
+        self.assertEqual(agent["kwargs"]["stop_after_stage"], "sprint1/development")
+        self.assertLess(agent["override_timeout_sec"], 2 * 14400)
+
+    def test_single_flat_prepared_timeout_covers_all_stage_budgets(self):
+        import tomllib
+        from runtime.workflow_timeouts import DEFAULT_STAGE_TIMEOUT_SEC
+
+        for mode in ("single", "flat"):
+            compiled = self.compile(mode)
+            task = tomllib.loads(compiled["harbor_generated"]["task.toml"])
+            self.assertEqual(DEFAULT_STAGE_TIMEOUT_SEC, 14400)
+            self.assertGreater(task["agent"]["timeout_sec"], len(compiled["stages"]) * 14400)
+
+    def test_custom_stage_timeout_and_explicit_total_in_recipe(self):
+        import contextlib
+        import io
+        from unittest.mock import patch
+        from runtime import run_workflow
+
+        for total in (None, 3600):
+            name = f"stage-timeout-{total}"
+            args = ["run_workflow", "--task", str(self.task), "--mode", "flat",
+                    "--prepare-only", "--job-name", name, "--stage-timeout-sec", "18000",
+                    "--stop-after-stage", "sprint1/development"]
+            if total is not None:
+                args.extend(["--max-runtime-sec", str(total)])
+            with patch.object(run_workflow, "HERE", self.root), \
+                    patch.object(run_workflow, "compile_workflow", return_value=self.compile("flat")), \
+                    patch("sys.argv", args), contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(run_workflow.main(), 0)
+            recipe = json.loads((self.root / ".prepared" / name / "job.json").read_text())
+            agent = recipe["agents"][0]
+            self.assertEqual(agent["kwargs"]["stage_timeout_sec"], 18000)
+            if total is None:
+                self.assertGreater(agent["override_timeout_sec"], 4 * 18000)
+            else:
+                self.assertEqual(agent["override_timeout_sec"], total + 600)
+
     def test_each_mode_loads_its_own_runtime_profile(self):
         for mode in MODES:
             with self.subTest(mode=mode):
@@ -87,7 +172,7 @@ class ModeProfileTests(TaskFixture):
                     set(profile),
                     {"schema_version", "kind", "mode", "contract", "agent", "execution"},
                 )
-                expected = {"max_cost_usd"} | (
+                expected = (
                     set(HIERARCHICAL_BUDGETS)
                     if mode == "hierarchical" else {"subagents"}
                 )
@@ -108,10 +193,10 @@ class ModeProfileTests(TaskFixture):
             with self.subTest(mode=mode):
                 self.assertTrue(self.compile(mode)["run"]["execution"]["subagents"]["enabled"])
 
-    def test_every_mode_declares_a_cost_budget(self):
+    def test_no_mode_declares_a_cost_budget(self):
         for mode in MODES:
             with self.subTest(mode=mode):
-                self.assertGreater(self.compile(mode)["run"]["execution"]["max_cost_usd"], 0)
+                self.assertNotIn("max_cost_usd", self.compile(mode)["run"]["execution"])
 
     def test_hierarchical_budgets_are_positive_and_consistent(self):
         execution = self.compile("hierarchical")["run"]["execution"]
@@ -155,24 +240,13 @@ class ProfileValidationTests(unittest.TestCase):
             with self.subTest(change=change), self.assertRaisesRegex(ValueError, message):
                 validate_run(self.profile("flat", **change), resolve_mode("flat"))
 
-    def test_cost_budget_must_be_a_positive_number(self):
+    def test_removed_cost_budget_field_is_rejected(self):
         for mode in MODES:
-            for value in (0, -1.0, "fifty", None, True):
-                with self.subTest(mode=mode, value=value), \
-                        self.assertRaisesRegex(ValueError, "max_cost_usd"):
-                    validate_run(
-                        self.profile(mode, execution={"max_cost_usd": value}),
-                        resolve_mode(mode),
-                    )
-
-    def test_cost_budget_accepts_int_and_float(self):
-        for value in (25, 12.5):
-            with self.subTest(value=value):
-                run = validate_run(
-                    self.profile("flat", execution={"max_cost_usd": value}),
-                    resolve_mode("flat"),
+            with self.subTest(mode=mode), self.assertRaisesRegex(ValueError, "execution fields"):
+                validate_run(
+                    self.profile(mode, execution={"max_cost_usd": 50.0}),
+                    resolve_mode(mode),
                 )
-                self.assertEqual(run["execution"]["max_cost_usd"], value)
 
     def test_hierarchical_budgets_must_be_positive_and_consistent(self):
         for change, message in (
@@ -228,7 +302,7 @@ class ContractTests(TaskFixture):
         self.assertEqual(result["workspace_paths"]["input:base_revisions"], "base-revisions.json")
         self.assertEqual(result["workspace_paths"]["input:repos"], "repos")
         prd = result["stages"][0]
-        self.assertEqual(set(prd["inputs"]), {"input:instruction", "input:repos", "template:prd"})
+        self.assertEqual(set(prd["inputs"]), {"input:instruction", "input:business_conversations", "input:repos", "template:prd"})
         self.assertNotIn("private", json.dumps(result, ensure_ascii=False).lower())
 
     def test_inputs_must_be_explicit_and_use_the_runtime_layout(self):
@@ -246,6 +320,30 @@ class ContractTests(TaskFixture):
         }
         with self.assertRaisesRegex(ValueError, "requires exactly"):
             self.compile(inputs=contract["inputs"])
+
+    def test_business_materials_are_required_and_reach_every_stage(self):
+        result = self.compile()
+        for stage in result["stages"]:
+            self.assertEqual(stage["inputs"]["input:business_conversations"],
+                             "/workspace/business-conversations.md")
+        destination = self.root / "prepared-business"
+        prepare(result, destination)
+        self.assertEqual((destination / "workspace/business-conversations.md").read_text(),
+                         "Business decisions\n")
+        manifest = json.loads((destination / "input-manifest.json").read_text())
+        self.assertIn("business-conversations.md", manifest)
+        (self.task / "business-conversations.md").unlink()
+        with self.assertRaisesRegex(ValueError, "Missing inputs:business_conversations"):
+            self.compile()
+
+    def test_empty_business_input_and_stage_omission_are_rejected(self):
+        contract = read_yaml(CONTRACT)
+        contract["stages"][0]["inputs"].remove("input:business_conversations")
+        with self.assertRaisesRegex(ValueError, "must include both business inputs"):
+            self.compile(stages=contract["stages"])
+        (self.task / "business-conversations.md").write_text(" \n")
+        with self.assertRaisesRegex(ValueError, "must not be empty"):
+            self.compile()
 
     def test_future_or_missing_artifact_is_rejected(self):
         contract = read_yaml(CONTRACT)
