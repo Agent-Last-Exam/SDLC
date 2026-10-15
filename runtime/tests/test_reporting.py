@@ -92,6 +92,28 @@ class ReportingTests(unittest.TestCase):
         write_index(self.job.parent)
         self.assertTrue((self.job.parent / "README.md").read_text().startswith(MARKER))
 
+    def test_regenerated_index_keeps_checks_and_readme_only_archives_accessible(self):
+        jobs = self.job.parent
+        checks = jobs / "checks"
+        checks.mkdir()
+        (checks / "README.md").write_text("Historical verification")
+        (checks / "verification.json").write_text("{}")
+        archive = jobs / "archived-run"
+        archive.mkdir()
+        (archive / "README.md").write_text("Archived rollout")
+        write_report(self.job)
+        write_index(jobs)
+        first = (jobs / "README.md").read_text()
+        write_index(jobs)
+        text = (jobs / "README.md").read_text()
+        self.assertEqual(first, text)
+        self.assertIn("checks/README.md", text)
+        self.assertIn("archived-run/README.md", text)
+        self.assertIn("run/report.md", text)
+        self.assertNotIn("checks/report.md", text)
+        self.assertNotIn("archived-run/report.md", text)
+        self.assertEqual("{}", (checks / "verification.json").read_text())
+
     def test_missing_trial_is_incomplete(self):
         (self.trial / "workflow").rmdir()
         (self.trial).rmdir()

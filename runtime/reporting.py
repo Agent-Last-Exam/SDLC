@@ -238,8 +238,17 @@ def write_report(job):
 
 def write_index(jobs):
     jobs = Path(jobs).resolve()
-    lines = ["# Rollout 记录索引", "", "先读每个 job 的 report.md，再按链接查看状态、原生日志和已接受产物。历史失败记录保留。", "",
-             "| Job / 报告 | 类型 | 状态 |", "| --- | --- | --- |"]
+    lines = ["# Rollout 记录索引", "", "先读每个 job 的 report.md，再按链接查看状态、原生日志和已接受产物。历史失败记录保留。", ""]
+    if (jobs / "checks/README.md").exists():
+        lines += ["阶段性验收记录与历史摘要见 [checks/](checks/README.md)。", ""]
+    archives = sorted(p for p in jobs.iterdir()
+                      if p.is_dir() and p.name != "checks"
+                      and (p / "README.md").exists() and not (p / "report.md").exists())
+    if archives:
+        lines += ["已归档运行：", ""]
+        lines += [f"- {link(p.name, p / 'README.md', jobs)}" for p in archives]
+        lines.append("")
+    lines += ["| Job / 报告 | 类型 | 状态 |", "| --- | --- | --- |"]
     for job in sorted(jobs.iterdir(), reverse=True):
         if not job.is_dir() or not (job / "report.md").exists():
             continue

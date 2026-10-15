@@ -73,6 +73,6 @@ python -m unittest discover -s runtime/tests -t . -v
 
 Flat/Hierarchical 只保留同一 lifecycle 契约的声明配置，执行入口明确拒绝。当前不支持断点续跑；失败后保留原运行记录，新建 job。
 
-移除内容门禁前的版本做过无模型单元测试和 SYNTHETIC 容器联调，历史记录见 [验收记录](../reports/checks/single-agent-baseline-verification.json)。尚未进行真实模型的完整 Saleor 开发、部署与 QA rollout。当前 QA 分支只读取 Agent 提交的 verdict，未接入独立业务 verifier。
+移除内容门禁前的版本做过无模型单元测试和 SYNTHETIC 容器联调，历史记录见 [验收记录](../jobs/checks/single-agent-baseline-verification.json)。尚未进行真实模型的完整 Saleor 开发、部署与 QA rollout。当前 QA 分支只读取 Agent 提交的 verdict，未接入独立业务 verifier。
 
-移除内容门禁前，真实模型文档阶段验证已完成：PRD、技术设计与测试设计均被接受，130 条用例引用覆盖 96 条验收条件，基线摘要一致。该次运行按用户要求在开发前停止；原始 failed 状态来自主动停止拦截，不代表文档验收失败。见 [真实文档验证记录](../reports/checks/single-agent-real-docs-verification.json)。
+移除内容门禁前，真实模型文档阶段验证已完成：PRD、技术设计与测试设计均被接受，130 条用例引用覆盖 96 条验收条件，基线摘要一致。该次运行按用户要求在开发前停止；原始 failed 状态来自主动停止拦截，不代表文档验收失败。见 [真实文档验证记录](../jobs/checks/single-agent-real-docs-verification.json)。
