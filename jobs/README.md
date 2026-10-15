@@ -4,6 +4,14 @@
 
 先读每个 job 的 report.md，再按链接查看状态、原生日志和已接受产物。历史失败记录保留。
 
+阶段性验收记录与历史摘要见 [checks/](checks/README.md)。
+
+已归档运行：
+
+- [saleor-deepseek41-high-coding-attempts-20261015](saleor-deepseek41-high-coding-attempts-20261015/README.md)
+- [saleor-flat-deepseek41-high-docs-20261014](saleor-flat-deepseek41-high-docs-20261014/README.md)
+- [saleor-flat-gpt61-xhigh-20261015](saleor-flat-gpt61-xhigh-20261015/README.md)
+
 | Job / 报告 | 类型 | 状态 |
 | --- | --- | --- |
 | [standard-test-design-rollout-20260920](<standard-test-design-rollout-20260920/report.md>) | Workflow rollout（真实模型） | stopped_at_boundary |

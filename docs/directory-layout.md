@@ -21,7 +21,7 @@
 
 所有公开资源位置经运行器显式解析；Agent 容器内的 `/workspace` 路径、输入输出契约不变。README 和可执行 YAML 引用已更新。
 
-验收：完整单元测试、三个模式配置解析、旧入口的无执行参数检查、新目录下 Single 无模型容器联调、自动 report 和文档本地链接检查。具体结果见 [目录整理验收](../reports/checks/layout-verification.json)。
+验收：完整单元测试、三个模式配置解析、旧入口的无执行参数检查、新目录下 Single 无模型容器联调、自动 report 和文档本地链接检查。具体结果见 [目录整理验收](../jobs/checks/layout-verification.json)。
 
 ## 后续修正：按 task 闭环
 
@@ -36,14 +36,18 @@
 
 现在由 --task/--mode 选择任务；任务配置和 Dockerfile 也冻结后使用。旧 jobs/ 与 .prepared/ 不改写。两个用户优化后的角色 SP 按字节保留，容器路径不变。入口与配置导航见 [task README](../tasks/standard/README.md)。
 
-本次 task 归属修正验证见 [task-ownership-verification.json](../reports/checks/task-ownership-verification.json)：37 项测试、三模式解析、迁移 task 独立准备、SP 原文与冻结字节核对、旧入口参数检查及 Single 无模型容器联调通过。
+本次 task 归属修正验证见 [task-ownership-verification.json](../jobs/checks/task-ownership-verification.json)：37 项测试、三模式解析、迁移 task 独立准备、SP 原文与冻结字节核对、旧入口参数检查及 Single 无模型容器联调通过。
 
 ## 删除旧单轮入口
 
 已删除 harbor_local/legacy/ 和 tasks/standard/legacy/，包括旧启动器、配置、联合 prompt、旧 task.toml、Instruction、Dockerfile 和健康检查。当前唯一启动入口为 `python -m runtime`。上文迁移表及旧验收记录描述当时状态，不代表旧入口仍可使用。
 
-历史 jobs/、.prepared/ 与 reports/checks/ 作为运行证据保留；当前工作流不依赖被删除的文件。
+历史 jobs/、.prepared/ 与 jobs/checks/ 作为运行证据保留；当前工作流不依赖被删除的文件。
 
 ## 仓库根目录布局
 
-`harbor_local/` 的内容已提升至仓库根目录，`runtime/`、`tasks/`、`docs/`、`reports/` 直接位于根目录。使用 `python -m runtime` 启动，模块导入与新 recipe 使用 `runtime.*`。历史验收 JSON 和运行记录保留原始路径。
+`harbor_local/` 的内容已提升至仓库根目录，`runtime/`、`tasks/`、`docs/`、`jobs/` 直接位于根目录。使用 `python -m runtime` 启动，模块导入与新 recipe 使用 `runtime.*`。历史验收 JSON 和运行记录保留原始路径。
+
+## 2026-10-15：验收记录与运行归档并入 jobs
+
+原顶层 `reports/checks/` 整体迁至 `jobs/checks/`，原 `reports/README.md` 的导航合并到 [jobs/checks/README.md](../jobs/checks/README.md)。原 `reports/rollouts/<归档名>/` 迁至 `jobs/<归档名>/`，删除顶层 `reports/`。逐次运行、脱敏归档和历史验收摘要统一从 [jobs 索引](../jobs/README.md) 进入。上方首次迁移表中的 reports 路径为当时位置；原始证据逐字节保留，不改写 job 引用、哈希与结论。
