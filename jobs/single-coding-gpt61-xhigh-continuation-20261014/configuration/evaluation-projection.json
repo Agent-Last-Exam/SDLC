@@ -1,0 +1,59 @@
+{
+  "original_candidate_retained": true,
+  "mode": "candidate production changes with frozen test/fixture baseline plus unchanged frozen test patch",
+  "source_task": "tasks/saleor-3.23-pruned",
+  "profile": "no-browser",
+  "f2p": 5182,
+  "p2p": 15012,
+  "repositories": [
+    {
+      "repository": "saleor",
+      "excluded_candidate_test_and_fixture_paths": [
+        "saleor/app/tests/test_extension_contract.py",
+        "saleor/checkout/tests/test_shipping_snapshot_contract.py",
+        "saleor/core/utils/tests/test_editorjs_contract.py",
+        "saleor/graphql/account/tests/mutations/authentication/test_password_policy_contract.py",
+        "saleor/graphql/channel/tests/mutations/test_sprint1_settings.py",
+        "saleor/graphql/checkout/tests/mutations/test_checkout_shipping_refresh.py",
+        "saleor/graphql/core/tests/test_input_contract.py",
+        "saleor/graphql/meta/tests/mutations/test_update_metadata.py",
+        "saleor/graphql/meta/tests/mutations/test_update_private_metadata.py",
+        "saleor/graphql/order/tests/queries/test_shipping_snapshot_contract.py",
+        "saleor/graphql/product/tests/test_bulk_description_contract.py",
+        "saleor/plugins/openid_connect/tests/conftest.py",
+        "saleor/plugins/openid_connect/tests/test_identity_contract.py",
+        "saleor/plugins/openid_connect/tests/test_ip_filtering.py",
+        "saleor/plugins/openid_connect/tests/test_plugin.py",
+        "saleor/plugins/openid_connect/tests/test_refresh_session.py",
+        "saleor/plugins/openid_connect/tests/test_refresh_session_concurrency.py",
+        "saleor/plugins/openid_connect/tests/test_utils.py",
+        "saleor/plugins/webhook/tests/test_fresh_shipping.py"
+      ],
+      "excluded_count": 19,
+      "frozen_tests_apply_check": true,
+      "evaluation_patch_sha256": "89e17e1b489f62e79d69640c65c26257b008fb37b6903ead757d8cc4565669a3",
+      "production_code_repaired": false
+    },
+    {
+      "repository": "saleor-dashboard",
+      "excluded_candidate_test_and_fixture_paths": [
+        "src/auth/components/LoginPage/LoginPage.test.tsx",
+        "src/auth/components/PasswordPolicyGate.test.tsx",
+        "src/auth/views/Login.test.tsx",
+        "src/auth/views/NewPassword.test.tsx",
+        "src/auth/views/ResetPassword.test.tsx",
+        "src/channels/completionSettings.test.ts",
+        "src/channels/fixtures.ts",
+        "src/channels/views/ChannelDetails/useChannelWarehousesReorder.test.ts",
+        "src/hooks/useForm/configurationEditing.test.tsx",
+        "src/hooks/useHandleFormSubmit.test.ts",
+        "src/siteSettings/fixtures.ts",
+        "src/utils/configurationMutation.test.ts"
+      ],
+      "excluded_count": 12,
+      "frozen_tests_apply_check": true,
+      "evaluation_patch_sha256": "e175ae1dc89d9a04a5d20042735fe416f47b8706c80bfd621ae9ac8995cd693b",
+      "production_code_repaired": false
+    }
+  ]
+}

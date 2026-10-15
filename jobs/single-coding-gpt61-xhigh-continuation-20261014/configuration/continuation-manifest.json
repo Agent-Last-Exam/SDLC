@@ -1,0 +1,23 @@
+{
+  "created_at_epoch": 1791989006.2155027,
+  "source_job": "single-docs-gpt61-xhigh-instruction-20261014",
+  "source_trial": "task__Fq5bK83",
+  "continuation_job": "single-coding-gpt61-xhigh-continuation-20261014",
+  "model": "gpt-6.1-sol",
+  "reasoning_effort": "xhigh",
+  "restored_stages": 3,
+  "boundary": "sprint1/development",
+  "native_session": "1f1deb22-afde-4b2d-81ea-aa0c8ef95902",
+  "runtime_code_sha256": {
+    "runtime/coding_continuation.py": "68054fd31b836bf72a05b00bd55ae295c7aebe5727744a575be5620f0587a3bc",
+    "runtime/workflow_agent.py": "fb9339229176cb0b14f146cc6ae468dad2d7896c41f0befd370bf6865ccfbaa4",
+    "runtime/workflow_controller.py": "40f63ba96225d58995c24b450f4bc29893b6d66e13355414a6d849365f8ffc3e",
+    "runtime/agents.py": "6c5cafba4c691d7423ce22a22027b058e638bdb7e9205afe2d2428e0ad938962",
+    "runtime/request_relay.py": "b8ae508d630bc087ab344e62de1f6779f5fdb96585398ed420b6aa98f3b9d326"
+  },
+  "input_sha256": {
+    "instruction.md": "02fcc6fa0bdb37428d76e0d57e76ddff4eeefd237d11b2016980077ec55f7a73",
+    "business-conversations.md": "6d31106a4aabdc4e9e3342b6d036523e0a1bf6154d25d5c218548e5e33cb689d",
+    "base-revisions.json": "204710945aee5462b4b5547b318ceff0b5a66a3e6754279d00e879b6fe8e95c9"
+  }
+}

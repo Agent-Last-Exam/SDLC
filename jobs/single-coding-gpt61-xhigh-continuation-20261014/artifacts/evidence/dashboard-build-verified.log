@@ -1,0 +1,107 @@
+[log] Enabling service worker...
+[error] [sentry-vite-plugin] Warning: No auth token provided. Will not create release. Please set the `authToken` option. You can find information on how to generate a Sentry auth token here: https://docs.sentry.io/api/auth/
+[error] [sentry-vite-plugin] Warning: No auth token provided. Will not upload source maps. Please set the `authToken` option. You can find information on how to generate a Sentry auth token here: https://docs.sentry.io/api/auth/
+[log] [36mvite v7.3.1 [32mbuilding client environment for production...[36m[39m
+[log] transforming...
+[log] [32m✓[39m 12024 modules transformed.
+[log] rendering chunks...
+[log] computing gzip size...
+[log] [2m../../../scratch/dashboard-build/[22m[32mindex.html                             [39m[1m[2m    1.03 kB[22m[1m[22m[2m │ gzip:     0.55 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mplaceholder255x255-C2mptak3.png        [39m[1m[2m    4.71 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mwhat-D-8U0nQM.svg                      [39m[1m[2m   25.33 kB[22m[1m[22m[2m │ gzip:     4.65 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mlogin-background-Df785rJ6.svg          [39m[1m[2m   25.83 kB[22m[1m[22m[2m │ gzip:     5.00 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mGeist-Thin-BeHGVWDJ.woff2              [39m[1m[2m   40.88 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mGeist-Regular-C6H5Y334.woff2           [39m[1m[2m   41.22 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mGeist-Light-C3vZ2nps.woff2             [39m[1m[2m   41.46 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mGeist-ExtraLight-C6TSGS2X.woff2        [39m[1m[2m   41.48 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mGeist-ThinItalic-DiKf-btW.woff2        [39m[1m[2m   41.53 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mGeist-RegularItalic-CpB5zS_J.woff2     [39m[1m[2m   42.02 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mGeist-SemiBold-C7DNikzb.woff2          [39m[1m[2m   42.03 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mGeist-LightItalic-CpnA7AuN.woff2       [39m[1m[2m   42.10 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mGeist-Medium-t5LLWK2i.woff2            [39m[1m[2m   42.12 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mGeist-Black-DyTs4Xsi.woff2             [39m[1m[2m   42.18 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mGeist-ExtraLightItalic-B4TItSvg.woff2  [39m[1m[2m   42.24 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mGeist-Bold-BOY-3Qy9.woff2              [39m[1m[2m   42.29 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mGeist-ExtraBold-ztj6LZjM.woff2         [39m[1m[2m   42.33 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mGeist-MediumItalic-D20OUGW6.woff2      [39m[1m[2m   42.69 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mGeist-BlackItalic-CPS9l-3s.woff2       [39m[1m[2m   42.72 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mGeist-BoldItalic-C2LhqTrV.woff2        [39m[1m[2m   42.77 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mGeist-ExtraBoldItalic-B0_SaO0z.woff2   [39m[1m[2m   42.83 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mGeist-SemiBoldItalic-BDU_9tED.woff2    [39m[1m[2m   42.89 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mGeistMono-Regular-CKlCN_Ni.woff2       [39m[1m[2m   46.69 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mGeistMono-Medium-BMHJTGGS.woff2        [39m[1m[2m   47.64 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mGeistMono-Bold-DODenC2a.woff2          [39m[1m[2m   47.82 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mGeistMono-Italic-B2JhWEwh.woff2        [39m[1m[2m   49.83 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mGeistMono-MediumItalic-DtebIErz.woff2  [39m[1m[2m   50.88 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mGeistMono-BoldItalic-CuKwRagO.woff2    [39m[1m[2m   51.11 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mGeist_wght_-CAr2Ahuh.woff2             [39m[1m[2m   63.66 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mGeist-Italic_wght_-DIfBowRF.woff2      [39m[1m[2m   65.44 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mGeistMono_wght_-IA3nXNki.woff2         [39m[1m[2m   65.78 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mGeistMono-Italic_wght_-DklGb9iK.woff2  [39m[1m[2m   71.22 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mInter-Regular-CKDp9E3C.woff2           [39m[1m[2m   98.87 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mInter-Thin-CSJ_owlW.woff2              [39m[1m[2m   99.63 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mInter-Black-DgUKMdlB.woff2             [39m[1m[2m  102.87 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mInter-ExtraLight-egkqWonf.woff2        [39m[1m[2m  104.23 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mInter-Light-CdXm_ABL.woff2             [39m[1m[2m  104.33 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mInter-SemiBold-Ctx7G98q.woff2          [39m[1m[2m  105.80 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mInter-Medium-P1cOs5ep.woff2            [39m[1m[2m  105.92 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mInter-ExtraBold-B0QOs-T2.woff2         [39m[1m[2m  106.11 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mInter-Bold-CuhepTt8.woff2              [39m[1m[2m  106.14 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mInter-ThinItalic-B6FKq6qK.woff2        [39m[1m[2m  106.50 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mInter-Italic-_3PMmu0i.woff2            [39m[1m[2m  106.88 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mInter-BlackItalic-ZFcDzO3e.woff2       [39m[1m[2m  108.75 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mInter-LightItalic-COmGGTuG.woff2       [39m[1m[2m  111.33 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mInter-ExtraLightItalic-Bf25KIHs.woff2  [39m[1m[2m  111.39 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mInter-ExtraBoldItalic-OErwaGem.woff2   [39m[1m[2m  111.71 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mInter-BoldItalic-R15IsAnq.woff2        [39m[1m[2m  111.81 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mInter-SemiBoldItalic-BNz1Al2H.woff2    [39m[1m[2m  112.05 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mInter-MediumItalic-DWiIAHvp.woff2      [39m[1m[2m  112.18 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mInter-roman.var-C-r5W2Hj.woff2         [39m[1m[2m  227.18 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[32mInter-italic.var-DhD-tpjY.woff2        [39m[1m[2m  245.04 kB[22m[1m[22m
+[log] [2m../../../scratch/dashboard-build/[22m[35mindex-DRt3nSvx.css                     [39m[1m[2m    3.40 kB[22m[1m[22m[2m │ gzip:     1.34 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[35mvendor-Dew4GZSS.css                    [39m[1m[2m  743.04 kB[22m[1m[22m[2m │ gzip:   310.84 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mzh-Hans-sRTptkb3.js                    [39m[1m[2m  201.27 kB[22m[1m[22m[2m │ gzip:    62.92 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mzh-Hant-DdVLGKDi.js                    [39m[1m[2m  203.21 kB[22m[1m[22m[2m │ gzip:    61.72 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36maz-BRxPrtoN.js                         [39m[1m[2m  204.30 kB[22m[1m[22m[2m │ gzip:    59.25 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mes_CO-DyBC6Vl9.js                      [39m[1m[2m  204.34 kB[22m[1m[22m[2m │ gzip:    59.17 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mda-ByhOQWEa.js                         [39m[1m[2m  204.34 kB[22m[1m[22m[2m │ gzip:    59.70 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36msq-wrYgW1j_.js                         [39m[1m[2m  204.34 kB[22m[1m[22m[2m │ gzip:    59.55 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mid-BTjSswgS.js                         [39m[1m[2m  204.36 kB[22m[1m[22m[2m │ gzip:    60.21 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mis-B65iD44-.js                         [39m[1m[2m  204.40 kB[22m[1m[22m[2m │ gzip:    59.61 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36msv-C3wV-lc4.js                         [39m[1m[2m  204.43 kB[22m[1m[22m[2m │ gzip:    59.72 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mko-Dkur7AXL.js                         [39m[1m[2m  204.44 kB[22m[1m[22m[2m │ gzip:    60.61 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mhi-qqQCs4oy.js                         [39m[1m[2m  204.45 kB[22m[1m[22m[2m │ gzip:    59.21 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mja-DO8l-SY6.js                         [39m[1m[2m  204.46 kB[22m[1m[22m[2m │ gzip:    60.23 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mca-zaS_nyEU.js                         [39m[1m[2m  204.47 kB[22m[1m[22m[2m │ gzip:    59.55 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36met-C7pCkRZa.js                         [39m[1m[2m  204.51 kB[22m[1m[22m[2m │ gzip:    60.04 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mtr-DDbJ_qhS.js                         [39m[1m[2m  204.61 kB[22m[1m[22m[2m │ gzip:    60.53 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36msl-DUBZk5Y3.js                         [39m[1m[2m  204.61 kB[22m[1m[22m[2m │ gzip:    59.63 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mnl-DqCY7oD4.js                         [39m[1m[2m  204.68 kB[22m[1m[22m[2m │ gzip:    59.67 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mbn-CURG7iux.js                         [39m[1m[2m  204.68 kB[22m[1m[22m[2m │ gzip:    59.42 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mhu-CWjKH723.js                         [39m[1m[2m  204.87 kB[22m[1m[22m[2m │ gzip:    60.19 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mpt-BDXvxkLn.js                         [39m[1m[2m  205.07 kB[22m[1m[22m[2m │ gzip:    60.48 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mnb-B-oFJHaZ.js                         [39m[1m[2m  205.09 kB[22m[1m[22m[2m │ gzip:    60.99 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mcs-CZi_2KTs.js                         [39m[1m[2m  205.29 kB[22m[1m[22m[2m │ gzip:    60.73 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mhy-ykYth8QF.js                         [39m[1m[2m  205.67 kB[22m[1m[22m[2m │ gzip:    60.23 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mde-DCoF0e3H.js                         [39m[1m[2m  206.59 kB[22m[1m[22m[2m │ gzip:    61.57 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mit-DY85Cnn7.js                         [39m[1m[2m  206.68 kB[22m[1m[22m[2m │ gzip:    61.55 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mth-52Benrgh.js                         [39m[1m[2m  208.22 kB[22m[1m[22m[2m │ gzip:    60.74 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36msr-t00hYskS.js                         [39m[1m[2m  210.01 kB[22m[1m[22m[2m │ gzip:    62.85 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mar-Bno5rXVk.js                         [39m[1m[2m  210.68 kB[22m[1m[22m[2m │ gzip:    62.59 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mfr-Bj5I9uUK.js                         [39m[1m[2m  210.69 kB[22m[1m[22m[2m │ gzip:    62.55 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mro-I78sSYZi.js                         [39m[1m[2m  211.41 kB[22m[1m[22m[2m │ gzip:    63.08 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mes-DTwXbOKs.js                         [39m[1m[2m  211.41 kB[22m[1m[22m[2m │ gzip:    62.91 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mvi-CCOgxrpp.js                         [39m[1m[2m  212.53 kB[22m[1m[22m[2m │ gzip:    63.31 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mfa-B2JyPxI3.js                         [39m[1m[2m  213.00 kB[22m[1m[22m[2m │ gzip:    63.10 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mpt-BR-CMaNyaM7.js                      [39m[1m[2m  213.45 kB[22m[1m[22m[2m │ gzip:    63.12 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mel-D_9hS0Xs.js                         [39m[1m[2m  224.05 kB[22m[1m[22m[2m │ gzip:    64.91 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mmn-BCJMaoh-.js                         [39m[1m[2m  237.70 kB[22m[1m[22m[2m │ gzip:    65.84 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36muk-CkuBnQdm.js                         [39m[1m[2m  238.21 kB[22m[1m[22m[2m │ gzip:    67.40 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mru-mczpiDaG.js                         [39m[1m[2m  240.20 kB[22m[1m[22m[2m │ gzip:    67.94 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36msk-Bmqc3yV8.js                         [39m[1m[2m  246.83 kB[22m[1m[22m[2m │ gzip:    71.15 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mpl-GSTNsbkW.js                         [39m[1m[2m  262.84 kB[22m[1m[22m[2m │ gzip:    80.87 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mdefaultMessages-C34sq-EU.js            [39m[1m[2m  273.13 kB[22m[1m[22m[2m │ gzip:    78.35 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mbg-BeRcUYr_.js                         [39m[1m[2m  305.63 kB[22m[1m[22m[2m │ gzip:    78.31 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mindex-DZe6xTXc.js                      [39m[1m[33m4,702.16 kB[39m[22m[2m │ gzip:   850.29 kB[22m
+[log] [2m../../../scratch/dashboard-build/[22m[36mvendor-BvioTRte.js                     [39m[1m[33m9,970.75 kB[39m[22m[2m │ gzip: 1,958.10 kB[22m
+[log] [32m✓ built in 42.91s[39m

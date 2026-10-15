@@ -1,0 +1,18 @@
+{
+  "coding_elapsed_minutes": 170.84,
+  "normal_boundary_stop": true,
+  "partial_delivery": true,
+  "model": "gpt-6.1-sol",
+  "effort": "xhigh",
+  "changed_files": 135,
+  "insertions": 6772,
+  "deletions": 943,
+  "counts_include_tests_migrations_schema_generated_files": true,
+  "evaluation_job": "coding-f2p-p2p-gpt61-20261015",
+  "evaluation_status": "started",
+  "f2p": 5182,
+  "p2p": 15012,
+  "profile_excludes_browser_e2e": true,
+  "original_candidate_patches_included": true,
+  "evaluation_uses_canonical_tests_and_fixtures": true
+}

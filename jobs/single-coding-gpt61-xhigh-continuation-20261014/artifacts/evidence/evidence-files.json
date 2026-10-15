@@ -1,0 +1,161 @@
+{
+  "files": [
+    {
+      "file": "backend-handoff-regression.log",
+      "bytes": 10940,
+      "sha256": "db50f2ccf0cb41208c718f30684144362e5eea9a3ac3868cb3ba145515bf5118",
+      "source": "/workspace/scratch/logs/backend-handoff-regression.log"
+    },
+    {
+      "file": "backend-content-entrypoints.log",
+      "bytes": 3129,
+      "sha256": "8623fa20b5a139f0f5b3bc72be0cf9c9afe4b4131b61a0443cfea8fdde3b8842",
+      "source": "/workspace/scratch/logs/backend-content-entrypoints.log"
+    },
+    {
+      "file": "backend-editorjs-compatibility.log",
+      "bytes": 1288,
+      "sha256": "b5bc4a3d38d3a814d214bd2682b3d6676b7493648b7766a10b8a00b7e94fc241",
+      "source": "/workspace/scratch/logs/backend-editorjs-compatibility.log"
+    },
+    {
+      "file": "backend-legacy-editorjs-final.log",
+      "bytes": 33262,
+      "sha256": "e4fda2e2c0f197bca2be43bb11aa9a2b13af690077dd8748a7dbd41c999c7f35",
+      "source": "/workspace/scratch/logs/backend-legacy-editorjs-final.log"
+    },
+    {
+      "file": "backend-handoff-ruff-check.log",
+      "bytes": 19,
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "source": "/workspace/scratch/logs/backend-handoff-ruff-check.log"
+    },
+    {
+      "file": "backend-handoff-ruff-format-check.log",
+      "bytes": 27,
+      "sha256": "0e8875b6c474ca3639d7a7112ea95c546141b46dca674c9c33d3e55821b32afe",
+      "source": "/workspace/scratch/logs/backend-handoff-ruff-format-check.log"
+    },
+    {
+      "file": "backend-handoff-system-check.log",
+      "bytes": 183,
+      "sha256": "8c78caf036fa150bdacb031fb861edc8db350981e3ffaa830da95e207ff67a9e",
+      "source": "/workspace/scratch/logs/backend-handoff-system-check.log"
+    },
+    {
+      "file": "backend-handoff-migration-drift.log",
+      "bytes": 155,
+      "sha256": "d90ef8d7b9088f796c28dbda245f8f8bfd460205d80485079789fee2103c918e",
+      "source": "/workspace/scratch/logs/backend-handoff-migration-drift.log"
+    },
+    {
+      "file": "backend-handoff-migration-check.log",
+      "bytes": 135,
+      "sha256": "f0ae44022b6b71403a16d84218d7af148119a34db741f18b1e69958eea4072b4",
+      "source": "/workspace/scratch/logs/backend-handoff-migration-check.log"
+    },
+    {
+      "file": "backend-empty-db-migrate-psycopg3.log",
+      "bytes": 74961,
+      "sha256": "4318cfec5ac7da2e395441bf8f3869b62d729fe7a591611a750f677c1b69d5db",
+      "source": "/workspace/scratch/logs/backend-empty-db-migrate-psycopg3.log"
+    },
+    {
+      "file": "backend-empty-db-system-check-final.log",
+      "bytes": 183,
+      "sha256": "8c78caf036fa150bdacb031fb861edc8db350981e3ffaa830da95e207ff67a9e",
+      "source": "/workspace/scratch/logs/backend-empty-db-system-check-final.log"
+    },
+    {
+      "file": "backend-empty-db-migration-check-final.log",
+      "bytes": 135,
+      "sha256": "f0ae44022b6b71403a16d84218d7af148119a34db741f18b1e69958eea4072b4",
+      "source": "/workspace/scratch/logs/backend-empty-db-migration-check-final.log"
+    },
+    {
+      "file": "backend-historical-upgrade-rehearsal.log",
+      "bytes": 1426,
+      "sha256": "e3aad373a22159d2153a7f58ea2ed62c80b6ceac8cf4b63dd8d8875aaffa50c9",
+      "source": "/workspace/scratch/logs/backend-historical-upgrade-rehearsal.log"
+    },
+    {
+      "file": "schema-export-handoff.log",
+      "bytes": 135,
+      "sha256": "f0ae44022b6b71403a16d84218d7af148119a34db741f18b1e69958eea4072b4",
+      "source": "/workspace/scratch/logs/schema-export-handoff.log"
+    },
+    {
+      "file": "schema-contract-audit.log",
+      "bytes": 8313,
+      "sha256": "fc90c6c5deb82819b3e4e095298a1b8c45bb418c0683d416acb30fb8bf57d4d0",
+      "source": "/workspace/scratch/logs/schema-contract-audit.log"
+    },
+    {
+      "file": "dashboard-types-final.log",
+      "bytes": 594,
+      "sha256": "ff139ac4be2dae75c0c3b486289ff6140d001463697e3cbc91dbf9c5ef8861cc",
+      "source": "/workspace/scratch/logs/dashboard-types-final.log"
+    },
+    {
+      "file": "dashboard-tests-final.log",
+      "bytes": 1546,
+      "sha256": "30c9cdc40bae33c0dd3145125cfc85a9455e3368a2016f82f7acc034a9cea048",
+      "source": "/workspace/scratch/logs/dashboard-tests-final.log"
+    },
+    {
+      "file": "dashboard-codegen-verified.log",
+      "bytes": 1463,
+      "sha256": "71e3e316ba67d566706086126761fd24620063f9de0ff86ac881ef07921de7d5",
+      "source": "/workspace/scratch/logs/dashboard-codegen-verified.log"
+    },
+    {
+      "file": "dashboard-messages-delivery.log",
+      "bytes": 335,
+      "sha256": "cbb84728396f73c23af9881953bde54f01975bc176ac9b08961a5cd1ccf26bf5",
+      "source": "/workspace/scratch/logs/dashboard-messages-delivery.log"
+    },
+    {
+      "file": "dashboard-changed-lint-delivery.log",
+      "bytes": 5935,
+      "sha256": "1085d9f5328522d3eb04385e3728262444074cfca1127ffaca1ee4b6e5bf8639",
+      "source": "/workspace/scratch/logs/dashboard-changed-lint-delivery.log"
+    },
+    {
+      "file": "dashboard-knip-delivery.log",
+      "bytes": 8772,
+      "sha256": "02576d14ce7517af1fd658c79bc82533a3da540d68c90c90d01513e7206136a2",
+      "source": "/workspace/scratch/logs/dashboard-knip-delivery.log"
+    },
+    {
+      "file": "dashboard-build-verified.log",
+      "bytes": 15082,
+      "sha256": "ddcdde1df34454468d9bfcf7e8dbe096ee333b725fd4089c9456203c3e1337f5",
+      "source": "/workspace/scratch/logs/dashboard-build-verified.log"
+    },
+    {
+      "file": "migration-upgrade-result.json",
+      "bytes": 1145,
+      "sha256": "edd8c8d34ddb83a5da7d727e1c60ce78073783501cbafccfcf27288e35db1af0",
+      "source": "/workspace/scratch/migration-upgrade-result.json"
+    },
+    {
+      "file": "schema-target-diff.json",
+      "bytes": 46250,
+      "sha256": "b73efd681177fcaf9c420a7a22fcd3d03946f618cd0b3bd4afc9cc5560ecf002",
+      "source": "/workspace/scratch/schema-target-diff.json"
+    },
+    {
+      "file": "dashboard-eslint-summary.json",
+      "bytes": 236069,
+      "sha256": "f17290d7acf743db8a6c49220bb538d290e384ff9d95d850f28466f86f5535eb",
+      "source": "/workspace/scratch/dashboard-eslint-summary.json"
+    },
+    {
+      "file": "test-fixture-key-classification.json",
+      "bytes": 460,
+      "sha256": "7cb0307135fec8666f8cb394a3da3f1de0b09cea703641090c81a3b330f68168",
+      "source": "/workspace/scratch/test-fixture-key-classification.json"
+    }
+  ],
+  "scope": "Selected final local verification evidence only; no production credentials, quarantined keys, provider response recordings or intermediate failed setup logs are copied. Filename/regex screening is limited, not a complete secret audit."
+}

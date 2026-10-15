@@ -1,0 +1,26 @@
+{
+  "candidate_job": "single-coding-gpt61-xhigh-continuation-20261014",
+  "repositories": [
+    {
+      "repository": "saleor",
+      "base_commit": "c864e66b8e537d30732ddba62d3a4c47e49e4a3e",
+      "changed_files": 89,
+      "insertions": 4618,
+      "deletions": 597,
+      "source_entries_verified": 4454,
+      "patch_sha256": "238449974089a7ca948f8c6d6cd5cc55cc0bac53815198fb19d16cc54aacc678",
+      "patch_roundtrip_verified_including_symlinks": true
+    },
+    {
+      "repository": "saleor-dashboard",
+      "base_commit": "aebb2401b5079fbbb8c60150289d1896c108feca",
+      "changed_files": 46,
+      "insertions": 2154,
+      "deletions": 346,
+      "source_entries_verified": 3783,
+      "patch_sha256": "f8b44419fa7d558d6b6597e053a3bd3bda85324a4f87569d21a413ae2d1bdbbc",
+      "patch_roundtrip_verified_including_symlinks": true
+    }
+  ],
+  "line_counts_include_tests_migrations_schema_generated_files": true
+}

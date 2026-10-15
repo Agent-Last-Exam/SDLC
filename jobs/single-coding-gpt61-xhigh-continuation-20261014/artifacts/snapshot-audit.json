@@ -1,0 +1,36 @@
+{
+  "saleor": {
+    "source_sha256": "7d1ca600d3d48000ece51183eaca085eecfbf6ffbde9f5cd25cd5f44a25d6228",
+    "manifest_entries": 4454,
+    "external_symlinks_including_ignored_dependencies": [],
+    "credential_shaped_paths_excluding_dependencies": [],
+    "tool_cache_paths_excluding_dependencies": [],
+    "source_secret_pattern_matches_paths_only": [
+      {
+        "path": "saleor/plugins/openid_connect/tests/conftest.py",
+        "pattern": "private_key_header",
+        "lines": [
+          155
+        ]
+      },
+      {
+        "path": "saleor/tests/settings.py",
+        "pattern": "private_key_header",
+        "lines": [
+          58
+        ]
+      }
+    ],
+    "git_diff_check_exit": 0
+  },
+  "saleor-dashboard": {
+    "source_sha256": "706f7f0f09ca0afa4d4ea7259d04cc0aec94ed1d663c168f9c6345163d0e846f",
+    "manifest_entries": 3783,
+    "external_symlinks_including_ignored_dependencies": [],
+    "credential_shaped_paths_excluding_dependencies": [],
+    "tool_cache_paths_excluding_dependencies": [],
+    "source_secret_pattern_matches_paths_only": [],
+    "git_diff_check_exit": 0
+  },
+  "limitations": "Limited filename/regex and external-symlink audit, not a complete secret scan. No matched secret contents are emitted. Static synthetic test key fixtures require human classification. Ignored dependency caches/files are excluded from source fingerprint; runner owns actual snapshot capture."
+}

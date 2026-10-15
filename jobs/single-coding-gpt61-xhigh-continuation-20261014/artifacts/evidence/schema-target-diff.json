@@ -1,0 +1,1918 @@
+{
+  "methodology": "Compare parsed SDL definition names, field types, arguments/defaults, deprecation presence and enum values; ignore descriptions and declaration order. Missing types are not expanded into individual missing fields. This is a contract gap inventory, not an implementation acceptance result.",
+  "missingTypes": [
+    "AvailabilityCheckCodeEnum",
+    "AvailabilityCheckSeverityEnum",
+    "CheckoutCompletionStatus",
+    "CheckoutCompletionStatusEnum",
+    "DraftOrderActionEnum",
+    "DraftOrderProblem",
+    "GiftCardExportConnection",
+    "GiftCardExportEdge",
+    "GiftCardExportQueryInput",
+    "GiftCardExportRow",
+    "GiftCardPaymentMethodDetails",
+    "GiftCardTransactionError",
+    "GiftCardTransactionErrorCode",
+    "GiftCardTransactionInitialize",
+    "GiftCardTransactionInitializeInput",
+    "OrderPaymentSummary",
+    "ProductAvailabilityCheck",
+    "ProductAvailabilityDiagnostic",
+    "ProductAvailabilityDiagnosticConnection",
+    "ProductAvailabilityDiagnosticEdge",
+    "ProductAvailabilityDiagnosticFilterInput",
+    "ProductExportConnection",
+    "ProductExportEdge",
+    "ProductExportQueryInput",
+    "ProductExportRow",
+    "TransactionItemCountableConnection",
+    "TransactionItemCountableEdge",
+    "TransactionQueryFilterInput",
+    "VoucherCodeExportConnection",
+    "VoucherCodeExportEdge",
+    "VoucherCodeExportQueryInput",
+    "VoucherCodeExportRow"
+  ],
+  "unexpectedTypes": [
+    "DigitalContent",
+    "DigitalContentCountableConnection",
+    "DigitalContentCountableEdge",
+    "DigitalContentCreate",
+    "DigitalContentDelete",
+    "DigitalContentInput",
+    "DigitalContentUpdate",
+    "DigitalContentUploadInput",
+    "DigitalContentUrl",
+    "DigitalContentUrlCreate",
+    "DigitalContentUrlCreateInput"
+  ],
+  "missingFields": [
+    "AppExtensionFilterInput.mountName",
+    "AppExtensionFilterInput.targetName",
+    "EventDelivery.latestError",
+    "EventDelivery.nextRetryAt",
+    "EventDelivery.payloadGeneratedAt",
+    "GiftCard.authorizedBalance",
+    "GiftCard.availableBalance",
+    "GiftCardEvent.amount",
+    "GiftCardEvent.transactionId",
+    "GiftCardFilterInput.search",
+    "Mutation.giftCardTransactionInitialize",
+    "Order.canAddProducts",
+    "Order.draftOrderProblems",
+    "Order.paymentSummary",
+    "Query.checkoutCompletionStatus",
+    "Query.giftCardsExport",
+    "Query.productAvailabilityDiagnostics",
+    "Query.productsExport",
+    "Query.transactions",
+    "Query.voucherCodesExport",
+    "TransactionItem.appIdentifier",
+    "TransactionItem.availableCaptureAmount",
+    "TransactionItem.availableRefundAmount"
+  ],
+  "unexpectedFields": [
+    "Mutation.digitalContentCreate",
+    "Mutation.digitalContentDelete",
+    "Mutation.digitalContentUpdate",
+    "Mutation.digitalContentUrlCreate",
+    "OrderLine.digitalContentUrl",
+    "Payment.partial",
+    "ProductVariant.digitalContent",
+    "Query.digitalContent",
+    "Query.digitalContents",
+    "Shop.automaticFulfillmentDigitalProducts",
+    "Shop.defaultDigitalMaxDownloads",
+    "Shop.defaultDigitalUrlValidDays",
+    "ShopSettingsInput.automaticFulfillmentDigitalProducts",
+    "ShopSettingsInput.defaultDigitalMaxDownloads",
+    "ShopSettingsInput.defaultDigitalUrlValidDays"
+  ],
+  "changedFields": [
+    {
+      "field": "AppExtensionFilterInput.mount",
+      "target": {
+        "type": "[AppExtensionMountEnum!]",
+        "arguments": {},
+        "default": null,
+        "deprecated": true
+      },
+      "actual": {
+        "type": "[AppExtensionMountEnum!]",
+        "arguments": {},
+        "default": null,
+        "deprecated": false
+      }
+    },
+    {
+      "field": "AppExtensionFilterInput.target",
+      "target": {
+        "type": "AppExtensionTargetEnum",
+        "arguments": {},
+        "default": null,
+        "deprecated": true
+      },
+      "actual": {
+        "type": "AppExtensionTargetEnum",
+        "arguments": {},
+        "default": null,
+        "deprecated": false
+      }
+    },
+    {
+      "field": "AppInstallInput.appName",
+      "target": {
+        "type": "String!",
+        "arguments": {},
+        "default": null,
+        "deprecated": false
+      },
+      "actual": {
+        "type": "String",
+        "arguments": {},
+        "default": null,
+        "deprecated": false
+      }
+    },
+    {
+      "field": "AppInstallInput.manifestUrl",
+      "target": {
+        "type": "String!",
+        "arguments": {},
+        "default": null,
+        "deprecated": false
+      },
+      "actual": {
+        "type": "String",
+        "arguments": {},
+        "default": null,
+        "deprecated": false
+      }
+    },
+    {
+      "field": "AttributeCreateInput.slug",
+      "target": {
+        "type": "String!",
+        "arguments": {},
+        "default": null,
+        "deprecated": false
+      },
+      "actual": {
+        "type": "String",
+        "arguments": {},
+        "default": null,
+        "deprecated": false
+      }
+    },
+    {
+      "field": "DraftOrderCreateInput.voucher",
+      "target": {
+        "type": "ID",
+        "arguments": {},
+        "default": null,
+        "deprecated": true
+      },
+      "actual": {
+        "type": "ID",
+        "arguments": {},
+        "default": null,
+        "deprecated": false
+      }
+    },
+    {
+      "field": "DraftOrderInput.voucher",
+      "target": {
+        "type": "ID",
+        "arguments": {},
+        "default": null,
+        "deprecated": true
+      },
+      "actual": {
+        "type": "ID",
+        "arguments": {},
+        "default": null,
+        "deprecated": false
+      }
+    },
+    {
+      "field": "Mutation.appCreate",
+      "target": {
+        "type": "AppCreate",
+        "arguments": {
+          "input": {
+            "type": "AppInput!",
+            "default": null
+          },
+          "issueToken": {
+            "type": "Boolean",
+            "default": "false"
+          }
+        },
+        "default": null,
+        "deprecated": false
+      },
+      "actual": {
+        "type": "AppCreate",
+        "arguments": {
+          "input": {
+            "type": "AppInput!",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      }
+    },
+    {
+      "field": "Mutation.appUpdate",
+      "target": {
+        "type": "AppUpdate",
+        "arguments": {
+          "id": {
+            "type": "ID!",
+            "default": null
+          },
+          "input": {
+            "type": "AppInput!",
+            "default": null
+          },
+          "manifestUrl": {
+            "type": "String",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      },
+      "actual": {
+        "type": "AppUpdate",
+        "arguments": {
+          "id": {
+            "type": "ID!",
+            "default": null
+          },
+          "input": {
+            "type": "AppInput!",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      }
+    },
+    {
+      "field": "Mutation.exportGiftCards",
+      "target": {
+        "type": "ExportGiftCards",
+        "arguments": {
+          "input": {
+            "type": "ExportGiftCardsInput!",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": true
+      },
+      "actual": {
+        "type": "ExportGiftCards",
+        "arguments": {
+          "input": {
+            "type": "ExportGiftCardsInput!",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      }
+    },
+    {
+      "field": "Mutation.exportProducts",
+      "target": {
+        "type": "ExportProducts",
+        "arguments": {
+          "input": {
+            "type": "ExportProductsInput!",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": true
+      },
+      "actual": {
+        "type": "ExportProducts",
+        "arguments": {
+          "input": {
+            "type": "ExportProductsInput!",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      }
+    },
+    {
+      "field": "Mutation.exportVoucherCodes",
+      "target": {
+        "type": "ExportVoucherCodes",
+        "arguments": {
+          "input": {
+            "type": "ExportVoucherCodesInput!",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": true
+      },
+      "actual": {
+        "type": "ExportVoucherCodes",
+        "arguments": {
+          "input": {
+            "type": "ExportVoucherCodesInput!",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      }
+    },
+    {
+      "field": "Mutation.giftCardBulkDelete",
+      "target": {
+        "type": "GiftCardBulkDelete",
+        "arguments": {
+          "filter": {
+            "type": "GiftCardFilterInput",
+            "default": null
+          },
+          "ids": {
+            "type": "[ID!]!",
+            "default": null
+          },
+          "lockedFilter": {
+            "type": "GiftCardFilterInput",
+            "default": null
+          },
+          "search": {
+            "type": "String",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      },
+      "actual": {
+        "type": "GiftCardBulkDelete",
+        "arguments": {
+          "ids": {
+            "type": "[ID!]!",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      }
+    },
+    {
+      "field": "Mutation.orderBulkCancel",
+      "target": {
+        "type": "OrderBulkCancel",
+        "arguments": {
+          "channel": {
+            "type": "String",
+            "default": null
+          },
+          "filter": {
+            "type": "OrderFilterInput",
+            "default": null
+          },
+          "ids": {
+            "type": "[ID!]!",
+            "default": null
+          },
+          "lockedFilter": {
+            "type": "OrderFilterInput",
+            "default": null
+          },
+          "lockedWhere": {
+            "type": "OrderWhereInput",
+            "default": null
+          },
+          "search": {
+            "type": "String",
+            "default": null
+          },
+          "where": {
+            "type": "OrderWhereInput",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      },
+      "actual": {
+        "type": "OrderBulkCancel",
+        "arguments": {
+          "ids": {
+            "type": "[ID!]!",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      }
+    },
+    {
+      "field": "Mutation.orderCapture",
+      "target": {
+        "type": "OrderCapture",
+        "arguments": {
+          "amount": {
+            "type": "PositiveDecimal!",
+            "default": null
+          },
+          "id": {
+            "type": "ID!",
+            "default": null
+          },
+          "idempotencyKey": {
+            "type": "String",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      },
+      "actual": {
+        "type": "OrderCapture",
+        "arguments": {
+          "amount": {
+            "type": "PositiveDecimal!",
+            "default": null
+          },
+          "id": {
+            "type": "ID!",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      }
+    },
+    {
+      "field": "Mutation.orderMarkAsPaid",
+      "target": {
+        "type": "OrderMarkAsPaid",
+        "arguments": {
+          "id": {
+            "type": "ID!",
+            "default": null
+          },
+          "idempotencyKey": {
+            "type": "String",
+            "default": null
+          },
+          "transactionReference": {
+            "type": "String",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      },
+      "actual": {
+        "type": "OrderMarkAsPaid",
+        "arguments": {
+          "id": {
+            "type": "ID!",
+            "default": null
+          },
+          "transactionReference": {
+            "type": "String",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      }
+    },
+    {
+      "field": "Mutation.orderRefund",
+      "target": {
+        "type": "OrderRefund",
+        "arguments": {
+          "amount": {
+            "type": "PositiveDecimal!",
+            "default": null
+          },
+          "id": {
+            "type": "ID!",
+            "default": null
+          },
+          "idempotencyKey": {
+            "type": "String",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      },
+      "actual": {
+        "type": "OrderRefund",
+        "arguments": {
+          "amount": {
+            "type": "PositiveDecimal!",
+            "default": null
+          },
+          "id": {
+            "type": "ID!",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      }
+    },
+    {
+      "field": "Mutation.orderVoid",
+      "target": {
+        "type": "OrderVoid",
+        "arguments": {
+          "id": {
+            "type": "ID!",
+            "default": null
+          },
+          "idempotencyKey": {
+            "type": "String",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      },
+      "actual": {
+        "type": "OrderVoid",
+        "arguments": {
+          "id": {
+            "type": "ID!",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      }
+    },
+    {
+      "field": "Mutation.paymentCapture",
+      "target": {
+        "type": "PaymentCapture",
+        "arguments": {
+          "amount": {
+            "type": "PositiveDecimal",
+            "default": null
+          },
+          "idempotencyKey": {
+            "type": "String",
+            "default": null
+          },
+          "paymentId": {
+            "type": "ID!",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      },
+      "actual": {
+        "type": "PaymentCapture",
+        "arguments": {
+          "amount": {
+            "type": "PositiveDecimal",
+            "default": null
+          },
+          "paymentId": {
+            "type": "ID!",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      }
+    },
+    {
+      "field": "Mutation.paymentRefund",
+      "target": {
+        "type": "PaymentRefund",
+        "arguments": {
+          "amount": {
+            "type": "PositiveDecimal",
+            "default": null
+          },
+          "idempotencyKey": {
+            "type": "String",
+            "default": null
+          },
+          "paymentId": {
+            "type": "ID!",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      },
+      "actual": {
+        "type": "PaymentRefund",
+        "arguments": {
+          "amount": {
+            "type": "PositiveDecimal",
+            "default": null
+          },
+          "paymentId": {
+            "type": "ID!",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      }
+    },
+    {
+      "field": "Mutation.paymentVoid",
+      "target": {
+        "type": "PaymentVoid",
+        "arguments": {
+          "idempotencyKey": {
+            "type": "String",
+            "default": null
+          },
+          "paymentId": {
+            "type": "ID!",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      },
+      "actual": {
+        "type": "PaymentVoid",
+        "arguments": {
+          "paymentId": {
+            "type": "ID!",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      }
+    },
+    {
+      "field": "Mutation.productBulkDelete",
+      "target": {
+        "type": "ProductBulkDelete",
+        "arguments": {
+          "channel": {
+            "type": "String",
+            "default": null
+          },
+          "filter": {
+            "type": "ProductFilterInput",
+            "default": null
+          },
+          "ids": {
+            "type": "[ID!]!",
+            "default": null
+          },
+          "lockedFilter": {
+            "type": "ProductFilterInput",
+            "default": null
+          },
+          "lockedWhere": {
+            "type": "ProductWhereInput",
+            "default": null
+          },
+          "search": {
+            "type": "String",
+            "default": null
+          },
+          "where": {
+            "type": "ProductWhereInput",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      },
+      "actual": {
+        "type": "ProductBulkDelete",
+        "arguments": {
+          "ids": {
+            "type": "[ID!]!",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      }
+    },
+    {
+      "field": "Mutation.transactionCreate",
+      "target": {
+        "type": "TransactionCreate",
+        "arguments": {
+          "id": {
+            "type": "ID!",
+            "default": null
+          },
+          "idempotencyKey": {
+            "type": "String",
+            "default": null
+          },
+          "transaction": {
+            "type": "TransactionCreateInput!",
+            "default": null
+          },
+          "transactionEvent": {
+            "type": "TransactionEventInput",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      },
+      "actual": {
+        "type": "TransactionCreate",
+        "arguments": {
+          "id": {
+            "type": "ID!",
+            "default": null
+          },
+          "transaction": {
+            "type": "TransactionCreateInput!",
+            "default": null
+          },
+          "transactionEvent": {
+            "type": "TransactionEventInput",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      }
+    },
+    {
+      "field": "Mutation.transactionEventReport",
+      "target": {
+        "type": "TransactionEventReport",
+        "arguments": {
+          "amount": {
+            "type": "PositiveDecimal",
+            "default": null
+          },
+          "availableActions": {
+            "type": "[TransactionActionEnum!]",
+            "default": null
+          },
+          "externalUrl": {
+            "type": "String",
+            "default": null
+          },
+          "id": {
+            "type": "ID",
+            "default": null
+          },
+          "idempotencyKey": {
+            "type": "String",
+            "default": null
+          },
+          "message": {
+            "type": "String",
+            "default": null
+          },
+          "paymentMethodDetails": {
+            "type": "PaymentMethodDetailsInput",
+            "default": null
+          },
+          "pspReference": {
+            "type": "String!",
+            "default": null
+          },
+          "time": {
+            "type": "DateTime",
+            "default": null
+          },
+          "token": {
+            "type": "UUID",
+            "default": null
+          },
+          "transactionMetadata": {
+            "type": "[MetadataInput!]",
+            "default": null
+          },
+          "transactionPrivateMetadata": {
+            "type": "[MetadataInput!]",
+            "default": null
+          },
+          "type": {
+            "type": "TransactionEventTypeEnum!",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      },
+      "actual": {
+        "type": "TransactionEventReport",
+        "arguments": {
+          "amount": {
+            "type": "PositiveDecimal",
+            "default": null
+          },
+          "availableActions": {
+            "type": "[TransactionActionEnum!]",
+            "default": null
+          },
+          "externalUrl": {
+            "type": "String",
+            "default": null
+          },
+          "id": {
+            "type": "ID",
+            "default": null
+          },
+          "message": {
+            "type": "String",
+            "default": null
+          },
+          "paymentMethodDetails": {
+            "type": "PaymentMethodDetailsInput",
+            "default": null
+          },
+          "pspReference": {
+            "type": "String!",
+            "default": null
+          },
+          "time": {
+            "type": "DateTime",
+            "default": null
+          },
+          "token": {
+            "type": "UUID",
+            "default": null
+          },
+          "transactionMetadata": {
+            "type": "[MetadataInput!]",
+            "default": null
+          },
+          "transactionPrivateMetadata": {
+            "type": "[MetadataInput!]",
+            "default": null
+          },
+          "type": {
+            "type": "TransactionEventTypeEnum!",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      }
+    },
+    {
+      "field": "Mutation.transactionProcess",
+      "target": {
+        "type": "TransactionProcess",
+        "arguments": {
+          "customerIpAddress": {
+            "type": "String",
+            "default": null
+          },
+          "data": {
+            "type": "JSON",
+            "default": null
+          },
+          "id": {
+            "type": "ID",
+            "default": null
+          },
+          "idempotencyKey": {
+            "type": "String",
+            "default": null
+          },
+          "token": {
+            "type": "UUID",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      },
+      "actual": {
+        "type": "TransactionProcess",
+        "arguments": {
+          "customerIpAddress": {
+            "type": "String",
+            "default": null
+          },
+          "data": {
+            "type": "JSON",
+            "default": null
+          },
+          "id": {
+            "type": "ID",
+            "default": null
+          },
+          "token": {
+            "type": "UUID",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      }
+    },
+    {
+      "field": "Mutation.transactionRequestAction",
+      "target": {
+        "type": "TransactionRequestAction",
+        "arguments": {
+          "actionType": {
+            "type": "TransactionActionEnum!",
+            "default": null
+          },
+          "amount": {
+            "type": "PositiveDecimal",
+            "default": null
+          },
+          "id": {
+            "type": "ID",
+            "default": null
+          },
+          "idempotencyKey": {
+            "type": "String",
+            "default": null
+          },
+          "refundReason": {
+            "type": "String",
+            "default": null
+          },
+          "refundReasonReference": {
+            "type": "ID",
+            "default": null
+          },
+          "token": {
+            "type": "UUID",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      },
+      "actual": {
+        "type": "TransactionRequestAction",
+        "arguments": {
+          "actionType": {
+            "type": "TransactionActionEnum!",
+            "default": null
+          },
+          "amount": {
+            "type": "PositiveDecimal",
+            "default": null
+          },
+          "id": {
+            "type": "ID",
+            "default": null
+          },
+          "refundReason": {
+            "type": "String",
+            "default": null
+          },
+          "refundReasonReference": {
+            "type": "ID",
+            "default": null
+          },
+          "token": {
+            "type": "UUID",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      }
+    },
+    {
+      "field": "Mutation.transactionRequestRefundForGrantedRefund",
+      "target": {
+        "type": "TransactionRequestRefundForGrantedRefund",
+        "arguments": {
+          "grantedRefundId": {
+            "type": "ID!",
+            "default": null
+          },
+          "id": {
+            "type": "ID",
+            "default": null
+          },
+          "idempotencyKey": {
+            "type": "String",
+            "default": null
+          },
+          "token": {
+            "type": "UUID",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      },
+      "actual": {
+        "type": "TransactionRequestRefundForGrantedRefund",
+        "arguments": {
+          "grantedRefundId": {
+            "type": "ID!",
+            "default": null
+          },
+          "id": {
+            "type": "ID",
+            "default": null
+          },
+          "token": {
+            "type": "UUID",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      }
+    },
+    {
+      "field": "Mutation.transactionUpdate",
+      "target": {
+        "type": "TransactionUpdate",
+        "arguments": {
+          "id": {
+            "type": "ID",
+            "default": null
+          },
+          "idempotencyKey": {
+            "type": "String",
+            "default": null
+          },
+          "token": {
+            "type": "UUID",
+            "default": null
+          },
+          "transaction": {
+            "type": "TransactionUpdateInput",
+            "default": null
+          },
+          "transactionEvent": {
+            "type": "TransactionEventInput",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      },
+      "actual": {
+        "type": "TransactionUpdate",
+        "arguments": {
+          "id": {
+            "type": "ID",
+            "default": null
+          },
+          "token": {
+            "type": "UUID",
+            "default": null
+          },
+          "transaction": {
+            "type": "TransactionUpdateInput",
+            "default": null
+          },
+          "transactionEvent": {
+            "type": "TransactionEventInput",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      }
+    },
+    {
+      "field": "Query._entities",
+      "target": {
+        "type": "[_Entity]",
+        "arguments": {
+          "representations": {
+            "type": "[_Any!]!",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      },
+      "actual": {
+        "type": "[_Entity]",
+        "arguments": {
+          "representations": {
+            "type": "[_Any]",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      }
+    },
+    {
+      "field": "Query.checkouts",
+      "target": {
+        "type": "CheckoutCountableConnection",
+        "arguments": {
+          "after": {
+            "type": "String",
+            "default": null
+          },
+          "before": {
+            "type": "String",
+            "default": null
+          },
+          "channel": {
+            "type": "String",
+            "default": null
+          },
+          "filter": {
+            "type": "CheckoutFilterInput",
+            "default": null
+          },
+          "first": {
+            "type": "Int",
+            "default": null
+          },
+          "last": {
+            "type": "Int",
+            "default": null
+          },
+          "lockedFilter": {
+            "type": "CheckoutFilterInput",
+            "default": null
+          },
+          "sortBy": {
+            "type": "CheckoutSortingInput",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      },
+      "actual": {
+        "type": "CheckoutCountableConnection",
+        "arguments": {
+          "after": {
+            "type": "String",
+            "default": null
+          },
+          "before": {
+            "type": "String",
+            "default": null
+          },
+          "channel": {
+            "type": "String",
+            "default": null
+          },
+          "filter": {
+            "type": "CheckoutFilterInput",
+            "default": null
+          },
+          "first": {
+            "type": "Int",
+            "default": null
+          },
+          "last": {
+            "type": "Int",
+            "default": null
+          },
+          "sortBy": {
+            "type": "CheckoutSortingInput",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      }
+    },
+    {
+      "field": "Query.giftCards",
+      "target": {
+        "type": "GiftCardCountableConnection",
+        "arguments": {
+          "after": {
+            "type": "String",
+            "default": null
+          },
+          "before": {
+            "type": "String",
+            "default": null
+          },
+          "filter": {
+            "type": "GiftCardFilterInput",
+            "default": null
+          },
+          "first": {
+            "type": "Int",
+            "default": null
+          },
+          "last": {
+            "type": "Int",
+            "default": null
+          },
+          "lockedFilter": {
+            "type": "GiftCardFilterInput",
+            "default": null
+          },
+          "search": {
+            "type": "String",
+            "default": null
+          },
+          "sortBy": {
+            "type": "GiftCardSortingInput",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      },
+      "actual": {
+        "type": "GiftCardCountableConnection",
+        "arguments": {
+          "after": {
+            "type": "String",
+            "default": null
+          },
+          "before": {
+            "type": "String",
+            "default": null
+          },
+          "filter": {
+            "type": "GiftCardFilterInput",
+            "default": null
+          },
+          "first": {
+            "type": "Int",
+            "default": null
+          },
+          "last": {
+            "type": "Int",
+            "default": null
+          },
+          "search": {
+            "type": "String",
+            "default": null
+          },
+          "sortBy": {
+            "type": "GiftCardSortingInput",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      }
+    },
+    {
+      "field": "Query.orders",
+      "target": {
+        "type": "OrderCountableConnection",
+        "arguments": {
+          "after": {
+            "type": "String",
+            "default": null
+          },
+          "before": {
+            "type": "String",
+            "default": null
+          },
+          "channel": {
+            "type": "String",
+            "default": null
+          },
+          "filter": {
+            "type": "OrderFilterInput",
+            "default": null
+          },
+          "first": {
+            "type": "Int",
+            "default": null
+          },
+          "last": {
+            "type": "Int",
+            "default": null
+          },
+          "lockedFilter": {
+            "type": "OrderFilterInput",
+            "default": null
+          },
+          "lockedWhere": {
+            "type": "OrderWhereInput",
+            "default": null
+          },
+          "search": {
+            "type": "String",
+            "default": null
+          },
+          "sortBy": {
+            "type": "OrderSortingInput",
+            "default": null
+          },
+          "where": {
+            "type": "OrderWhereInput",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      },
+      "actual": {
+        "type": "OrderCountableConnection",
+        "arguments": {
+          "after": {
+            "type": "String",
+            "default": null
+          },
+          "before": {
+            "type": "String",
+            "default": null
+          },
+          "channel": {
+            "type": "String",
+            "default": null
+          },
+          "filter": {
+            "type": "OrderFilterInput",
+            "default": null
+          },
+          "first": {
+            "type": "Int",
+            "default": null
+          },
+          "last": {
+            "type": "Int",
+            "default": null
+          },
+          "search": {
+            "type": "String",
+            "default": null
+          },
+          "sortBy": {
+            "type": "OrderSortingInput",
+            "default": null
+          },
+          "where": {
+            "type": "OrderWhereInput",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      }
+    },
+    {
+      "field": "Query.products",
+      "target": {
+        "type": "ProductCountableConnection",
+        "arguments": {
+          "after": {
+            "type": "String",
+            "default": null
+          },
+          "before": {
+            "type": "String",
+            "default": null
+          },
+          "channel": {
+            "type": "String",
+            "default": null
+          },
+          "filter": {
+            "type": "ProductFilterInput",
+            "default": null
+          },
+          "first": {
+            "type": "Int",
+            "default": null
+          },
+          "last": {
+            "type": "Int",
+            "default": null
+          },
+          "lockedFilter": {
+            "type": "ProductFilterInput",
+            "default": null
+          },
+          "lockedWhere": {
+            "type": "ProductWhereInput",
+            "default": null
+          },
+          "search": {
+            "type": "String",
+            "default": null
+          },
+          "sortBy": {
+            "type": "ProductOrder",
+            "default": null
+          },
+          "where": {
+            "type": "ProductWhereInput",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      },
+      "actual": {
+        "type": "ProductCountableConnection",
+        "arguments": {
+          "after": {
+            "type": "String",
+            "default": null
+          },
+          "before": {
+            "type": "String",
+            "default": null
+          },
+          "channel": {
+            "type": "String",
+            "default": null
+          },
+          "filter": {
+            "type": "ProductFilterInput",
+            "default": null
+          },
+          "first": {
+            "type": "Int",
+            "default": null
+          },
+          "last": {
+            "type": "Int",
+            "default": null
+          },
+          "search": {
+            "type": "String",
+            "default": null
+          },
+          "sortBy": {
+            "type": "ProductOrder",
+            "default": null
+          },
+          "where": {
+            "type": "ProductWhereInput",
+            "default": null
+          }
+        },
+        "default": null,
+        "deprecated": false
+      }
+    }
+  ],
+  "changedEnums": [
+    {
+      "type": "CheckoutErrorCode",
+      "target": [
+        "BILLING_ADDRESS_NOT_SET",
+        "CHANNEL_INACTIVE",
+        "CHECKOUT_NOT_FULLY_PAID",
+        "CONFLICT",
+        "DELIVERY_METHOD_EXPIRED",
+        "DELIVERY_METHOD_NOT_APPLICABLE",
+        "EMAIL_NOT_SET",
+        "GIFT_CARD_NOT_APPLICABLE",
+        "GRAPHQL_ERROR",
+        "INACTIVE_PAYMENT",
+        "INSUFFICIENT_STOCK",
+        "INVALID",
+        "INVALID_SHIPPING_METHOD",
+        "MISSING_ADDRESS_DATA",
+        "MISSING_CHANNEL_SLUG",
+        "NON_EDITABLE_GIFT_LINE",
+        "NON_REMOVABLE_GIFT_LINE",
+        "NOT_FOUND",
+        "NO_LINES",
+        "PAYMENT_ERROR",
+        "PRODUCT_NOT_PUBLISHED",
+        "PRODUCT_UNAVAILABLE_FOR_PURCHASE",
+        "QUANTITY_GREATER_THAN_LIMIT",
+        "REQUIRED",
+        "SHIPPING_ADDRESS_NOT_SET",
+        "SHIPPING_CHANGE_FORBIDDEN",
+        "SHIPPING_METHOD_NOT_APPLICABLE",
+        "SHIPPING_METHOD_NOT_SET",
+        "SHIPPING_NOT_REQUIRED",
+        "SHIPPING_SERVICE_ERROR",
+        "TAX_ERROR",
+        "UNAVAILABLE_VARIANT_IN_CHANNEL",
+        "UNIQUE",
+        "UNSUPPORTED_PAYMENT_METHOD",
+        "VOUCHER_NOT_APPLICABLE",
+        "ZERO_QUANTITY"
+      ],
+      "actual": [
+        "BILLING_ADDRESS_NOT_SET",
+        "CHANNEL_INACTIVE",
+        "CHECKOUT_NOT_FULLY_PAID",
+        "CONFLICT",
+        "DELIVERY_METHOD_NOT_APPLICABLE",
+        "EMAIL_NOT_SET",
+        "GIFT_CARD_NOT_APPLICABLE",
+        "GRAPHQL_ERROR",
+        "INACTIVE_PAYMENT",
+        "INSUFFICIENT_STOCK",
+        "INTERNAL_ERROR",
+        "INVALID",
+        "INVALID_SHIPPING_METHOD",
+        "MISSING_ADDRESS_DATA",
+        "MISSING_CHANNEL_SLUG",
+        "NON_EDITABLE_GIFT_LINE",
+        "NON_REMOVABLE_GIFT_LINE",
+        "NOT_FOUND",
+        "NO_LINES",
+        "PAYMENT_ERROR",
+        "PRODUCT_NOT_PUBLISHED",
+        "PRODUCT_UNAVAILABLE_FOR_PURCHASE",
+        "QUANTITY_GREATER_THAN_LIMIT",
+        "REQUIRED",
+        "SHIPPING_ADDRESS_NOT_SET",
+        "SHIPPING_CHANGE_FORBIDDEN",
+        "SHIPPING_METHOD_NOT_APPLICABLE",
+        "SHIPPING_METHOD_NOT_SET",
+        "SHIPPING_NOT_REQUIRED",
+        "SHIPPING_SERVICE_ERROR",
+        "TAX_ERROR",
+        "UNAVAILABLE_VARIANT_IN_CHANNEL",
+        "UNIQUE",
+        "VOUCHER_NOT_APPLICABLE",
+        "ZERO_QUANTITY"
+      ]
+    },
+    {
+      "type": "CheckoutSortField",
+      "target": [
+        "CREATION_DATE",
+        "CUSTOMER",
+        "PAYMENT",
+        "RANK"
+      ],
+      "actual": [
+        "CREATION_DATE",
+        "CUSTOMER",
+        "PAYMENT"
+      ]
+    },
+    {
+      "type": "EventDeliveryStatusEnum",
+      "target": [
+        "FAILED",
+        "PENDING",
+        "RETRYING",
+        "SUCCESS"
+      ],
+      "actual": [
+        "FAILED",
+        "PENDING",
+        "SUCCESS"
+      ]
+    },
+    {
+      "type": "GiftCardEventsEnum",
+      "target": [
+        "ACTIVATED",
+        "AUTHORIZATION_CANCELED",
+        "AUTHORIZED",
+        "BALANCE_RESET",
+        "BOUGHT",
+        "CHARGED",
+        "DEACTIVATED",
+        "EXPIRY_DATE_UPDATED",
+        "ISSUED",
+        "NOTE_ADDED",
+        "REFUNDED",
+        "RESENT",
+        "SENT_TO_CUSTOMER",
+        "TAGS_UPDATED",
+        "TRANSACTION_INITIALIZED",
+        "UPDATED",
+        "USED_IN_ORDER"
+      ],
+      "actual": [
+        "ACTIVATED",
+        "BALANCE_RESET",
+        "BOUGHT",
+        "DEACTIVATED",
+        "EXPIRY_DATE_UPDATED",
+        "ISSUED",
+        "NOTE_ADDED",
+        "RESENT",
+        "SENT_TO_CUSTOMER",
+        "TAGS_UPDATED",
+        "UPDATED",
+        "USED_IN_ORDER"
+      ]
+    },
+    {
+      "type": "GiftCardSortField",
+      "target": [
+        "CREATED_AT",
+        "CURRENT_BALANCE",
+        "PRODUCT",
+        "RANK",
+        "USED_BY"
+      ],
+      "actual": [
+        "CREATED_AT",
+        "CURRENT_BALANCE",
+        "PRODUCT",
+        "USED_BY"
+      ]
+    },
+    {
+      "type": "OrderErrorCode",
+      "target": [
+        "BILLING_ADDRESS_NOT_SET",
+        "CANNOT_CANCEL_FULFILLMENT",
+        "CANNOT_CANCEL_ORDER",
+        "CANNOT_DELETE",
+        "CANNOT_DISCOUNT",
+        "CANNOT_FULFILL_UNPAID_ORDER",
+        "CANNOT_REFUND",
+        "CAPTURE_INACTIVE_PAYMENT",
+        "CHANNEL_INACTIVE",
+        "CONFLICT",
+        "DUPLICATED_INPUT_ITEM",
+        "FULFILL_ORDER_LINE",
+        "GIFT_CARD_LINE",
+        "GRAPHQL_ERROR",
+        "INSUFFICIENT_STOCK",
+        "INVALID",
+        "INVALID_QUANTITY",
+        "INVALID_VOUCHER",
+        "INVALID_VOUCHER_CODE",
+        "MISSING_ADDRESS_DATA",
+        "NON_EDITABLE_GIFT_LINE",
+        "NON_REMOVABLE_GIFT_LINE",
+        "NOT_AVAILABLE_IN_CHANNEL",
+        "NOT_EDITABLE",
+        "NOT_FOUND",
+        "ORDER_NO_SHIPPING_ADDRESS",
+        "PAYMENT_ERROR",
+        "PAYMENT_MISSING",
+        "PRODUCT_NOT_PUBLISHED",
+        "PRODUCT_UNAVAILABLE_FOR_PURCHASE",
+        "REQUIRED",
+        "SHIPPING_METHOD_NOT_APPLICABLE",
+        "SHIPPING_METHOD_REQUIRED",
+        "TAX_ERROR",
+        "TRANSACTION_ERROR",
+        "UNIQUE",
+        "VOID_INACTIVE_PAYMENT",
+        "ZERO_QUANTITY"
+      ],
+      "actual": [
+        "BILLING_ADDRESS_NOT_SET",
+        "CANNOT_CANCEL_FULFILLMENT",
+        "CANNOT_CANCEL_ORDER",
+        "CANNOT_DELETE",
+        "CANNOT_DISCOUNT",
+        "CANNOT_FULFILL_UNPAID_ORDER",
+        "CANNOT_REFUND",
+        "CAPTURE_INACTIVE_PAYMENT",
+        "CHANNEL_INACTIVE",
+        "DUPLICATED_INPUT_ITEM",
+        "FULFILL_ORDER_LINE",
+        "GIFT_CARD_LINE",
+        "GRAPHQL_ERROR",
+        "INSUFFICIENT_STOCK",
+        "INVALID",
+        "INVALID_QUANTITY",
+        "INVALID_VOUCHER",
+        "INVALID_VOUCHER_CODE",
+        "MISSING_ADDRESS_DATA",
+        "NON_EDITABLE_GIFT_LINE",
+        "NON_REMOVABLE_GIFT_LINE",
+        "NOT_AVAILABLE_IN_CHANNEL",
+        "NOT_EDITABLE",
+        "NOT_FOUND",
+        "ORDER_NO_SHIPPING_ADDRESS",
+        "PAYMENT_ERROR",
+        "PAYMENT_MISSING",
+        "PRODUCT_NOT_PUBLISHED",
+        "PRODUCT_UNAVAILABLE_FOR_PURCHASE",
+        "REQUIRED",
+        "SHIPPING_METHOD_NOT_APPLICABLE",
+        "SHIPPING_METHOD_REQUIRED",
+        "TAX_ERROR",
+        "TRANSACTION_ERROR",
+        "UNIQUE",
+        "VOID_INACTIVE_PAYMENT",
+        "ZERO_QUANTITY"
+      ]
+    },
+    {
+      "type": "PaymentErrorCode",
+      "target": [
+        "BALANCE_CHECK_ERROR",
+        "BILLING_ADDRESS_NOT_SET",
+        "CHANNEL_INACTIVE",
+        "CHECKOUT_COMPLETION_IN_PROGRESS",
+        "CHECKOUT_EMAIL_NOT_SET",
+        "CHECKOUT_HAS_TRANSACTION",
+        "CONFLICT",
+        "GRAPHQL_ERROR",
+        "INVALID",
+        "INVALID_SHIPPING_METHOD",
+        "NOT_FOUND",
+        "NOT_SUPPORTED_GATEWAY",
+        "NO_CHECKOUT_LINES",
+        "PARTIAL_PAYMENT_NOT_ALLOWED",
+        "PAYMENT_ERROR",
+        "REQUIRED",
+        "SHIPPING_ADDRESS_NOT_SET",
+        "SHIPPING_METHOD_NOT_SET",
+        "UNAVAILABLE_VARIANT_IN_CHANNEL",
+        "UNIQUE"
+      ],
+      "actual": [
+        "BALANCE_CHECK_ERROR",
+        "BILLING_ADDRESS_NOT_SET",
+        "CHANNEL_INACTIVE",
+        "CHECKOUT_COMPLETION_IN_PROGRESS",
+        "CHECKOUT_EMAIL_NOT_SET",
+        "CHECKOUT_HAS_TRANSACTION",
+        "GRAPHQL_ERROR",
+        "INVALID",
+        "INVALID_SHIPPING_METHOD",
+        "NOT_FOUND",
+        "NOT_SUPPORTED_GATEWAY",
+        "NO_CHECKOUT_LINES",
+        "PARTIAL_PAYMENT_NOT_ALLOWED",
+        "PAYMENT_ERROR",
+        "REQUIRED",
+        "SHIPPING_ADDRESS_NOT_SET",
+        "SHIPPING_METHOD_NOT_SET",
+        "UNAVAILABLE_VARIANT_IN_CHANNEL",
+        "UNIQUE"
+      ]
+    },
+    {
+      "type": "PaymentMethodTypeEnum",
+      "target": [
+        "CARD",
+        "GIFT_CARD",
+        "OTHER"
+      ],
+      "actual": [
+        "CARD",
+        "OTHER"
+      ]
+    },
+    {
+      "type": "TransactionCreateErrorCode",
+      "target": [
+        "CONFLICT",
+        "GRAPHQL_ERROR",
+        "INCORRECT_CURRENCY",
+        "INVALID",
+        "METADATA_KEY_REQUIRED",
+        "NOT_FOUND",
+        "UNIQUE"
+      ],
+      "actual": [
+        "GRAPHQL_ERROR",
+        "INCORRECT_CURRENCY",
+        "INVALID",
+        "METADATA_KEY_REQUIRED",
+        "NOT_FOUND",
+        "UNIQUE"
+      ]
+    },
+    {
+      "type": "TransactionEventReportErrorCode",
+      "target": [
+        "ALREADY_EXISTS",
+        "CONFLICT",
+        "GRAPHQL_ERROR",
+        "INCORRECT_DETAILS",
+        "INVALID",
+        "NOT_FOUND",
+        "REQUIRED"
+      ],
+      "actual": [
+        "ALREADY_EXISTS",
+        "GRAPHQL_ERROR",
+        "INCORRECT_DETAILS",
+        "INVALID",
+        "NOT_FOUND",
+        "REQUIRED"
+      ]
+    },
+    {
+      "type": "TransactionInitializeErrorCode",
+      "target": [
+        "CHECKOUT_COMPLETION_IN_PROGRESS",
+        "CONFLICT",
+        "GRAPHQL_ERROR",
+        "INVALID",
+        "NOT_FOUND",
+        "UNIQUE"
+      ],
+      "actual": [
+        "CHECKOUT_COMPLETION_IN_PROGRESS",
+        "GRAPHQL_ERROR",
+        "INVALID",
+        "NOT_FOUND",
+        "UNIQUE"
+      ]
+    },
+    {
+      "type": "TransactionProcessErrorCode",
+      "target": [
+        "CHECKOUT_COMPLETION_IN_PROGRESS",
+        "CONFLICT",
+        "GRAPHQL_ERROR",
+        "INVALID",
+        "MISSING_PAYMENT_APP",
+        "MISSING_PAYMENT_APP_RELATION",
+        "NOT_FOUND",
+        "TRANSACTION_ALREADY_PROCESSED"
+      ],
+      "actual": [
+        "CHECKOUT_COMPLETION_IN_PROGRESS",
+        "GRAPHQL_ERROR",
+        "INVALID",
+        "MISSING_PAYMENT_APP",
+        "MISSING_PAYMENT_APP_RELATION",
+        "NOT_FOUND",
+        "TRANSACTION_ALREADY_PROCESSED"
+      ]
+    },
+    {
+      "type": "TransactionRequestActionErrorCode",
+      "target": [
+        "ACTION_NOT_ALLOWED",
+        "AMOUNT_EXCEEDED",
+        "CONFLICT",
+        "GRAPHQL_ERROR",
+        "INVALID",
+        "MISSING_TRANSACTION_ACTION_REQUEST_WEBHOOK",
+        "NOT_FOUND",
+        "REQUIRED"
+      ],
+      "actual": [
+        "GRAPHQL_ERROR",
+        "INVALID",
+        "MISSING_TRANSACTION_ACTION_REQUEST_WEBHOOK",
+        "NOT_FOUND",
+        "REQUIRED"
+      ]
+    },
+    {
+      "type": "TransactionRequestRefundForGrantedRefundErrorCode",
+      "target": [
+        "ACTION_NOT_ALLOWED",
+        "AMOUNT_EXCEEDED",
+        "AMOUNT_GREATER_THAN_AVAILABLE",
+        "CONFLICT",
+        "GRAPHQL_ERROR",
+        "INVALID",
+        "MISSING_TRANSACTION_ACTION_REQUEST_WEBHOOK",
+        "NOT_FOUND",
+        "REFUND_ALREADY_PROCESSED",
+        "REFUND_IS_PENDING"
+      ],
+      "actual": [
+        "AMOUNT_GREATER_THAN_AVAILABLE",
+        "GRAPHQL_ERROR",
+        "INVALID",
+        "MISSING_TRANSACTION_ACTION_REQUEST_WEBHOOK",
+        "NOT_FOUND",
+        "REFUND_ALREADY_PROCESSED",
+        "REFUND_IS_PENDING"
+      ]
+    },
+    {
+      "type": "TransactionUpdateErrorCode",
+      "target": [
+        "CONFLICT",
+        "GRAPHQL_ERROR",
+        "INCORRECT_CURRENCY",
+        "INVALID",
+        "METADATA_KEY_REQUIRED",
+        "NOT_FOUND",
+        "UNIQUE"
+      ],
+      "actual": [
+        "GRAPHQL_ERROR",
+        "INCORRECT_CURRENCY",
+        "INVALID",
+        "METADATA_KEY_REQUIRED",
+        "NOT_FOUND",
+        "UNIQUE"
+      ]
+    }
+  ],
+  "changedKinds": []
+}

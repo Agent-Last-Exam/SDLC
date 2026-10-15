@@ -1,0 +1,67 @@
+
+/workspace/repos/saleor-dashboard/src/auth/components/LoginPage/LoginPage.test.tsx
+  4:8  warning  * import is invalid because 'default,React,*' from 'react' is restricted. Import directly the needed functions, e.g. 'import {useState} from "react"'  no-restricted-imports
+
+/workspace/repos/saleor-dashboard/src/auth/components/LoginPage/LoginPage.tsx
+   10:1  warning  '@saleor/macaw-ui' import is restricted from being used. Legacy Macaw UI is deprecated. Use @saleor/macaw-ui-next  no-restricted-imports
+  197:8  warning  Prefer named exports                                                                                               import/no-default-export
+
+/workspace/repos/saleor-dashboard/src/auth/views/Login.tsx
+  154:6  warning  React Hook useEffect has a missing dependency: 'handleExternalAuthentication'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  175:8  warning  Prefer named exports                                                                                                             import/no-default-export
+
+/workspace/repos/saleor-dashboard/src/auth/views/NewPassword.tsx
+  83:8  warning  Prefer named exports  import/no-default-export
+
+/workspace/repos/saleor-dashboard/src/auth/views/ResetPassword.test.tsx
+  92:7  warning  Forbidden non-null assertion  @typescript-eslint/no-non-null-assertion
+
+/workspace/repos/saleor-dashboard/src/auth/views/ResetPassword.tsx
+  72:8  warning  Prefer named exports  import/no-default-export
+
+/workspace/repos/saleor-dashboard/src/channels/components/ChannelForm/ChannelForm.tsx
+  22:1  warning  Avoid importing icons (CopyIcon) from @saleor/macaw-ui-next. Use lucide-react instead  local-rules/no-deprecated-icons
+
+/workspace/repos/saleor-dashboard/src/channels/pages/ChannelDetailsPage/ChannelDetailsPage.tsx
+  342:8  warning  Prefer named exports  import/no-default-export
+
+/workspace/repos/saleor-dashboard/src/channels/views/ChannelCreate/ChannelCreate.tsx
+  177:8  warning  Prefer named exports  import/no-default-export
+
+/workspace/repos/saleor-dashboard/src/channels/views/ChannelDetails/ChannelDetails.tsx
+  297:8  warning  Prefer named exports  import/no-default-export
+
+/workspace/repos/saleor-dashboard/src/components/Datagrid/Datagrid.tsx
+   19:1  warning  '@material-ui/core' import is restricted from being used by a pattern. Material-UI is deprecated. Use @saleor/macaw-ui-next                                                                                                                                          no-restricted-imports
+  166:7  warning  Avoid passing live state to parents in an effect. Instead, lift the state to the parent and pass it down to the child as a prop                                                                                                                                      react-you-might-not-need-an-effect/no-pass-live-state-to-parent
+  189:6  warning  React Hook useEffect has a missing dependency: 'onClearRecentlyAddedColumn'. Either include it or remove the dependency array. If 'onClearRecentlyAddedColumn' changes too often, find the parent component that defines it and wrap that definition in useCallback  react-hooks/exhaustive-deps
+  566:8  warning  Prefer named exports                                                                                                                                                                                                                                                 import/no-default-export
+
+/workspace/repos/saleor-dashboard/src/components/Form/Form.tsx
+   3:8  warning  * import is invalid because 'default,React,*' from 'react' is restricted. Import directly the needed functions, e.g. 'import {useState} from "react"'  no-restricted-imports
+  72:8  warning  Prefer named exports                                                                                                                                   import/no-default-export
+
+/workspace/repos/saleor-dashboard/src/hooks/useForm/index.ts
+   12:8   warning  * import is invalid because 'default,React,*' from 'react' is restricted. Import directly the needed functions, e.g. 'import {useState} from "react"'             no-restricted-imports
+  180:6   warning  React Hook useEffect has a missing dependency: 'setIsFormDirtyInExitDialog'. Either include it or remove the dependency array                                     react-hooks/exhaustive-deps
+  197:32  warning  React Hook useEffect has missing dependencies: 'setEnableExitDialog', 'setExitDialogSubmitRef', and 'submit'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  344:8   warning  Prefer named exports                                                                                                                                              import/no-default-export
+
+/workspace/repos/saleor-dashboard/src/hooks/useHandleFormSubmit.ts
+  55:8  warning  Prefer named exports  import/no-default-export
+
+/workspace/repos/saleor-dashboard/src/orders/components/OrderReturnPage/components/TransactionSubmitCard/RefundShipmentCheckbox.tsx
+  59:8  warning  Prefer named exports  import/no-default-export
+
+/workspace/repos/saleor-dashboard/src/siteSettings/components/SiteSettingsPage/SiteSettingsPage.tsx
+   60:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  283:8   warning  Prefer named exports                                                                                                            import/no-default-export
+
+/workspace/repos/saleor-dashboard/src/siteSettings/views/index.tsx
+  110:8  warning  Prefer named exports  import/no-default-export
+
+/workspace/repos/saleor-dashboard/src/utils/errors/channels.ts
+  45:8  warning  Prefer named exports  import/no-default-export
+
+✖ 28 problems (0 errors, 28 warnings)
+

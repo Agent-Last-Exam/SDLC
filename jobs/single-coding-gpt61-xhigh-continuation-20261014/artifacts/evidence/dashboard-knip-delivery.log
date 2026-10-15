@@ -1,0 +1,87 @@
+npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> saleor-dashboard@3.22.9 knip
+> knip --reporter markdown
+
+[log] Enabling service worker...
+[error] [sentry-vite-plugin] Warning: No auth token provided. Will not create release. Please set the `authToken` option. You can find information on how to generate a Sentry auth token here: https://docs.sentry.io/api/auth/
+[error] [sentry-vite-plugin] Warning: No auth token provided. Will not upload source maps. Please set the `authToken` option. You can find information on how to generate a Sentry auth token here: https://docs.sentry.io/api/auth/
+[log] Enabling service worker...
+[error] [sentry-vite-plugin] Warning: No auth token provided. Will not create release. Please set the `authToken` option. You can find information on how to generate a Sentry auth token here: https://docs.sentry.io/api/auth/
+[error] [sentry-vite-plugin] Warning: No auth token provided. Will not upload source maps. Please set the `authToken` option. You can find information on how to generate a Sentry auth token here: https://docs.sentry.io/api/auth/
+[log] # Knip report
+
+[log] ## Unused files (2)
+
+[log] * src/components/MetadataHookForm/index.ts
+[log] * src/extensions/components/ExtensionsButtonSelector/ExtensionsButtonSelector.tsx
+[log]
+[log] ## Unused devDependencies (9)
+
+[log] | Name                                        | Location           | Severity |
+[log] | :------------------------------------------ | :----------------- | :------- |
+[log] | @mizdra/graphql-codegen-typescript-fabbrica | package.json:150:6 | error    |
+[log] | @vitest/browser-playwright                  | package.json:176:6 | error    |
+[log] | graphql-lint-unused-fields                  | package.json:199:6 | error    |
+[log] | @storybook/addon-vitest                     | package.json:155:6 | error    |
+[log] | eslint-plugin-storybook                     | package.json:193:6 | error    |
+[log] | @storybook/addon-mcp                        | package.json:154:6 | error    |
+[log] | @vitest/coverage-v8                         | package.json:177:6 | error    |
+[log] | chromatic                                   | package.json:178:6 | error    |
+[log] | vitest                                      | package.json:214:6 | error    |
+[log]
+[log] ## Unlisted dependencies (1)
+
+[log] | Name                      | Location                               | Severity |
+[log] | :------------------------ | :------------------------------------- | :------- |
+[log] | @typescript-eslint/parser | lint/rules/named-styles.test.cjs:43:28 | warn     |
+[log]
+[log] ## Unused exports (5)
+
+[log] | Name                                | Location                                              | Severity |
+[log] | :---------------------------------- | :---------------------------------------------------- | :------- |
+[log] | CONTROL_DEFAULTS                    | src/components/ConditionalFilter/controlsType.ts:3:14 | warn     |
+[log] | ProductVariantCacheManagerSingleton | src/attributes/utils/productVariantCache.ts:8:14      | warn     |
+[log] | clean                               | src/components/RichTextEditor/utils.ts:65:23          | warn     |
+[log] | MetadataNoMemo                      | src/components/Metadata/Metadata.tsx:41:14            | warn     |
+[log] | testIntlConfig                      | testUtils/intl.ts:4:14                                | warn     |
+[log]
+[log] ## Unused exported types (3)
+
+[log] | Name                        | Location                                                      | Severity |
+[log] | :-------------------------- | :------------------------------------------------------------ | :------- |
+[log] | AppExtensionManifestOptions | src/extensions/domain/app-extension-manifest-options.ts:28:13 | warn     |
+[log] | AppExtensionManifest        | src/extensions/domain/app-extension-manifest.ts:78:13         | warn     |
+[log] | NewPasswordUrlQueryParams   | src/auth/urls.ts:13:18                                        | warn     |
+[log]
+[log] ## Duplicate exports (26)
+
+[log] | Name                                                                            | Location                                                      | Severity |
+[log] | :------------------------------------------------------------------------------ | :------------------------------------------------------------ | :------- |
+[log] | OrderCancelDialog|default                                                       | src/orders/components/OrderCancelDialog/OrderCancelDialog.tsx | warn     |
+[log] | TableButtonWrapper|default                                                      | src/components/TableButtonWrapper/TableButtonWrapper.tsx      | warn     |
+[log] | TextInputValuesHandler|NoopValuesHandler                                        | src/components/ConditionalFilter/API/Handler.ts               | warn     |
+[log] | FilterTab|default                                                               | src/components/TableFilter/FilterTab.tsx                      | warn     |
+[log] | ControlledCheckbox|default                                                      | src/components/ControlledCheckbox.tsx                         | warn     |
+[log] | getExtensionItemsForOverviewCreate|getExtensionsItemsForDiscountOverviewActions | src/extensions/getExtensionsItems.ts                          | warn     |
+[log] | Timeline|default                                                                | src/components/Timeline/Timeline.tsx                          | warn     |
+[log] | useRichText|default                                                             | src/utils/richText/useRichText.ts                             | warn     |
+[log] | DateTime|default                                                                | src/components/Date/DateTime.tsx                              | warn     |
+[log] | CardSpacer|default                                                              | src/components/CardSpacer.tsx                                 | warn     |
+[log] | FormSpacer|default                                                              | src/components/FormSpacer.tsx                                 | warn     |
+[log] | permissionGroupAddPath|permissionGroupAddUrl                                    | src/permissionGroups/urls.ts                                  | warn     |
+[log] | Grid|default                                                                    | src/components/Grid/Grid.tsx                                  | warn     |
+[log] | productsMocks|default                                                           | testUtils/mocks/products.ts                                   | warn     |
+[log] | attributeSection|attributeListPath                                              | src/attributes/urls.ts                                        | warn     |
+[log] | warehouseSection|warehouseListPath                                              | src/warehouses/urls.ts                                        | warn     |
+[log] | warehouseAddPath|warehouseAddUrl                                                | src/warehouses/urls.ts                                        | warn     |
+[log] | pageTypeAddPath|pageTypeAddUrl                                                  | src/modelTypes/urls.ts                                        | warn     |
+[log] | customerAddPath|customerAddUrl                                                  | src/customers/urls.ts                                         | warn     |
+[log] | Hr|default                                                                      | src/components/Hr.tsx                                         | warn     |
+[log] | channelsSection|channelsListPath                                                | src/channels/urls.ts                                          | warn     |
+[log] | modelingSection|pageListPath                                                    | src/modeling/urls.ts                                          | warn     |
+[log] | channelAddPath|channelAddUrl                                                    | src/channels/urls.ts                                          | warn     |
+[log] | passwordResetSuccessPath|passwordResetSuccessUrl                                | src/auth/urls.ts                                              | warn     |
+[log] | passwordResetPath|passwordResetUrl                                              | src/auth/urls.ts                                              | warn     |
+[log] | NotFound|default                                                                | src/NotFound.tsx                                              | warn     |
+[log]

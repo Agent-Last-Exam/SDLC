@@ -1,0 +1,410 @@
+Export identical: /workspace/repos/saleor/saleor/graphql/schema.graphql true
+Export identical: /workspace/repos/saleor-dashboard/schema.graphql true
+missingTypes 32
+unexpectedTypes 11
+missingFields 23
+unexpectedFields 15
+changedFields 33
+changedEnums 15
+changedKinds 0
+Missing root operations: [
+  'Mutation.giftCardTransactionInitialize',
+  'Query.checkoutCompletionStatus',
+  'Query.giftCardsExport',
+  'Query.productAvailabilityDiagnostics',
+  'Query.productsExport',
+  'Query.transactions',
+  'Query.voucherCodesExport'
+]
+Changed root fields: [
+  {
+    field: 'Mutation.appCreate',
+    target: {
+      type: 'AppCreate',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    },
+    actual: {
+      type: 'AppCreate',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    }
+  },
+  {
+    field: 'Mutation.appUpdate',
+    target: {
+      type: 'AppUpdate',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    },
+    actual: {
+      type: 'AppUpdate',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    }
+  },
+  {
+    field: 'Mutation.exportGiftCards',
+    target: {
+      type: 'ExportGiftCards',
+      arguments: [Object],
+      default: null,
+      deprecated: true
+    },
+    actual: {
+      type: 'ExportGiftCards',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    }
+  },
+  {
+    field: 'Mutation.exportProducts',
+    target: {
+      type: 'ExportProducts',
+      arguments: [Object],
+      default: null,
+      deprecated: true
+    },
+    actual: {
+      type: 'ExportProducts',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    }
+  },
+  {
+    field: 'Mutation.exportVoucherCodes',
+    target: {
+      type: 'ExportVoucherCodes',
+      arguments: [Object],
+      default: null,
+      deprecated: true
+    },
+    actual: {
+      type: 'ExportVoucherCodes',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    }
+  },
+  {
+    field: 'Mutation.giftCardBulkDelete',
+    target: {
+      type: 'GiftCardBulkDelete',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    },
+    actual: {
+      type: 'GiftCardBulkDelete',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    }
+  },
+  {
+    field: 'Mutation.orderBulkCancel',
+    target: {
+      type: 'OrderBulkCancel',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    },
+    actual: {
+      type: 'OrderBulkCancel',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    }
+  },
+  {
+    field: 'Mutation.orderCapture',
+    target: {
+      type: 'OrderCapture',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    },
+    actual: {
+      type: 'OrderCapture',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    }
+  },
+  {
+    field: 'Mutation.orderMarkAsPaid',
+    target: {
+      type: 'OrderMarkAsPaid',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    },
+    actual: {
+      type: 'OrderMarkAsPaid',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    }
+  },
+  {
+    field: 'Mutation.orderRefund',
+    target: {
+      type: 'OrderRefund',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    },
+    actual: {
+      type: 'OrderRefund',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    }
+  },
+  {
+    field: 'Mutation.orderVoid',
+    target: {
+      type: 'OrderVoid',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    },
+    actual: {
+      type: 'OrderVoid',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    }
+  },
+  {
+    field: 'Mutation.paymentCapture',
+    target: {
+      type: 'PaymentCapture',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    },
+    actual: {
+      type: 'PaymentCapture',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    }
+  },
+  {
+    field: 'Mutation.paymentRefund',
+    target: {
+      type: 'PaymentRefund',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    },
+    actual: {
+      type: 'PaymentRefund',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    }
+  },
+  {
+    field: 'Mutation.paymentVoid',
+    target: {
+      type: 'PaymentVoid',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    },
+    actual: {
+      type: 'PaymentVoid',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    }
+  },
+  {
+    field: 'Mutation.productBulkDelete',
+    target: {
+      type: 'ProductBulkDelete',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    },
+    actual: {
+      type: 'ProductBulkDelete',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    }
+  },
+  {
+    field: 'Mutation.transactionCreate',
+    target: {
+      type: 'TransactionCreate',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    },
+    actual: {
+      type: 'TransactionCreate',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    }
+  },
+  {
+    field: 'Mutation.transactionEventReport',
+    target: {
+      type: 'TransactionEventReport',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    },
+    actual: {
+      type: 'TransactionEventReport',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    }
+  },
+  {
+    field: 'Mutation.transactionProcess',
+    target: {
+      type: 'TransactionProcess',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    },
+    actual: {
+      type: 'TransactionProcess',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    }
+  },
+  {
+    field: 'Mutation.transactionRequestAction',
+    target: {
+      type: 'TransactionRequestAction',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    },
+    actual: {
+      type: 'TransactionRequestAction',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    }
+  },
+  {
+    field: 'Mutation.transactionRequestRefundForGrantedRefund',
+    target: {
+      type: 'TransactionRequestRefundForGrantedRefund',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    },
+    actual: {
+      type: 'TransactionRequestRefundForGrantedRefund',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    }
+  },
+  {
+    field: 'Mutation.transactionUpdate',
+    target: {
+      type: 'TransactionUpdate',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    },
+    actual: {
+      type: 'TransactionUpdate',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    }
+  },
+  {
+    field: 'Query._entities',
+    target: {
+      type: '[_Entity]',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    },
+    actual: {
+      type: '[_Entity]',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    }
+  },
+  {
+    field: 'Query.checkouts',
+    target: {
+      type: 'CheckoutCountableConnection',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    },
+    actual: {
+      type: 'CheckoutCountableConnection',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    }
+  },
+  {
+    field: 'Query.giftCards',
+    target: {
+      type: 'GiftCardCountableConnection',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    },
+    actual: {
+      type: 'GiftCardCountableConnection',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    }
+  },
+  {
+    field: 'Query.orders',
+    target: {
+      type: 'OrderCountableConnection',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    },
+    actual: {
+      type: 'OrderCountableConnection',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    }
+  },
+  {
+    field: 'Query.products',
+    target: {
+      type: 'ProductCountableConnection',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    },
+    actual: {
+      type: 'ProductCountableConnection',
+      arguments: [Object],
+      default: null,
+      deprecated: false
+    }
+  }
+]
