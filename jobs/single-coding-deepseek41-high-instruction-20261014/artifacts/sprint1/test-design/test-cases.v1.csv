@@ -1,0 +1,1141 @@
+用例编号,一级模块,二级模块,用例标题,覆盖,优先级,前置条件,操作步骤,预期结果
+TC001,业务域 A：结账配送与库存一致性,R01 · 主动重算当前结账的配送选项,有效结账查询配送选项返回可用列表与可展示名称和价格,AC-01-1；BD01；I01,P0,"1. 存在启用渠道 CH-CN，币种 CNY。
+2. 存在结账 token=3f1e8f92-7c1a-4df9-9a2f-6b0c2d5e7a01，含 1 个行项目（商品 P1 × 1），收货地址完整（北京市朝阳区）。
+3. 存在仓库 WH-CN-1 直接关联 CH-CN，商品 P1 在该仓有可用库存 5 件。
+4. 同步配送服务为 CH-CN 返回配送方式 SM-EXPRESS（名称「顺丰快递」，价格 CNY 20.00）。","1. 以结账 token=3f1e8f92-7c1a-4df9-9a2f-6b0c2d5e7a01 调用 query checkoutDeliveryOptions(token: $token)。
+2. 读取返回的 availableDeliveryOptions 列表并检查每项字段。","1. 顶层无 errors，payload.errors 为空数组。
+2. availableDeliveryOptions 非空，包含 id 为 SM-EXPRESS 的选项，其 name 为「顺丰快递」、price.currency 为 CNY、price.amount 为 20.00，status 为 AVAILABLE。"
+TC002,业务域 A：结账配送与库存一致性,R01 · 主动重算当前结账的配送选项,已选配送方式的结账其当前选择与 deliveryMethod 指向同一对象,AC-01-2；BD01；I01,P0,"1. 存在启用渠道 CH-CN，币种 CNY。
+2. 存在结账 token=3f1e8f92-7c1a-4df9-9a2f-6b0c2d5e7a01，行项目非空、收货地址完整，已选定配送方式 SM-EXPRESS（结账 deliveryMethod=SM-EXPRESS）。","1. 调用 checkoutDeliveryOptions(token) 查询该结账。
+2. 比较 checkout.deliveryMethod.id 与 selectedDeliveryOption.id。","1. 顶层无 errors，payload.errors 为空数组。
+2. selectedDeliveryOption 非空，其 id 与 checkout.deliveryMethod.id 均为 SM-EXPRESS，status 为 AVAILABLE。"
+TC003,业务域 A：结账配送与库存一致性,R01 · 主动重算当前结账的配送选项,更换收货地址后重新查询配送选项按新地址计算且旧选项不再出现,AC-01-3；BD01；I01,P0,"1. 存在启用渠道 CH-CN，结账 token=3f1e8f92-7c1a-4df9-9a2f-6b0c2d5e7a01，行项目非空。
+2. 初始收货地址为北京市朝阳区，SM-EXPRESS 在该地址可用；SM-EXPRESS 的配送区域不覆盖海南省三沙市。","1. 查询 checkoutDeliveryOptions(token)，记录向北京可用的 SM-EXPRESS。
+2. 通过既有结账收货地址更新入口，把该结账收货地址改为海南省三沙市。
+3. 再次调用 checkoutDeliveryOptions(token)。","1. 第一次返回的 availableDeliveryOptions 含 SM-EXPRESS。
+2. 地址更新成功，payload.errors 为空。
+3. 第二次返回的 availableDeliveryOptions 不再包含 SM-EXPRESS，列表按新地址重新计算。"
+TC004,业务域 A：结账配送与库存一致性,R01 · 主动重算当前结账的配送选项,行项目变化后重新查询配送选项按新行项目计算且旧选项不再出现,AC-01-3；BD01；I01,P1,"1. 存在启用渠道 CH-CN，结账 token=3f1e8f92-7c1a-4df9-9a2f-6b0c2d5e7a01，收货地址完整。
+2. 初始含商品 P1 × 1（总重 1kg），SM-EXPRESS（限重 ≤5kg）可用。
+3. 同步配送服务在总重超过 5kg 时改返回 SM-HEAVY（重货专线）。","1. 查询 checkoutDeliveryOptions(token)，确认列表含 SM-EXPRESS。
+2. 将结账中商品 P1 的数量由 1 改为 10（总重 10kg）。
+3. 再次调用 checkoutDeliveryOptions(token)。","1. 第一次返回的 availableDeliveryOptions 含 SM-EXPRESS。
+2. 行项目更新成功，payload.errors 为空。
+3. 第二次返回的 availableDeliveryOptions 不再包含 SM-EXPRESS，包含按新行项目可用的 SM-HEAVY，且 status 为 AVAILABLE。"
+TC005,业务域 A：结账配送与库存一致性,R01 · 主动重算当前结账的配送选项,收货地址缺失时查询配送选项返回字段错误且不写入半成品选择,AC-01-4；BD01；I01,P0,"1. 存在结账 token=3f1e8f92-7c1a-4df9-9a2f-6b0c2d5e7a01，行项目非空但未设置收货地址（shippingAddress 为空）。
+2. 该结账此前已有一个有效配送选择 deliveryMethod=SM-EXPRESS。","1. 调用 checkoutDeliveryOptions(token)。
+2. 读取 payload.errors 与结账的 deliveryMethod。","1. payload.errors 非空，code 为 SHIPPING_ADDRESS_NOT_SET 或 MISSING_ADDRESS_DATA，field 指向地址字段。
+2. 结账 deliveryMethod 仍为 SM-EXPRESS，未被改写，未写入任何半成品选择。"
+TC006,业务域 A：结账配送与库存一致性,R01 · 主动重算当前结账的配送选项,同步配送服务报错时查询返回错误且不返回部分选项、不改动原选择,AC-01-4；BD01；I01,P0,"1. 存在结账 token=3f1e8f92-7c1a-4df9-9a2f-6b0c2d5e7a01，行项目非空、收货地址完整，deliveryMethod=SM-EXPRESS。
+2. 配置同步配送服务（SHIPPING_LIST_METHODS_FOR_CHECKOUT）对 CH-CN 返回错误。","1. 调用 checkoutDeliveryOptions(token)。
+2. 读取 payload.errors、availableDeliveryOptions 与结账的 deliveryMethod。","1. payload.errors 非空，code 为 DELIVERY_SERVICE_ERROR。
+2. availableDeliveryOptions 为空，不返回任何部分选项；结账 deliveryMethod 保持 SM-EXPRESS 不变。"
+TC007,业务域 A：结账配送与库存一致性,R01 · 主动重算当前结账的配送选项,结账不存在时查询配送选项返回 NOT_FOUND 且不泄露配送或地址信息,AC-01-5；BD01；I01,P0,1. 系统中不存在 token=00000000-0000-0000-0000-000000000000 的结账。,"1. 调用 checkoutDeliveryOptions(token=00000000-0000-0000-0000-000000000000)。
+2. 检查响应中的 errors 与 data。","1. 顶层 errors 含 NOT_FOUND。
+2. 响应 data 中不含任何配送方式名称、价格或收货地址字段。"
+TC008,业务域 A：结账配送与库存一致性,R01 · 主动重算当前结账的配送选项,结账不属于调用方时查询配送选项返回错误且不泄露配送信息,AC-01-5；BD01；I01,P0,"1. 客户 C1 持有有效 JWT；存在属于客户 C2 的结账 token=7a2b9c10-4e5f-4a6b-8c7d-1e2f3a4b5c6d。
+2. 该结账行项目非空、地址完整。",1. 以客户 C1 身份调用 checkoutDeliveryOptions(token=7a2b9c10-4e5f-4a6b-8c7d-1e2f3a4b5c6d)。,1. 返回顶层 NOT_FOUND（或权限错误），响应不含该结账的任何配送方式、价格或地址信息。
+TC009,业务域 A：结账配送与库存一致性,R02 · 更新配送选择与完成订单时重新确认有效性,更新配送选择为当前不适用方式时返回不适用错误且不改写原选择,AC-02-1；BD01；I02,P0,"1. 存在结账 token=3f1e8f92-7c1a-4df9-9a2f-6b0c2d5e7a01，渠道 CH-CN，收货地址北京市朝阳区，deliveryMethod=SM-EXPRESS。
+2. 配送方式 SM-PICKUP 属于当前渠道 CH-CN，但在该结账当前地址下不适用。","1. 调用 checkoutDeliveryMethodUpdate(id, deliveryMethodId=SM-PICKUP 的对象 ID)。
+2. 读取 payload.errors 与结账的 deliveryMethod。","1. payload.errors 非空，code 为 DELIVERY_METHOD_NOT_APPLICABLE。
+2. 结账 deliveryMethod 仍为 SM-EXPRESS，原选择未被改写。"
+TC010,业务域 A：结账配送与库存一致性,R02 · 更新配送选择与完成订单时重新确认有效性,更新配送选择为不属于当前结账的方式时返回归属错误且不改写原选择,AC-02-1；BD01；I02,P0,"1. 存在结账 token=3f1e8f92-7c1a-4df9-9a2f-6b0c2d5e7a01，渠道 CH-CN，deliveryMethod=SM-EXPRESS。
+2. 存在配送方式 SM-OTHER，属于渠道 CH-US，不属于当前结账渠道 CH-CN。","1. 调用 checkoutDeliveryMethodUpdate(id, deliveryMethodId=SM-OTHER 的对象 ID)。
+2. 读取 payload.errors 与结账的 deliveryMethod。","1. payload.errors 非空，code 为 DELIVERY_METHOD_OUT_OF_SCOPE。
+2. 结账 deliveryMethod 仍为 SM-EXPRESS；响应不含 SM-OTHER 的名称或价格。"
+TC011,业务域 A：结账配送与库存一致性,R02 · 更新配送选择与完成订单时重新确认有效性,提交完成结账时配送方式已失效则阻止完成并返回失效错误且不创建订单,AC-02-2；BD01；I02,P0,"1. 存在结账 token=3f1e8f92-7c1a-4df9-9a2f-6b0c2d5e7a01，已选 deliveryMethod=SM-EXPRESS，商品可售，支付 fully paid。
+2. 在提交完成前，SM-EXPRESS 对当前结账失效（收货地址变化导致其不再适用）。","1. 使 SM-EXPRESS 对当前结账失效。
+2. 调用 checkoutComplete(id)。
+3. 检查是否生成订单与结账状态。","1. 失效状态生效，结账 deliveryMethod 仍指向 SM-EXPRESS。
+2. payload.errors 非空，code 为 DELIVERY_METHOD_INVALIDATED（失效原因可与未设置、地址缺失区分）。
+3. 不返回 order，未创建订单，结账保持未完成。"
+TC012,业务域 A：结账配送与库存一致性,R02 · 更新配送选择与完成订单时重新确认有效性,需配送的结账未设置收货地址时完成返回地址未设置错误且不创建订单,AC-02-3；BD01；I02,P0,1. 存在需配送的结账 token=3f1e8f92-7c1a-4df9-9a2f-6b0c2d5e7a01，行项目非空、已选 deliveryMethod=SM-EXPRESS，但未设置收货地址。,"1. 调用 checkoutComplete(id)。
+2. 检查 payload.errors 与是否生成订单。","1. payload.errors 非空，code 为 SHIPPING_ADDRESS_NOT_SET。
+2. 不返回 order，未创建订单。"
+TC013,业务域 A：结账配送与库存一致性,R02 · 更新配送选择与完成订单时重新确认有效性,需配送的结账未设置配送方式时完成返回配送方式未设置错误且不创建订单,AC-02-3；BD01；I02,P0,1. 存在需配送的结账 token=3f1e8f92-7c1a-4df9-9a2f-6b0c2d5e7a01，行项目非空、收货地址完整，但未设置配送方式（deliveryMethod 为空）。,"1. 调用 checkoutComplete(id)。
+2. 检查 payload.errors 与是否生成订单。","1. payload.errors 非空，code 为 SHIPPING_METHOD_NOT_SET。
+2. 不返回 order，未创建订单。"
+TC014,业务域 A：结账配送与库存一致性,R02 · 更新配送选择与完成订单时重新确认有效性,完成结账失败后再次提交以最新结账、库存与支付事实重新校验且结账保持未完成,AC-02-4；BD01；I02,P0,"1. 存在结账 token=3f1e8f92-7c1a-4df9-9a2f-6b0c2d5e7a01，已选 deliveryMethod=SM-EXPRESS，商品 P1 当前可用库存为 0。
+2. 支付已 fully paid。","1. 调用 checkoutComplete(id) 失败，记录失败时的库存与结账状态。
+2. 把商品 P1 可用库存补足到 5 件。
+3. 再次调用 checkoutComplete(id)。","1. 第一次 payload.errors 含库存不足类错误，无 order，结账保持未完成。
+2. 库存更新为 5 件。
+3. 第二次校验以最新结账、库存与支付事实重新执行并成功创建订单；两次提交之间结账始终为未完成状态，只产生一个订单。"
+TC015,业务域 A：结账配送与库存一致性,R02 · 更新配送选择与完成订单时重新确认有效性,结账不属于调用方时更新配送或完成结账返回错误且不改变原选择、不泄露信息,AC-02-5；BD01；I02,P0,1. 客户 C1 持有有效 JWT；存在属于客户 C2 的结账 token=7a2b9c10-4e5f-4a6b-8c7d-1e2f3a4b5c6d，其 deliveryMethod=SM-EXPRESS。,"1. 以客户 C1 身份调用 checkoutDeliveryMethodUpdate(id=C2 结账, deliveryMethodId=SM-PICKUP 的对象 ID)。
+2. 以客户 C1 身份调用 checkoutComplete(id=C2 结账)。","1. 返回顶层 NOT_FOUND 或权限错误，C2 结账的 deliveryMethod 仍为 SM-EXPRESS，未被改写。
+2. 返回错误，不泄露配送信息，不创建订单。"
+TC016,业务域 A：结账配送与库存一致性,R03 · 旧配送标识与旧字段的弃用读取兼容,旧 shippingMethod 字段读取结账或订单返回与 deliveryMethod 一致且带弃用标记,AC-03-1；BD02；I03,P1,"1. 存在结账 token=3f1e8f92-7c1a-4df9-9a2f-6b0c2d5e7a01，deliveryMethod=SM-EXPRESS（ShippingMethod）。
+2. 存在由该结账生成的订单 O1，其配送方式同为 SM-EXPRESS。
+3. 另存在一个 deliveryMethod 为自提 Warehouse 的结账 token=8b3c0d21-5f6a-4b7c-9d8e-2f3a4b5c6d7e。","1. 查询 checkout(token) { deliveryMethod { id name } shippingMethod { id name } }。
+2. 查询 order(id=O1) { deliveryMethod { id name } shippingMethod { id name } }。
+3. 检查 schema 中 Checkout.shippingMethod 与 Order.shippingMethod 的弃用标记。
+4. 查询自提结账 token=8b3c0d21-5f6a-4b7c-9d8e-2f3a4b5c6d7e 的 shippingMethod。","1. shippingMethod 返回与 deliveryMethod 相同的对象（id、name 一致）。
+2. 订单的 shippingMethod 同样与 deliveryMethod 一致。
+3. 两个字段均带 @deprecated 标记。
+4. deliveryMethod 为自提 Warehouse 时 shippingMethod 返回 null。"
+TC017,业务域 A：结账配送与库存一致性,R03 · 旧配送标识与旧字段的弃用读取兼容,旧配送入口提交属于当前结账的配送标识成功且旧地址参数被接受,AC-03-2；BD02；I03,P1,"1. 存在结账 token=3f1e8f92-7c1a-4df9-9a2f-6b0c2d5e7a01，渠道 CH-CN，deliveryMethod=SM-EXPRESS。
+2. SM-EXPRESS 属于当前结账渠道且在有效集合内。","1. 调用已弃用入口 checkoutShippingMethodUpdate，shippingMethodId=SM-EXPRESS 的对象 ID，并附带旧的地址类参数。
+2. 读取 payload.errors 与结账的 deliveryMethod。","1. payload.errors 为空数组。
+2. 结账 deliveryMethod 更新为 SM-EXPRESS；旧地址类参数被接受但不改变归属判定结果。"
+TC018,业务域 A：结账配送与库存一致性,R03 · 旧配送标识与旧字段的弃用读取兼容,旧入口提交不属于当前结账渠道的配送方式返回与新入口一致的归属错误且不泄露信息,AC-03-3；BD02；I03,P1,"1. 存在结账 token=3f1e8f92-7c1a-4df9-9a2f-6b0c2d5e7a01，渠道 CH-CN。
+2. 存在配送方式 SM-US，属于渠道 CH-US。","1. 调用 checkoutShippingMethodUpdate(shippingMethodId=SM-US 的对象 ID)。
+2. 调用 checkoutDeliveryMethodUpdate(deliveryMethodId=SM-US 的对象 ID) 作对比。","1. 旧入口 payload.errors 的 code 为 DELIVERY_METHOD_OUT_OF_SCOPE。
+2. 新入口返回相同 code，两入口行为一致；响应不含其他渠道配送方式的名称、价格或地址。"
+TC019,业务域 A：结账配送与库存一致性,R04 · 渠道与仓库直接关联下的库存计算统一,未切换库存策略的商店升级后商品可售性与库存行为与升级前一致,AC-04-1；BD03；I04,P0,"1. 渠道 CH-LEGACY 未切换库存策略（stockAvailabilityMode=SHIPPING_ZONES），基于配送区域与地址关联。
+2. 商品 P1 在 CH-LEGACY 有可用库存，通过配送区域+地址可售。
+3. 记录升级前以地址「上海市浦东新区」查询 P1 的可售性与库存。","1. 升级后查询 Channel.stockSettings.stockAvailabilityMode。
+2. 以相同地址「上海市浦东新区」查询商品 P1 的可售性与库存。","1. stockAvailabilityMode 返回 SHIPPING_ZONES。
+2. 可售性与库存结果与升级前一致，既有商品未因升级变得不可售。"
+TC020,业务域 A：结账配送与库存一致性,R04 · 渠道与仓库直接关联下的库存计算统一,已切换渠道仅由直接关联仓库参与可售与库存计算且各入口结果一致,AC-04-2；BD03；I04,P0,"1. 渠道 CH-CN 切换为 stockAvailabilityMode=CHANNEL_WAREHOUSES。
+2. ChannelWarehouse 直接关联 WH-CN-1（商品 P1 可用库存 5）与 WH-CN-2（可用库存 0）；WH-CN-3 未直接关联该渠道（可用库存 100）。","1. 查询商品 P1 在 CH-CN 的可售性。
+2. 查询结账的可用量。
+3. 查询订单与履约的库存。
+4. 查看渠道仓库分配视图。","1. 可售性仅计入 WH-CN-1，可用量为 5。
+2. 结账可用量与第 1 步一致。
+3. 订单与履约库存与第 1 步一致。
+4. 分配视图只显示 WH-CN-1、WH-CN-2；WH-CN-3 的 100 件不参与计算，四个入口结果一致。"
+TC021,业务域 A：结账配送与库存一致性,R04 · 渠道与仓库直接关联下的库存计算统一,已切换渠道客户端传入地址参数不改变直接关联决定的结果,AC-04-3；BD03；I04,P0,"1. 渠道 CH-CN 切换为 stockAvailabilityMode=CHANNEL_WAREHOUSES，直接关联 WH-CN-1（商品 P1 可用库存 5）。
+2. 商品 P1 在未直接关联的 WH-CN-3 有库存 100。","1. 不传地址参数查询商品 P1 在 CH-CN 的可售性，记录结果。
+2. 传入地址参数「广东省深圳市南山区」（WH-CN-3 所属区域）再次查询可售性，并触发一次库存预留。","1. 可售性仅由直接关联仓库决定，可用量为 5。
+2. 传地址参数后结果与第 1 步一致；预留仍从 WH-CN-1 扣减，地址参数不改变直接关联决定的结果。"
+TC022,业务域 A：结账配送与库存一致性,R04 · 渠道与仓库直接关联下的库存计算统一,库存不足或预留失败时返回可解释失败且无部分预留、不超卖,AC-04-4；BD03；I04,P0,"1. 渠道 CH-CN 切换为 stockAvailabilityMode=CHANNEL_WAREHOUSES，直接关联 WH-CN-1（商品 P1 可用库存 3）。
+2. 存在结账 token=3f1e8f92-7c1a-4df9-9a2f-6b0c2d5e7a01，需商品 P1 × 5。","1. 调用 checkoutComplete(id) 提交结账。
+2. 检查各入口（商品可售性、结账可用量、履约库存）的剩余量与是否产生部分预留。","1. 返回可解释的库存不足失败（payload 或顶层库存不足错误码），订单未创建。
+2. 各入口剩余量均为 3 件，未产生部分预留，未超卖，重试前后剩余量一致。"
+TC023,业务域 A：结账配送与库存一致性,R04 · 渠道与仓库直接关联下的库存计算统一,调用方无权限访问渠道或仓库时查询可售性或库存返回权限错误而非空结果,AC-04-5；BD03；I04,P0,"1. 员工账号 S2 不具备渠道 CH-US 的可见性。
+2. 商品 P1 在 CH-US 有库存。","1. 以 S2 身份查询 CH-US 下商品 P1 的可售性。
+2. 以 S2 身份查询 CH-US 直接关联仓库的库存。","1. 返回顶层权限错误，不以空结果掩盖。
+2. 返回顶层权限错误，不以 edges: []、totalCount: 0 掩盖无权限。"
+TC024,业务域 A：结账配送与库存一致性,R05 · 已支付结账自动完成的前置条件与幂等,满足 fully paid 与全部前置条件的结账自动完成生成订单并只发送一次完成通知,AC-05-1；BD04；I05,P0,"1. 渠道 CH-CN 启用自动完成。
+2. 结账 token=3f1e8f92-7c1a-4df9-9a2f-6b0c2d5e7a01 达到 fully paid（Transaction charged+authorized ≥ total），有客户、账单地址、收货地址与配送方式，商品可售，总额大于零。","1. 触发 automatic_checkout_completion_task（或批次扫描）处理该结账。
+2. 检查生成的订单与完成通知事件。","1. 恰好生成 1 个订单，结账状态变为已完成。
+2. 只发送 1 次订单完成通知（完成事件恰好 1 条）。"
+TC025,业务域 A：结账配送与库存一致性,R05 · 已支付结账自动完成的前置条件与幂等,未达到 fully paid 的结账自动完成不创建订单并记录阻断原因,AC-05-2；BD04；I05,P0,"1. 渠道 CH-CN 启用自动完成。
+2. 结账 token=3f1e8f92-7c1a-4df9-9a2f-6b0c2d5e7a01 的 charged+authorized 小于 total（未 fully paid），其余前置条件满足。","1. 触发自动完成处理该结账。
+2. 查询 Checkout.automaticCompletion。","1. 不创建订单。
+2. blockers 含 NOT_FULLY_PAID，status 非 COMPLETED。"
+TC026,业务域 A：结账配送与库存一致性,R05 · 已支付结账自动完成的前置条件与幂等,缺客户、账单地址、必要配送信息、商品不可售或总额为零的结账自动完成不创建订单,AC-05-2；BD04；I05,P0,"1. 渠道 CH-CN 启用自动完成，支付均达到 fully paid。
+2. 分别构造 5 个结账：无客户且无邮箱、无账单地址、需配送但无收货地址/无配送方式、商品不可售、总额为 0。","1. 对「无客户且无邮箱」的结账触发自动完成。
+2. 对「无账单地址」的结账触发自动完成。
+3. 对「需配送但无收货地址/无配送方式」的结账触发自动完成。
+4. 对「商品不可售」的结账触发自动完成。
+5. 对「总额为 0」的结账触发自动完成。","1. 不创建订单，blockers 含 MISSING_CUSTOMER。
+2. 不创建订单，blockers 含 MISSING_BILLING_ADDRESS。
+3. 不创建订单，blockers 含 MISSING_SHIPPING_ADDRESS 或 MISSING_DELIVERY_METHOD。
+4. 不创建订单，blockers 含 PRODUCT_NOT_AVAILABLE。
+5. 不创建订单，blockers 含 ZERO_TOTAL。"
+TC027,业务域 A：结账配送与库存一致性,R05 · 已支付结账自动完成的前置条件与幂等,已完成或已处理过的结账再次触达不生成第二个订单,AC-05-3；BD04；I05,P0,"1. 结账 token=3f1e8f92-7c1a-4df9-9a2f-6b0c2d5e7a01 已生成订单 O1（已完成）。
+2. 另有结账 token=9c4d1e32-6a7b-4c8d-a9e0-3f4a5b6c7d8e 状态已被处理过。","1. 对已完成的结账再次触发自动完成。
+2. 对已处理过的结账触发自动完成。","1. 不生成第二个订单，订单总数保持 1，blockers 含 ALREADY_COMPLETED。
+2. 不生成第二个订单。"
+TC028,业务域 A：结账配送与库存一致性,R05 · 已支付结账自动完成的前置条件与幂等,排队期间库存或配送条件变化时真正执行前重新校验并可能不创建订单,AC-05-4；BD04；I05,P0,"1. 渠道 CH-CN 启用自动完成；结账 token=3f1e8f92-7c1a-4df9-9a2f-6b0c2d5e7a01 入队时 fully paid 且条件满足。
+2. 排队后、真正执行前，把商品 P1 可用库存改为 0。","1. 结账入队后，在下单前把商品 P1 可用库存改为 0。
+2. 执行该结账的自动完成。
+3. 查询 Checkout.automaticCompletion。","1. 库存变更为 0。
+2. 重新校验后判定不合格，不创建订单。
+3. blockers 含 PRODUCT_NOT_AVAILABLE。"
+TC029,业务域 A：结账配送与库存一致性,R05 · 已支付结账自动完成的前置条件与幂等,自动完成失败后修复条件重试只产生一个订单结果且不重复扣款与事件,AC-05-5；BD04；I05,P0,1. 渠道 CH-CN 启用自动完成；结账 token=3f1e8f92-7c1a-4df9-9a2f-6b0c2d5e7a01 首次执行因缺少配送方式失败。,"1. 触发自动完成（缺配送方式）。
+2. 为结账补齐有效配送方式后重试自动完成。
+3. 再次触发自动完成，并检查扣款、完成事件与订单金额。","1. 首次不创建订单，结账留下可重试的失败状态。
+2. 重试只创建 1 个订单，完成事件恰好 1 条。
+3. 再次执行不新增订单、不重复扣款、不重复发送完成事件；订单金额与第 2 步一致。"
+TC030,业务域 A：结账配送与库存一致性,R05 · 已支付结账自动完成的前置条件与幂等,自动完成失败后商户可见可诊断原因与可重试状态且无权限不泄露细节,AC-05-6；BD04；I05,P0,"1. 结账 token=3f1e8f92-7c1a-4df9-9a2f-6b0c2d5e7a01 自动完成失败（缺账单地址）。
+2. 员工账号 S3 具备 MANAGE_ORDERS 权限；员工账号 S4 不具备该权限。","1. 以 S3 身份查询 checkout(token) { automaticCompletion { status blockers lastAttemptAt } }。
+2. 以 S4 身份查询同一字段。","1. status 为 BLOCKED（或 WAITING/READY），blockers 含 MISSING_BILLING_ADDRESS，lastAttemptAt 非空，可诊断失败原因且状态可重试。
+2. automaticCompletion 返回 null，不泄露结账处理细节。"
+TC031,业务域 A：结账配送与库存一致性,R06 · 按渠道配置自动完成策略并与执行结果分离,配置渠道自动完成开关、延迟与 cutoff 后重新读取返回与保存一致的值,AC-06-1；BD05；I06,P0,"1. 员工账号 S1 具备渠道管理权限。
+2. 渠道 CH-CN 当前 automaticallyCompleteFullyPaidCheckouts=false，automaticCompletionDelay 与 automaticCompletionCutoff 为 null。","1. 调用 channelUpdate(id=CH-CN, input.checkoutSettings={automaticallyCompleteFullyPaidCheckouts: true, automaticCompletionDelay: 30, automaticCompletionCutoff: ""2026-01-01T00:00:00Z""})。
+2. 重新查询 Channel.checkoutSettings。","1. payload.errors 为空数组。
+2. automaticallyCompleteFullyPaidCheckouts 为 true，automaticCompletionDelay 为 30，automaticCompletionCutoff 为 2026-01-01T00:00:00Z，与保存值一致。"
+TC032,业务域 A：结账配送与库存一致性,R06 · 按渠道配置自动完成策略并与执行结果分离,未配置自动完成的渠道沿用关闭或既有默认行为且不改变历史手工流程,AC-06-2；BD05；I06,P0,"1. 渠道 CH-OLD 未配置自动完成（automaticallyCompleteFullyPaidCheckouts=false，延迟与 cutoff 为 null）。
+2. CH-OLD 下存在历史手工成单记录。","1. 查询 Channel.checkoutSettings。
+2. 触发批次扫描任务。
+3. 检查 CH-OLD 下结账的处理结果与历史手工流程。","1. automaticallyCompleteFullyPaidCheckouts 为 false，automaticCompletionDelay 与 automaticCompletionCutoff 为 null。
+2. CH-OLD 下无结账进入自动完成范围。
+3. 历史手工成单流程不受影响，无结账被自动成单。"
+TC033,业务域 A：结账配送与库存一致性,R06 · 按渠道配置自动完成策略并与执行结果分离,结账最近变化时间未超过配置延迟时不进入待处理范围，超过后进入,AC-06-3；BD05；I06,P0,"1. 渠道 CH-CN 配置 automaticCompletionDelay=30（分钟）且启用自动完成。
+2. 存在 fully paid 结账 A（最近一次修改时间距今 10 分钟）与结账 B（最近一次修改时间距今 40 分钟）。","1. 批次扫描，检查结账 A 的 Checkout.automaticCompletion 与是否成单。
+2. 批次扫描，检查结账 B 是否进入待处理范围。","1. 结账 A 未超过延迟，不进入待处理范围（eligibleAt 晚于当前时间，status 为 WAITING），未成单。
+2. 结账 B 已超过延迟，进入待处理范围并被处理。"
+TC034,业务域 A：结账配送与库存一致性,R06 · 按渠道配置自动完成策略并与执行结果分离,批次扫描只处理创建时间在 cutoff 或之后的结账且 cutoff 不是任务停止时间,AC-06-4；BD05；I06,P0,"1. 渠道 CH-CN 配置 automaticCompletionCutoff=2026-06-01T00:00:00Z 且启用自动完成。
+2. 存在 fully paid 结账 X（created=2026-05-31T23:59:59Z）与结账 Y（created=2026-06-01T00:00:01Z），均已超过配置延迟。","1. 批次扫描，检查结账 X 是否进入处理范围。
+2. 检查结账 Y 是否进入处理范围。
+3. 观察任务是否在 cutoff 时刻停止执行。","1. 结账 X 创建时间早于 cutoff，不进入处理范围。
+2. 结账 Y 创建时间在 cutoff 或之后，进入处理范围。
+3. 任务未在 cutoff 停止执行，cutoff 只作为结账创建时间的下界。"
+TC035,业务域 A：结账配送与库存一致性,R06 · 按渠道配置自动完成策略并与执行结果分离,配置范围或组合非法时保存返回明确错误并保留上次生效值,AC-06-5；BD05；I06,P0,1. 员工账号 S1 具备渠道管理权限；渠道 CH-CN 已有生效配置（delay=30、cutoff=2026-01-01T00:00:00Z）。,"1. 提交 channelUpdate 设置 automaticCompletionDelay=-5。
+2. 提交与延迟组合非法的 automaticCompletionCutoff 配置。","1. 执行前校验拒绝（ChannelErrorCode.INVALID 或负数校验错误），payload.errors 非空。
+2. payload.errors 非空；渠道设置保留上次生效值（delay=30、cutoff=2026-01-01T00:00:00Z）。"
+TC036,业务域 A：结账配送与库存一致性,R06 · 按渠道配置自动完成策略并与执行结果分离,无渠道配置权限保存自动完成设置被拒绝且保留上次生效值,AC-06-5；BD05；I06,P0,1. 员工账号 S2 不具备渠道管理权限；渠道 CH-CN 已有生效配置（delay=30）。,"1. 以 S2 身份提交 channelUpdate 修改 CH-CN 的自动完成设置。
+2. 重新查询 Channel.checkoutSettings。","1. 返回顶层权限错误（PERMISSION_DENIED），payload.errors 非空。
+2. 渠道设置保留上次生效值（delay=30）。"
+TC037,业务域 A：结账配送与库存一致性,R06 · 按渠道配置自动完成策略并与执行结果分离,保存发生冲突时返回明确错误并保留上次生效值,AC-06-5；BD05；I06,P1,"1. 员工账号 S1 具备渠道管理权限；渠道 CH-CN 已有生效配置（delay=30、cutoff=2026-01-01T00:00:00Z）。
+2. 存在两个携带冲突唯一性条件的并发保存请求。","1. 并发提交两个冲突的自动完成设置保存请求。
+2. 重新查询 Channel.checkoutSettings。","1. 冲突请求返回明确错误（UNIQUE 或 ALREADY_EXISTS）。
+2. 渠道设置保留上次生效值，未被部分写入。"
+TC038,业务域 A：结账配送与库存一致性,R06 · 按渠道配置自动完成策略并与执行结果分离,设置保存成功不表示订单已生成，页面不据此显示订单完成,AC-06-6；BD05；I06,P0,1. 员工账号 S1 具备渠道管理权限；渠道 CH-CN 下有尚未自动完成的 fully paid 结账 token=3f1e8f92-7c1a-4df9-9a2f-6b0c2d5e7a01。,"1. 保存 CH-CN 的自动完成开关、延迟与 cutoff 成功。
+2. 检查保存响应、页面提示与结账、订单状态。","1. 保存只表示设置已保存（payload.errors 为空），不触发任何结账处理。
+2. 结账 Checkout.automaticCompletion.status 与订单状态未被该保存改变；页面不显示任何订单已生成的结论；订单是否完成以实际结账与订单状态为准。"
+TC039,业务域 B：商品可售性诊断与搜索,R07 · 商品编辑页按渠道的可售性诊断,商品编辑页按渠道名或币种筛选并翻页返回过滤结果与各渠道问题数量明细,AC-07-1；BD06；I07,P0,"1. 员工账号 S1 具备 MANAGE_PRODUCTS 权限。
+2. 商品 P9 在 CH-CN（CNY，可售）、CH-US（USD，未发布）、CH-EU（EUR，库存不足）状态不同。","1. 调用 productChannelDiagnostics(productId=P9, filter={currency: CNY}, first: 1)。
+2. 按渠道名筛选并翻页（after=上一页 endCursor）。","1. 只返回币种 CNY 的渠道 CH-CN，节点含 errorCount、warningCount、notApplicableCount 与 findings 明细。
+2. 翻页返回下一渠道且无重复项；totalCount 与筛选条件一致。"
+TC040,业务域 B：商品可售性诊断与搜索,R07 · 商品编辑页按渠道的可售性诊断,未发布或可购买时间未到时返回对应阻断错误并区分严重度,AC-07-2；BD06；I07,P0,"1. 员工账号 S1 具备 MANAGE_PRODUCTS 权限。
+2. 商品 P9 在 CH-US 未发布；在 CH-JP 可购买时间设为未来时间。","1. 查看商品 P9 在 CH-US 的诊断 findings。
+2. 查看商品 P9 在 CH-JP 的诊断 findings。","1. findings 含 code=NOT_PUBLISHED，severity=ERROR。
+2. findings 含 code=AVAILABLE_FOR_PURCHASE_DATE_IN_FUTURE 或 PUBLICATION_DATE_IN_FUTURE，severity=ERROR，并与 WARNING、NOT_APPLICABLE 类 findings 分类区分。"
+TC041,业务域 B：商品可售性诊断与搜索,R07 · 商品编辑页按渠道的可售性诊断,库存不足、无仓库关联或配送区域缺失时返回对应阻断错误,AC-07-2；BD06；I07,P0,"1. 员工账号 S1 具备 MANAGE_PRODUCTS 权限。
+2. 商品 P9 在 CH-EU 库存不足；在 CH-AP 无仓库关联；在 CH-AF 缺少覆盖仓库的配送区域。","1. 查看商品 P9 在 CH-EU 的 findings。
+2. 查看商品 P9 在 CH-AP 的 findings。
+3. 查看商品 P9 在 CH-AF 的 findings。","1. findings 含 code=OUT_OF_STOCK，severity=ERROR。
+2. findings 含 code=NO_WAREHOUSE_ASSIGNED，severity=ERROR。
+3. findings 含 code=NO_SHIPPING_ZONE 或 SHIPPING_ZONE_NOT_COVERING_WAREHOUSE，severity=ERROR。"
+TC042,业务域 B：商品可售性诊断与搜索,R07 · 商品编辑页按渠道的可售性诊断,正常满足的配置依赖不出现为阻断错误,AC-07-3；BD06；I07,P0,"1. 员工账号 S1 具备 MANAGE_PRODUCTS 权限。
+2. 商品 P10 在 CH-CN 已发布、有渠道价、库存充足、仓库与配送区域正常。",1. 查看商品 P10 在 CH-CN 的诊断。,1. isAvailable 为 true，errorCount 为 0；已正常满足的依赖（仓库关联、配送区域等）不出现 severity=ERROR 的 finding。
+TC043,业务域 B：商品可售性诊断与搜索,R07 · 商品编辑页按渠道的可售性诊断,数字类商品配送区域检查标记为不适用而库存发布与核心条件仍执行,AC-07-4；BD06；I07,P0,"1. 员工账号 S1 具备 MANAGE_PRODUCTS 权限。
+2. 商品 P11 为数字类（不需配送）商品，在 CH-CN 已发布、有可用库存，但未配置配送区域。",1. 查看商品 P11 在 CH-CN 的诊断 findings 与 notApplicableCount。,1. 配送区域类检查（如 NO_SHIPPING_ZONE）的 severity 为 NOT_APPLICABLE 并计入 notApplicableCount；库存、发布与核心条件仍被执行并报告（已发布、有可用库存时 errorCount 为 0）。
+TC044,业务域 B：商品可售性诊断与搜索,R07 · 商品编辑页按渠道的可售性诊断,无商品或渠道权限请求诊断返回权限错误且不含受限信息,AC-07-5；BD06；I07,P0,"1. 员工账号 S2 不具备 MANAGE_PRODUCTS 权限。
+2. 员工账号 S5 具备 MANAGE_PRODUCTS 但不具备渠道 CH-US 的可见性。","1. 以 S2 身份请求 productChannelDiagnostics(productId=P9)。
+2. 以 S5 身份请求 productChannelDiagnostics(productId=P9) 并检查返回的渠道范围。","1. 返回顶层权限错误，不返回 findings。
+2. 响应中不含 CH-US 的受限信息（名称、价格等），不以空结果掩盖。"
+TC045,业务域 B：商品可售性诊断与搜索,R07 · 商品编辑页按渠道的可售性诊断,诊断加载中或失败时状态明确区分且不把旧结论当最新、不覆盖编辑内容,AC-07-6；BD06；I07；FD01,P0,"1. 员工账号 S1 具备 MANAGE_PRODUCTS 权限；打开商品 P9 的编辑页。
+2. 商品编辑页已展示过一次诊断结果。","1. 触发一次新的诊断请求并保持其未返回。
+2. 模拟该诊断请求失败。
+3. 在编辑表单的商品描述字段输入内容后，让诊断数据到达/刷新。","1. 诊断区展示加载中状态。
+2. 展示失败状态与重试入口，不把上一次诊断结论当作最新结果。
+3. 正在编辑的商品描述字段内容不被诊断数据到达覆盖。"
+TC046,业务域 B：商品可售性诊断与搜索,R08 · 主体对象搜索能力与范围边界,结账、礼品卡、商品与订单的关键词、前缀、组合词与短语搜索按相关度返回,AC-08-1；BD07；I08；FD26,P1,"1. 商店 default-channel（币种 USD）已存在商品 P1 名称「红色羊毛围巾」、订单 O1 编号 1001、结账 C1（关联客户邮箱 customer@example.com）、礼品卡 GC-2026-0001。
+2. 员工 S1 具备 MANAGE_PRODUCTS 与 MANAGE_ORDERS 权限。
+3. 搜索索引已完成一次一致性刷新。","1. 员工 S1 以 search=「围巾」、sortBy field=RANK 查询 products，记录节点名称与顺序。
+2. 以 search=「1001」前缀查询 orders。
+3. 以 search=「羊毛 围巾」组合词查询 products。
+4. 以 search=「红色 围巾」短语查询 products。
+5. 以 search=「customer@example.com」查询 checkouts，以 search=「GC-2026」查询根级 giftCards。","1. 返回商品 P1，且列表按相关度（RANK）排序，匹配度更高的项在前。
+2. 返回订单 O1（编号 1001），前缀匹配生效。
+3. 返回商品 P1，空格分隔的组合词被同时匹配。
+4. 返回商品 P1，短语匹配生效。
+5. 分别返回结账 C1 与礼品卡 GC-2026-0001，各查询无顶层 errors 且顺序稳定可解释。"
+TC047,业务域 B：商品可售性诊断与搜索,R08 · 主体对象搜索能力与范围边界,搜索无匹配关键词返回合法空结果而非错误,AC-08-1；BD07；I08,P1,"1. 商品、订单、结账、礼品卡均不含与关键词匹配的数据。
+2. 员工 S1 具备 MANAGE_PRODUCTS 与 MANAGE_ORDERS 权限。","1. 以 search=「zzz-no-such-object-9999」查询 products。
+2. 以同一关键词查询 orders 与 checkouts。","1. 返回 edges 为空数组、totalCount=0。
+2. 无顶层 errors，各列表均返回合法空集合，不报错也不返回全部数据。"
+TC048,业务域 B：商品可售性诊断与搜索,R08 · 主体对象搜索能力与范围边界,客户与员工按空格组合词匹配搜索文档,AC-08-2；BD07；I08；FD26,P1,"1. 客户 C-01 邮箱 alice@example.com、姓名 Alice Wang；员工 S-02 邮箱 bob@example.com、姓名 Bob Li。
+2. 员工 S1 具备 MANAGE_USERS 与 MANAGE_STAFF 权限。","1. 以 search=「alice wang」查询 customers。
+2. 以 search=「bob li」查询 staffUsers。","1. 返回客户 C-01，空格分隔的组合词均匹配其 search_document。
+2. 返回员工 S-02，空格分隔的组合词均匹配其 search_document。"
+TC049,业务域 B：商品可售性诊断与搜索,R08 · 主体对象搜索能力与范围边界,页面按标题、slug 与内容搜索,AC-08-2；BD07；I08,P1,"1. 页面 PG-01 标题「春季新品」、slug spring-new、正文含「限时优惠」。
+2. 员工 S1 具备 MANAGE_PAGES 权限。","1. 以 search=「春季新品」查询 pages。
+2. 以 search=「spring-new」查询 pages。
+3. 以 search=「限时优惠」查询 pages。","1. 返回页面 PG-01（标题匹配）。
+2. 返回页面 PG-01（slug 匹配）。
+3. 返回页面 PG-01（内容匹配）。"
+TC050,业务域 B：商品可售性诊断与搜索,R08 · 主体对象搜索能力与范围边界,枚举搜索与排序能力时不出现页面与用户的高级搜索与 RANK,AC-08-3；BD07；I08；FD26,P1,"1. 已构建的 target-schema 与 Dashboard 生成客户端可用。
+2. 员工 S1 具备 MANAGE_PRODUCTS、MANAGE_USERS 与 MANAGE_PAGES 权限。","1. 枚举 PageSortField 与 UserSortField 的可用取值。
+2. 枚举 PageFilterInput 与 StaffUserInput/CustomerFilterInput 的可用字段。
+3. 检查是否存在页面与用户的向量高级搜索、前缀或相关度增强、专用索引、后台维护任务与迁移。","1. PageSortField 与 UserSortField 中不存在 RANK（对照：OrderSortField 与 ProductOrderField 仍保留 RANK）。
+2. 页面仅按标题、slug、内容搜索；客户与员工仅有按空格组合词匹配的 search 文档字段。
+3. 不存在页面与用户的向量高级搜索、前缀或相关度增强、RANK 排序、专用索引、后台维护任务与迁移。"
+TC051,业务域 B：商品可售性诊断与搜索,R08 · 主体对象搜索能力与范围边界,页面标题修改后商品引用名称在商品搜索中更新,AC-08-4；BD07；I08,P1,"1. 商品 P2 通过引用属性引用页面 PG-01（标题「春季新品」）。
+2. 员工 S1 具备 MANAGE_PRODUCTS 与 MANAGE_PAGES 权限。","1. 以 search=「春季新品」查询 products，确认返回 P2。
+2. 将页面 PG-01 标题改为「夏季新品」并保存。
+3. 等待搜索索引在约定的最终一致性窗口之后完成更新。
+4. 以 search=「夏季新品」查询 products。","1. 返回商品 P2。
+2. 保存成功。
+3. 索引更新完成，商品搜索向量被重建。
+4. 返回商品 P2，商品搜索结果反映更新后的引用名称「夏季新品」。"
+TC052,业务域 B：商品可售性诊断与搜索,R09 · 搜索索引更新、分页与异常状态,对象创建、修改、归档与关联字段变化后新值可检索,AC-09-1；BD07；I09,P1,"1. 员工 S1 具备 MANAGE_PRODUCTS 权限。
+2. 搜索索引更新任务（search_index_dirty）可用。","1. 新建商品 P3，名称「蓝色手套」，SKU BG-300。
+2. 在约定的最终一致性窗口之后，以 search=「蓝色手套」查询 products。
+3. 将商品 P3 名称改为「绿色手套」并保存，等待同一窗口。
+4. 以 search=「绿色手套」查询 products，再以 search=「蓝色手套」查询 products。
+5. 归档商品 P3，等待窗口后以 search=「绿色手套」查询 products。","1. 商品创建成功。
+2. 返回商品 P3（新值可检索）。
+3. 修改成功。
+4. 以「绿色手套」返回 P3；旧值「蓝色手套」不再命中 P3，不再成为唯一结果。
+5. 归档后 P3 按归档语义不可检索，结果可解释且旧值不残留为唯一结果。"
+TC053,业务域 B：商品可售性诊断与搜索,R09 · 搜索索引更新、分页与异常状态,重复关键词、大小写与组合词连续翻页结果稳定无重复漏项,AC-09-2；BD07；I09,P1,"1. 存在 25 个名称含「Gloves」的商品。
+2. 员工 S1 具备 MANAGE_PRODUCTS 权限。","1. 以 search=「Gloves」、first=10 查询 products，记录 totalCount、edges 与 endCursor。
+2. 以 search=「gloves」（小写）查询并记录 totalCount 与集合。
+3. 以 search=「Gloves Gloves」重复关键词查询并记录结果。
+4. 使用 endCursor 连续翻页直到 hasNextPage=false，汇总所有节点 id。","1. totalCount=25，第一页返回 10 项。
+2. 小写查询返回相同 totalCount=25 与相同集合（大小写不敏感）。
+3. 重复关键词返回与单次关键词一致的集合，不产生重复项。
+4. 汇总后共 25 个唯一 id，无重复、无漏项，顺序与游标稳定可解释。"
+TC054,业务域 B：商品可售性诊断与搜索,R09 · 搜索索引更新、分页与异常状态,空关键词不触发不可控的全量查询,AC-09-3；BD07；I09,P1,"1. 商品数量较大（例如 10000 个）。
+2. 员工 S1 具备 MANAGE_PRODUCTS 权限；已开启查询计数与日志。","1. 以 search=「」（空字符串）查询 products。
+2. 观察该请求触发的检索行为与返回结果。","1. 空关键词被短路处理，不执行全量扫描。
+2. 返回受分页约束的可解释结果，请求不因不可控全量查询而超时或产生不可控负载。"
+TC055,业务域 B：商品可售性诊断与搜索,R09 · 搜索索引更新、分页与异常状态,过长或非法搜索输入返回校验错误且不阻塞其他列表,AC-09-4；BD07；I09,P1,1. 员工 S1 具备 MANAGE_PRODUCTS 与 MANAGE_ORDERS 权限。,"1. 以超过约定长度的 search（如 5000 字符）查询 products。
+2. 以含非法字符或错误类型的 search 查询 products。
+3. 随后正常以 search=「围巾」查询 orders。","1. 返回校验错误或可解释的错误状态，不返回成功全量结果。
+2. 返回校验错误或错误状态。
+3. 其他列表操作仍正常返回匹配结果，不被前述错误阻塞。"
+TC056,业务域 B：商品可售性诊断与搜索,R09 · 搜索索引更新、分页与异常状态,搜索服务异常返回错误状态且其他列表仍可用,AC-09-4；BD07；I09,P1,"1. 员工 S1 具备 MANAGE_PRODUCTS 与 MANAGE_ORDERS 权限。
+2. 可模拟检索后端返回异常。","1. 使商品检索后端返回异常，以 search=「围巾」查询 products。
+2. 在同一异常期间以无 search 过滤查询 orders 列表。","1. products 查询返回错误状态，而不是成功空列表。
+2. orders 列表操作仍正常返回，不被搜索异常阻塞。"
+TC057,业务域 B：商品可售性诊断与搜索,R09 · 搜索索引更新、分页与异常状态,无权查看客户或员工时搜索不泄露隐私与身份信息,AC-09-5；BD07；I09,P1,"1. 员工 S3 不具备 MANAGE_USERS 与 MANAGE_STAFF 权限。
+2. 存在客户 C-01 与员工 S-02，其含隐私、地址与身份信息。
+3. 弹窗、列表与筛选器均可发起搜索。","1. 员工 S3 在客户列表以 search=「alice」查询 customers。
+2. 员工 S3 在分配弹窗以 search=「bob」查询 staffUsers。
+3. 通过筛选器发起同类搜索。","1. 返回与 Core 一致的权限范围（无权限返回权限错误，而非空列表），不返回 C-01 的隐私、地址或身份信息。
+2. 不返回 S-02 的身份信息。
+3. 弹窗、列表与筛选器使用与 Core 一致的搜索语义与权限范围，不泄露隐私。"
+TC058,业务域 C：收款、礼品卡与交易,R10 · 礼品卡纳入统一的交易生命周期,礼品卡授权形成可追踪交易记录而非仅呈现为减项,AC-10-1；BD08；I10；FD15,P0,"1. 结账 C1（token 为 UUID，币种 USD）剩余待付 50.00，未完成。
+2. 礼品卡 GC-2026-0001 已启用、未过期、币种 USD、余额 100.00。
+3. 员工 S1 具备 HANDLE_PAYMENTS；调用方持有结账 C1 的 token。","1. 调用 checkoutGiftCardAuthorize(token: C1, giftCardCode: 「GC-2026-0001」, amount: 50.00, idempotencyKey: 「k-auth-1」)。
+2. 读取返回的 transaction，检查 paymentMethodDetails.__typename 与 giftCard。
+3. 查询结账 C1 的支付与交易记录。","1. 授权成功，payload errors 为空。
+2. transaction.paymentMethodDetails.__typename = GiftCardPaymentMethodDetails，transaction.giftCard 指向 GC-2026-0001，并写入授权事件。
+3. 礼品卡的初始化与授权对应到该可追踪交易记录，而不是仅在结账总额里呈现为一个无法解释的减项。"
+TC059,业务域 C：收款、礼品卡与交易,R10 · 礼品卡纳入统一的交易生命周期,礼品卡不存在、未启用、已过期或币种不一致时明确失败且不改余额,AC-10-2；BD08；I10,P0,"1. 结账 C1 币种 USD、未完成。
+2. 员工 S1 具备 HANDLE_PAYMENTS。
+3. 存在未启用卡 GC-INACTIVE、已过期卡 GC-EXPIRED、币种 EUR 的卡 GC-EUR。","1. 以不存在卡号「GC-0000-0000」调用 checkoutGiftCardAuthorize。
+2. 以未启用的礼品卡 GC-INACTIVE 调用。
+3. 以已过期的礼品卡 GC-EXPIRED 调用。
+4. 以币种 EUR 的礼品卡 GC-EUR 调用。
+5. 查询上述礼品卡余额与结账 C1 支付状态。","1. 返回 NOT_FOUND。
+2. 返回 GIFT_CARD_NOT_ACTIVE。
+3. 返回 GIFT_CARD_EXPIRED。
+4. 返回 GIFT_CARD_CURRENCY_MISMATCH。
+5. 各失败请求均未修改礼品卡余额与结账支付状态。"
+TC060,业务域 C：收款、礼品卡与交易,R10 · 礼品卡纳入统一的交易生命周期,礼品卡余额边界：等于余额成功、超一分余额不足失败,AC-10-2；BD08；I10,P0,"1. 结账 C1 剩余待付 60.00、结账 C2 剩余待付 60.00，均未完成、币种 USD。
+2. 礼品卡 GC-2026-0002 与 GC-2026-0003 均已启用、未过期、币种 USD、余额各 50.00。
+3. 员工 S1 具备 HANDLE_PAYMENTS。","1. 在结账 C1 上以 GC-2026-0002、amount=50.00（等于余额）调用 checkoutGiftCardAuthorize。
+2. 在结账 C2 上以 GC-2026-0003、amount=50.01 调用 checkoutGiftCardAuthorize。
+3. 查询 GC-2026-0003 余额与结账 C2 支付状态。","1. 授权成功（等于余额为合法边界），GC-2026-0002 冻结 50.00。
+2. 返回 GIFT_CARD_INSUFFICIENT_BALANCE（超一分被拒）。
+3. 失败请求未修改 GC-2026-0003 余额与结账 C2 支付状态。"
+TC061,业务域 C：收款、礼品卡与交易,R10 · 礼品卡纳入统一的交易生命周期,权限不足、状态不合法或金额超限时拒绝且不改为普通支付,AC-10-3；BD08；I10,P0,"1. 结账 C1 剩余待付 50.00、未完成、币种 USD；结账 C3 已完成或状态不合法。
+2. 礼品卡 GC-2026-0001 余额 100.00。
+3. 员工 S4 不具备 HANDLE_PAYMENTS。","1. 员工 S4 调用 checkoutGiftCardAuthorize(token: C1, giftCardCode: 「GC-2026-0001」, amount: 50.00)。
+2. 对状态不合法的结账 C3 调用 checkoutGiftCardAuthorize。
+3. 在结账 C1 上以 amount=80.00（超过剩余待付 50.00）调用。
+4. 检查结账 C1 的支付方式与支付状态。","1. 返回权限错误，操作被拒绝。
+2. 返回状态相关错误，操作被拒绝。
+3. 返回金额超限错误（GIFT_CARD_INSUFFICIENT_BALANCE 或 INVALID），操作被拒绝。
+4. 各失败请求均未静默改用普通支付，结账支付状态未被错误修改。"
+TC062,业务域 C：收款、礼品卡与交易,R10 · 礼品卡纳入统一的交易生命周期,同一礼品卡授权请求重复提交只形成一次授权与一次余额变化,AC-10-4；BD08；I10,P0,"1. 结账 C1 剩余待付 50.00、未完成、币种 USD。
+2. 礼品卡 GC-2026-0001 余额 100.00、已启用、未过期。
+3. 员工 S1 具备 HANDLE_PAYMENTS。","1. 以 idempotencyKey=「k-dup-1」、amount=50.00 调用 checkoutGiftCardAuthorize，记录返回的 transaction.id 与礼品卡余额。
+2. 以完全相同的 idempotencyKey=「k-dup-1」、amount=50.00 再次调用。
+3. 查询礼品卡余额与结账 C1 的礼品卡交易数量。","1. 授权成功，返回 transaction.id 与冻结后可用余额 50.00（100.00−50.00）。
+2. 返回同一 transaction，不创建第二次授权、不形成冲突授权。
+3. 礼品卡余额只发生一次变化，结账 C1 只存在一条该礼品卡授权交易。"
+TC063,业务域 C：收款、礼品卡与交易,R11 · 礼品卡授权的取消与订单退款,取消结账阶段未扣款的礼品卡授权恢复余额与支付状态,AC-11-1；BD09；I11,P0,"1. 结账 C1 已通过 checkoutGiftCardAuthorize 冻结 50.00（未扣款），授权交易 T1。
+2. 礼品卡 GC-2026-0001 初始余额 100.00，冻结后可用余额 50.00。
+3. 员工 S1 具备 HANDLE_PAYMENTS 或结账管理权限。","1. 调用 checkoutGiftCardCancel(token: C1, transactionId: T1)。
+2. 查询礼品卡 GC-2026-0001 余额与结账 C1 支付状态。
+3. 查询交易 T1 的事件列表。","1. 取消成功，payload errors 为空。
+2. 冻结金额释放，可用余额恢复到 100.00，结账支付状态同步反映取消结果。
+3. 交易 T1 写入取消事件，金额与状态与释放结果一致。"
+TC064,业务域 C：收款、礼品卡与交易,R11 · 礼品卡授权的取消与订单退款,订单礼品卡退款等于可退余额时成功,AC-11-2；BD09；I11,P0,"1. 订单 O1 已通过礼品卡扣款 30.00，交易 T2，可退余额 30.00。
+2. 员工 S1 具备 MANAGE_ORDERS。","1. 调用 orderGiftCardRefund(orderId: O1, transactionId: T2, amount: 30.00, idempotencyKey: 「k-refund-1」)。
+2. 查询订单 totalGiftCard、礼品卡余额与交易 T2 的退款事件。","1. 退款成功（等于可退余额为合法边界）。
+2. totalGiftCard 由 30.00 减至 0.00，礼品卡余额增加 30.00，交易 T2 写入退款事件。"
+TC065,业务域 C：收款、礼品卡与交易,R11 · 礼品卡授权的取消与订单退款,订单礼品卡退款超过可退余额一分被拒且状态不变,AC-11-2；BD09；I11,P0,"1. 订单 O1 已通过礼品卡扣款 30.00，交易 T2，可退余额 30.00。
+2. 员工 S1 具备 MANAGE_ORDERS。","1. 调用 orderGiftCardRefund(orderId: O1, transactionId: T2, amount: 30.01, idempotencyKey: 「k-refund-2」)。
+2. 查询订单 totalGiftCard、礼品卡余额与交易 T2 事件。","1. 返回 AMOUNT_GREATER_THAN_AVAILABLE，退款被拒。
+2. totalGiftCard、礼品卡余额与交易 T2 事件均保持不变。"
+TC066,业务域 C：收款、礼品卡与交易,R11 · 礼品卡授权的取消与订单退款,取消或退款后交易事件、礼品卡余额与支付退款状态一致,AC-11-3；BD09；I11,P0,"1. 存在一次结账礼品卡授权（交易 T1）与一次订单礼品卡扣款（交易 T2）场景各一。
+2. 员工 S1 具备 HANDLE_PAYMENTS 与 MANAGE_ORDERS。","1. 对结账授权交易 T1 执行 checkoutGiftCardCancel，并读取交易事件、礼品卡余额、结账支付状态。
+2. 对订单礼品卡交易 T2 执行 orderGiftCardRefund，并读取交易事件、礼品卡余额、订单支付与退款状态。","1. 取消后交易事件（取消）、礼品卡余额（释放）与结账支付状态三者反映同一业务结果。
+2. 退款后交易事件（退款）、礼品卡余额（回补）与订单支付及退款状态三者反映同一业务结果。"
+TC067,业务域 C：收款、礼品卡与交易,R11 · 礼品卡授权的取消与订单退款,Dashboard 区分礼品卡支付方式、金额与事件并与交易查询一致,AC-11-4；BD09；I11；FD15,P0,"1. 订单 O1 同时含礼品卡交易 T2 与普通卡交易 T3。
+2. 员工 S1 具备 HANDLE_PAYMENTS 与 MANAGE_ORDERS。","1. 在 Dashboard 订单详情查看交易列表。
+2. 用根级 transactions 查询同一订单的交易并逐项比对。
+3. 模拟交易查询失败。","1. 礼品卡交易按 GiftCardPaymentMethodDetails 显示为礼品卡并展示卡号尾号与金额，与普通卡交易区分且金额不合并。
+2. Dashboard 展示的支付方式、金额与事件与交易查询结果一致。
+3. 失败时显示可识别的原因，不显示为成功。"
+TC068,业务域 C：收款、礼品卡与交易,R11 · 礼品卡授权的取消与订单退款,无相关事件的交易返回空事件列表且请求成功,AC-11-5；BD09；I11,P0,"1. 存在交易 T4，其无任何事件记录。
+2. 员工 S1 具备 HANDLE_PAYMENTS。",1. 请求交易 T4 的事件列表。,1. 返回空事件列表（events 为空数组），请求整体仍视为成功（无顶层 errors）。
+TC069,业务域 C：收款、礼品卡与交易,R12 · 订单金额摘要的可解释分解与一致性,金额摘要分别呈现各组成项并与服务端一致,AC-12-1；BD10；I12；FD14,P0,"1. 订单 O1 含折扣、税费、配送费、礼品卡与多笔支付：subtotal=100.00、discounts=5.00、tax=5.00、shippingPrice=10.00、totalGiftCard=30.00、totalCharged=80.00、totalRefunded=0.00。
+2. 员工 S1 具备 MANAGE_ORDERS。","1. 查询订单 O1 的 subtotal、discounts、total.tax、shippingPrice、totalGiftCard、totalAuthorized、totalCharged、totalRefunded、totalBalance。
+2. 在 Dashboard 订单详情查看金额摘要各行。","1. 各金额分别返回：subtotal=100.00、discounts=5.00、tax=5.00、shippingPrice=10.00、totalGiftCard=30.00、totalCharged=80.00、totalRefunded=0.00、totalBalance=0.00。
+2. Dashboard 各行与服务端返回一致，不在前端二次汇总或覆盖服务端数值。"
+TC070,业务域 C：收款、礼品卡与交易,R12 · 订单金额摘要的可解释分解与一致性,同一订单兼容旧支付与新交易时两类都被处理且不重复计入,AC-12-2；BD10；I12,P0,"1. 订单 O1 同时存在兼容旧 Payment 记录与新的 TransactionItem 记录。
+2. 员工 S1 具备 MANAGE_ORDERS。","1. 查询订单 O1 的 totalCharged、totalAuthorized、totalRefunded 与 transactions。
+2. 对照旧 Payment 与新 TransactionItem 的金额与订单汇总。","1. 汇总同时处理旧 Payment 与新 TransactionItem 两类记录。
+2. 同一笔金额不被重复计入 totalCharged、totalAuthorized 或 totalRefunded。"
+TC071,业务域 C：收款、礼品卡与交易,R12 · 订单金额摘要的可解释分解与一致性,多笔交易汇总不重复计入同一事件或已用额度,AC-12-3；BD10；I12,P0,"1. 订单 O1 有多笔交易 T1、T2、T3。
+2. 员工 S1 具备 MANAGE_ORDERS。","1. 分别读取 T1、T2、T3 的已授权、已扣款与已退款金额。
+2. 读取订单 O1 的 totalAuthorized、totalCharged、totalRefunded。","1. 各交易金额各自返回。
+2. 订单汇总等于各交易金额之和，已使用的额度或同一事件不被重复计入。"
+TC072,业务域 C：收款、礼品卡与交易,R12 · 订单金额摘要的可解释分解与一致性,含礼品卡订单各项之和与订单总额一致且礼品卡不重不漏,AC-12-4；BD10；I12；FD14,P0,"1. 订单 O1 含礼品卡：subtotal=100.00、discounts=5.00、shippingPrice=10.00、tax=5.00、total=110.00、totalCharged=80.00、totalRefunded=0.00、totalGiftCard=30.00。
+2. 员工 S1 具备 MANAGE_ORDERS。","1. 读取订单 O1 的 subtotal、discounts、shippingPrice、total.tax、total、totalCharged、totalRefunded、totalGiftCard。
+2. 计算 subtotal − discounts + shippingPrice + tax 并与 total 比较。
+3. 计算 (totalCharged − totalRefunded) + totalGiftCard 并与 total 比较。","1. 各字段分别返回。
+2. 各项之和 100.00−5.00+10.00+5.00=110.00 与 total=110.00 一致。
+3. (80.00−0.00)+30.00=110.00 与 total 一致；礼品卡既不作为普通支付重复计入，也不被遗漏。"
+TC073,业务域 C：收款、礼品卡与交易,R13 · 标记已支付、捕获授权与退款的状态与余额约束及幂等,仅展示当前状态允许的动作且负金额被拒,AC-13-1；BD11；I13；FD16,P0,"1. 订单 O1 当前支付方式与状态仅允许捕获与退款。
+2. 员工 S1 具备 MANAGE_ORDERS。","1. 查询订单 O1 的 actions。
+2. 以负数金额调用 orderCapture(id: O1, amount: -10.00)。
+3. 在 Dashboard 查看动作区并输入负金额。","1. actions 只包含当前支付方式与状态允许的动作，不包含不允许的动作。
+2. 请求被拒绝（负数由 PositiveDecimal 与前置校验在执行前拒绝）。
+3. Dashboard 不显示不允许的动作，负数在提交前被阻止。"
+TC074,业务域 C：收款、礼品卡与交易,R13 · 标记已支付、捕获授权与退款的状态与余额约束及幂等,无支付记录可标记已支付，已有支付记录被拒,AC-13-2；BD11；I13,P0,"1. 订单 O1 无任何支付或交易记录且满足标记条件。
+2. 订单 O2 已有支付记录。
+3. 员工 S1 具备 MANAGE_ORDERS。","1. 对订单 O1 调用 orderMarkAsPaid(id: O1)。
+2. 对订单 O2 调用 orderMarkAsPaid(id: O2)。","1. 成功，订单 O1 变为已支付。
+2. 返回 PAYMENT_ALREADY_EXISTS，订单 O2 支付状态不变。"
+TC075,业务域 C：收款、礼品卡与交易,R13 · 标记已支付、捕获授权与退款的状态与余额约束及幂等,捕获等于可捕获授权成功、超过被拒,AC-13-3；BD11；I13；FD16,P0,"1. 订单 O1 存在可捕获授权 80.00；订单 O3 存在可捕获授权 80.00。
+2. 员工 S1 具备 MANAGE_ORDERS。","1. 调用 orderCapture(id: O1, amount: 80.00)。
+2. 调用 orderCapture(id: O3, amount: 80.01)。","1. 捕获成功（等于可捕获授权为合法边界），O1 的 totalCharged 增加 80.00。
+2. 返回 AMOUNT_GREATER_THAN_AVAILABLE，捕获被拒，O3 状态不变。"
+TC076,业务域 C：收款、礼品卡与交易,R13 · 标记已支付、捕获授权与退款的状态与余额约束及幂等,退款不超过可退余额且多笔交易不重复占用同一额度,AC-13-4；BD11；I13,P0,"1. 订单 O1 有多笔交易 T1、T2，可退余额合计 50.00。
+2. 员工 S1 具备 MANAGE_ORDERS。","1. 对交易 T1 退款 30.00。
+2. 对交易 T2 退款 20.00。
+3. 再次尝试退款 0.01。","1. 退款成功，剩余可退余额 20.00。
+2. 退款成功，剩余可退余额 0.00。
+3. 返回 AMOUNT_GREATER_THAN_AVAILABLE，多笔交易不重复占用同一额度。"
+TC077,业务域 C：收款、礼品卡与交易,R13 · 标记已支付、捕获授权与退款的状态与余额约束及幂等,资金动作重复点击或失败重试不重复扣款退款或写冲突事件,AC-13-5；BD11；I13,P0,"1. 订单 O1 可捕获授权 80.00。
+2. 员工 S1 具备 MANAGE_ORDERS。","1. 连续两次调用 orderCapture(id: O1, amount: 80.00)（同一动作重复提交）。
+2. 记录 totalCharged 与交易事件数量。
+3. 模拟一次退款失败后以相同参数重试。","1. 第一次成功；第二次因额度已耗尽被拒，不产生第二次扣款。
+2. totalCharged 只增加一次 80.00，不写入冲突事件。
+3. 重试不重复退款、不写冲突事件。"
+TC078,业务域 C：收款、礼品卡与交易,R13 · 标记已支付、捕获授权与退款的状态与余额约束及幂等,资金动作成功后展示刷新结果，失败保留原状态并返回可区分错误,AC-13-6；BD11；I13；FD16,P0,"1. 订单 O1 可捕获授权 80.00；订单 O4 可捕获授权 80.00。
+2. 员工 S1 具备 MANAGE_ORDERS。","1. 调用 orderCapture(id: O1, amount: 80.00) 成功后查询订单金额、交易事件与余额。
+2. 对订单 O4 调用 orderCapture 传超授权金额使其失败，并查询订单状态与错误码。","1. 返回刷新后的订单金额、交易事件与余额（totalCharged 增加、totalBalance 减少）。
+2. 失败保留原状态，返回可区分错误 AMOUNT_GREATER_THAN_AVAILABLE，订单状态与事件不变。"
+TC079,业务域 C：收款、礼品卡与交易,R13 · 标记已支付、捕获授权与退款的状态与余额约束及幂等,无相关订单或支付权限的员工或 App 资金动作被拒且不泄露受限金额,AC-13-7；BD11；I13,P0,"1. 员工 S5 不具备 MANAGE_ORDERS。
+2. App A-01 对目标订单无相关权限。","1. 员工 S5 调用 orderCapture、orderRefund、orderMarkAsPaid。
+2. App A-01 对不属于自己的订单调用 orderRefund。
+3. 检查两次响应内容。","1. 返回权限错误，动作被拒绝。
+2. 返回权限错误，动作被拒绝。
+3. 响应中不包含受限金额信息。"
+TC080,业务域 C：收款、礼品卡与交易,R14 · 交易的基础查询与定位能力,按订单或结账关联、交易 ID、服务商参考号或 App 标识筛选交易,AC-14-1；BD12；I14；FD15,P0,"1. 订单 O1 的交易 T1（pspReference=PSP-001）；结账 C1 的交易 T5，由 App A-01 创建（appIdentifier=app.one）。
+2. 员工 S1 具备 HANDLE_PAYMENTS。","1. 调用 transactions(filter: {orderIds: [O1]})。
+2. 调用 transactions(filter: {checkoutIds: [C1]})。
+3. 调用 transactions(filter: {ids: [T1]})。
+4. 调用 transactions(filter: {pspReferences: [「PSP-001」]})。
+5. 调用 transactions(filter: {appIdentifiers: [「app.one」]})。","1. 返回与订单 O1 关联的交易。
+2. 返回与结账 C1 关联的交易。
+3. 返回交易 T1。
+4. 返回 pspReference 为 PSP-001 的交易。
+5. 返回由 App A-01 创建的交易 T5。"
+TC081,业务域 C：收款、礼品卡与交易,R14 · 交易的基础查询与定位能力,礼品卡、普通支付与多交易订单均能定位,AC-14-2；BD12；I14,P0,"1. 订单 O1 含礼品卡交易 T2 与普通卡交易 T3；订单 O2 含多笔交易。
+2. 员工 S1 具备 HANDLE_PAYMENTS。","1. 以 orderIds=[O1] 筛选并检查返回交易类型。
+2. 以 orderIds=[O2] 筛选。","1. 返回礼品卡交易 T2（GiftCardPaymentMethodDetails）与普通卡交易 T3，两类均可定位。
+2. 返回订单 O2 的全部多笔交易。"
+TC082,业务域 C：收款、礼品卡与交易,R14 · 交易的基础查询与定位能力,交易查询返回订单金额、支付方式、状态与事件展示所需字段,AC-14-3；BD12；I14,P0,"1. 存在交易 T1 关联订单 O1。
+2. 员工 S1 具备 HANDLE_PAYMENTS。",1. 调用 transactions(filter: {ids: [T1]}) 并选择 node 的 order、paymentMethodDetails、chargedAmount、actions 与 events。,1. 返回字段包含订单（含金额）、支付方式（paymentMethodDetails）、状态（actions 与金额）与 events，满足展示所需。
+TC083,业务域 C：收款、礼品卡与交易,R14 · 交易的基础查询与定位能力,交易查询分页与客户员工 App 可见范围生效且不返回他方交易,AC-14-4；BD12；I14,P0,"1. 客户 C-01 有自己的订单交易，另有客户 C-02 的交易。
+2. App A-01 只创建了部分交易。
+3. 员工 S1 按渠道与仓库可见性。","1. 以客户 C-01 身份调用 transactions(first: 10)。
+2. 以 App A-01 身份调用 transactions。
+3. 以员工 S1 身份调用 transactions 并翻页。","1. 只返回与 C-01 订单或结账关联的交易，不返回 C-02 的交易详情。
+2. 只返回 A-01 创建或有权访问的交易。
+3. 分页生效，按员工渠道与仓库可见性过滤，不返回超出可见范围的交易。"
+TC084,业务域 C：收款、礼品卡与交易,R14 · 交易的基础查询与定位能力,枚举交易查询筛选与排序参数时不出现日期事件筛选与专用排序,AC-14-5；BD12；I14；FD15,P0,"1. 已构建的 target-schema 与 Dashboard 生成客户端可用。
+2. 员工 S1 具备 HANDLE_PAYMENTS。","1. 枚举 TransactionFilterInput 的可用字段。
+2. 枚举 Query.transactions 的参数。
+3. 检查是否存在交易创建或修改日期、事件类型或日期筛选，以及该查询的专用排序与索引。","1. 筛选字段含 ids、tokens、orderIds、checkoutIds、pspReferences、appIds、appIdentifiers 与既有 paymentMethodDetails、metadata。
+2. transactions 查询不提供 sortBy 参数，默认按 -createdAt, -id 排序。
+3. 不存在按创建或修改日期、事件类型或日期筛选，也不存在该查询的专用排序与索引。"
+TC085,业务域 C：收款、礼品卡与交易,R14 · 交易的基础查询与定位能力,空分页项、越界分页、错误过滤类型或无权限返回稳定错误,AC-14-6；BD12；I14,P0,1. 员工 S1 具备 HANDLE_PAYMENTS；员工 S6 不具备 HANDLE_PAYMENTS。,"1. 调用 transactions(first: 0)。
+2. 调用 transactions(first: 101)。
+3. 使用越界游标调用 transactions(after: 越界游标)。
+4. 传入错误过滤类型（如 orderIds 传非 ID 字符串）。
+5. 员工 S6 调用 transactions。","1. 返回执行前校验错误（空分页项非法），不以成功空结果掩盖。
+2. 返回分页上限错误（first 超过 100），不以成功空结果掩盖。
+3. 返回稳定错误（越界游标），不以成功空结果掩盖。
+4. 返回执行前校验错误（错误过滤类型），不以成功空结果掩盖。
+5. 返回权限错误，不以成功空结果掩盖。"
+TC086,业务域 D：运营列表与筛选,R15 · 锁定筛选与普通筛选的合并及作用范围一致,从渠道分配页进入列表后锁定渠道与普通筛选同时生效,AC-15-1；FD03,P1,"1. 商店含渠道「channel-eu」（slug=channel-eu）与渠道「channel-us」（slug=channel-us），两渠道下均有草稿状态与已发布状态商品。
+2. 员工「ops-a」具备 MANAGE_PRODUCTS 权限，可查看两个渠道。
+3. 从「channel-eu」的分配页面进入商品列表，URL 带锁定条件 channel=channel-eu。","1. 打开由「channel-eu」分配页进入的商品列表，确认筛选栏以只读标签展示锁定条件「渠道：channel-eu」。
+2. 在普通筛选器中设置「状态=草稿」并提交筛选。
+3. 读取列表查询发出的变量与返回结果。","1. 筛选栏显示锁定条件「渠道：channel-eu」为只读标签，不可被普通筛选覆盖。
+2. 普通筛选「状态=草稿」被接受并展示。
+3. 查询变量同时含 channel=channel-eu 与状态=草稿；返回结果仅为 channel-eu 下的草稿商品，无 channel-us 商品。"
+TC087,业务域 D：运营列表与筛选,R15 · 锁定筛选与普通筛选的合并及作用范围一致,普通筛选尝试改用其他渠道不能覆盖锁定渠道,AC-15-1；FD03,P2,"1. 商店含渠道「channel-eu」与「channel-us」，两渠道下均有商品。
+2. 员工「ops-a」已从「channel-eu」分配页进入商品列表，锁定条件 channel=channel-eu。","1. 在普通筛选器中尝试把渠道条件改为 channel-us。
+2. 提交筛选并读取列表查询变量与结果。","1. 渠道维度属于锁定条件，普通筛选不能将其改写为 channel-us。
+2. 查询变量仍含 channel=channel-eu；返回结果仍限定在 channel-eu，未出现 channel-us 商品。"
+TC088,业务域 D：运营列表与筛选,R15 · 锁定筛选与普通筛选的合并及作用范围一致,搜索、翻页与清除普通条件不丢锁定范围,AC-15-2；FD03,P1,"1. 仓库「warehouse-main」（ID=WH1）下商品不少于 30 条，其中名称含「red」的商品 5 条。
+2. 员工「ops-a」从仓库「warehouse-main」分配页进入商品列表，锁定条件 warehouse=WH1，每页 10 条。","1. 在搜索框输入「red」并提交，记录列表结果数量。
+2. 清空搜索关键词后点击「下一页」。
+3. 点击「清除普通条件」，读取锁定标签与列表查询变量。","1. 结果仅为 warehouse=WH1 且名称含「red」的商品（5 条），锁定条件 warehouse=WH1 仍在。
+2. 翻页后查询变量仍含 warehouse=WH1，返回第 2 页数据，无重复项。
+3. 清除普通条件后锁定标签「仓库：warehouse-main」仍保留，查询变量仍含 warehouse=WH1。"
+TC089,业务域 D：运营列表与筛选,R15 · 锁定筛选与普通筛选的合并及作用范围一致,筛选条件变化后列表、排序、导出与批量操作读取当下有效条件,AC-15-3；FD03,P1,"1. 商品列表中同时存在「草稿」与「已发布」状态商品。
+2. 员工「ops-a」已从「channel-eu」分配页进入商品列表，锁定条件 channel=channel-eu，页面初始普通条件为空。","1. 设置普通条件「状态=已发布」并提交，记录列表查询变量。
+2. 将排序改为「名称升序」，记录排序查询变量。
+3. 在不刷新页面的情况下把普通条件改为「状态=草稿」，随后点击导出并读取导出请求参数。
+4. 再次提交批量操作并读取批量操作请求参数。","1. 列表查询变量含 channel=channel-eu 与 状态=已发布。
+2. 排序查询变量与当前条件一致（channel=channel-eu、状态=已发布、名称升序），未使用页面初始化时的条件副本。
+3. 导出请求参数为 channel=channel-eu 与 状态=草稿，反映修改后的当下条件，未使用旧缓存。
+4. 批量操作请求参数同样为 channel=channel-eu 与 状态=草稿。"
+TC090,业务域 D：运营列表与筛选,R15 · 锁定筛选与普通筛选的合并及作用范围一致,导出范围与页面当前可见范围一致,AC-15-4；FD04,P1,"1. channel-eu 下「草稿」商品 8 条、「已发布」商品 12 条。
+2. 员工「ops-a」具备导出权限，已从「channel-eu」分配页进入列表，锁定条件 channel=channel-eu。","1. 设置普通条件「状态=草稿」，记录页面可见商品数量。
+2. 点击导出，读取导出请求参数与导出文件内容。","1. 页面显示 channel-eu 下的草稿商品 8 条。
+2. 导出请求参数含 channel=channel-eu 与 状态=草稿；导出文件仅含这 8 条商品，与页面可见范围一致，无 channel-us 或已发布商品。"
+TC091,业务域 D：运营列表与筛选,R15 · 锁定筛选与普通筛选的合并及作用范围一致,批量操作范围与页面当前可见范围一致,AC-15-4；FD04,P1,"1. channel-eu 下「草稿」商品 8 条，其中 3 条可批量归档。
+2. 员工「ops-a」具备批量操作权限，已从「channel-eu」分配页进入列表，锁定条件 channel=channel-eu。","1. 设置普通条件「状态=草稿」，全选页面可见商品并执行批量归档。
+2. 读取批量操作请求参数与操作后列表。","1. 批量操作请求参数含 channel=channel-eu 与 状态=草稿，作用对象仅为页面可见的 8 条草稿商品。
+2. 操作后列表以服务端事实刷新，未误伤 channel-us 或其他状态商品。"
+TC092,业务域 D：运营列表与筛选,R15 · 锁定筛选与普通筛选的合并及作用范围一致,换入口执行同类操作不因入口放宽权限范围,AC-15-5；FD03；I26,P1,"1. 员工「ops-a」仅被授予 channel-eu 的可见范围，无 channel-us 权限。
+2. 存在两个入口：A 为「channel-eu」分配页进入的列表，B 为不带锁定条件的通用商品列表。","1. 从入口 A 进入列表并设置普通条件「状态=草稿」，记录可见结果与权限判定。
+2. 从入口 B 进入同一列表并设置相同普通条件，记录可见结果与权限判定。
+3. 在入口 B 尝试通过修改 URL 参数把锁定条件改为 channel-us 并提交查询。","1. 入口 A 结果限定在 channel-eu 且受 ops-a 权限约束。
+2. 入口 B 的可见范围与入口 A 一致，仍不含 channel-us，权限未因换入口放宽。
+3. 服务端对 channel-us 的请求返回权限错误而非空结果，不泄露 channel-us 数据。"
+TC093,业务域 D：运营列表与筛选,R16 · 选择器、层级导航与返回路径的上下文保持,仓库选择器反复选中再取消后选项不重复且不残留,AC-16-1；FD05,P1,"1. 仓库选择器提供仓库 WH1、WH2、WH3。
+2. 员工「ops-a」打开商品库存分配弹窗，选择器初始为空。","1. 依次选中 WH1、WH2。
+2. 取消选中 WH1。
+3. 再次选中 WH1，随后再次取消 WH1。
+4. 读取当前选中结果列表。","1. 选中结果为 WH1、WH2，各出现一次。
+2. 取消后结果为 WH2，WH1 被移除且无残留。
+3. 再次取消后结果为 WH2。
+4. 结果列表为 WH2，不含重复项、不含已取消的 WH1。"
+TC094,业务域 D：运营列表与筛选,R16 · 选择器、层级导航与返回路径的上下文保持,同一层级项重复选中按 id 去重,AC-16-1；FD05,P2,"1. 分类选择器存在分类「Clothing」（ID=CAT1）及其子级「Shoes」（ID=CAT2）。
+2. 员工「ops-a」打开分类分配弹窗。","1. 通过父级批量选中「Clothing」，使 CAT1 与子级 CAT2 均进入选中集合。
+2. 单独再次选中 CAT2。
+3. 读取选中集合。","1. 选中集合含 CAT1 与 CAT2。
+2. 重复选中 CAT2 不新增条目。
+3. 选中集合仍为 CAT1、CAT2，按 id 去重，无重复项。"
+TC095,业务域 D：运营列表与筛选,R16 · 选择器、层级导航与返回路径的上下文保持,分类层级切换与返回后面包屑与父子关系正确,AC-16-2；FD05,P1,"1. 分类层级为 Clothing > Shoes > Sneakers（CAT1 > CAT2 > CAT3）。
+2. 员工「ops-a」打开分类选择器，初始位于根级。","1. 进入「Clothing」。
+2. 进入「Shoes」。
+3. 返回上一级到「Clothing」。
+4. 读取面包屑与当前父级关系。","1. 面包屑显示「Clothing」，列表展示其直接子级「Shoes」。
+2. 面包屑显示「Clothing / Shoes」，列表展示「Sneakers」。
+3. 面包屑回到「Clothing」，列表回到「Shoes」。
+4. 面包屑与父子关系与当前位置一致，无错级或错位。"
+TC096,业务域 D：运营列表与筛选,R16 · 选择器、层级导航与返回路径的上下文保持,加载与空结果后从弹窗返回列表导航上下文保留,AC-16-3；FD05,P1,"1. 商品列表已设置普通条件「状态=草稿」并翻至第 3 页，滚动位置为列表中部。
+2. 从该列表打开分类分配弹窗。","1. 触发弹窗内数据的加载中状态，等待加载完成。
+2. 构造一个无匹配结果的筛选使弹窗呈现空结果。
+3. 关闭弹窗返回列表。","1. 加载中状态独立呈现，不闪烁错误值。
+2. 空结果状态与错误状态可区分呈现。
+3. 返回列表后普通条件「状态=草稿」、第 3 页页码与滚动位置均保留。"
+TC097,业务域 D：运营列表与筛选,R16 · 选择器、层级导航与返回路径的上下文保持,权限错误后返回列表导航上下文保留,AC-16-3；FD05,P2,"1. 商品列表已设置普通条件「状态=草稿」并翻至第 2 页。
+2. 员工「ops-a」对某受限仓库无权限，从列表打开仓库分配弹窗。","1. 在弹窗中触发对受限仓库的查询，使其返回权限错误。
+2. 关闭弹窗返回列表。","1. 权限错误独立呈现，与空结果、网络错误可区分，且不表现为空列表。
+2. 返回列表后普通条件「状态=草稿」与第 2 页页码保留，导航上下文不变。"
+TC098,业务域 D：运营列表与筛选,R16 · 选择器、层级导航与返回路径的上下文保持,网络错误后返回列表导航上下文保留,AC-16-3；FD05,P2,"1. 商品列表已设置普通条件「状态=已发布」并翻至第 4 页。
+2. 从列表打开分类分配弹窗。","1. 断开网络后触发弹窗内查询，使其返回网络错误。
+2. 恢复网络，关闭弹窗返回列表。","1. 网络错误独立呈现并提供可重试状态，且不表现为空结果。
+2. 返回列表后普通条件「状态=已发布」与第 4 页页码保留。"
+TC099,业务域 D：运营列表与筛选,R16 · 选择器、层级导航与返回路径的上下文保持,超长关键词下布局稳定且可确认完整值,AC-16-4；FD05,P1,"1. 商品列表搜索框与结果列表使用固定宽度布局。
+2. 准备长度为 120 个字符的关键词 K（无空格，例如由「a」重复 120 次组成）。","1. 在搜索框输入关键词 K。
+2. 观察输入框与列表的宽度与重叠情况。
+3. 将鼠标悬停在输入框（或已截断的展示值）上，读取完整值。
+4. 点击清除输入按钮。","1. 关键词 K 被输入且界面不崩坏。
+2. 输入框与列表宽度稳定，不重叠、不跳动。
+3. 通过 title 或悬浮提示可确认完整的 K 值。
+4. 清除输入后搜索框恢复空值，列表宽度恢复且不跳动，功能正常。"
+TC100,业务域 E：身份与内容安全,R17 · 由商店统一控制的密码登录策略,ENABLED 模式下受支持用户密码登录成功,AC-17-1；BD13；I15,P0,"1. Shop.passwordLoginMode = ENABLED。
+2. 存在状态为 active 的客户「customer1@example.com」（密码 Pw-12345）与状态为 active 的员工「staff1@example.com」（密码 Pw-67890）。","1. 以 customer1@example.com 与 Pw-12345 调用 tokenCreate。
+2. 以 staff1@example.com 与 Pw-67890 调用 tokenCreate。","1. tokenCreate 成功，payload.errors 为空且返回非空 token。
+2. tokenCreate 成功，payload.errors 为空且返回非空 token。"
+TC101,业务域 E：身份与内容安全,R17 · 由商店统一控制的密码登录策略,CUSTOMERS_ONLY 模式下客户账号密码登录成功,AC-17-1；BD13；I15,P0,"1. Shop.passwordLoginMode = CUSTOMERS_ONLY。
+2. 存在状态为 active 的客户「customer1@example.com」（密码 Pw-12345）。",1. 以 customer1@example.com 与 Pw-12345 调用 tokenCreate。,1. tokenCreate 成功，payload.errors 为空且返回非空 token。
+TC102,业务域 E：身份与内容安全,R17 · 由商店统一控制的密码登录策略,CUSTOMERS_ONLY 模式下员工账号密码登录被拒绝,AC-17-2；BD13；I15,P0,"1. Shop.passwordLoginMode = CUSTOMERS_ONLY。
+2. 存在状态为 active 的员工「staff1@example.com」（密码 Pw-67890）。
+3. 该商店配置了可用的外部认证方式。","1. 以 staff1@example.com 与 Pw-67890 调用 tokenCreate。
+2. 读取 payload.errors。
+3. 通过允许的外部认证方式尝试登录该员工。","1. tokenCreate 未返回会话 token，不授予员工会话或后台权限。
+2. payload.errors 含 code=PASSWORD_LOGIN_CUSTOMERS_ONLY，指向该拒绝原因。
+3. 通过允许的外部认证方式可以完成登录。"
+TC103,业务域 E：身份与内容安全,R17 · 由商店统一控制的密码登录策略,DISABLED 模式下密码登录被拒绝并返回明确原因,AC-17-3；BD13；I15,P0,"1. Shop.passwordLoginMode = DISABLED。
+2. 存在状态为 active 的客户「customer1@example.com」（密码 Pw-12345）。","1. 以 customer1@example.com 与 Pw-12345 调用 tokenCreate。
+2. 读取 payload.errors。","1. tokenCreate 未返回会话 token。
+2. payload.errors 含 code=PASSWORD_LOGIN_DISABLED。"
+TC104,业务域 E：身份与内容安全,R17 · 由商店统一控制的密码登录策略,DISABLED 模式下密码重置被拒绝,AC-17-3；BD13；I15,P0,"1. Shop.passwordLoginMode = DISABLED。
+2. 存在状态为 active 的客户「customer1@example.com」。","1. 以 customer1@example.com 调用 requestPasswordReset。
+2. 读取 payload.errors。","1. 未发起密码重置，未发送重置邮件或未生成可用重置令牌。
+2. payload.errors 含 code=PASSWORD_LOGIN_DISABLED。"
+TC105,业务域 E：身份与内容安全,R17 · 由商店统一控制的密码登录策略,DISABLED 模式下设置密码与修改密码被拒绝,AC-17-3；BD13；I15,P0,"1. Shop.passwordLoginMode = DISABLED。
+2. 存在客户「customer1@example.com」，已持有有效会话令牌。","1. 以 customer1@example.com 的会话调用 setPassword 设置新密码 Pw-new123。
+2. 以 customer1@example.com 的会话调用 passwordChange，旧密码 Pw-12345、新密码 Pw-new456。
+3. 读取两次调用的 payload.errors。","1. setPassword 被拒绝，未修改密码。
+2. passwordChange 被拒绝，未修改密码。
+3. 两次调用的 payload.errors 均含 code=PASSWORD_LOGIN_DISABLED。"
+TC106,业务域 E：身份与内容安全,R17 · 由商店统一控制的密码登录策略,DISABLED 模式下可绕过策略的旧 token 路径被拒绝,AC-17-3；BD13；I15,P0,"1. Shop.passwordLoginMode = DISABLED。
+2. 存在客户「customer1@example.com」且此前存在可用的旧会话或刷新令牌。","1. 使用旧 token 路径（如 tokenRefresh 及既有可绕过策略的 token 获取实现）尝试取得或续期会话。
+2. 读取响应错误。","1. 旧 token 路径未返回可用会话令牌。
+2. 返回明确错误（code=PASSWORD_LOGIN_DISABLED），不静默成功。"
+TC107,业务域 E：身份与内容安全,R17 · 由商店统一控制的密码登录策略,保存新密码登录模式后立即发起认证读到新值,AC-17-4；BD13；I15,P0,"1. Shop.passwordLoginMode 初始为 ENABLED。
+2. 具有商店设置权限的员工「admin1@example.com」已登录 Dashboard。
+3. 存在状态为 active 的客户「customer1@example.com」（密码 Pw-12345）。","1. 通过 shopSettingsUpdate 提交 ShopSettingsInput.passwordLoginMode = DISABLED。
+2. 保存成功后立即以 customer1@example.com 与 Pw-12345 调用 tokenCreate。
+3. 读取 Shop.passwordLoginMode 当前值。","1. shopSettingsUpdate 返回 shop.passwordLoginMode=DISABLED，errors 为空。
+2. tokenCreate 被拒绝，payload.errors 含 code=PASSWORD_LOGIN_DISABLED，认证流程读到新值。
+3. Shop.passwordLoginMode 读取为 DISABLED。"
+TC108,业务域 E：身份与内容安全,R17 · 由商店统一控制的密码登录策略,无商店设置权限修改密码登录模式被拒绝,AC-17-5；BD13；I15,P0,"1. Shop.passwordLoginMode 当前为 ENABLED。
+2. 员工「staff2@example.com」不具备商店设置权限。","1. 以 staff2@example.com 的会话通过 shopSettingsUpdate 提交 passwordLoginMode = DISABLED。
+2. 读取响应错误与 Shop.passwordLoginMode 当前值。","1. 请求被拒绝，返回 OUT_OF_SCOPE_PERMISSION 或顶层权限错误。
+2. Shop.passwordLoginMode 仍为 ENABLED，未生效。"
+TC109,业务域 E：身份与内容安全,R17 · 由商店统一控制的密码登录策略,配置页展示当前模式与权限限制且无外部方式时登录页显示稳定空态,AC-17-5；FD08；FD09,P0,"1. Shop.passwordLoginMode = DISABLED。
+2. 商店未配置任何可用的外部认证方式。
+3. 员工「admin1@example.com」具备商店设置权限并打开设置页；另以匿名打开登录页。","1. 在设置页查看密码登录模式项与权限限制说明。
+2. 打开登录页，观察可见的登录入口。","1. 设置页显示当前模式 DISABLED 及权限限制说明。
+2. 登录页不渲染密码登录入口与密码重置入口，且因无可用外部方式而显示稳定空态（非空白或报错）。"
+TC110,业务域 E：身份与内容安全,R17 · 由商店统一控制的密码登录策略,配置加载失败时保留上一次生效值,AC-17-6；FD08,P0,"1. Shop.passwordLoginMode 上一次生效值为 CUSTOMERS_ONLY。
+2. 员工「admin1@example.com」打开设置页，并模拟读取 Shop.passwordLoginMode 的请求失败。","1. 打开设置页并触发配置加载失败。
+2. 观察设置页展示的模式值与可用操作。
+3. 以员工账号「staff1@example.com」尝试密码登录，读取结果。","1. 加载失败被明确呈现，不显示误导性的可用入口，提供重试。
+2. 页面仍展示上一次生效值 CUSTOMERS_ONLY，未把失败值当作成功。
+3. 员工密码登录仍被拒绝（PASSWORD_LOGIN_CUSTOMERS_ONLY），生效行为与上一次生效值一致。"
+TC111,业务域 E：身份与内容安全,R17 · 由商店统一控制的密码登录策略,配置保存失败时保留上一次生效值且未保存值不被当作成功,AC-17-6；FD08,P0,"1. Shop.passwordLoginMode 上一次生效值为 ENABLED。
+2. 员工「admin1@example.com」具备商店设置权限并打开设置页。","1. 在设置页把模式改为 DISABLED 并提交，模拟保存请求失败。
+2. 观察表单值与提示。
+3. 读取 Shop.passwordLoginMode 当前值并再次以客户密码登录验证。","1. 保存失败显示明确错误，表单回到上一次生效值 ENABLED。
+2. 不把未保存值 DISABLED 当作成功，不更新缓存或服务端事实。
+3. Shop.passwordLoginMode 仍为 ENABLED，客户密码登录仍成功。"
+TC112,业务域 E：身份与内容安全,R18 · 外部身份关联后的旧密码路径清理,需要 refresh token 的 Google OIDC 授权请求使用 access_type=offline 且不含 offline_access,AC-18-1；BD14；I16,P0,"1. 商店配置 Google 作为 OIDC provider，且该配置需要 refresh token（离线访问）。
+2. 存在授权端点 URL 与 client_id、redirect_uri。","1. 从登录入口发起 Google OIDC 授权，捕获重定向到授权端点的完整 URL。
+2. 解析该 URL 的 scope 与 access_type 参数。","1. 授权请求 URL 含 response_type=code 与 state、nonce。
+2. scope 为 openid profile email，不含 offline_access；access_type=offline 存在。"
+TC113,业务域 E：身份与内容安全,R18 · 外部身份关联后的旧密码路径清理,非 Google provider 按各自合同发起授权,AC-18-1；BD14；I16,P0,1. 商店配置一个非 Google 的 OIDC provider（例如自建 provider）。,"1. 从登录入口发起该 provider 的授权，捕获重定向 URL。
+2. 解析授权参数。","1. 授权请求按该 provider 的既有合同发起（scope 与参数与 Google 场景不同，未强加 access_type=offline）。
+2. 不因 R18 的 Google 约定而改变该 provider 的既有参数。"
+TC114,业务域 E：身份与内容安全,R18 · 外部身份关联后的旧密码路径清理,外部授权失败时错误可识别且不泄露令牌与敏感身份信息,AC-18-2；FD10；I16,P0,"1. 商店配置 Google OIDC。
+2. 构造一次授权失败（provider 返回 error，或 state/nonce 校验失败）。","1. 触发授权失败，捕获错误响应。
+2. 检查错误响应中是否含 id_token、access_token、refresh_token 或邮箱以外的身份属性。
+3. 检查浏览器 localStorage 与 sessionStorage 的持久化内容。","1. 返回可识别的错误码，调用方能区分失败原因类别。
+2. 错误响应不含 id_token、access_token、refresh_token 及完整 identity payload 或邮箱以外的身份属性。
+3. localStorage 与 sessionStorage 中不含 token 与不必要的身份信息。"
+TC115,业务域 E：身份与内容安全,R18 · 外部身份关联后的旧密码路径清理,邮箱已存在本地用户时首次外部身份关联清理旧密码路径,AC-18-3；BD14；I16,P0,"1. 商店配置 Google OIDC。
+2. 存在本地用户「user1@example.com」，其密码为 Pw-12345，可通过 tokenCreate 登录。
+3. 该邮箱尚未关联任何外部身份。","1. 以 user1@example.com 的 Google 身份完成首次外部身份关联。
+2. 关联后以 user1@example.com 与旧密码 Pw-12345 调用 tokenCreate。
+3. 关联后以同一 Google 身份再次登录。","1. 首次关联成功，身份映射被持久化，关联动作与清理动作在同一事务内完成。
+2. tokenCreate 无法再取得会话（旧密码路径被清理或禁用），返回明确错误。
+3. 同一 Google 身份再次登录被识别为同一用户。"
+TC116,业务域 E：身份与内容安全,R18 · 外部身份关联后的旧密码路径清理,同一 OIDC 身份后续登录命中同一用户不重复创建,AC-18-4；BD14；I16,P0,"1. 商店配置 Google OIDC。
+2. 存在已完成的 OIDC 身份映射，provider=google、sub=sub-abc123，对应本地用户「user2@example.com」。","1. 以 provider=google、sub=sub-abc123 的身份再次登录。
+2. 统计登录前后该邮箱对应用户记录数。","1. 登录成功并被识别为同一用户 user2@example.com。
+2. 用户记录数不变，未创建重复用户。"
+TC117,业务域 E：身份与内容安全,R19 · 富文本与外链在保存前的结构与安全校验,合法富文本（嵌套列表与常用链接）保存成功,AC-19-1；BD15；I17；FD17,P0,"1. 员工「ops-a」具备 MANAGE_PRODUCTS 权限。
+2. 存在商品「product-1」，其描述为 RICH_TEXT 字段。","1. 通过 productUpdate 提交一段合法 EditorJS 内容：含两层嵌套列表，以及 http、https、mailto、tel 各一个链接。
+2. 读取 payload.errors 与保存后的商品描述。","1. 保存成功，payload.errors 为空。
+2. 商品描述中嵌套列表结构与链接按规则保留。"
+TC118,业务域 E：身份与内容安全,R19 · 富文本与外链在保存前的结构与安全校验,富文本含未知或多余字段被拒绝且不写入部分内容,AC-19-2；BD15；I17,P0,"1. 员工「ops-a」具备 MANAGE_PRODUCTS 权限。
+2. 商品「product-1」当前描述为「原始描述」。","1. 通过 productUpdate 提交一段含未知或多余字段的 EditorJS 内容（在允许的 block 上追加字段 ""evil"": ""x""）。
+2. 读取 payload.errors 与保存后的商品描述。","1. 保存被拒绝，payload.errors 含 code=RICH_TEXT_INVALID，field 指向该富文本字段。
+2. 商品描述仍为「原始描述」，未写入任何部分危险内容。"
+TC119,业务域 E：身份与内容安全,R19 · 富文本与外链在保存前的结构与安全校验,富文本含非法 scheme 链接被拒绝,AC-19-2；BD15；I17,P0,"1. 员工「ops-a」具备 MANAGE_PRODUCTS 权限。
+2. 商品「product-1」当前描述为「原始描述」。","1. 通过 productUpdate 提交一段含 scheme 为 javascript: 的链接（如 javascript:alert(1)）的富文本内容。
+2. 读取 payload.errors 与保存后的商品描述。","1. 保存被拒绝，payload.errors 含 code=RICH_TEXT_UNSAFE_LINK。
+2. 商品描述仍为「原始描述」，未写入部分危险内容。"
+TC120,业务域 E：身份与内容安全,R19 · 富文本与外链在保存前的结构与安全校验,富文本嵌套超过允许深度被拒绝,AC-19-2；BD15；I17,P0,"1. 员工「ops-a」具备 MANAGE_PRODUCTS 权限。
+2. 商品「product-1」当前描述为「原始描述」。
+3. 已知允许的嵌套深度上限为 D。","1. 通过 productUpdate 提交一段嵌套深度为 D+2 的列表富文本内容。
+2. 读取 payload.errors 与保存后的商品描述。","1. 保存被拒绝，payload.errors 含 code=RICH_TEXT_TOO_DEEP。
+2. 商品描述仍为「原始描述」，未写入部分内容。"
+TC121,业务域 E：身份与内容安全,R19 · 富文本与外链在保存前的结构与安全校验,合法链接保留且新窗口外链带安全 rel,AC-19-3；BD15；I17,P0,"1. 员工「ops-a」具备 MANAGE_PRODUCTS 权限。
+2. 商品「product-1」描述为 RICH_TEXT 字段。","1. 通过 productUpdate 提交含 http、https、mailto、tel 链接的富文本，其中一个链接带 target=""_blank""。
+2. 保存后读取并渲染该富文本。","1. http、https、mailto、tel 链接按规则保留，未被误删。
+2. 带 target=""_blank"" 的外链带有安全 rel 行为（含 noopener，必要时 noreferrer），无法通过 opener 控制来源页。"
+TC122,业务域 E：身份与内容安全,R19 · 富文本与外链在保存前的结构与安全校验,通过配置扩展协议白名单仍不能放行被禁止 scheme,AC-19-4；BD15；I17,P0,"1. 员工「ops-a」具备 MANAGE_PRODUCTS 权限。
+2. 商店配置中尝试把额外 scheme（如 data 或 ftp）加入协议白名单。","1. 应用该配置后，通过 productUpdate 提交含 data: scheme 链接的富文本内容。
+2. 读取 payload.errors 与保存后的商品描述。","1. 配置无法扩展协议白名单，保存仍被拒绝，payload.errors 含 code=RICH_TEXT_UNSAFE_LINK。
+2. 商品描述未被写入该危险内容。"
+TC123,业务域 E：身份与内容安全,R19 · 富文本与外链在保存前的结构与安全校验,富文本被拒绝时错误指向具体字段或链接位置且不表现为保存成功,AC-19-5；FD17,P0,"1. 员工「ops-a」具备 MANAGE_PRODUCTS 权限。
+2. 商品「product-1」的富文本描述中包含一个非法 scheme 链接。","1. 在 Dashboard 富文本编辑器中提交该内容。
+2. 读取错误展示与编辑器状态。","1. 错误被映射为可读文案，指向具体富文本字段，message 指出具体链接或深度问题，用户可知改哪里。
+2. 不表现为保存成功（无成功提示、未刷新为已保存状态），失败后编辑内容未被清空。"
+TC124,业务域 F：扩展与事件,R20 · 扩展安装约定与历史扩展数据适配,读取已安装扩展返回 mountName/targetName/settings 当前约定字段,AC-20-1；BD16；I18；FD18,P0,"1. 商店已安装 App，identifier=demo-shop，具备合法权限。
+2. 该 App 的扩展已迁移到已知名称：mountName=""PRODUCT_DETAILS_WIDGETS""、targetName=""OPEN""，settings={""fields"":[{""name"":""message"",""type"":""string""}]}。
+3. 调用方为具备 App 管理权限的员工。","1. 执行 appExtensions(filter: {mountName: [""PRODUCT_DETAILS_WIDGETS""]}, first: 20) { totalCount edges { node { id label url mountName targetName settings mount target } } }
+2. 检查返回节点中 mountName、targetName、settings 的取值。
+3. 同时读取同一节点的已弃用字段 mount、target。","1. 查询成功，errors 为空，totalCount>=1 且结果包含该扩展节点。
+2. 节点返回 mountName=""PRODUCT_DETAILS_WIDGETS""、targetName 为非空字符串、settings 为对象且保留 manifest 声明的设置内容，客户端可直接用于选择与渲染。
+3. mount、target 仍返回与 mountName/targetName 一致的既有枚举映射，且字段带 @deprecated 标记。"
+TC125,业务域 F：扩展与事件,R20 · 扩展安装约定与历史扩展数据适配,升级前历史扩展无需重装即可查询、编辑与渲染且设置保留,AC-20-2；BD16；I18；FD18,P0,"1. 数据库中存在一条升级前写入的 AppExtension 记录，其 mount/target 为未知历史取值，未迁移到已知名称，mountName/targetName 为 null，settings={""legacyKey"":""legacyValue""}。
+2. 已执行 BD16 的新增字段与数据回填迁移。
+3. 调用方为具备 App 管理权限的员工。","1. 迁移后执行 appExtensions(first: 20)，定位该历史扩展节点。
+2. 通过既有扩展更新入口编辑该扩展的 url，并在 settings 中新增键 newKey=""newValue""。
+3. 在已安装扩展页面渲染该扩展条目与其 widget 挂载。","1. 该扩展仍出现在结果中，mountName 与 targetName 返回 null，settings 保留 {""legacyKey"":""legacyValue""}，页面不因空值崩溃或隐藏扩展。
+2. 编辑成功，更新后 settings 同时包含 legacyKey 与 newKey，历史设置内容未被清空。
+3. 扩展条目可见；未知 target 不渲染 widget 但扩展条目仍展示，全程未要求用户重新安装。"
+TC126,业务域 F：扩展与事件,R20 · 扩展安装约定与历史扩展数据适配,重复 identifier 安装被拒绝且不破坏已有扩展数据,AC-20-3；BD16；I19,P0,"1. 已存在 identifier=demo-shop 的 App，其扩展数据可读取。
+2. 待安装 manifestUrl 指向返回同名 identifier=demo-shop 的合法 manifest。
+3. 调用方具备 App 管理权限。","1. 执行 appInstall(input: {appName: ""Demo Shop 2"", manifestUrl: ""https://apps.example.com/manifest-dup.json""})。
+2. 读取返回的 errors 与 appInstallation。
+3. 再次查询原 identifier=demo-shop 的 App 名称与扩展列表。","1. 返回 errors 非空，包含 code=UNIQUE。
+2. 未创建新 App，appInstallation 为空。
+3. 原 App 的名称与扩展数据与安装前逐项一致，未被覆盖或删除。"
+TC127,业务域 F：扩展与事件,R20 · 扩展安装约定与历史扩展数据适配,无效权限或非法 target 的安装被拒绝,AC-20-3；BD16；I19,P1,"1. 调用方具备 App 管理权限。
+2. 准备两份 manifest：identifier=perm-bad 声明权限 [""NOT_A_REAL_PERMISSION""]；identifier=target-bad 的 target=""UNKNOWN_TARGET""。","1. 执行 appInstall 提交含无效权限的 manifest（identifier=perm-bad）。
+2. 读取 errors。
+3. 执行 appInstall 提交 target 非法的 manifest（identifier=target-bad）。
+4. 读取 errors 并查询是否创建了对应 App。","1. 返回 errors 包含 code=INVALID_PERMISSION。
+2. 未创建 identifier=perm-bad 的 App。
+3. 返回 errors 包含 code=INVALID_TARGET_NAME。
+4. 未创建 identifier=target-bad 的 App，且既有 App 数据未被破坏。"
+TC128,业务域 F：扩展与事件,R20 · 扩展安装约定与历史扩展数据适配,无法解析的 settings 或非法 mountName 被拒绝且原数据不变,AC-20-3；BD16；I19,P1,"1. 已存在可正常更新的 App，identifier=set-bad，其当前 settings={""a"":1}。
+2. 调用方具备 App 管理权限。","1. 执行扩展更新，提交 settings 为无法解析的内容（如 JSON 语法错误字符串 ""{\""a\"":""）。
+2. 读取 errors。
+3. 执行扩展更新，提交 mountName=""INVALID_MOUNT_XYZ""。
+4. 再次查询该 App 的扩展数据。","1. 返回 errors 包含 code=INVALID_SETTINGS。
+2. 该次更新未生效。
+3. 返回 errors 包含 code=INVALID_MOUNT_NAME。
+4. 该 App 的 settings 仍为 {""a"":1}，url 与 mountName 等既有有效数据保持不变。"
+TC129,业务域 F：扩展与事件,R20 · 扩展安装约定与历史扩展数据适配,缺省可选安装信息（含 tokenTargetUrl）时合法安装成功且不返回多余 token,AC-20-4；BD16；I19,P0,"1. manifest 未声明 tokenTargetUrl（Manifest.tokenTargetUrl 缺省/null），且 appName、manifestUrl 均提供。
+2. 调用方具备 App 管理权限。","1. 执行 appInstall(input: {appName: ""No Token App"", manifestUrl: ""https://apps.example.com/manifest-notoken.json""})。
+2. 读取 appInstallation 与 errors。
+3. 检查 appInstallation 是否包含新建或安装 token 字段。","1. 安装成功，errors 为空。
+2. appInstallation.name=""No Token App""，App 已创建。
+3. 因 tokenTargetUrl 不被需要，不返回新建或安装 token；缺省可选字段未导致合法安装失败。"
+TC130,业务域 F：扩展与事件,R20 · 扩展安装约定与历史扩展数据适配,新客户端提交扩展数据不再使用旧字段,AC-20-5；BD16；I18；FD18,P1,"1. 新版本客户端已按 I18 使用 mountName/targetName/settings 与新过滤字段。
+2. 已安装扩展挂载在已知挂载点。","1. 在客户端触发已安装扩展列表查询与筛选，抓取发往服务端的请求负载。
+2. 检查查询与负载中是否出现旧字段 mount/target（含 AppExtensionFilterInput 的旧 mount/target 输入）。
+3. 触发一次扩展新增或更新操作，检查提交负载。","1. 请求使用 mountName/targetName/settings 及过滤字段 mountName/targetName。
+2. 请求负载不以旧字段 mount、target 作为提交或过滤项。
+3. 新字段提交成功，扩展数据按新字段写入并可被读取。"
+TC131,业务域 F：扩展与事件,R20 · 扩展安装约定与历史扩展数据适配,缺少 App 管理权限时安装更新被拒且读取仅返回允许范围,AC-20-5；BD16；I18；I19,P0,"1. 存在两个 App：AppA（调用方所属）与 AppB（他人所属），各自有扩展。
+2. 调用方为仅属于 AppA 的 App 身份，不具备 App 管理权限。","1. 以 AppA 身份执行 appInstall 或扩展更新。
+2. 读取 errors 与顶层权限错误。
+3. 以 AppA 身份执行 appExtensions(first: 20)，检查可见扩展范围。","1. 安装或更新被拒绝，返回 AppErrorCode.FORBIDDEN 或顶层权限错误。
+2. 未创建或修改任何 App 数据。
+3. 读取只返回 AppA 自己的扩展，AppB 的扩展不出现在结果中。"
+TC132,业务域 F：扩展与事件,R21 · 扩展回应更新当前表单而非污染其他操作,弹窗扩展返回表单内容时用户可见结果且未通过校验字段被标出,AC-21-1；FD06,P1,"1. 商品编辑页打开来自弹窗扩展的表单。
+2. 扩展返回表单内容，含字段 title=""Good"" 与 price=""-1""（校验失败）。
+3. 使用本轮新增的表单回传 action 协议。","1. 扩展通过 postMessage 发送表单回传响应，payload 含字段值 title=""Good""、price=""-1"" 及字段级校验错误 [{field:""price"", message:""必须为正数""}]。
+2. 检查当前表单回填结果。
+3. 检查 price 字段的错误标注。","1. 当前表单接收响应，title 回填为 ""Good""。
+2. 用户能看到扩展返回的结果。
+3. price 字段被明确标出校验错误，且不表现为保存成功。"
+TC133,业务域 F：扩展与事件,R21 · 扩展回应更新当前表单而非污染其他操作,缺省值响应被对应表单正确接收,AC-21-2；FD06,P1,"1. 打开弹窗扩展表单。
+2. 扩展就某字段返回缺省值响应（未提供具体取值，使用表单缺省）。","1. 扩展发送缺省值响应 payload（该字段带缺省标记、无具体值）。
+2. 检查表单该字段取值与表单状态。","1. 该字段按对应表单的缺省值处理，不写入非法值。
+2. 表单状态正常，无字段级错误，也不显示保存成功。"
+TC134,业务域 F：扩展与事件,R21 · 扩展回应更新当前表单而非污染其他操作,成功响应被对应表单接收且呈现成功,AC-21-2；FD06,P1,"1. 打开弹窗扩展表单。
+2. 扩展返回成功响应，含合法字段值与成功标记。","1. 扩展发送成功响应 payload。
+2. 检查表单字段与状态提示。","1. 表单接收成功响应，字段按返回值更新。
+2. 呈现成功状态，无字段级错误。"
+TC135,业务域 F：扩展与事件,R21 · 扩展回应更新当前表单而非污染其他操作,字段验证失败响应不被呈现为保存成功,AC-21-2；FD06,P1,"1. 表单已提交。
+2. 扩展返回字段验证失败响应，含 errors [{field:""sku"", message:""SKU 已存在""}]。","1. 扩展发送字段验证失败响应。
+2. 检查表单状态、sku 字段错误标注与保存提示。","1. sku 字段被标出错误。
+2. 表单不被呈现为保存成功，保存态回退为可编辑或错误态。"
+TC136,业务域 F：扩展与事件,R21 · 扩展回应更新当前表单而非污染其他操作,权限错误响应被对应表单接收且不表现为成功,AC-21-2；FD06,P1,"1. 打开弹窗扩展表单。
+2. 扩展返回权限错误响应（调用方无对应操作权限）。","1. 扩展发送权限错误响应。
+2. 检查表单状态与提示。","1. 表单接收权限错误状态并展示可识别错误。
+2. 不写入任何字段变更，不表现为保存成功。"
+TC137,业务域 F：扩展与事件,R21 · 扩展回应更新当前表单而非污染其他操作,App 关闭状态响应被对应表单接收,AC-21-2；FD06,P1,"1. 扩展所在 frame 会话已关闭。
+2. 扩展返回 App 关闭状态响应。","1. 扩展发送 App 关闭状态响应。
+2. 检查表单状态、提示与当前编辑内容。","1. 表单接收 App 关闭状态并给出可识别提示。
+2. 不把该状态当作成功，不污染当前编辑内容。"
+TC138,业务域 F：扩展与事件,R21 · 扩展回应更新当前表单而非污染其他操作,多 frame 与未加载 frame 的响应被拒绝不污染编辑状态,AC-21-3；FD06,P1,"1. 页面同时存在 frame A（当前激活）与 frame B（非激活）。
+2. 当前表单已输入 title=""UserInput""。","1. frame B 向主页面发送表单回传响应，尝试写入 title=""Hijacked""。
+2. 未加载 frame C（未注册）发送表单回传响应。
+3. 检查当前表单 title 取值。","1. frame B 的响应被拒绝，不写入当前编辑状态。
+2. 未加载 frame 的响应被明确忽略。
+3. title 仍为 ""UserInput""，未被污染。"
+TC139,业务域 F：扩展与事件,R21 · 扩展回应更新当前表单而非污染其他操作,带请求标识的重复响应只应用一次,AC-21-3；FD06,P1,"1. 扩展为一次请求发送两条表单回传响应，携带相同 requestId=""req-1""。","1. 投递第一条 requestId=""req-1"" 的响应。
+2. 再次投递相同 requestId=""req-1"" 的响应。
+3. 检查字段回填次数与最终值。","1. 第一次响应被应用。
+2. 第二次相同 requestId 的响应被忽略，不再重复写入。
+3. 字段最终值与第一次应用结果一致，仅应用一次。"
+TC140,业务域 F：扩展与事件,R21 · 扩展回应更新当前表单而非污染其他操作,未知 action 被明确忽略且不污染编辑状态,AC-21-3；FD06,P2,"1. 当前表单已输入 title=""KeepMe""。","1. 扩展发送 action=""UNKNOWN_FORM_ACTION"" 的消息。
+2. 检查表单状态与日志。","1. 未知 action 不被处理，当前编辑状态不变，title 仍为 ""KeepMe""。
+2. 记录可辨识的忽略日志。"
+TC141,业务域 F：扩展与事件,R22 · 自托管商店可用的扩展目录,未接入旧 marketplace 的自托管部署可浏览并筛选扩展目录,AC-22-1；FD07；I19,P1,"1. 自托管部署配置中不包含旧 marketplace 服务地址。
+2. 目录来源使用可用数据源，返回扩展集合。
+3. 商户具备扩展目录访问权限。","1. 打开扩展目录页面，检查发起请求的目标地址。
+2. 使用筛选条件（如按名称或类别）筛选。","1. 目录正常加载并展示可用扩展列表，未请求旧 marketplace 地址。
+2. 筛选按条件过滤扩展列表，结果可浏览。"
+TC142,业务域 F：扩展与事件,R22 · 自托管商店可用的扩展目录,目录服务可加载时展示可用数据,AC-22-2；FD07,P1,1. 目录服务可用并返回至少 3 个扩展。,"1. 打开扩展目录。
+2. 检查页面展示与请求目标地址。","1. 页面展示可用扩展数据。
+2. 不依赖不可用的旧地址，无错误态。"
+TC143,业务域 F：扩展与事件,R22 · 自托管商店可用的扩展目录,目录加载失败时区分空目录与加载失败并给出原因,AC-22-2；FD07,P1,1. 构造两个场景：a）目录返回空集合；b）目录服务请求失败。,"1. 打开目录，模拟返回空集合，检查页面状态。
+2. 打开目录，模拟请求失败，检查页面状态与原因提示。","1. 空集合呈现为空目录状态，而非错误态。
+2. 请求失败呈现加载失败状态并给出可识别原因，与空目录明确区分。"
+TC144,业务域 F：扩展与事件,R22 · 自托管商店可用的扩展目录,无配置权限用户浏览目录保持只读且安装入口不可用,AC-22-3；FD07,P1,1. 用户不具备扩展或商店配置权限。,"1. 打开扩展目录。
+2. 检查安装与配置入口状态。","1. 目录按只读展示。
+2. 安装入口不可用（隐藏或禁用）。"
+TC145,业务域 F：扩展与事件,R22 · 自托管商店可用的扩展目录,目录加载失败不被呈现为安装成功,AC-22-3；FD07,P1,"1. 用户具备配置权限。
+2. 目录服务请求失败。","1. 打开目录并尝试安装某扩展。
+2. 检查页面提示与安装状态。","1. 呈现加载失败状态与原因。
+2. 不呈现为安装成功，不产生已安装的假象。"
+TC146,业务域 F：扩展与事件,R23 · Webhook 只做订阅实际需要的工作,同步订阅只解析被选择的字段,AC-23-1；BD17；I20,P0,"1. 配置一个同步 Webhook 订阅，其 query 仅选择 order { id number }，未选择 lines、shipping、taxes 等字段。
+2. 该 App 已启用。","1. 触发该订阅对应的事件（订单更新）。
+2. 检查投递载荷内容。
+3. 检查解析过程中是否访问了未选择字段。","1. 载荷仅包含被选择字段 id、number 的值。
+2. 载荷不含未被选择的字段数据。
+3. 未对被选择字段之外的字段执行解析，无额外解析开销。"
+TC147,业务域 F：扩展与事件,R23 · Webhook 只做订阅实际需要的工作,允许异步的订单事件构建完整载荷不阻塞业务请求,AC-23-2；BD17；I20,P0,"1. 订单更新事件允许异步处理，订阅选择完整订单字段（含 lines、shipping、taxes，数据量较大）。
+2. 已记录业务请求耗时基线。","1. 执行一次订单业务请求（订单更新 mutation），记录业务请求耗时。
+2. 增大订阅字段数量与订单行数量后重复同一业务请求，记录耗时。
+3. 在后台任务边界检查生成的投递载荷。","1. 业务请求在载荷未构建完成时即返回，不等待完整异步载荷。
+2. 业务请求耗时不随订阅字段与订单行数增加而成比例增长（可观察为无显著增长）。
+3. 后台任务边界生成完整载荷。"
+TC148,业务域 F：扩展与事件,R23 · Webhook 只做订阅实际需要的工作,草稿订单与履约异步事件在后台任务边界生成完整内容,AC-23-2；BD17；I20,P1,1. 草稿订单事件与履约事件均配置为允许异步处理的订阅。,"1. 触发草稿订单成单事件，检查业务请求返回与后台载荷。
+2. 触发履约创建事件，检查业务请求返回与后台载荷。","1. 两次业务请求均在后台载荷构建前返回，不等待。
+2. 后台任务边界生成的载荷为完整内容，包含订阅声明的全部字段。"
+TC149,业务域 F：扩展与事件,R23 · Webhook 只做订阅实际需要的工作,纯异步订阅不触发无关同步通知也不额外调用税务或配送服务,AC-23-3；BD17；I20,P0,"1. 某事件仅有纯异步订阅，无同步订阅。
+2. 可统计对外税务与配送服务的调用次数。","1. 触发该事件对应的业务请求。
+2. 统计触发的同步通知数量。
+3. 统计税务与配送服务的调用次数。","1. 业务请求未触发无关的同步通知。
+2. 未额外调用未被需要的税务或配送服务，调用次数与基线一致。
+3. 载荷按异步方式在后台生成。"
+TC150,业务域 F：扩展与事件,R23 · Webhook 只做订阅实际需要的工作,事件量增大仍遵守既有重试与调用上限不放大负载,AC-23-4；BD17；I20,P0,"1. 存在一个会失败的投递目标。
+2. 已知既有上限：MAX_WEBHOOK_RETRIES = 5，以及既有超时与熔断配置。","1. 批量触发事件，使某订阅投递持续失败。
+2. 统计该投递的对外调用次数与重试次数。
+3. 检查超时与熔断行为。","1. 重试次数不超过 MAX_WEBHOOK_RETRIES = 5。
+2. 不因重复解析放大对外调用次数，调用次数与既有上限一致，未随事件量线性翻倍。
+3. 超时与熔断沿用既有上限，未引入未定义的新数值上限。"
+TC151,业务域 F：扩展与事件,R24 · 单个接收方失败不阻断其他接收方,一个接收方投递失败不影响其他接收方且不重做已成功投递,AC-24-1；BD17；I20；FD19,P0,"1. 同一事件配置三个订阅接收方：AppA、AppB、AppC。
+2. AppB 的目标地址不可达（配置为 https://unreachable.example.com/hook）。
+3. 已记录 AppA、AppC 的投递次数基线。","1. 触发该事件。
+2. 检查 AppA、AppB、AppC 的 EventDelivery.status。
+3. 检查 AppA、AppC 是否被再次投递。","1. AppB 对应 delivery 为失败（FAILED 或进入 RETRYING）。
+2. AppA、AppC 的 delivery 为 SUCCESS。
+3. AppA、AppC 已成功的投递不被重做，投递次数不增加。"
+TC152,业务域 F：扩展与事件,R24 · 单个接收方失败不阻断其他接收方,一次投递失败时重试仅作用于该 delivery 并按策略重试,AC-24-2；BD17；I20；I21,P0,"1. 同 D28 的三接收方场景，AppB 目标不可达。
+2. 已记录各 delivery 的重试次数。","1. 触发事件使 AppB 投递失败。
+2. 观察 AppB delivery 的重试行为与 AppA、AppC 的 delivery 状态。
+3. 检查重试次数上限。","1. 仅 AppB 的 delivery 按策略进入重试，状态经历 RETRYING。
+2. AppA、AppC 的 delivery 不受影响，不被重试。
+3. 重试次数不超过 MAX_WEBHOOK_RETRIES = 5。"
+TC153,业务域 F：扩展与事件,R24 · 单个接收方失败不阻断其他接收方,商品变体折扣价实质变化时产生一次合同正确的通知,AC-24-3；BD17；I20,P0,"1. 商品 P 的变体 V 当前折扣价为 100.00 CNY。
+2. 已配置该变体折扣价事件的订阅。","1. 保存变体折扣价由 100.00 CNY 改为 80.00 CNY。
+2. 统计触发的通知数量与载荷内容。","1. 产生恰好一次通知。
+2. 载荷反映折扣价 80.00 CNY，字段符合该事件的契约。"
+TC154,业务域 F：扩展与事件,R24 · 单个接收方失败不阻断其他接收方,无实质变化的保存不重复触发折扣价通知,AC-24-3；BD17；I20,P0,"1. 变体 V 折扣价保持 80.00 CNY 不变。
+2. 存在折扣价事件订阅。","1. 对变体 V 执行一次未改变折扣价的保存（例如仅更新无关名称）。
+2. 统计触发的折扣价通知数量。","1. 不产生折扣价变化的重复通知。
+2. 事件订阅未被无实质变化的保存触发。"
+TC155,业务域 F：扩展与事件,R24 · 单个接收方失败不阻断其他接收方,投递四态与错误信息可见且 PENDING 不被显示为成功,AC-24-4；BD17；I20；FD19,P0,"1. 构造四条 EventDelivery，分别处于 PENDING（内容尚未生成）、SUCCESS、FAILED（含错误信息）、RETRYING。
+2. 商户具备相关查看权限。","1. 后台打开投递列表，查看各 delivery 的状态展示。
+2. 查看 FAILED delivery 的错误信息与尝试次数。
+3. 查看 PENDING delivery 的标注文案。","1. 四态分别展示为等待、成功、失败、重试中，与 EventDelivery.status 取值 { PENDING RETRYING SUCCESS FAILED } 一致。
+2. FAILED 展示可识别的错误信息与尝试次数。
+3. PENDING 明确标注「内容尚未生成或尚未投递」，绝不被显示为成功。"
+TC156,业务域 F：扩展与事件,R24 · 单个接收方失败不阻断其他接收方,具备相关权限时单条失败投递重试成功且内容遵守 App 可见字段边界,AC-24-5；BD17；I20；I21；FD19,P0,"1. 存在一条 FAILED 的 EventDelivery（id=""delivery-1""），目标已恢复可达。
+2. 调用方具备 MANAGE_APPS 或相关业务域权限。
+3. 该 App 的可见字段范围有限。","1. 执行 eventDeliveryRetry(id: ""delivery-1"")。
+2. 检查返回的 delivery 状态与 errors。
+3. 检查重试后投递内容包含的字段。","1. 重试被接受，errors 为空。
+2. 重试期间状态为 RETRYING，目标可达后变为 SUCCESS。
+3. 投递内容仅包含该 App 可见字段边界内的字段，无越权字段。"
+TC157,业务域 F：扩展与事件,R24 · 单个接收方失败不阻断其他接收方,缺少相关权限或 delivery 不存在时单条重试被拒绝,AC-24-5；BD17；I21,P1,"1. 存在 FAILED 的 delivery-1。
+2. 存在不存在的 id=""delivery-missing""。
+3. 调用方不具备 MANAGE_APPS 与相关业务域权限。","1. 以无权限身份执行 eventDeliveryRetry(id: ""delivery-1"")。
+2. 以有权限身份执行 eventDeliveryRetry(id: ""delivery-missing"")。
+3. 再次查询 delivery-1 的状态。","1. 无权限重试被拒绝，返回权限错误。
+2. 不存在的 id 返回错误码 NOT_FOUND。
+3. delivery-1 的状态未被无权限请求改变。"
+TC158,业务域 F：扩展与事件,R24 · 单个接收方失败不阻断其他接收方,Webhook 失败告警保留且不呈现为 App Problems 问题列表,AC-24-6；BD17；I20；FD19,P1,"1. 存在一条 FAILED 的 Webhook 投递。
+2. 商户具备后台查看权限。","1. 打开后台 Webhook 失败告警入口。
+2. 检查是否存在 App Problems 类型的问题列表结构。","1. 既有 Webhook 失败告警仍然存在，可查看失败投递。
+2. 不呈现为 App Problems 类型的问题列表，无 App Problems 的类型、字段或问题列表。"
+TC159,业务域 G：历史数据、接口兼容与工作台,R25 · 订单保留创建时的配送元数据快照,结账成单时保存配送方式的 public 与 private 元数据快照,AC-25-1；BD18；I22,P0,"1. 已升级到本轮交付版本的商店，存在渠道 CH-CNY 与已启用的配送方式 ShippingMethod SM-1（name=标准快递）。
+2. SM-1 的 public 元数据为 {key: source, value: storefront}，private 元数据为 {key: internalCode, value: SM-1-INT}。
+3. 一个行项目非空、收货地址完整、已选中 SM-1 且已完成支付的结账，token=11111111-1111-1111-1111-111111111111。
+4. 调用方为具备 MANAGE_ORDERS 的员工。","1. 调用 mutation checkoutComplete(id: ""<结账 ID>"") 完成该结账。
+2. 用返回的 order.id 调用 query order(id:) 读取 deliveryMethodSnapshot { deliveryMethodId name metadata { key value } privateMetadata { key value } }。
+3. 读取同订单的 shippingMethodName 与 fulfillments[].deliveryMethodSnapshot。","1. HTTP 200、无顶层 errors，payload.errors 为空数组，返回非空 order.id。
+2. deliveryMethodSnapshot.deliveryMethodId 等于 SM-1 的 ID，name=标准快递，metadata 含 {key: source, value: storefront}，privateMetadata 含 {key: internalCode, value: SM-1-INT}。
+3. shippingMethodName=标准快递；履约侧 deliveryMethodSnapshot 与订单侧为同一份快照内容。"
+TC160,业务域 G：历史数据、接口兼容与工作台,R25 · 订单保留创建时的配送元数据快照,草稿订单成单时同样保存配送方式的 public 与 private 元数据快照,AC-25-2；BD18；I22,P0,"1. 存在渠道 CH-CNY 与配送方式 SM-2（name=次日达），public 元数据 {key: lane, value: express}、private 元数据 {key: carrierId, value: C-77}。
+2. 存在草稿订单 DRAFT-1，行项目非空，指定配送方式 SM-2 与完整收货地址。
+3. 调用方为具备 MANAGE_ORDERS 的员工。","1. 调用 mutation draftOrderComplete(id: ""<DRAFT-1 的 ID>"") 完成草稿订单。
+2. 读取返回 order 的 deliveryMethodSnapshot { deliveryMethodId name metadata { key value } privateMetadata { key value } } 与 fulfillments[].deliveryMethodSnapshot。","1. payload.errors 为空且返回非空 order.id。
+2. deliveryMethodSnapshot.name=次日达，metadata 含 {key: lane, value: express}，privateMetadata 含 {key: carrierId, value: C-77}；履约快照与订单侧一致。"
+TC161,业务域 G：历史数据、接口兼容与工作台,R25 · 订单保留创建时的配送元数据快照,源配送方式被修改、停用或删除后订单与履约快照不被回写,AC-25-3；BD18；I22；FD20,P0,"1. 已有由 SM-1 成单的订单 ORDER-1，其快照 name=标准快递、metadata {key: source, value: storefront}。
+2. 调用方为具备 MANAGE_ORDERS 的员工。","1. 修改 SM-1 的 name 为「特快专递」并把 public 元数据改为 {key: source, value: dashboard}，随后重新读取 ORDER-1 与履约快照。
+2. 停用 SM-1（isActive=false），重新读取订单与履约快照。
+3. 删除 SM-1，重新读取订单与履约快照。
+4. 比较三次操作前后的快照内容。","1. 订单快照 name 仍为「标准快递」，metadata 仍为 {key: source, value: storefront}，与修改前逐字一致。
+2. 停用后订单与履约快照内容不变。
+3. 删除后订单快照的 deliveryMethodId 变为 null（源对象已删除），name 与 metadata 仍为创建时值，不报错、不清空。
+4. 三次操作均未改变订单与履约快照内容。"
+TC162,业务域 G：历史数据、接口兼容与工作台,R25 · 订单保留创建时的配送元数据快照,配送元数据的 public 与 private 可见性按权限生效且事件内容与订单一致,AC-25-4；BD18；I22；FD20,P0,"1. ORDER-1 快照含 public 元数据 {key: source, value: storefront} 与 private 元数据 {key: internalCode, value: SM-1-INT}。
+2. 身份 A：具备订单读取权限但不具备 private 元数据查看权限的员工。
+3. 身份 B：同时具备订单与 private 元数据查看权限的员工。
+4. 已订阅 order.created 事件的 App。","1. 以身份 A 执行 query order(id: ORDER-1) { deliveryMethodSnapshot { metadata { key value } privateMetadata { key value } } }。
+2. 以身份 B 执行同一查询。
+3. 读取订单创建事件（order.created）载荷中的配送元数据。","1. 身份 A 得到 metadata 内容，privateMetadata 按权限不返回内容，不泄露 internalCode。
+2. 身份 B 同时得到 metadata 与 privateMetadata（含 internalCode=SM-1-INT）。
+3. 事件载荷中的配送元数据与订单快照一致。"
+TC163,业务域 G：历史数据、接口兼容与工作台,R25 · 订单保留创建时的配送元数据快照,配送元数据回填迁移幂等，重复执行记录数不变且不丢数据,AC-25-5；BD18；I22,P1,"1. 升级前库中存在 200 条既有订单，其中 150 条在成单时记录了配送元数据。
+2. 已具备可执行迁移的环境。","1. 记录迁移前订单总数与带配送元数据的记录数。
+2. 执行本轮回填迁移。
+3. 再次重复执行同一条回填迁移。
+4. 两次执行后抽样读取订单的 deliveryMethodSnapshot 并比较。","1. 迁移前订单总数=200，其中带配送元数据的记录=150。
+2. 迁移完成后订单总数仍为 200，已记录元数据的订单可读且内容与升级前一致，无重复记录、无丢数据。
+3. 第二次执行后订单与配送元数据记录数与第一次一致，记录数不变、不产生重复。
+4. 抽样订单快照内容在两次执行前后一致。"
+TC164,业务域 G：历史数据、接口兼容与工作台,R25 · 订单保留创建时的配送元数据快照,无元数据的历史订单返回稳定空值而不报错,AC-25-5；BD18；I22；FD20,P1,"1. 库中存在一条升级前创建、当时未记录配送元数据的订单 ORDER-OLD。
+2. 回填迁移已执行完成。
+3. 调用方为具备订单读取权限的员工。","1. 执行 query order(id: ORDER-OLD) { deliveryMethodSnapshot { deliveryMethodId name metadata { key value } privateMetadata { key value } } }。
+2. 读取该订单履约的 deliveryMethodSnapshot。
+3. 重复读取一次并比较。","1. Order 侧 deliveryMethodSnapshot 为 null，不报错、不返回伪造值。
+2. 若履约侧返回快照对象，则 deliveryMethodId 为 null 且 metadata/privateMetadata 为空数组，为稳定空值。
+3. 两次读取结果一致，不因来源无元数据而失败。"
+TC165,业务域 G：历史数据、接口兼容与工作台,R26 · 保留基础元数据读写，不提供独立管理入口,结账、草稿订单、订单与履约的基础元数据读写按权限生效,AC-26-1；BD19；I23,P1,"1. 存在结账 CK-1、草稿订单 DRAFT-1、订单 ORDER-1、履约 FUL-1。
+2. 调用方为具备各对象编辑权限且具备 private 元数据权限的员工。","1. 对 CK-1 执行 mutation updateMetadata(id: <CK-1 ID>, input: [{key: ""k1"", value: ""v1""}])，再读取 checkout.metadata。
+2. 对 DRAFT-1、ORDER-1、FUL-1 分别执行同样的 updateMetadata 并读取各自 metadata。
+3. 对 ORDER-1 执行 updatePrivateMetadata(id: <ORDER-1 ID>, input: [{key: ""pk1"", value: ""pv1""}]) 并读取 privateMetadata。
+4. 对 ORDER-1 执行 deleteMetadata(id: <ORDER-1 ID>, keys: [""k1""]) 后读取 metadata。","1. updateMetadata 的 payload.errors 为空数组，读取 checkout.metadata 得到 {key: k1, value: v1}。
+2. 对 DRAFT-1、ORDER-1、FUL-1 的写入均 payload.errors 为空，读取各自 metadata 得到 {key: k1, value: v1}。
+3. updatePrivateMetadata 的 payload.errors 为空，读取 order.privateMetadata 得到 {key: pk1, value: pv1}。
+4. deleteMetadata 的 payload.errors 为空，读取 order.metadata 不再出现键 k1。"
+TC166,业务域 G：历史数据、接口兼容与工作台,R26 · 保留基础元数据读写，不提供独立管理入口,订单详情行内编辑与订单行元数据能力仍然可用,AC-26-2；BD19；I23；FD21,P1,"1. 存在订单 ORDER-1，含订单行 LINE-1。
+2. 调用方为具备 MANAGE_ORDERS 的员工。","1. 在订单详情行内编辑中提交 ORDER-1 的元数据 {key: ""inline"", value: ""yes""} 并保存。
+2. 读取 order.metadata。
+3. 对 LINE-1 执行 updateMetadata(id: <LINE-1 ID>, input: [{key: ""rowKey"", value: ""rowVal""}])。
+4. 读取 order.lines[].metadata。","1. 保存成功且 payload.errors 为空。
+2. ORDER-1 元数据含 {key: inline, value: yes}。
+3. 订单行元数据写入成功且 payload.errors 为空。
+4. LINE-1 元数据含 {key: rowKey, value: rowVal}。"
+TC167,业务域 G：历史数据、接口兼容与工作台,R26 · 保留基础元数据读写，不提供独立管理入口,提交非法元数据值时原值不变且不出现部分写入,AC-26-3；BD19；I23；FD21,P1,"1. ORDER-1 现有元数据 {key: ""k1"", value: ""v1""} 与 {key: ""k2"", value: ""v2""}。
+2. 调用方为具备 MANAGE_ORDERS 的员工。","1. 执行 updateMetadata(id: <ORDER-1 ID>, input: [{key: ""k1"", value: ""new1""}, {key: """", value: ""bad""}])（第二项 key 为空）。
+2. 读取 order.metadata。","1. 返回字段级校验错误，payload.errors 非空且 code/field/message 可定位；HTTP 200 不代表业务成功。
+2. 元数据保持 k1=v1、k2=v2，未出现 k1=new1 的部分写入，非法项未被写入。"
+TC168,业务域 G：历史数据、接口兼容与工作台,R26 · 保留基础元数据读写，不提供独立管理入口,权限不足或保存失败时元数据原值保持不变,AC-26-3；BD19；I23；FD21,P1,"1. ORDER-1 现有元数据 {key: ""k1"", value: ""v1""}。
+2. 身份 A：无订单编辑权限的员工。
+3. 已构造一次后端写入异常的保存失败场景（有权限员工触发）。","1. 以身份 A 执行 updateMetadata(id: <ORDER-1 ID>, input: [{key: ""k1"", value: ""hacked""}])。
+2. 读取 order.metadata。
+3. 在写入异常场景下由有权限员工提交 updateMetadata(id: <ORDER-1 ID>, input: [{key: ""k1"", value: ""v2""}])，再读取 order.metadata。","1. 身份 A 的请求被拒绝（权限错误），不表现为成功。
+2. k1 仍为 v1，未被改写。
+3. 保存失败返回可区分错误，k1 仍为 v1，不出现部分写入。"
+TC169,业务域 G：历史数据、接口兼容与工作台,R26 · 保留基础元数据读写，不提供独立管理入口,枚举元数据入口时不出现订单/履约/仓库的独立元数据弹窗、专用路由或隐藏入口,AC-26-4；BD19；I23；FD21,P1,"1. 已部署本轮交付的 Dashboard 与 Core。
+2. 以管理员身份进入订单详情、履约详情、仓库详情页面。","1. 遍历订单详情、履约详情、仓库详情页面可用的元数据操作入口。
+2. 遍历 Dashboard 路由表与菜单配置，检索订单/履约/仓库专用元数据路由或开关。
+3. 检索生成客户端与 schema 中是否存在对应的独立元数据类型或变更。","1. 仅存在既有基础元数据编辑入口（表单内联/卡片），无独立元数据弹窗与独立入口。
+2. 路由表与菜单中不存在订单/履约/仓库的专用元数据路由，也不存在可隐藏恢复该入口的开关。
+3. schema 与生成客户端中不存在对应的新增独立元数据类型或变更，与基线逐字一致。"
+TC170,业务域 G：历史数据、接口兼容与工作台,R27 · 输入校验与可分支的失败语义,HTTP 200 不足以判定业务成功，响应提供可区分传输成功/业务成功/没有结果/输入错误的信息,AC-27-1；BD20；I24；FD25,P0,"1. 调用方为具备订单查询与 MANAGE_ORDERS 权限的员工。
+2. 已构造四类请求：合法查询、业务失败（orderCapture 金额超过可捕获授权）、无匹配的过滤查询、含负数 Minute 的输入错误请求。","1. 提交合法查询，记录 HTTP 状态、顶层 errors、payload.errors 与数据节点。
+2. 提交业务失败请求 orderCapture(amount: 150)（可捕获授权为 100），记录同上。
+3. 提交无匹配过滤的订单查询。
+4. 提交含负数的 Minute 参数请求。","1. 合法：HTTP 200、顶层 errors 为空、payload.errors 为空、node 非空。
+2. 业务失败：即便 HTTP 200，payload.errors 非空且 code 可分支，调用方可据此判定未成功。
+3. 无结果：HTTP 200、两层 errors 均为空、edges 为空且 totalCount=0，为合法空集合。
+4. 输入错误：返回执行前校验错误，field/code/message 可区分；四类情形可被调用方区分。"
+TC171,业务域 G：历史数据、接口兼容与工作台,R27 · 输入校验与可分支的失败语义,为负的分钟/小时/天数在执行前被拒绝,AC-27-2；BD20；I24,P0,"1. 商店存在渠道 CH-CHN，自动完成设置入口可用。
+2. 调用方为具备渠道管理权限的员工。
+3. 存在一条现有生效设置 automaticCompletionDelay=PT10M。","1. 提交 channelUpdate，input.checkoutSettings.automaticCompletionDelay 取 -5 分钟（Minute 标量负值）。
+2. 提交 channelUpdate，将 Hour 类型字段取 -2 小时。
+3. 提交 channelUpdate，将 Day 类型字段取 -1 天。
+4. 每次提交后重新读取渠道设置。","1. 提交负分钟值在执行前返回校验错误，field 指向 automaticCompletionDelay。
+2. 提交负小时值在执行前返回校验错误，field 指向对应 Hour 入参。
+3. 提交负天数在执行前返回校验错误，field 指向对应 Day 入参；三次均以响应体而非 HTTP 状态表示失败。
+4. 渠道设置仍为上次生效值 automaticCompletionDelay=PT10M，负值未被写入。"
+TC172,业务域 G：历史数据、接口兼容与工作台,R27 · 输入校验与可分支的失败语义,缺少必填项、枚举取值非法或组合关系不成立时在执行前校验,AC-27-2；BD20；I24,P0,"1. 调用方为具备相应权限的员工。
+2. 已准备缺少必填项的 mutation 输入、非法枚举值、互斥组合参数。","1. 提交缺少必填字段的 mutation（appInstall 缺 manifestUrl）。
+2. 提交枚举取值非法的参数（stockAvailabilityMode 传入 ""UNKNOWN_MODE""）。
+3. 提交组合关系不成立的入参（同时传入互相冲突的两个参数）。
+4. 每次提交后检查对象状态。","1. 返回 REQUIRED 类校验错误，field 指向缺失的 manifestUrl。
+2. 返回枚举校验错误，field 指向 stockAvailabilityMode。
+3. 返回组合关系校验错误。
+4. 三次均不产生任何写入，对象状态不变。"
+TC173,业务域 G：历史数据、接口兼容与工作台,R27 · 输入校验与可分支的失败语义,Federation representations 为 null 或含 null 项时返回稳定错误,AC-27-3；BD20；I24,P0,"1. 已启用 Federation，_entities 查询可用。
+2. 提交方为已认证调用方。","1. 提交 _entities(representations: null)。
+2. 提交 _entities(representations: [null])。
+3. 提交 _entities(representations: [{__typename: ""Product"", id: ""<合法全局 ID>""}, null])。","1. representations=null 返回稳定错误，field 指向 representations。
+2. representations=[null] 返回稳定错误。
+3. 含 null 项的 representations 返回稳定错误；三次均不返回成功空实体列表，不产生任何写入。"
+TC174,业务域 G：历史数据、接口兼容与工作台,R27 · 输入校验与可分支的失败语义,数组空项、错误类型与越界分页在执行前稳定报错,AC-27-4；BD20；I24,P0,1. 调用方为具备订单查询权限的员工。,"1. 提交含数组空项的入参（metadata input 数组含 null 项）。
+2. 提交类型错误的参数（把字符串 ""abc"" 传入 Int 分页参数 first）。
+3. 提交越界分页 first=101。
+4. 提交越界游标 after=""invalid-cursor""。","1. 数组含空项在执行前返回稳定错误，field 指向该数组入参。
+2. 类型错误参数在执行前返回稳定错误。
+3. first=101 越界分页在执行前返回稳定错误。
+4. 越界游标在执行前返回稳定错误；四次均不以成功空结果掩盖非法请求，不产生写入。"
+TC175,业务域 G：历史数据、接口兼容与工作台,R27 · 输入校验与可分支的失败语义,失败返回可按 field/code/message 分支的错误且无部分写入，未知错误不转成成功空列表,AC-27-5；BD20；I24；FD25,P0,"1. 调用方为具备 orderCapture 权限的员工。
+2. 订单 ORDER-1 含可捕获授权 amount=100。","1. 提交 orderCapture(id: ORDER-1, amount: 150)（超过可捕获授权）。
+2. 读取 payload.errors 的 field、code、message。
+3. 读取 order.totalCharged 与 transactions.events。
+4. 注入底层未知异常后再次提交合法捕获请求，观察返回。","1. payload.errors 非空。
+2. errors 项含可分支 code（AMOUNT_GREATER_THAN_AVAILABLE）、field 指向 amount、message 可读。
+3. totalCharged 未变、未写入任何交易事件，无部分写入。
+4. 底层未知错误返回错误状态，不被转换成成功空列表。"
+TC176,业务域 G：历史数据、接口兼容与工作台,R27 · 输入校验与可分支的失败语义,合法单值、数组与组合查询及订单条件/用户关联订单查询返回准确结果与稳定分页,AC-27-6；BD20；I24,P0,"1. 存在商品与订单若干，其中用户 U1 关联 5 个订单，分属 2 个渠道。
+2. 调用方为具备相应查询权限的员工。","1. 提交合法单值查询 query order(id: ORDER-1) 并校验结果。
+2. 提交合法数组查询 products(filter: {ids: [""<ID1>"", ""<ID2>""]})。
+3. 提交组合查询 orders(filter: {channel: ""channel-chn"", status: FULFILLED}, first: 2)。
+4. 连续翻页读取用户 U1 关联的订单查询，比较两页的 edges 与 pageInfo。","1. 单值查询返回正确的 ORDER-1。
+2. 数组筛选返回与 ids 对应的记录。
+3. 组合查询仅返回同时满足渠道与状态的订单，totalCount 与筛选结果一致。
+4. 分页结果无重复、无漏项，pageInfo 游标稳定，重复请求得到相同分页。"
+TC177,业务域 G：历史数据、接口兼容与工作台,R27 · 输入校验与可分支的失败语义,对象 ID/结账 token/UUID/渠道 slug 类型错位报错且金额库存状态变更幂等,AC-27-7；BD20；I24,P0,"1. 存在订单 ORDER-1（对象 ID）、结账 token=11111111-1111-1111-1111-111111111111（UUID）、渠道 slug=channel-chn。
+2. ORDER-1 含可捕获授权 amount=100。
+3. 调用方为具备 orderCapture 权限的员工。","1. 把结账 token 传入要求对象 ID 的参数位置（order(id: <token>)）。
+2. 把订单对象 ID 传入要求渠道 slug 的参数位置。
+3. 把非 UUID 值传入要求 UUID 的 token 参数。
+4. 对 ORDER-1 连续两次提交相同的 orderCapture(id: ORDER-1, amount: 100)，读取 totalCharged 与 transactions.events 数量。","1. 把结账 token 传入对象 ID 位置返回类型不匹配错误，不解析为对象 ID。
+2. 把对象 ID 传入渠道 slug 位置返回类型不匹配错误。
+3. 把非 UUID 值传入 UUID 参数返回类型不匹配错误；三次均不泄露对象信息。
+4. 第二次请求依据最新对象状态做幂等检查；totalCharged 仅增加一次 100，交易事件不重复写入。"
+TC178,业务域 G：历史数据、接口兼容与工作台,R28 · 弃用读取与迁移边界,仍支持的旧用法返回弃用读取与替代路径，已不支持的能力返回不存在或迁移错误,AC-28-1；BD21；I25,P0,"1. 已部署本轮交付版本。
+2. 调用方为具备相应读取权限的集成方。","1. 读取带弃用标记的字段 Payment.partial，记录值与弃用标记。
+2. 调用一个已不支持的能力入口。
+3. 检查调用 2 的响应体。","1. 仍支持的旧字段返回弃用读取结果并带 @deprecated 标记与替代路径说明。
+2. 已不支持的能力返回 NOT_FOUND 或迁移类错误。
+3. 不返回无解释的成功空响应（不出现 HTTP 200 + 空数据被当作成功）。"
+TC179,业务域 G：历史数据、接口兼容与工作台,R28 · 弃用读取与迁移边界,旧 Adyen/NP Atobarai 插件、Payment.partial 与旧数字商品接口不返回成功，数字商品仍可通过 Apps/现行方案提供,AC-28-2；BD21；I25,P0,"1. 已部署本轮交付版本。
+2. 调用方为已认证集成方。","1. 请求旧 Adyen 插件与 NP Atobarai 插件相关入口。
+2. 读取 Payment.partial 字段。
+3. 调用旧数字商品接口 Query.digitalContent、Query.digitalContents 与 Mutation.digitalContentCreate。
+4. 通过现行 Apps 方案提供并读取数字商品。","1. 旧 Adyen 与 NP Atobarai 插件入口不返回可用于业务成功的结果。
+2. Payment.partial 带弃用标记，不返回可用于业务成功的结果。
+3. 旧数字商品接口按弃用约定处理，不承诺成功。
+4. 数字商品仍可通过 Apps 或现行方案获取。"
+TC180,业务域 G：历史数据、接口兼容与工作台,R28 · 弃用读取与迁移边界,导出商品/礼品卡/voucher 使用当前查询导出方式成功，且不存在另一套旧导出 mutation,AC-28-3；BD21；I25,P0,"1. 调用方分别具备 MANAGE_PRODUCTS、MANAGE_GIFT_CARD、MANAGE_DISCOUNTS。
+2. 存在可导出的商品、礼品卡与 voucher 数据。","1. 执行 mutation exportProducts 创建导出任务并轮询任务状态。
+2. 执行 mutation exportFile/exportFiles 读取导出文件。
+3. 对 exportGiftCards、exportVoucherCodes 重复步骤 1-2。
+4. 枚举导出相关 mutation 入口，检查是否存在另一套旧导出 mutation。","1. exportProducts 成功创建任务，payload.errors 为空。
+2. exportFile/exportFiles 成功读取到商品导出文件。
+3. exportGiftCards 与 exportVoucherCodes 同样成功创建任务并读取到文件，payload.errors 为空。
+4. 枚举结果中不存在另一套旧导出 mutation；当前查询导出方式即为唯一方式。"
+TC181,业务域 G：历史数据、接口兼容与工作台,R28 · 弃用读取与迁移边界,草稿订单使用 voucherCode 正常处理，旧 voucher 输入按弃用约定,AC-28-4；BD21；I25,P0,"1. 存在有效 voucher 代码 SAVE10。
+2. 调用方为具备 MANAGE_ORDERS 的员工。","1. 提交 draftOrderCreate(input: {channelId: ""<channel-chn ID>"", lines: [<行项目>], voucherCode: ""SAVE10""})。
+2. 读取返回 order.voucherCode。
+3. 检索 DraftOrderInput.voucher 的 schema 声明并提交 draftOrderCreate(input: {..., voucher: ""<旧 voucher ID>""})。","1. voucherCode 正常处理，payload.errors 为空。
+2. 订单 voucherCode=SAVE10。
+3. DraftOrderInput.voucher 带 @deprecated 标记且替代路径为 voucherCode，旧输入按弃用约定处理。"
+TC182,业务域 G：历史数据、接口兼容与工作台,R28 · 弃用读取与迁移边界,属性 name/slug/type 为空或 App 安装缺 appName/manifestUrl 时返回校验错误,AC-28-5；BD21；I25；I19,P0,"1. 调用方为具备属性管理与 App 管理权限的员工。
+2. 已准备对应入参。","1. 提交 attributeCreate(input: {name: """", slug: ""size"", type: PRODUCT_TYPE})。
+2. 提交 attributeCreate(input: {name: ""尺寸"", slug: """", type: PRODUCT_TYPE})。
+3. 提交 attributeCreate(input: {name: ""尺寸"", slug: ""size""})，缺少 type。
+4. 提交 appInstall(input: {})，缺少 appName 与 manifestUrl。
+5. 提交 appInstall(input: {appName: ""Test""})，仅缺 manifestUrl。","1. name 为空返回校验错误，field 指向 name，不创建属性。
+2. slug 为空返回校验错误，field 指向 slug，不创建属性。
+3. 缺 type 返回校验错误，field 指向 type，不创建属性。
+4. 缺 appName 与 manifestUrl 返回 REQUIRED 校验错误，分别指向 appName 与 manifestUrl，不创建 App。
+5. 仅缺 manifestUrl 返回 REQUIRED 校验错误指向 manifestUrl，不创建 App。"
+TC183,业务域 G：历史数据、接口兼容与工作台,R28 · 弃用读取与迁移边界,Core 公开 schema、Dashboard 生成客户端与错误映射、文档三者一致且不含不支持的操作,AC-28-6；BD21；I25；FD25,P0,1. 具备 Core 的 target-schema.graphql、Dashboard 生成客户端 src/graphql/types.generated.ts 与前端错误映射文件。,"1. 用与生成时相同版本的 graphql 解析器构建 Core 公开 schema 并校验。
+2. 运行 Dashboard codegen 并比对生成文件与 Core schema 的一致性。
+3. 检查错误映射是否覆盖 schema 中新增的错误码。
+4. 检索三处是否包含不支持的操作（App Problems、旧导出 mutation、被排除的高级搜索与交易日期筛选等）。","1. schema 构建成功、校验错误为 0。
+2. 生成客户端与 Core schema 一致，无未定义引用或缺失类型。
+3. 每个新增错误码均有映射，未知码回退到 message 并标记为未分类。
+4. 三处均不含不支持的操作。"
+TC184,业务域 G：历史数据、接口兼容与工作台,R28 · 弃用读取与迁移边界,空库可完成迁移且既有订单、交易、扩展、库存与元数据的业务含义保留,AC-28-7；BD21；I25,P0,"1. 一个空数据库（无业务数据）。
+2. 一个含既有订单、交易、扩展、库存与元数据的升级前数据库快照。","1. 在空库执行全部迁移。
+2. 在升级前数据库快照上执行全部迁移。
+3. 抽样读取订单金额、交易记录、扩展 mountName/targetName/settings、库存量与元数据。","1. 空库迁移全部完成，无未应用迁移。
+2. 升级库迁移完成，无错误。
+3. 抽样对象的业务含义与升级前一致（订单金额/交易事件/扩展设置/库存/元数据内容不变），未丢失或被改写。"
+TC185,业务域 G：历史数据、接口兼容与工作台,R29 · 权限不因查询入口而放宽,无对应权限时通过任一入口执行员工删除、属性更新、App 安装、导出或读取敏感税务字段均被拒绝,AC-29-1；BD22；I26,P0,1. 身份 A：不具备 MANAGE_STAFF、MANAGE_PRODUCTS、MANAGE_APPS、导出权限与 HANDLE_TAXES 的员工。,"1. 以身份 A 执行 staffDelete(id: <员工 S-2 ID>)。
+2. 以身份 A 执行 attributeUpdate(id: <属性 ID>, input: {...})。
+3. 以身份 A 执行 appInstall(input: {appName: ""X"", manifestUrl: ""https://x/manifest""})。
+4. 以身份 A 执行 exportProducts。
+5. 以身份 A 读取订单的私有元数据与税务敏感字段。","1. staffDelete 被拒绝并返回权限错误。
+2. attributeUpdate 被拒绝并返回权限错误。
+3. appInstall 被拒绝并返回权限错误。
+4. exportProducts 被拒绝并返回权限错误。
+5. 读取订单私有元数据与税务敏感字段被拒绝；五次均非空结果、响应不含受限数据、不产生写入。"
+TC186,业务域 G：历史数据、接口兼容与工作台,R29 · 权限不因查询入口而放宽,有权限员工删除真正删除（含历史订单），自删或无权限删除被拒绝,AC-29-2；BD22；I26,P0,"1. 员工 S-1 有历史订单记录；员工 S-2 无历史订单。
+2. 身份 B：具备 MANAGE_STAFF 的员工；身份 C：无 MANAGE_STAFF 的员工。","1. 以身份 B 执行 staffDelete(id: <S-1 ID>)。
+2. 查询该员工对象并检索员工列表，确认 S-1 是否仍存在。
+3. 以身份 B 执行 staffDelete(id: <身份 B 自己的 ID>)。
+4. 以身份 C 执行 staffDelete(id: <S-2 ID>)。","1. 返回成功，payload.errors 为空。
+2. S-1 被真正删除（不出现在员工列表），而非仅撤销员工标记。
+3. 自删被拒绝，身份 B 未被删除。
+4. 无权限删除被拒绝，S-2 未被删除。"
+TC187,业务域 G：历史数据、接口兼容与工作台,R29 · 权限不因查询入口而放宽,无导出权限时导出商品、礼品卡或 voucher 被拒绝,AC-29-3；BD22；I26,P0,1. 身份 A：缺少 MANAGE_PRODUCTS、MANAGE_GIFT_CARD 与 MANAGE_DISCOUNTS。,"1. 以身份 A 执行 exportProducts。
+2. 以身份 A 执行 exportGiftCards。
+3. 以身份 A 执行 exportVoucherCodes。","1. exportProducts 被拒绝并返回权限错误。
+2. exportGiftCards 被拒绝并返回权限错误。
+3. exportVoucherCodes 被拒绝并返回权限错误；三次均不创建导出任务，不以空结果掩盖。"
+TC188,业务域 G：历史数据、接口兼容与工作台,R29 · 权限不因查询入口而放宽,不具备 HANDLE_TAXES 时不返回结账/订单私有元数据与用户等税务敏感字段,AC-29-4；BD22；I26,P0,"1. 订单 ORDER-1 含私有元数据 {key: taxId, value: ""T-9""}，用户税率相关敏感字段已设置。
+2. 身份 A：不具备 HANDLE_TAXES；身份 B：具备 HANDLE_TAXES。","1. 以身份 A 读取 order.privateMetadata 与订单/结账的敏感税务字段。
+2. 以身份 B 读取同一内容。","1. 身份 A 不返回这些内容（字段级不可见或返回权限错误），不泄露 taxId 等敏感信息。
+2. 身份 B 可读取到相同内容，taxId=T-9。"
+TC189,业务域 G：历史数据、接口兼容与工作台,R29 · 权限不因查询入口而放宽,对象范围与渠道/仓库可见性在列表与错误信息中一致，无权限不表现为没有数据、失败不表现为成功,AC-29-5；BD22；I26；FD25,P0,"1. 员工 E-1 仅可见渠道 CH-A 与仓库 W-A；员工 E-2 可见全部。
+2. 存在仅属于渠道 CH-B 的订单与仓库。","1. 以 E-1 查询订单列表与仓库列表，记录可见对象范围。
+2. 以 E-1 通过导出与批量操作入口查询同一范围。
+3. 以 E-1 请求其无权查看的 CH-B 对象，读取错误信息。
+4. 以 E-1 执行一次会被拒绝的失败操作，观察响应。","1. E-1 仅见到 CH-A 与 W-A 范围内的对象。
+2. 各入口范围一致，无因换入口放宽。
+3. 返回权限错误而不是空列表，错误信息不暴露受限对象是否存在。
+4. 失败返回明确错误，不表现为操作成功。"
+TC190,业务域 G：历史数据、接口兼容与工作台,R30 · 迟到的配置数据不覆盖正在编辑的内容,打开渠道或商店设置时区分加载中、已加载空数据、权限错误、网络错误与可重试状态,AC-30-1；FD22,P1,"1. 可打开渠道设置页与商店设置页。
+2. 可注入不同的后端响应：加载中、已加载空数据、权限错误、网络错误。","1. 打开设置页并在数据到达前观察页面状态。
+2. 注入「已加载但空数据」响应，观察页面。
+3. 注入权限错误响应，观察页面。
+4. 注入网络错误响应，观察页面是否提供重试。","1. 明确显示加载中状态。
+2. 显示已加载空数据空态，与加载中、错误态可区分。
+3. 显示权限错误态，不被呈现为空数据。
+4. 显示网络错误态并提供可重试入口；四种状态互不混淆。"
+TC191,业务域 G：历史数据、接口兼容与工作台,R30 · 迟到的配置数据不覆盖正在编辑的内容,配置数据加载期间页面不崩溃且不闪烁错误值,AC-30-2；FD22,P1,"1. 设置页包含渠道、商店与商品三类需要加载的数据。
+2. 可延迟数据到达 2 秒。","1. 打开设置页并延迟数据 2 秒到达。
+2. 观察加载期间页面是否渲染默认错误值或误导性占位值。
+3. 数据到达后观察页面渲染。","1. 加载期间页面不崩溃、不抛出错误。
+2. 不闪烁错误值或误导性默认值。
+3. 数据到达后正确渲染，无错误闪烁残留。"
+TC192,业务域 G：历史数据、接口兼容与工作台,R30 · 迟到的配置数据不覆盖正在编辑的内容,迟到数据只回填未被用户修改的字段，不覆盖正在输入的值,AC-30-3；FD22,P1,"1. 渠道设置表单含字段 F1（渠道名称，初值为空待回填）与 F2（自动完成延迟，待回填）。
+2. 可延迟渠道数据到达。","1. 打开设置页，等待表单可编辑。
+2. 在数据到达前，用户在 F1 输入「我的渠道」。
+3. 让渠道数据到达（F1 服务端值=「默认渠道」，F2 服务端值=PT10M）。
+4. 观察 F1 与 F2 的最终值。","1. 打开设置页后表单可编辑。
+2. 用户在 F1 输入「我的渠道」。
+3. 渠道数据到达后 F2 被回填为 PT10M。
+4. F1 保留用户输入「我的渠道」不被覆盖；仅回填与当前编辑上下文仍有关的未触碰字段。"
+TC193,业务域 G：历史数据、接口兼容与工作台,R30 · 迟到的配置数据不覆盖正在编辑的内容,保存成功才更新缓存或重读服务端，保存失败保留原状态、失败值不进缓存且可重试,AC-30-4；FD22,P1,"1. 设置页表单已加载，缓存中存有当前生效值。
+2. 可模拟保存成功与保存失败。","1. 修改字段并提交，模拟保存成功，观察缓存与服务端读取结果。
+2. 把字段改为失败值并提交，模拟保存失败，观察页面与缓存。
+3. 修正输入后重试提交，模拟保存成功。","1. 保存成功后相关缓存被更新或重新读取服务端事实，页面显示新值。
+2. 保存失败保留原状态，失败值不进入缓存。
+3. 修正后重试成功，缓存与服务端一致。"
+TC194,业务域 G：历史数据、接口兼容与工作台,R31 · 展示准确性与草稿订单动作可用性,商品重量按源单位与目标单位不同进行实际单位转换,AC-31-1；FD23,P1,"1. 商店 defaultWeightUnit=KILOGRAM。
+2. 商品重量数据 weight.value=1500、weight.unit=GRAM。","1. 打开商品展示界面，读取重量展示值。
+2. 把商品重量改为 weight.value=2、unit=KILOGRAM，重新读取展示值。","1. 展示为按实际单位换算后的值（1500 g = 1.5 kg），带正确单位。
+2. 展示为 2 kg；换算在源单位与目标单位不同时生效，而非仅做 parseFloat。"
+TC195,业务域 G：历史数据、接口兼容与工作台,R31 · 展示准确性与草稿订单动作可用性,媒体状态与折扣金额展示与 API 返回一致,AC-31-1；FD23,P1,"1. 商品含媒体项 M1（处于错误状态）与 M2（正常）。
+2. 订单含折扣 amount=12.34、currency=USD。","1. 读取媒体项 M1 的展示状态并与 API 返回状态比对。
+2. 读取订单折扣金额展示值并与 API 的 order.discounts[].amount 比对。","1. M1 展示状态与 API 状态一致。
+2. 折扣金额展示为 12.34 USD，与 API 返回逐字一致。"
+TC196,业务域 G：历史数据、接口兼容与工作台,R31 · 展示准确性与草稿订单动作可用性,订单日期分组遵守 locale 与 timezone，跨日期边界不归错组,AC-31-2；FD23,P1,"1. 用户 locale=en-US，timezone=Asia/Shanghai（UTC+8）。
+2. 订单 O1 创建于 UTC 2026-01-01T23:30:00Z（上海时间 2026-01-02 07:30），订单 O2 创建于 UTC 2026-01-01T12:00:00Z（上海时间 20:00）。","1. 按日期分组展示订单，读取 O1、O2 所属分组。
+2. 把用户 timezone 改为 UTC 后重新分组并读取。","1. 在 Asia/Shanghai 下 O1 归入 2026-01-02、O2 归入 2026-01-01，跨日期边界不归错组。
+2. 在 UTC 下 O1、O2 均归入 2026-01-01；分组随 locale 与 timezone 变化。"
+TC197,业务域 G：历史数据、接口兼容与工作台,R31 · 展示准确性与草稿订单动作可用性,媒体错误状态按正常状态展示，不引入异步抓取或专用 fallback,AC-31-3；FD23；FD27,P1,"1. 商品含处于错误状态的媒体项。
+2. 可观察前端网络请求与渲染状态。","1. 打开含错误状态媒体的商品页，观察媒体状态展示。
+2. 观察页面是否发起异步图片抓取请求或进入 pending/503/proxy 状态。","1. 媒体错误状态以正常状态信息呈现，不抛异常。
+2. 未引入异步抓取与专用 fallback；无 pending/503/proxy 专用状态。"
+TC198,业务域 G：历史数据、接口兼容与工作台,R31 · 展示准确性与草稿订单动作可用性,渠道停用、无可售商品或缺配置时草稿订单不适用动作被禁用并说明原因且不发请求,AC-31-4；FD24,P1,"1. 草稿订单 DRAFT-1 关联渠道 CH-DISABLED（isActive=false）。
+2. 渠道 CH-EMPTY 无可售商品；渠道 CH-MISCONFIG 缺少必要配置（如配送/仓库配置）。","1. 打开 DRAFT-1（渠道 CH-DISABLED），观察「添加商品」「完成」等动作。
+2. 切换到 CH-EMPTY，观察动作。
+3. 切换到 CH-MISCONFIG，观察动作。
+4. 在动作被禁用时点击并监听网络请求。","1. CH-DISABLED 下「添加商品」「完成」等动作被禁用并展示原因说明。
+2. CH-EMPTY 下不适用动作被禁用并展示原因说明。
+3. CH-MISCONFIG 下不适用动作被禁用并展示原因说明。
+4. 点击不发送请求，不发出明知不合法的调用。"
+TC199,业务域 G：历史数据、接口兼容与工作台,R31 · 展示准确性与草稿订单动作可用性,切换到满足条件的正常渠道后草稿订单动作恢复可用,AC-31-5；FD24,P1,"1. 草稿订单 DRAFT-1 当前渠道 CH-DISABLED（停用）。
+2. 存在正常渠道 CH-OK（isActive=true、有可售商品、配置完整）。","1. 打开 DRAFT-1，确认动作处于禁用。
+2. 把渠道切换到 CH-OK。
+3. 执行「添加商品」与「完成」动作。","1. 动作禁用并显示原因。
+2. 切换后禁用状态解除，动作恢复可用。
+3. 添加商品与完成动作成功执行，payload.errors 为空。"
+TC200,业务域 G：历史数据、接口兼容与工作台,R32 · 交付范围边界：不恢复被排除能力并保留基础能力,枚举能力时不出现 App Problems，且 Webhook 失败告警仍然可用,AC-32-1；BD23；FD27,P1,"1. 已部署本轮交付版本。
+2. 以管理员身份，可访问查询接口与后台页面。","1. 检索 schema 与查询接口中是否存在 App Problems 的类型、字段、创建/关闭操作与问题列表。
+2. 遍历后台页面，检索是否存在 App Problems 问题列表入口。
+3. 检查 Webhook 失败告警能力及其呈现形态。","1. schema 与接口中不存在 App Problems 的类型、字段、创建或关闭操作及问题列表。
+2. 后台页面不存在 App Problems 问题列表入口。
+3. Webhook 失败告警仍然可用，且不呈现为 App Problems 类型的问题列表。"
+TC201,业务域 G：历史数据、接口兼容与工作台,R32 · 交付范围边界：不恢复被排除能力并保留基础能力,页面与用户的高级搜索、交易日期或事件过滤及专用排序不通过别名、隐藏路由或生成文件暴露,AC-32-2；BD23；FD27,P1,"1. 已部署本轮交付版本。
+2. 可访问 schema、Dashboard 路由表与生成客户端。","1. 检索 Page/User 排序枚举是否含 RANK，及是否存在专用索引、后台维护任务或迁移。
+2. 检索交易查询是否存在创建/修改日期、事件类型或日期筛选与该查询专用排序。
+3. 检索路由表、隐藏路由与生成文件中是否存在上述能力的别名或重暴露。","1. PageSortField/UserSortField 无 RANK，无页面/用户高级搜索与相关度增强及其专用索引/后台任务/迁移。
+2. 交易查询无日期/事件筛选与专用排序。
+3. 路由表、隐藏路由与生成文件中不存在被排除能力的别名或重暴露。"
+TC202,业务域 G：历史数据、接口兼容与工作台,R32 · 交付范围边界：不恢复被排除能力并保留基础能力,不出现独立变体生成器，同时普通单变体创建、必填属性、hasVariants 兼容与批量创建可用,AC-32-3；BD23；FD27,P1,"1. 已部署本轮交付版本。
+2. 以管理员身份进入商品与变体操作入口。","1. 检索路由表、菜单、后台任务、状态管理与专用入口是否存在独立变体生成器。
+2. 执行普通单变体创建（含必填属性）并读取 hasVariants 兼容行为。
+3. 执行普通批量创建变体。","1. 不存在独立变体生成器页面、菜单、任务、状态或专用入口。
+2. 普通单变体创建成功，必填属性校验生效，hasVariants 兼容行为符合契约。
+3. 普通批量创建可用。"
+TC203,业务域 G：历史数据、接口兼容与工作台,R32 · 交付范围边界：不恢复被排除能力并保留基础能力,同步外链图片、本地上传与外部视频/oEmbed 可用且无异步抓取与专用 fallback,AC-32-4；BD23；FD27；FD23,P1,"1. 已部署本轮交付版本。
+2. 商品媒体编辑入口可用。","1. 添加同步外链图片并确认可用。
+2. 执行本地上传并确认可用。
+3. 添加外部视频（oEmbed）并确认可用。
+4. 检索是否存在异步抓取、pending/503/proxy 状态与专用 Dashboard fallback。","1. 同步外链图片可用。
+2. 本地上传可用。
+3. 外部视频/oEmbed 可用。
+4. 不存在异步抓取、pending/503/proxy 状态与专用 Dashboard fallback。"
+TC204,业务域 G：历史数据、接口兼容与工作台,R32 · 交付范围边界：不恢复被排除能力并保留基础能力,不包含与主体链路无关的专用 UI/后台任务/迁移/类型，同时历史兼容、权限、交易一致性与可验证性保留,AC-32-5；BD23；FD27,P1,1. 具备本轮交付物：schema 差集、Dashboard 路由与生成文件、后台任务与迁移清单。,"1. 对照主体链路检查交付物是否含无关的专用 UI、后台任务、迁移或类型。
+2. 验证历史兼容能力（如历史扩展、历史订单数据可读）。
+3. 验证权限一致性与交易一致性能力。
+4. 验证可验证性能力（迁移可从空库执行、测试与检查可运行）。","1. 交付物中不含与主体链路无直接关系的专用 UI、后台任务、迁移或类型。
+2. 历史兼容能力保留，历史数据仍可读、含义不变。
+3. 权限一致性与交易一致性保留。
+4. 可验证性保留，迁移可从空库执行、检查可运行。"
