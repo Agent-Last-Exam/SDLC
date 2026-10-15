@@ -1,0 +1,130 @@
+{
+    "id": "8188bfef-4059-4e9e-ba74-15585511690e",
+    "task_name": "sdlcbench/saleor-3.23-single-workflow",
+    "trial_name": "task__vMvSwRQ",
+    "trial_uri": "file:///home/iriszeng18_gmail_com/software-last-exam/jobs/single-docs-opus55-high-20261014/task__vMvSwRQ",
+    "task_id": {
+        "path": "/home/iriszeng18_gmail_com/software-last-exam/.prepared/single-docs-opus55-high-20261014/task"
+    },
+    "source": null,
+    "task_checksum": "3ec98865fa5bcead9ea7388c6c4db2f1e64f975996c2402046ebf500eff0b955",
+    "config": {
+        "task": {
+            "path": "/home/iriszeng18_gmail_com/software-last-exam/.prepared/single-docs-opus55-high-20261014/task",
+            "git_url": null,
+            "git_commit_id": null,
+            "name": null,
+            "ref": null,
+            "overwrite": false,
+            "download_dir": null,
+            "source": null
+        },
+        "trial_name": "task__vMvSwRQ",
+        "trials_dir": "/home/iriszeng18_gmail_com/software-last-exam/jobs/single-docs-opus55-high-20261014",
+        "install_only": false,
+        "timeout_multiplier": 1.0,
+        "agent_timeout_multiplier": null,
+        "verifier_timeout_multiplier": null,
+        "agent_setup_timeout_multiplier": null,
+        "environment_build_timeout_multiplier": null,
+        "agent": {
+            "name": null,
+            "import_path": "runtime.workflow_agent:WorkflowClaudeCode",
+            "model_name": "anthropic/claude-opus-5.5",
+            "n_concurrent": null,
+            "concurrency_group": null,
+            "skills": [],
+            "override_timeout_sec": null,
+            "override_setup_timeout_sec": 600.0,
+            "max_timeout_sec": null,
+            "resume_trajectory": false,
+            "load_trajectory": null,
+            "extra_allowed_hosts": [],
+            "kwargs": {
+                "prepared_path": "/home/iriszeng18_gmail_com/software-last-exam/.prepared/single-docs-opus55-high-20261014",
+                "smoke": false,
+                "reasoning_effort": "high",
+                "max_runtime_sec": null,
+                "request_profile": true,
+                "client_version": "2.1.280",
+                "smoke_scenario": "repair",
+                "role_probe": false,
+                "stop_after_stage": "sprint1/test-design",
+                "missing_output_policy": "fail"
+            },
+            "mcp_servers": []
+        },
+        "user_agent": null,
+        "environment": {
+            "type": "docker",
+            "import_path": null,
+            "force_build": false,
+            "delete": true,
+            "stream": false,
+            "cpu_enforcement_policy": "auto",
+            "memory_enforcement_policy": "auto",
+            "override_cpus": null,
+            "override_memory_mb": null,
+            "override_storage_mb": null,
+            "override_gpus": null,
+            "override_tpu": null,
+            "mounts": null,
+            "extra_docker_compose": [],
+            "kwargs": {},
+            "extra_allowed_hosts": []
+        },
+        "verifier": {
+            "override_timeout_sec": null,
+            "max_timeout_sec": null,
+            "disable": true
+        },
+        "artifacts": [],
+        "extra_instruction_paths": [],
+        "extra_instructions": [],
+        "job_id": "ddd128b3-bc6b-416a-b924-4a5b0b62d016",
+        "source_trial": null
+    },
+    "agent_info": {
+        "name": "sdlc-workflow-claude-code",
+        "version": "2.1.280",
+        "model_info": {
+            "name": "claude-opus-5.5",
+            "provider": "anthropic"
+        }
+    },
+    "agent_result": {
+        "n_input_tokens": 41552201,
+        "n_cache_tokens": 40721815,
+        "n_output_tokens": 571359,
+        "cost_usd": 57.283726249999994,
+        "model_usage": {
+            "anthropic/claude-opus-5.5": {
+                "n_input_tokens": 41552201,
+                "n_cache_tokens": 40721815,
+                "n_output_tokens": 571359,
+                "cost_usd": 0.0
+            }
+        },
+        "rollout_details": null,
+        "metadata": null
+    },
+    "verifier_result": null,
+    "verifier_environment_mode": "separate",
+    "exception_info": null,
+    "started_at": "2026-10-14T02:46:00.387581Z",
+    "finished_at": "2026-10-14T04:43:30.785216Z",
+    "environment_setup": {
+        "started_at": "2026-10-14T02:46:00.421197Z",
+        "finished_at": "2026-10-14T02:47:09.351348Z"
+    },
+    "agent_setup": {
+        "started_at": "2026-10-14T02:47:09.351436Z",
+        "finished_at": "2026-10-14T02:47:33.159436Z"
+    },
+    "agent_execution": {
+        "started_at": "2026-10-14T02:47:33.159623Z",
+        "finished_at": "2026-10-14T04:43:05.252278Z"
+    },
+    "verifier": null,
+    "step_results": null
+}

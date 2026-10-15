@@ -1,0 +1,42 @@
+{
+  "job_name": "single-docs-opus55-high-continuation-20261014",
+  "jobs_dir": "/home/iriszeng18_gmail_com/software-last-exam/jobs",
+  "n_attempts": 1,
+  "n_concurrent_trials": 1,
+  "retry": {
+    "max_retries": 0
+  },
+  "environment": {
+    "type": "docker",
+    "delete": true
+  },
+  "verifier": {
+    "disable": true
+  },
+  "agents": [
+    {
+      "import_path": "runtime.document_budget_continuation:BudgetBoundaryContinuation",
+      "model_name": "anthropic/claude-opus-5.5",
+      "override_setup_timeout_sec": 600,
+      "kwargs": {
+        "prepared_path": "/home/iriszeng18_gmail_com/software-last-exam/.prepared/single-docs-opus55-high-continuation-20261014",
+        "smoke": false,
+        "reasoning_effort": "high",
+        "max_runtime_sec": null,
+        "request_profile": true,
+        "client_version": "2.1.280",
+        "smoke_scenario": "repair",
+        "role_probe": false,
+        "stop_after_stage": "sprint1/test-design",
+        "missing_output_policy": "fail",
+        "recovery_source": "/home/iriszeng18_gmail_com/software-last-exam/jobs/single-docs-opus55-high-20261014/task__vMvSwRQ"
+      },
+      "override_timeout_sec": null
+    }
+  ],
+  "tasks": [
+    {
+      "path": "/home/iriszeng18_gmail_com/software-last-exam/.prepared/single-docs-opus55-high-continuation-20261014/task"
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+    "schema_version": 2,
+    "task": {
+        "name": "task",
+        "type": "local",
+        "digest": "sha256:c602a496209a4d2ca2e0478530e1a84a286f67c05e73297c6bc8b106ee605f64",
+        "path": "/home/iriszeng18_gmail_com/software-last-exam/.prepared/single-docs-glm53flash-max-retry-20261014/task"
+    },
+    "install_only": false,
+    "timeout_multiplier": 1.0,
+    "agent": {
+        "import_path": "runtime.workflow_agent:WorkflowClaudeCode",
+        "model_name": "z-ai/glm-5.3-flash",
+        "skills": [],
+        "override_setup_timeout_sec": 600.0,
+        "resume_trajectory": false,
+        "extra_allowed_hosts": [],
+        "kwargs": {
+            "prepared_path": "/home/iriszeng18_gmail_com/software-last-exam/.prepared/single-docs-glm53flash-max-retry-20261014",
+            "smoke": false,
+            "reasoning_effort": "max",
+            "max_runtime_sec": null,
+            "request_profile": true,
+            "client_version": "2.1.280",
+            "smoke_scenario": "repair",
+            "role_probe": false,
+            "stop_after_stage": "sprint1/test-design",
+            "missing_output_policy": "fail"
+        },
+        "mcp_servers": []
+    },
+    "bridge_inputs": {},
+    "skills": [],
+    "environment": {
+        "type": "docker",
+        "force_build": false,
+        "delete": true,
+        "stream": false,
+        "cpu_enforcement_policy": "auto",
+        "memory_enforcement_policy": "auto",
+        "extra_docker_compose": [],
+        "kwargs": {},
+        "extra_allowed_hosts": []
+    },
+    "verifier": {
+        "disable": true,
+        "environment_mode": "separate"
+    }
+}

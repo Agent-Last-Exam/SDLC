@@ -1,0 +1,51 @@
+{
+  "mode": "single",
+  "status": "budget_exhausted",
+  "cursor": 2,
+  "stages": [
+    {
+      "id": "sprint1/prd",
+      "role": "pm",
+      "status": "accepted",
+      "execution_started": true,
+      "session_id": "99fa9cb2-5403-45c0-a655-947213c9a0a2",
+      "prd_input_sha256": null,
+      "input_sha256": {},
+      "missing_inputs": [],
+      "outputs": {
+        "prd.md": "c0abf99fc5af86e0e22da3a70ddf91d5972819a30e75494720c620a4d4f999e8"
+      },
+      "missing_outputs": [],
+      "delivery_complete": true,
+      "cost_usd": 12.603685
+    },
+    {
+      "id": "sprint1/tech-design",
+      "role": "architect",
+      "status": "accepted",
+      "execution_started": true,
+      "session_id": "99fa9cb2-5403-45c0-a655-947213c9a0a2",
+      "prd_input_sha256": "c0abf99fc5af86e0e22da3a70ddf91d5972819a30e75494720c620a4d4f999e8",
+      "input_sha256": {
+        "artifact:sprint1/prd/prd": "c0abf99fc5af86e0e22da3a70ddf91d5972819a30e75494720c620a4d4f999e8"
+      },
+      "missing_inputs": [],
+      "outputs": {
+        "backend-design.md": "2e2e0718deced7ca34d20a94dd971a8b8a1e9cc9aabf8445016a98c0091f147b",
+        "frontend-design.md": "5bbe824ab92c68c307f4c7a135ae9c9463e1474d4810e25dc1d47bfb7eed7fc3",
+        "interface-contract.md": "5052cc9f617a397e3ce83debf477a5921d0da6b24bacdda776ab0b8f219c7115",
+        "target-schema.graphql": "4fa23faa263234ed2283f1d6daea4c20c22d4f3df39ffd850ecad1e4ecbfdef8"
+      },
+      "missing_outputs": [],
+      "delivery_complete": true,
+      "cost_usd": 57.283726
+    }
+  ],
+  "model_called": true,
+  "synthetic": false,
+  "missing_output_policy": "fail",
+  "delivery_complete": false,
+  "max_cost_usd": 50.0,
+  "cost_usd": 57.283726,
+  "principal_session": "99fa9cb2-5403-45c0-a655-947213c9a0a2"
+}

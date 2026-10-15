@@ -1,0 +1,33 @@
+{
+    "job_name": "single-docs-opus55-xhigh-resume-20261014",
+    "jobs_dir": "/home/iriszeng18_gmail_com/software-last-exam/jobs",
+    "n_concurrent_trials": 1,
+    "verifier": {
+        "disable": true
+    },
+    "agents": [
+        {
+            "import_path": "runtime.document_resume:InterruptedDocumentResume",
+            "model_name": "anthropic/claude-opus-5.5",
+            "override_setup_timeout_sec": 600.0,
+            "kwargs": {
+                "prepared_path": "/home/iriszeng18_gmail_com/software-last-exam/.prepared/single-docs-opus55-xhigh-resume-20261014",
+                "smoke": false,
+                "reasoning_effort": "xhigh",
+                "max_runtime_sec": null,
+                "request_profile": true,
+                "client_version": "2.1.280",
+                "smoke_scenario": "repair",
+                "role_probe": false,
+                "stop_after_stage": "sprint1/test-design",
+                "missing_output_policy": "fail",
+                "recovery_source": "/home/iriszeng18_gmail_com/software-last-exam/jobs/single-docs-opus55-xhigh-retry-20261014/task__3UfmikH"
+            }
+        }
+    ],
+    "tasks": [
+        {
+            "path": "/home/iriszeng18_gmail_com/software-last-exam/.prepared/single-docs-opus55-xhigh-resume-20261014/task"
+        }
+    ]
+}

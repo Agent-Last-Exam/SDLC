@@ -1,0 +1,339 @@
+用例编号,一级模块,二级模块,用例标题,覆盖,优先级,前置条件,操作步骤,预期结果
+TC001,业务域 A：版本与发布基线,R01 · 双仓库版本与 schema 版本升级到 3.23.0,校验 core 版本号及其派生的 schema 版本与 User-Agent 版本,AC-01-1,P0,core 工作树已包含本次迁移改动；Python 运行时可用且 saleor 包可导入,"1. 打开 `saleor/__init__.py`，读取 `__version__`。
+2. 执行 `python -c 'import saleor; print(saleor.__version__, saleor.schema_version, saleor.user_agent_version)'`。","1. `__version__` 为 `3.23.0`。
+2. 输出为 `3.23.0 3.23 Saleor/3.23`，即 `schema_version` 为 `3.23`、`user_agent_version` 为 `Saleor/3.23`。"
+TC002,业务域 A：版本与发布基线,R01 · 双仓库版本与 schema 版本升级到 3.23.0,校验 core 项目元数据版本为 3.23.0,AC-01-2,P0,core 工作树已包含本次迁移改动,"1. 在 `pyproject.toml` 中定位 `[project]` 段。
+2. 读取该段的 `version` 字段。","1. `[project]` 段存在。
+2. `version` 为 `3.23.0`。"
+TC003,业务域 A：版本与发布基线,R01 · 双仓库版本与 schema 版本升级到 3.23.0,校验 dashboard 包版本与契约 schema 版本均为 3.23,AC-01-3,P0,dashboard 工作树已包含本次迁移改动,"1. 读取 `saleor-dashboard/package.json` 的 `version`。
+2. 读取同文件 `config.saleor.schemaVersion`。","1. `version` 为 `3.23.0`。
+2. `config.saleor.schemaVersion` 为 `3.23`。"
+TC004,业务域 A：版本与发布基线,R01 · 双仓库版本与 schema 版本升级到 3.23.0,校验两仓库版本标识一致且不存在回退到 3.22 的改动,AC-01-4,P0,两仓库改动已提交；可导出相对各自固定基线的 diff,"1. 分别取两仓库的版本标识（core 取 `saleor/__init__.py` 的 `__version__`，dashboard 取 `package.json` 的 `version`）并比较。
+2. 在两仓库相对各自基线的 diff 中检索版本号相关的删除行，确认无把版本改回 3.22 的内容。","1. 两处版本号均为 `3.23.0`，完全一致。
+2. diff 中不存在将版本号改回 `3.22.0`、`3.22.9` 或 `3.22` 的改动。"
+TC005,业务域 B：GraphQL 契约与生成产物,R02 · core GraphQL schema 与 Dashboard 期望契约对齐,校验由 core 代码导出的 schema 与仓库内 schema 文件完全一致,AC-02-1; BD03; BT03,P0,core 依赖已安装；工作目录为 core 仓库根；`./manage.py` 可执行,"1. 执行 `./manage.py get_graphql_schema`，将输出重定向到临时文件。
+2. 执行 `diff saleor/graphql/schema.graphql <临时文件>`。
+3. 执行门禁命令 `sh -c './manage.py get_graphql_schema | diff saleor/graphql/schema.graphql -'` 并读取退出码。","1. 命令成功执行，无异常输出。
+2. diff 无任何输出。
+3. 退出码为 0，输出为空。"
+TC006,业务域 B：GraphQL 契约与生成产物,R02 · core GraphQL schema 与 Dashboard 期望契约对齐,校验 AppExtension 与 AppManifestExtension 暴露三个新增非空字段,AC-02-2; I01; I02; BD02,P0,schema 已按代码导出并提交,"1. 在 `saleor/graphql/schema.graphql` 中定位 `type AppExtension`，核对 `mountName`、`targetName`、`settings` 的类型与非空标记。
+2. 定位 `type AppManifestExtension`，核对同样三个字段。
+3. 核对两个类型上 `settings` 的描述文本。","1. `AppExtension` 含 `mountName: String!`、`targetName: String!`、`settings: JSON!`，均为非空。
+2. `AppManifestExtension` 含同样三个非空字段。
+3. `AppExtension.settings` 的描述为 `App extension settings. Replaces options field.`，`AppManifestExtension.settings` 的描述为 `JSON object with settings for this extension.`，两者均带 `Added in Saleor 3.22.` 后缀。"
+TC007,业务域 B：GraphQL 契约与生成产物,R02 · core GraphQL schema 与 Dashboard 期望契约对齐,校验 mount、target、options 已标记 deprecated 且 reason 指向替代字段,AC-02-2; I03; BD02,P0,schema 已按代码导出并提交,"1. 在 `type AppExtension` 中检查 `mount` 与 `target` 字段的类型与 deprecated 指令。
+2. 在 `type AppManifestExtension` 中检查 `mount` 与 `target` 字段。
+3. 在 `type AppExtension` 中检查 `options` 字段的 deprecated 指令。","1. `mount: AppExtensionMountEnum!` 带 deprecated 指令，reason 为 `Use mountName instead.`；`target: AppExtensionTargetEnum!` 带 deprecated 指令，reason 为 `Use targetName instead.`。
+2. `AppManifestExtension` 上的 `mount` 与 `target` 带相同类型的 deprecated 指令与相同 reason。
+3. `options: AppExtensionPossibleOptions` 带 deprecated 指令，reason 为 `Use settings field instead.`。"
+TC008,业务域 B：GraphQL 契约与生成产物,R02 · core GraphQL schema 与 Dashboard 期望契约对齐,校验扩展选项类型的字段级 deprecated 标记,AC-02-3; I04; BD02,P0,schema 已按代码导出并提交,"1. 检查 `AppExtensionOptionsWidget.widgetTarget` 的 deprecated 指令。
+2. 检查 `AppExtensionOptionsNewTab.newTabTarget` 的 deprecated 指令。
+3. 检查 `WidgetTargetOptions.method` 与 `NewTabTargetOptions.method` 的 deprecated 指令与类型。
+4. 检查 `HttpMethod` 枚举成员与 `AppExtensionPossibleOptions` union 成员。","1. `widgetTarget` 带 deprecated 指令，reason 为 `Use settings field directly.`。
+2. `newTabTarget` 带 deprecated 指令，reason 为 `Use settings field directly.`。
+3. 两个 `method` 字段均为 `HttpMethod!` 非空且带 deprecated 指令，reason 为 `Use settings field directly.`。
+4. `HttpMethod` 仍为 `POST`、`GET` 两个成员；union 仍为 `AppExtensionOptionsWidget | AppExtensionOptionsNewTab`，均未被删除或改名。"
+TC009,业务域 B：GraphQL 契约与生成产物,R02 · core GraphQL schema 与 Dashboard 期望契约对齐,校验 dashboard 全部 GraphQL 文档在 3.23 目标 schema 上通过校验,AC-02-4; FD01; BD03,P0,dashboard 依赖已离线预装；graphql-codegen 可用；3.23 schema 文件可得,"1. 以 `saleor/graphql/schema.graphql`（3.23 导出版）为 schema，对 `src/**/queries.ts`、`src/**/mutations.ts`、`src/**/fragments/*.ts`、`src/searches/*.ts` 运行 graphql-codegen。
+2. 检查命令退出码与错误输出。
+3. 在生成产物中定位 `ExtensionListQuery` 的扩展节点类型。","1. 生成命令成功退出。
+2. 无 `Cannot query field`、`Unknown type`、`Unknown argument` 类错误，错误数为 0。
+3. 节点类型含 `mountName: string`、`targetName: string`、`settings: any`。"
+TC010,业务域 B：GraphQL 契约与生成产物,R02 · core GraphQL schema 与 Dashboard 期望契约对齐,校验 dashboard 不存在对 3.23 已删除契约的引用,AC-02-5,P0,dashboard 与 core 工作树均已包含本次迁移改动,"1. 在 dashboard 的 `src/` 与 `playwright/` 中检索 Adyen 相关 GraphQL 字段、类型与枚举标识符（如 `adyen`、`AdyenGateway`、`legacyAdyen`）。
+2. 在 core 的 3.23 schema 中确认这些标识符不存在。
+3. 对检索命中项判断是否属于评测物料或非生产文件。","1. 生产代码中无命中，或命中项均与 GraphQL 契约无关。
+2. schema 中确实不存在这些标识符。
+3. 不存在任何生产代码对已删除契约的引用。"
+TC011,业务域 B：GraphQL 契约与生成产物,R02 · core GraphQL schema 与 Dashboard 期望契约对齐,校验 appExtensions 查询返回的 mountName、targetName、settings 取值语义,AC-02-2; I01; BD02,P0,本地 runtime 可用；存在已安装且启用、带扩展的 App；测试数据：target 为 WIDGET 且 http_target_method 为 GET 的扩展、target 为 NEW_TAB 且 http_target_method 为 POST 的扩展、target 为 POPUP 的扩展各一个,"1. 以 staff 用户执行 `appExtensions(first: 100)`，选取 `mountName`、`targetName`、`settings`、`mount`、`target`。
+2. 读取 WIDGET 扩展的三个新增字段。
+3. 读取 NEW_TAB 扩展的三个新增字段。
+4. 读取 POPUP 扩展的三个新增字段。","1. 查询无 errors，返回三条记录。
+2. `targetName` 为 `WIDGET`，`mountName` 为对应挂载点的 UPPER_CASE 枚举成员名，`settings` 为 `{""widgetTarget"":{""method"":""GET""}}`。
+3. `targetName` 为 `NEW_TAB`，`settings` 为 `{""newTabTarget"":{""method"":""POST""}}`。
+4. `targetName` 为 `POPUP`，`settings` 为 `{}`；`mountName` 与同一对象的 `mount` 表示同一挂载点（字符串成员名与枚举值序列化结果）。"
+TC012,业务域 B：GraphQL 契约与生成产物,R02 · core GraphQL schema 与 Dashboard 期望契约对齐,校验 appFetchManifest 返回的 AppManifestExtension 新增字段,AC-02-2; I02; BD02,P0,本地 runtime 可用；具备 App token 或 MANAGE_APPS 权限的 staff 用户；测试数据：manifest 的 extensions 中分别声明 WIDGET 与 NEW_TAB 两种 target 及对应 options，另有一个未声明 target 的扩展,"1. 调用 `appFetchManifest`，请求 `manifest { extensions { mount target mountName targetName settings } }`。
+2. 读取 WIDGET 扩展的字段。
+3. 读取未声明 target 的扩展的字段。","1. 无 errors。
+2. `mountName` 为 UPPER_CASE 挂载点成员名，`targetName` 为 `WIDGET`，`settings` 含 `widgetTarget.method`。
+3. `targetName` 为 `POPUP`，`settings` 为 `{}`；`mountName` 与 `targetName` 均非空，不返回 null。"
+TC013,业务域 B：GraphQL 契约与生成产物,R03 · Dashboard 客户端产物按 3.23 契约重新生成,校验 dashboard 主契约链路生成产物可复现且与仓库内容一致,AC-03-1; FD01,P0,dashboard 依赖已离线预装；生成命令可以本地 schema 文件为输入离线运行,"1. 运行主契约链路的生成命令（`generate:main` 或其等价命令）。
+2. 执行 `git status --short src/graphql/` 与 `git diff src/graphql/`。
+3. 再次运行同一生成命令并重复第 2 步。","1. 命令成功退出。
+2. 无未提交改动，生成结果与仓库提交内容一致。
+3. 重复执行后仍无 diff，生成结果稳定可复现。"
+TC014,业务域 B：GraphQL 契约与生成产物,R03 · Dashboard 客户端产物按 3.23 契约重新生成,校验生成产物中 AppExtension 新字段的类型定义,AC-03-1; FD01; I01,P0,主契约链路已生成 `src/graphql/*.generated.ts`,"1. 在 `src/graphql/types.generated.ts` 中定位 `ExtensionListQuery` 的扩展节点类型。
+2. 检索生成文件中 `mountName`、`targetName`、`settings` 的定义。","1. 节点类型包含 `mountName: string`、`targetName: string`、`settings: any`。
+2. 三个字段均已生成，类型与 schema 一致（`String!` 对应 `string`，`JSON!` 对应 `any`）。"
+TC015,业务域 B：GraphQL 契约与生成产物,R03 · Dashboard 客户端产物按 3.23 契约重新生成,校验 main 与 staging 两条契约链路的 schema 与产物互不覆盖,AC-03-2; FD01,P0,dashboard 工作树已包含本次迁移改动,"1. 检查 `package.json` 中主契约链路脚本使用的 schema 来源，确认按 `config.saleor.schemaVersion` 取 3.23。
+2. 检查 staging 链路脚本使用的 schema 来源，确认取自 main 分支。
+3. 比较两条链路的输入 schema 文件路径与输出产物路径。","1. 主链路使用 3.23 版本化 schema（`schema-main.graphql` 或等价物）。
+2. staging 链路使用 main 分支 schema（`schema-staging.graphql` 或等价物）。
+3. 两条链路的输入与输出路径互不相同；执行其中一条不会覆盖另一条的 schema 文件或生成产物。"
+TC016,业务域 B：GraphQL 契约与生成产物,R03 · Dashboard 客户端产物按 3.23 契约重新生成,校验 dashboard 类型检查与 lint 不因契约变更产生新错误,AC-03-3; FD01,P0,依赖已离线预装；已有改动前的 lint 与类型检查基线结果,"1. 运行 `pnpm run check-types`。
+2. 运行 `pnpm run lint`。
+3. 与改动前的错误集合比较。","1. 类型检查通过，无错误。
+2. lint 通过，或仅有与本次契约变更无关且基线已存在的告警。
+3. 无新增错误。"
+TC017,业务域 B：GraphQL 契约与生成产物,R03 · Dashboard 客户端产物按 3.23 契约重新生成,校验 dashboard 单测无因类型或字段缺失导致的失败,AC-03-4,P0,本地 runtime 与数据库可用；已按 `/opt/runtime/run-suite.sh` 的使用方式准备尝试编号,"1. 运行 `/opt/runtime/run-suite.sh <attempt> dash-unit`。
+2. 检查失败用例的报错信息。","1. 套件完成运行并产出结果；收集失败或缺失结果不计为通过。
+2. 无因 GraphQL 类型或字段缺失导致的编译或运行失败。"
+TC018,业务域 C：数据库迁移,R04 · 模型变更伴随数据库迁移且迁移图保持可升级,校验模型与迁移文件一致，无待生成迁移,AC-04-1; BD05,P0,core 依赖已安装；工作目录为 core 仓库根,"1. 执行 `python manage.py makemigrations --check --dry-run`。
+2. 读取退出码与输出。","1. 命令执行完成。
+2. 无输出，退出码为 0，即不存在未生成的模型变更。"
+TC019,业务域 C：数据库迁移,R04 · 模型变更伴随数据库迁移且迁移图保持可升级,校验新增迁移可在 3.22 基线数据库上升级,AC-04-2; BD05; BT05,P0,存在一个处于 3.22 基线迁移状态的数据库；数据库连接配置可用,"1. 在该基线库上执行 `python manage.py migrate`。
+2. 查询 `django_migrations` 表中 payment 应用的最新迁移记录。","1. 迁移全部成功，无错误。
+2. 新增的 RemoveField 迁移已应用，且其依赖指向 payment 应用的既有最新迁移节点。"
+TC020,业务域 C：数据库迁移,R04 · 模型变更伴随数据库迁移且迁移图保持可升级,校验新增迁移可回退到 3.22 基线状态,AC-04-2,P0,数据库已应用新增迁移,"1. 执行 `python manage.py migrate payment <新增迁移的上一节点>` 回退。
+2. 检查 `payment_transaction` 表结构中两个 legacy 字段的存续情况。
+3. 再次执行 `python manage.py migrate` 前滚。","1. 回退成功，无错误。
+2. 两个 legacy 字段恢复存在，表结构与 3.22 基线一致。
+3. 前滚成功，表结构与目标状态一致。"
+TC021,业务域 C：数据库迁移,R04 · 模型变更伴随数据库迁移且迁移图保持可升级,校验历史迁移文件未被修改，仅存在新增迁移,AC-04-3,P0,两仓库改动已提交；可导出相对各自固定基线的 diff,"1. 在 core 仓库 diff 中列出 `saleor/*/migrations/` 下的改动文件。
+2. 对每个改动文件判断是新增还是修改。","1. 改动文件列表非空，至少包含一个新增迁移文件。
+2. 全部为新增文件，不存在对既有迁移文件内容的修改或删除。"
+TC022,业务域 C：数据库迁移,R04 · 模型变更伴随数据库迁移且迁移图保持可升级,校验在干净数据库上执行迁移成功,AC-04-4,P0,存在一个空的数据库；数据库连接配置可用,"1. 对空库执行 `python manage.py migrate`。
+2. 检查命令输出与退出码。","1. 全部迁移依次应用成功。
+2. 无迁移冲突、无分叉报错，退出码为 0。"
+TC023,业务域 C：数据库迁移,R04 · 模型变更伴随数据库迁移且迁移图保持可升级,校验迁移图无分叉与冲突,AC-04-4,P0,core 依赖已安装；工作目录为 core 仓库根,"1. 执行 `python manage.py showmigrations`。
+2. 检查是否存在多个叶子节点（分叉）或循环依赖。
+3. 检查 `makemigrations --check --dry-run` 是否报告冲突。","1. 迁移列表正常输出。
+2. payment 应用迁移链为线性，无多个叶子节点，无循环依赖。
+3. 无冲突报告。"
+TC024,业务域 D：后端功能迁移,R05 · 移除 Adyen 支付网关及其遗留字段,校验 Adyen 网关实现及其生产代码引用已移除,AC-05-1; BD04; BT04,P0,core 工作树已包含本次迁移改动,"1. 检查 `saleor/payment/gateways/adyen/` 目录是否存在。
+2. 执行 `grep -ri adyen saleor/ --include='*.py'` 并排除 `*/migrations/*`。
+3. 在检索结果中查找 `AdyenGatewayPlugin`。","1. 目录不存在（含其 `tests/` 与 `tests/fixtures/`）。
+2. 生产代码中无 adyen 命中。
+3. 无 `AdyenGatewayPlugin` 引用。"
+TC025,业务域 D：后端功能迁移,R05 · 移除 Adyen 支付网关及其遗留字段,校验内置插件注册中不再包含 Adyen 网关,AC-05-2; BD04,P0,core 依赖已安装；工作目录为 core 仓库根,"1. 读取 `saleor/settings.py` 的 `BUILTIN_PLUGINS`。
+2. 在 Django shell 中打印 `settings.PLUGINS`。","1. 列表不含 `saleor.payment.gateways.adyen.plugin.AdyenGatewayPlugin`。
+2. `PLUGINS` 中同样不含该路径，且其余内置插件条目与 3.22 一致。"
+TC026,业务域 D：后端功能迁移,R05 · 移除 Adyen 支付网关及其遗留字段,校验 Adyen 遗留字段已从模型移除且无生产代码写入,AC-05-3; BD05; BT05,P0,core 工作树已包含本次迁移改动,"1. 检查 `saleor/payment/models.py` 的 `Transaction` 是否仍定义 `legacy_adyen_plugin_result_code` 与 `legacy_adyen_plugin_payment_method`。
+2. 执行 `grep -rn legacy_adyen_plugin saleor/ --include='*.py'` 并排除 `*/migrations/*`。
+3. 检查 `saleor/payment/interface.py` 的 `GatewayResponse` 与 `saleor/payment/utils.py` 中 `Transaction.objects.create` 的调用。","1. 两个字段均不再定义。
+2. 生产代码中无任何 legacy_adyen_plugin 命中，历史迁移文件除外。
+3. `GatewayResponse` 不再有对应字段，`Transaction.objects.create` 不再传入对应关键字参数；`gateway_response` 字段与 GraphQL 的 `Transaction.gatewayResponse` 仍保留。"
+TC027,业务域 D：后端功能迁移,R05 · 移除 Adyen 支付网关及其遗留字段,校验其余支付网关的注册与端到端可用性未受影响,AC-05-4,P0,本地 runtime 与数据库可用；已按 `/opt/runtime/run-suite.sh` 的使用方式准备尝试编号,"1. 在 Django shell 中列出已注册的支付网关插件标识。
+2. 执行查询 `payment { availablePaymentGateways { id name } }`。
+3. 使用 dummy 网关完成一次支付流程（创建 checkout、请求支付、处理确认）。","1. `stripe`、`braintree`、`razorpay`、`authorize_net`、`np_atobarai`、`dummy`、`dummy_credit_card` 均注册。
+2. 返回的网关集合与 3.22 基线一致，仅少了 Adyen。
+3. 支付流程正常完成，交易记录生成且不依赖已删除的遗留字段。"
+TC028,业务域 D：后端功能迁移,R05 · 移除 Adyen 支付网关及其遗留字段,校验支付相关单元测试在移除 Adyen 后全部通过,AC-05-4,P0,core 依赖已安装；已有改动前的失败集合基线,"1. 运行 `pytest saleor/payment/tests saleor/payment/gateways -q`。
+2. 运行 `pytest saleor/graphql/payment -q`。
+3. 与基线失败集合比较。","1. 第 1 组测试通过。
+2. 第 2 组测试通过。
+3. 无新增失败；Adyen 自身测试随目录一并删除，不计为失败。"
+TC029,业务域 D：后端功能迁移,R06 · 富文本序列化/消毒依赖替换（draftjs-sanitizer、html-to-draftjs → nh3）,校验 draftjs 相关依赖与代码引用已移除,AC-06-1; BD06; BT06,P1,core 工作树已包含本次迁移改动,"1. 执行 `grep -rn draftjs saleor/ --include='*.py'` 并排除 `*/migrations/*`。
+2. 执行 `grep -rn html_to_draftjs saleor/ --include='*.py'`。
+3. 检查 `pyproject.toml` 的依赖声明。","1. 无 `draftjs_sanitizer` 命中。
+2. 无 `html_to_draftjs` 命中。
+3. 依赖声明中不存在 `draftjs-sanitizer` 与 `html-to-draftjs`。"
+TC030,业务域 D：后端功能迁移,R06 · 富文本序列化/消毒依赖替换（draftjs-sanitizer、html-to-draftjs → nh3）,校验富文本字段保存时仍执行消毒,AC-06-2,P1,本地 runtime 与数据库可用；已按 `/opt/runtime/run-suite.sh` 的使用方式准备尝试编号；具备可创建产品与页面的 staff 用户,"1. 通过 GraphQL 创建一个产品，`description` 为含 `<script>` 标签与合法 HTML 的 EditorJS 内容。
+2. 读取该产品的 `description`。
+3. 对 `Page` 与 `Category` 的富文本字段重复步骤 1 与 2。","1. 变更成功返回，无 errors。
+2. `<script>` 等不安全标签被移除，合法内容保留，结果与 3.22 基线一致。
+3. 各富文本字段的消毒行为一致，无回归。"
+TC031,业务域 D：后端功能迁移,R06 · 富文本序列化/消毒依赖替换（draftjs-sanitizer、html-to-draftjs → nh3）,校验非法 URL scheme 被替换的行为与 3.22 一致,AC-06-2,P1,本地 runtime 与数据库可用；已按 `/opt/runtime/run-suite.sh` 的使用方式准备尝试编号；具备可编辑富文本字段的 staff 用户,"1. 保存一段包含 `javascript:` 协议链接的 EditorJS 富文本内容。
+2. 读取保存后的内容。
+3. 保存一段包含 `https:` 链接的同类内容并读取。","1. 保存成功。
+2. `javascript:` 链接按既有白名单/黑名单规则被替换，结果与 3.22 基线一致。
+3. 合法 `https:` 链接保持不变。"
+TC032,业务域 D：后端功能迁移,R06 · 富文本序列化/消毒依赖替换（draftjs-sanitizer、html-to-draftjs → nh3）,校验 clean_editor_js 的纯文本转换结果不变,AC-06-3; BD06,P1,core 依赖已安装；工作目录为 core 仓库根；已有 3.22 基线的转换结果,"1. 以固定 EditorJS 内容调用 `clean_editor_js(..., to_string=True)`。
+2. 比较返回的纯文本与 3.22 基线的结果。
+3. 运行 `pytest saleor/core/tests saleor/product/tests/test_utils.py -q`。","1. 返回去除标签的拼接纯文本。
+2. 与基线逐字一致。
+3. 测试通过。"
+TC033,业务域 D：后端功能迁移,R06 · 富文本序列化/消毒依赖替换（draftjs-sanitizer、html-to-draftjs → nh3）,校验 JSON 嵌入 HTML 时的字符转义行为不变,AC-06-4; BD06,P1,core 依赖已安装；工作目录为 core 仓库根,"1. 使用 `HTMLSafeJSON`（或 `CustomJsonEncoder`）编码包含 `<`、`>`、`&`、U+2028、U+2029 的字符串。
+2. 检查输出中的字符形态。
+3. 运行针对该编码器的单元测试。","1. 编码成功，无异常。
+2. 五个字符均被转义为对应的安全形式，与 3.22 的 `SafeJSONEncoder` 输出一致。
+3. 针对五个字符的单元测试被收集且全部通过。"
+TC034,业务域 D：后端功能迁移,R07 · 缩略图 AVIF 能力改用 Pillow 原生支持,校验 pillow_avif 副作用导入与插件依赖已移除,AC-07-1; BD07; BT07,P1,core 工作树已包含本次迁移改动,"1. 读取 `saleor/__init__.py` 的前若干行。
+2. 执行 `grep -rn pillow_avif saleor/ --include='*.py'`。
+3. 检查 `pyproject.toml` 的依赖声明。","1. 不存在 `import pillow_avif`。
+2. 无命中。
+3. 依赖声明中不存在 `pillow-avif-plugin`。"
+TC035,业务域 D：后端功能迁移,R07 · 缩略图 AVIF 能力改用 Pillow 原生支持,校验 AVIF 相关常量与 MIME 映射保持不变,AC-07-2,P1,core 工作树已包含本次迁移改动,"1. 读取 `saleor/thumbnail/__init__.py` 的 `ThumbnailFormat`。
+2. 读取同文件的 `ALLOWED_THUMBNAIL_FORMATS`。
+3. 读取同文件的 `MIME_TYPE_TO_PIL_IDENTIFIER`。","1. 仍包含 `AVIF` 成员。
+2. 仍包含 `ThumbnailFormat.AVIF`。
+3. 仍包含 `image/avif` 到 AVIF 标识符的映射。"
+TC036,业务域 D：后端功能迁移,R07 · 缩略图 AVIF 能力改用 Pillow 原生支持,校验 AVIF 图片的上传校验路径可用,AC-07-2,P1,core 依赖已安装；工作目录为 core 仓库根,"1. 运行 `pytest saleor/graphql/core/tests/test_file_validation.py -q`。
+2. 确认其中的 AVIF 用例被收集且通过。","1. 测试通过。
+2. AVIF 用例（如 `test_clean_image_file_in_avif_format`）被收集并通过。"
+TC037,业务域 D：后端功能迁移,R07 · 缩略图 AVIF 能力改用 Pillow 原生支持,校验 AVIF 缩略图生成成功,AC-07-2,P1,本地 runtime 与数据库可用；已按 `/opt/runtime/run-suite.sh` 的使用方式准备尝试编号；对象存储或本地存储可用；具备可上传产品图片的 staff 用户,"1. 上传一张 AVIF 图片作为产品图片。
+2. 请求该图片的 AVIF 格式缩略图。
+3. 运行 `pytest saleor/thumbnail -q`。","1. 上传成功。
+2. 缩略图生成成功，返回可访问的 AVIF 图片。
+3. 缩略图相关测试通过。"
+TC038,业务域 D：后端功能迁移,R07 · 缩略图 AVIF 能力改用 Pillow 原生支持,校验 Pillow 版本满足约束且无额外 AVIF 插件包,AC-07-3,P1,Python 运行时可用；依赖已离线预装,"1. 执行 `python -c 'import PIL; print(PIL.__version__)'`。
+2. 执行 `python -c 'from PIL import Image; print(Image.registered_extensions())'`。
+3. 检查已安装包列表中是否存在 AVIF 插件包。","1. 版本满足 `>=12.1.1,<13`。
+2. 输出中包含 `.avif`。
+3. 不存在 `pillow-avif-plugin`。"
+TC039,业务域 D：后端功能迁移,R08 · 移除 posuto，日本地址处理不回归,校验 posuto 依赖与代码引用已移除,AC-08-1; BD08; BT08,P2,core 工作树已包含本次迁移改动,"1. 执行 `grep -rn posuto saleor/ --include='*.py'`。
+2. 检查 `pyproject.toml` 的依赖声明。","1. 无命中，包括 `from posuto import Posuto`。
+2. 依赖声明中不存在 `posuto`。"
+TC040,业务域 D：后端功能迁移,R08 · 移除 posuto，日本地址处理不回归,校验 np_atobarai 地址处理在无邮编库时仍可用且降级不抛异常,AC-08-2; BD08,P2,core 依赖已安装；工作目录为 core 仓库根,"1. 调用 np_atobarai 网关的地址处理逻辑，输入包含有效邮编的日本地址。
+2. 输入邮编无法解析的地址。
+3. 检查日志与异常。","1. 地址数据按既有字段（city、country_area、postal_code 等）构造成功。
+2. 记录 `Invalid japanese postal code` 告警并走既有降级分支，不抛出未捕获异常，支付流程继续。
+3. 无 ImportError 或 AttributeError。"
+TC041,业务域 D：后端功能迁移,R08 · 移除 posuto，日本地址处理不回归,校验 np_atobarai 网关单元测试通过,AC-08-2,P2,core 依赖已安装；已有改动前的失败集合基线,"1. 运行 `pytest saleor/payment/gateways/np_atobarai -q`。
+2. 与基线失败集合比较。","1. 测试通过。
+2. 无新增失败。"
+TC042,业务域 D：后端功能迁移,R09 · 新增运行时依赖的接入,校验新增运行时依赖已声明且可离线导入,AC-09-1; BD09; BD10,P2,core 依赖已离线预装,"1. 检查 `pyproject.toml` 依赖声明中的 `orjson`、`idna`、`kombu[sqs]`。
+2. 执行 `python -c 'import orjson, idna, kombu; print(orjson.__version__)'`。
+3. 执行 `python -c 'import saleor'`。","1. 三者均已声明，版本约束与目标清单一致。
+2. 导入成功并输出版本号。
+3. 导入成功，无缺失依赖报错。"
+TC043,业务域 D：后端功能迁移,R09 · 新增运行时依赖的接入,校验 GraphQL 响应 JSON 内容与 3.22 等价,AC-09-2,P2,本地 runtime 与数据库可用；已按 `/opt/runtime/run-suite.sh` 的使用方式准备尝试编号；已有 3.22 基线在同一查询下的响应记录,"1. 对同一组固定查询分别取得改动后与 3.22 基线的响应体。
+2. 将两者解析为 JSON 后比较键与值的语义。","1. 两次请求均成功。
+2. 解析后的 JSON 内容语义一致，仅允许与本次契约新增字段相关的差异。"
+TC044,业务域 D：后端功能迁移,R09 · 新增运行时依赖的接入,校验 Webhook 载荷与日志中的 JSON 内容与 3.22 等价,AC-09-2,P2,本地 runtime 与数据库可用；已按 `/opt/runtime/run-suite.sh` 的使用方式准备尝试编号；已配置可接收的 webhook 端点；已有 3.22 基线同一场景的载荷,"1. 触发一次 webhook 投递并捕获载荷。
+2. 与 3.22 基线同一场景的载荷比较。
+3. 运行 `pytest saleor/webhook saleor/core/tests -q`。","1. 载荷正常生成。
+2. JSON 键与值语义一致。
+3. 无与 JSON 序列化相关的回归。"
+TC045,业务域 E：Dashboard 前端迁移,R10 · 移除 @saleor/sdk，改为本仓实现认证与客户端配置,校验 @saleor/sdk 依赖与全部导入已移除,AC-10-1; FD02; FD07,P1,dashboard 工作树已包含本次迁移改动,"1. 检查 `saleor-dashboard/package.json` 的 dependencies 与 devDependencies。
+2. 执行 `grep -rn '@saleor/sdk' src/ playwright/`。
+3. 检查 `pnpm-lock.yaml` 中该包是否仅作为其他包的传递依赖存在。","1. 不再声明 `@saleor/sdk`。
+2. 无命中。
+3. 该包不作为直接依赖出现；无生产代码依赖它。"
+TC046,业务域 E：Dashboard 前端迁移,R10 · 移除 @saleor/sdk，改为本仓实现认证与客户端配置,校验移除 SDK 后登录流程行为不变,AC-10-2; FD02,P1,本地 runtime 与数据库可用；已按 `/opt/runtime/run-suite.sh` 的使用方式准备尝试编号；已准备有效的商家账号与错误密码场景,"1. 使用正确的邮箱与密码登录 dashboard。
+2. 使用错误密码登录。
+3. 检查登录后的令牌存取与后续请求的鉴权信息。","1. 登录成功并跳转到首页，认证状态为已登录。
+2. 提示凭据错误，认证中状态正确复位，不残留加载态。
+3. 令牌正常存取，后续请求携带正确的鉴权信息，行为与 3.22 一致。"
+TC047,业务域 E：Dashboard 前端迁移,R10 · 移除 @saleor/sdk，改为本仓实现认证与客户端配置,校验登出与令牌刷新失败的处理行为不变,AC-10-2; FD02,P1,本地 runtime 与数据库可用；已按 `/opt/runtime/run-suite.sh` 的使用方式准备尝试编号；已登录的商家会话,"1. 在已登录状态下执行登出。
+2. 使访问令牌过期后发起一次需要鉴权的请求。
+3. 使刷新令牌也失效后发起请求。","1. 会话清理，跳转到登录页。
+2. 自动刷新令牌并重试一次，请求成功。
+3. 登出并跳转到登录页，行为与 3.22 一致。"
+TC048,业务域 E：Dashboard 前端迁移,R10 · 移除 @saleor/sdk，改为本仓实现认证与客户端配置,校验外部认证跳转与回跳流程不变,AC-10-2; FD02,P1,已配置外部认证插件（如 OpenID）的环境；本地 runtime 可用,"1. 点击外部认证登录入口。
+2. 在外部提供方完成认证后回跳。
+3. 检查回跳后的登录状态。","1. 跳转到由 `externalAuthenticationUrl` 返回的地址。
+2. 回跳后通过 `externalObtainAccessTokens` 换取令牌。
+3. 登录成功，行为与 3.22 一致。"
+TC049,业务域 E：Dashboard 前端迁移,R10 · 移除 @saleor/sdk，改为本仓实现认证与客户端配置,校验认证与工具模块的既有单元测试通过,AC-10-2,P1,dashboard 依赖已离线预装；已有改动前的失败集合基线,"1. 运行 `pnpm run test src/auth`。
+2. 运行 `pnpm run test src/components/AppLayout src/components/DevModePanel src/utils`。
+3. 与基线失败集合比较。","1. 第 1 组测试通过。
+2. 第 2 组测试通过。
+3. 无新增失败。"
+TC050,业务域 E：Dashboard 前端迁移,R10 · 移除 @saleor/sdk，改为本仓实现认证与客户端配置,校验客户端配置中移除 SDK 的 TODO 已清除且类型检查通过,AC-10-3,P1,dashboard 工作树已包含本次迁移改动,"1. 检索 `src/graphql/client.ts` 中与 `@saleor/sdk` 相关的 TODO 注释。
+2. 确认客户端构造与 fetch 包装由本仓实现提供。
+3. 运行 `pnpm run check-types`。","1. 无残留 TODO。
+2. 相关能力由本仓模块提供，各调用点的签名与返回值保持原有解构方式。
+3. 类型检查通过。"
+TC051,业务域 E：Dashboard 前端迁移,R10 · 移除 @saleor/sdk，改为本仓实现认证与客户端配置,校验 dashboard e2e 的登录初始化用例通过,AC-10-4,P1,本地 runtime 与数据库可用；已按 `/opt/runtime/run-suite.sh` 的使用方式准备尝试编号,"1. 运行 `/opt/runtime/run-suite.sh <attempt> dash-e2e`。
+2. 检查 setup 项目（登录与初始化）的执行结果。","1. 套件完成运行并产出结果；仅健康检查通过不计为通过。
+2. setup 项目全部通过，依赖该状态的其他项目可正常执行。"
+TC052,业务域 E：Dashboard 前端迁移,R11 · 图标体系统一到 lucide-react，移除 @material-ui/icons,校验 9 个源文件的图标导入已迁移到 lucide-react,AC-11-1; FD03,P1,dashboard 工作树已包含本次迁移改动,"1. 执行 `grep -rn '@material-ui/icons' src/`。
+2. 逐一检查下列文件的图标来源：`src/productTypes/components/ProductTypeVariantAttributes/ProductTypeVariantAttributes.tsx`、`src/products/components/ProductStocks/components/CardAddItemsFooter.tsx`、`src/translations/components/TranslationFields/TranslationFields.tsx`、`src/extensions/components/AppWidgets/AppWidgets.tsx`、`src/components/CountryList/CountryList.tsx`、`src/components/Chip/Chip.tsx`、`src/components/ConfirmButton/ConfirmButton.tsx`、`src/channels/components/ChannelAllocationStrategy/ChannelAllocationStrategy.tsx`、`src/configuration/index.tsx`。","1. 无命中。
+2. 9 个文件均改用 `lucide-react` 或仓库既有本地图标组件，不再引用 `@material-ui/icons`。"
+TC053,业务域 E：Dashboard 前端迁移,R11 · 图标体系统一到 lucide-react，移除 @material-ui/icons,校验图标依赖移除且本地 lint 规则无违规,AC-11-2,P1,dashboard 依赖已离线预装,"1. 检查 `package.json` 中 `@material-ui/icons` 的声明。
+2. 运行 `pnpm run lint` 并检索 `no-deprecated-icons` 相关输出。","1. 不再声明该依赖。
+2. `local-rules/no-deprecated-icons` 无违规报告。"
+TC054,业务域 E：Dashboard 前端迁移,R11 · 图标体系统一到 lucide-react，移除 @material-ui/icons,校验受影响组件的既有单元测试通过,AC-11-3,P1,dashboard 依赖已离线预装；已有改动前的失败集合基线,"1. 运行覆盖产品类型变体属性、产品库存卡片底部、翻译字段、App 挂件、国家列表、Chip、确认按钮、渠道分配策略、配置首页的 jest 测试。
+2. 与基线失败集合比较。","1. 相关测试通过。
+2. 无新增失败。"
+TC055,业务域 E：Dashboard 前端迁移,R11 · 图标体系统一到 lucide-react，移除 @material-ui/icons,校验受影响页面的图标展示与交互无回归,AC-11-3,P1,本地 runtime 与数据库可用；已按 `/opt/runtime/run-suite.sh` 的使用方式准备尝试编号；已登录的商家会话；已有 3.22 基线的页面截图,"1. 依次打开产品类型变体属性、产品库存卡片底部、翻译字段、App 挂件、国家列表、Chip、确认按钮、渠道分配策略、配置首页。
+2. 与 3.22 基线的截图逐一比对。
+3. 点击确认按钮与 Chip 的关闭交互。","1. 页面均正常渲染，无缺失图标。
+2. 图标尺寸、颜色与布局位置与基线一致。
+3. 交互行为正常，控制台无报错。"
+TC056,业务域 E：Dashboard 前端迁移,R12 · 前端基础能力依赖对齐（通知、日期、路由历史、动效、编辑器）,校验前端基础能力依赖的声明与版本,AC-12-1; FD04; FD07,P2,dashboard 工作树已包含本次迁移改动,"1. 读取 `package.json` 的 dependencies。
+2. 核对 `sonner`、`moment`、`history`、`react-transition-group`、`@react-editor-js/core` 的版本。","1. 五个包均已声明为直接依赖。
+2. 版本分别为 `^2.0.7`、`2.30.1`、`4.10.1`、`4.4.5`、`2.1.0`，与目标清单一致。"
+TC057,业务域 E：Dashboard 前端迁移,R12 · 前端基础能力依赖对齐（通知、日期、路由历史、动效、编辑器）,校验通知提示的行为与内容不变,AC-12-2; FD04,P2,本地 runtime 与数据库可用；已按 `/opt/runtime/run-suite.sh` 的使用方式准备尝试编号；已登录的商家会话,"1. 触发一次成功通知（如保存产品成功）。
+2. 触发一次错误通知（如提交非法表单）。
+3. 检查提示文案、状态样式与消失时机。","1. 成功提示按既有通知契约展示，文案与状态与 3.22 一致。
+2. 错误提示按既有通知契约展示，文案与状态与 3.22 一致。
+3. 自动消失时机一致，不出现重复或丢失提示。"
+TC058,业务域 E：Dashboard 前端迁移,R12 · 前端基础能力依赖对齐（通知、日期、路由历史、动效、编辑器）,校验日期时间展示（含时区）行为不变,AC-12-2,P2,本地 runtime 与数据库可用；已按 `/opt/runtime/run-suite.sh` 的使用方式准备尝试编号；已登录的商家会话,"1. 打开含日期时间展示的页面（如订单详情、产品更新时间）。
+2. 切换时区设置后再次查看。
+3. 运行日期时间相关 jest 测试。","1. 日期时间按既有格式展示。
+2. 切换时区后展示随之变化，行为与 3.22 一致。
+3. 测试通过。"
+TC059,业务域 E：Dashboard 前端迁移,R12 · 前端基础能力依赖对齐（通知、日期、路由历史、动效、编辑器）,校验路由前进与后退行为不变,AC-12-2; FD04,P2,本地 runtime 与数据库可用；已按 `/opt/runtime/run-suite.sh` 的使用方式准备尝试编号；已登录的商家会话,"1. 在产品列表与产品详情之间连续导航多次。
+2. 使用浏览器后退与前进按钮。
+3. 直接访问一个深层路由 URL。","1. 导航正常，无白屏或错误。
+2. 后退与前进正确还原页面与状态。
+3. 深层路由可正常打开，行为与 3.22 一致。"
+TC060,业务域 E：Dashboard 前端迁移,R12 · 前端基础能力依赖对齐（通知、日期、路由历史、动效、编辑器）,校验富文本编辑与保存行为不变,AC-12-2; FD04,P2,本地 runtime 与数据库可用；已按 `/opt/runtime/run-suite.sh` 的使用方式准备尝试编号；已登录且具备产品编辑权限的会话,"1. 在产品描述中编辑富文本并保存。
+2. 重新打开该产品查看描述。
+3. 运行富文本编辑器相关 jest 与 storybook 测试。","1. 保存成功。
+2. 内容与格式完整保留。
+3. 测试通过，行为与 3.22 一致。"
+TC061,业务域 E：Dashboard 前端迁移,R13 · 删除计划于 3.23 移除的兼容代码,校验旧版产品变体路径及其重定向已被移除,AC-13-1; FD05,P2,本地 runtime 与数据库可用；已按 `/opt/runtime/run-suite.sh` 的使用方式准备尝试编号；已登录的商家会话；存在一个产品及其变体,"1. 执行 `grep -rn productVariantLegacyEditPath src/`。
+2. 执行 `grep -rn 'Remove in Saleor Dashboard 3.23' src/`。
+3. 在 dashboard 中访问 `/products/<productId>/variant/<variantId>`。
+4. 访问 `/products/variant/<variantId>`。","1. 无命中，导出函数已删除。
+2. 无命中，该 TODO 标注清零。
+3. 不再重定向，按未找到页面处理。
+4. 正常打开变体编辑页。"
+TC062,业务域 E：Dashboard 前端迁移,R13 · 删除计划于 3.23 移除的兼容代码,校验新产品变体路径的路由与页面行为不变,AC-13-2,P2,本地 runtime 与数据库可用；已按 `/opt/runtime/run-suite.sh` 的使用方式准备尝试编号；已登录的商家会话；存在一个产品及其变体,"1. 从产品详情进入变体编辑。
+2. 修改并保存变体数据。
+3. 运行 `pnpm run test src/products`。","1. 跳转到 `/products/variant/<variantId>` 并正常渲染。
+2. 保存成功且数据更新。
+3. 测试通过，无新增失败。"
+TC063,业务域 F：依赖声明、构建与质量门禁,R14 · 依赖与构建声明与目标一致,校验 core 依赖集合与锁文件对齐目标清单,AC-14-1; BD10; BT10,P0,core 工作树已包含本次迁移改动；依赖已离线预装,"1. 读取 `pyproject.toml` 的 `[project] dependencies`。
+2. 核对新增项与移除项。
+3. 检查 `uv.lock` 与声明的一致性。","1. 依赖列表可读。
+2. 新增 `kombu[sqs]`、`nh3`、`idna`、`orjson`；不再包含 `Adyen`、`draftjs-sanitizer`、`html-to-draftjs`、`pillow-avif-plugin`、`posuto`。
+3. 锁文件与声明一致（`uv lock --check` 或等价检查通过）。"
+TC064,业务域 F：依赖声明、构建与质量门禁,R14 · 依赖与构建声明与目标一致,校验 dashboard 依赖集合对齐目标清单,AC-14-2; FD07,P0,dashboard 工作树已包含本次迁移改动,"1. 读取 `package.json` 的 dependencies 与 devDependencies。
+2. 核对移除项与新增项。
+3. 检查 `pnpm-lock.yaml`、`pnpm-workspace.yaml`、`.npmrc` 与声明的一致性。","1. 依赖列表可读。
+2. 不再包含 `@material-ui/icons` 与 `@saleor/sdk`；包含 `@react-editor-js/core`、`history`、`moment`、`react-transition-group`、`sonner`。
+3. 工作区与锁文件声明一致，无未声明的隐式依赖。"
+TC065,业务域 F：依赖声明、构建与质量门禁,R14 · 依赖与构建声明与目标一致,校验离线环境下 dashboard 构建成功,AC-14-3,P0,依赖已离线预装；网络不可用（不得联网抓取源码或安装依赖）,"1. 确认无网络访问。
+2. 运行 `pnpm run build`。","1. 过程中无网络请求。
+2. 构建成功完成，退出码为 0，产出构建产物。"
+TC066,业务域 F：依赖声明、构建与质量门禁,R14 · 依赖与构建声明与目标一致,校验 core 依赖可被 Python 运行时导入,AC-14-3,P0,core 依赖已离线预装；工作目录为 core 仓库根,"1. 执行 `python -c 'import saleor'`。
+2. 执行 `./manage.py check`。","1. 导入成功，无 ModuleNotFoundError。
+2. 检查通过，无缺失依赖告警。"
+TC067,业务域 F：依赖声明、构建与质量门禁,R14 · 依赖与构建声明与目标一致,校验代码中不存在对已移除依赖的导入,AC-14-4,P0,两仓库工作树均已包含本次迁移改动,"1. 在 core 中检索 `Adyen`、`draftjs_sanitizer`、`html_to_draftjs`、`pillow_avif`、`posuto`，排除 migrations 目录。
+2. 在 dashboard 中检索 `@material-ui/icons` 与 `@saleor/sdk`，排除 `node_modules`。","1. core 中无命中。
+2. dashboard 中无命中。"
+TC068,业务域 F：依赖声明、构建与质量门禁,R15 · 工程脚本与 lint 规则对齐目标,校验 dashboard 工程脚本集合与目标一致,AC-15-1; FD06,P1,dashboard 工作树已包含本次迁移改动,"1. 读取 `package.json` 的 scripts 段。
+2. 逐项核对目标脚本是否存在。","1. scripts 段可读。
+2. 至少包含 `generate:main`、`generate:staging`、`fetch-schema:main`、`fetch-schema:staging`、`graphql-lint-unused`、`test:lint-rules`、`test-storybook`、`test-storybook:coverage`、`update-payment-assets`、`dev:no-strict`、`e2e:clean-auth`、`chromatic`。"
+TC069,业务域 F：依赖声明、构建与质量门禁,R15 · 工程脚本与 lint 规则对齐目标,校验 lint 规则自测脚本通过,AC-15-2; FD06,P1,dashboard 依赖已离线预装,"1. 检查 `lint/rules/` 下的规则与自测文件。
+2. 运行 `pnpm run test:lint-rules`。","1. 存在 `named-styles` 与新增的命名副作用规则及其自测文件（按目标约定使用 `.mjs`）。
+2. 脚本通过，规则自测全部成功。"
+TC070,业务域 F：依赖声明、构建与质量门禁,R15 · 工程脚本与 lint 规则对齐目标,校验 dashboard 测试脚本通过,AC-15-3,P1,dashboard 依赖已离线预装；已有改动前的失败集合基线,"1. 运行 `pnpm run test`。
+2. 与基线失败集合比较。","1. jest 套件与 lint 规则测试均通过。
+2. 无新增失败。"
+TC071,业务域 F：依赖声明、构建与质量门禁,R15 · 工程脚本与 lint 规则对齐目标,校验 dashboard lint 与类型检查不产生新错误,AC-15-3,P1,dashboard 依赖已离线预装；已有改动前的错误集合基线,"1. 运行 `pnpm run lint`。
+2. 运行 `pnpm run check-types`。
+3. 与基线错误集合比较。","1. lint 通过。
+2. 类型检查通过。
+3. 无新增错误。"
+TC072,业务域 F：依赖声明、构建与质量门禁,R16 · 回归保持与质量门禁,校验 core-unit 套件无新增失败,AC-16-1; BD11,P0,本地 runtime 与数据库可用；已按 `/opt/runtime/run-suite.sh` 的使用方式准备尝试编号；已有改动前的失败集合基线,"1. 运行 `/opt/runtime/run-suite.sh <attempt> core-unit`。
+2. 与改动前的失败集合比较。","1. 套件完成运行并产出结果；收集失败或缺失结果不计为通过。
+2. 无新增失败，改动前后的失败差集为空。"
+TC073,业务域 F：依赖声明、构建与质量门禁,R16 · 回归保持与质量门禁,校验 core-e2e 套件无新增失败,AC-16-1; BD11,P0,本地 runtime 与数据库可用；已按 `/opt/runtime/run-suite.sh` 的使用方式准备尝试编号；已有改动前的失败集合基线,"1. 运行 `/opt/runtime/run-suite.sh <attempt> core-e2e`。
+2. 与改动前的失败集合比较。","1. 套件完成运行并产出结果；仅健康检查通过不计为通过。
+2. 无新增失败，改动前后的失败差集为空。"
+TC074,业务域 F：依赖声明、构建与质量门禁,R16 · 回归保持与质量门禁,校验 dash-unit 套件无新增失败,AC-16-1; FD08,P0,本地 runtime 与数据库可用；已按 `/opt/runtime/run-suite.sh` 的使用方式准备尝试编号；已有改动前的失败集合基线,"1. 运行 `/opt/runtime/run-suite.sh <attempt> dash-unit`。
+2. 与改动前的失败集合比较。","1. 套件完成运行并产出结果；收集失败或缺失结果不计为通过。
+2. 无新增失败，改动前后的失败差集为空。"
+TC075,业务域 F：依赖声明、构建与质量门禁,R16 · 回归保持与质量门禁,校验 dash-e2e 套件无新增失败,AC-16-1; FD08,P0,本地 runtime 与数据库可用；已按 `/opt/runtime/run-suite.sh` 的使用方式准备尝试编号；已有改动前的失败集合基线,"1. 运行 `/opt/runtime/run-suite.sh <attempt> dash-e2e`。
+2. 与改动前的失败集合比较。","1. 套件完成运行并产出结果；仅健康检查通过不计为通过。
+2. 无新增失败，改动前后的失败差集为空。"
+TC076,业务域 F：依赖声明、构建与质量门禁,R16 · 回归保持与质量门禁,校验评测选定的 fail-to-pass 用例全部通过,AC-16-2,P0,评测测试在评测阶段单独提供；改动已完成并提交,"1. 在改动后的工作树上运行评测选定的 fail-to-pass 用例。
+2. 检查用例收集情况与结果。","1. 全部通过。
+2. 无收集失败、无缺失结果；收集失败或缺失不计为通过。"
+TC077,业务域 F：依赖声明、构建与质量门禁,R16 · 回归保持与质量门禁,校验评测选定的 pass-to-pass 用例保持通过,AC-16-2,P0,评测测试在评测阶段单独提供；已有改动前的结果,"1. 在改动后的工作树上运行评测选定的 pass-to-pass 用例。
+2. 与改动前的结果比较。","1. 全部保持通过。
+2. 无因本次改动而转为失败的用例。"
+TC078,业务域 F：依赖声明、构建与质量门禁,R16 · 回归保持与质量门禁,校验评测测试、夹具、verifier 与评分配置未被修改,AC-16-3,P0,两仓库改动已提交；可导出相对各自固定基线的 diff,"1. 在两仓库 diff 中检索评测测试目录、夹具、verifier 与评分配置相关路径。
+2. 对每个命中项判断是否属于本次迁移的合法改动。","1. 相关路径无改动。
+2. 不存在对评测测试、夹具、verifier 或评分配置的修改。"
+TC079,业务域 F：依赖声明、构建与质量门禁,R16 · 回归保持与质量门禁,校验不存在仅供测试使用的桩实现,AC-16-3,P0,两仓库工作树均已包含本次迁移改动,"1. 检查本次改动新增的生产代码中是否存在仅被测试引用的模块、函数或分支。
+2. 确认新增的 GraphQL 字段与解析器在真实查询路径中生效。
+3. 检索代码中形如 test-only、stub、fake 的标记。","1. 无仅被测试引用的生产实现。
+2. 新增字段与解析器在真实查询路径中可用（由新增字段的查询用例佐证）。
+3. 无测试专用桩。"
+TC080,业务域 F：依赖声明、构建与质量门禁,R16 · 回归保持与质量门禁,校验两仓库改动已提交且 diff 可完整导出,AC-16-4,P0,两仓库改动已提交；可导出相对各自固定基线的 diff,"1. 检查两仓库工作树状态。
+2. 分别导出相对各自固定基线的 diff 并统计文件数。","1. 工作树干净，无未提交改动。
+2. diff 导出成功且非空，覆盖本次迁移的全部改动文件。"

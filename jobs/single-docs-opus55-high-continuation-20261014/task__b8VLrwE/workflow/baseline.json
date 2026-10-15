@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "artifacts": {
+    "artifact:sprint1/prd/prd": {
+      "path": "/workspace/artifacts/sprint1/prd/prd.md",
+      "sha256": "c0abf99fc5af86e0e22da3a70ddf91d5972819a30e75494720c620a4d4f999e8",
+      "source_stage": "sprint1/prd"
+    },
+    "artifact:sprint1/test-design/test_cases": {
+      "path": "/workspace/artifacts/sprint1/test-design/test-cases.v1.csv",
+      "sha256": "4e6b5b4954bf43735be29c9458af3a1d3e829f0cb1e06370b3ba825d74aeabf2",
+      "source_stage": "sprint1/test-design"
+    }
+  }
+}

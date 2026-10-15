@@ -1,0 +1,33 @@
+{
+    "job_name": "single-docs-opus55-xhigh-20261013",
+    "jobs_dir": "/home/iriszeng18_gmail_com/software-last-exam/jobs",
+    "n_concurrent_trials": 1,
+    "verifier": {
+        "disable": true
+    },
+    "agents": [
+        {
+            "import_path": "runtime.workflow_agent:WorkflowClaudeCode",
+            "model_name": "anthropic/claude-opus-5.5",
+            "override_timeout_sec": 3900.0,
+            "override_setup_timeout_sec": 600.0,
+            "kwargs": {
+                "prepared_path": "/home/iriszeng18_gmail_com/software-last-exam/.prepared/single-docs-opus55-xhigh-20261013",
+                "smoke": false,
+                "reasoning_effort": "xhigh",
+                "max_runtime_sec": 3600.0,
+                "request_profile": true,
+                "smoke_scenario": "repair",
+                "role_probe": false,
+                "stop_after_stage": "sprint1/test-design",
+                "missing_output_policy": "fail",
+                "client_version": "2.1.280"
+            }
+        }
+    ],
+    "tasks": [
+        {
+            "path": "/home/iriszeng18_gmail_com/software-last-exam/.prepared/single-docs-opus55-xhigh-20261013/task"
+        }
+    ]
+}

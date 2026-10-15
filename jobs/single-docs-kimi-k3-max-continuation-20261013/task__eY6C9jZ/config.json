@@ -1,0 +1,30 @@
+{
+    "task": {
+        "path": "/home/iriszeng18_gmail_com/software-last-exam/.prepared/single-docs-kimi-k3-max-20261013/task"
+    },
+    "trial_name": "task__eY6C9jZ",
+    "trials_dir": "/home/iriszeng18_gmail_com/software-last-exam/jobs/single-docs-kimi-k3-max-continuation-20261013",
+    "agent": {
+        "import_path": "runtime.document_recovery:DocumentContinuation",
+        "model_name": "moonshotai/kimi-k3",
+        "override_timeout_sec": 2076.1892931461334,
+        "override_setup_timeout_sec": 600.0,
+        "kwargs": {
+            "prepared_path": "/home/iriszeng18_gmail_com/software-last-exam/.prepared/single-docs-kimi-k3-max-20261013",
+            "smoke": false,
+            "reasoning_effort": "max",
+            "max_runtime_sec": 2016.1892948150635,
+            "request_profile": true,
+            "smoke_scenario": "repair",
+            "role_probe": false,
+            "stop_after_stage": "sprint1/test-design",
+            "missing_output_policy": "fail",
+            "client_version": "2.1.280",
+            "recovery_source": "/home/iriszeng18_gmail_com/software-last-exam/jobs/single-docs-kimi-k3-max-20261013/task__HHz96Rh"
+        }
+    },
+    "verifier": {
+        "disable": true
+    },
+    "job_id": "c1cd7a57-7407-4845-a1fd-b56f7450a744"
+}

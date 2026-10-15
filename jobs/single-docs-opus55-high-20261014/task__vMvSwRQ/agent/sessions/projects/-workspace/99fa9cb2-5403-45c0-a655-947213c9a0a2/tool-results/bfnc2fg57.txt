@@ -1,0 +1,307 @@
+prd:
+total 60
+dr-xr-xr-x 2 root root  4096 Oct 14 03:25 .
+drwxr-xr-x 4 root root  4096 Oct 14 03:26 ..
+-r--r--r-- 1 root root 51609 Oct 14 03:25 prd.md
+
+tech-design:
+total 8
+drwxr-xr-x 2 stage1211 stage1211 4096 Oct 14 03:26 .
+drwxr-xr-x 4 root      root      4096 Oct 14 03:26 ..
+  - `HTMLSafeJSON` 改为不依赖 `draftjs_sanitizer` 的实现，对外行为保持等价：继承 `DjangoJSONEncoder` 能力，可序列化 Django 对象、Decimal、日期等；输出的 JSON 字符串中 `<`、`>`、`&` 以及会破坏 HTML 内联脚本的字符被转义为 Unicode 转义序列，结果仍是可被标准 JSON 解析的合法 JSON；调用方不需要改动。
+  - 两个历史迁移在依赖移除后必须仍可导入、可从空库顺序执行，迁移图（依赖、merge 节点 `product 0100_merge`、`page 0009`）不变。迁移的数据转换逻辑：在空库或已执行过的库上是 no-op 或等价实现；对历史 HTML 数据的转换允许以不依赖外部包的方式实现或安全降级，但不得在执行时抛错。迁移中的字段定义不得因此改变数据库 schema 的最终状态。
+  - 需要 HTML 清洗的生产路径使用 `nh3` 实现（若在实现中发现确有需要，见 §5 Q3）。
+- 验收条件：
+  - AC-04-1：对 `{"a": "<script>alert('x')</script>&"}` 执行 `json.dumps(..., cls=HTMLSafeJSON)`，输出中不出现字面量 `<`、`>`、`&`；用 `json.loads` 解析后与原对象相等。
+  - AC-04-2：用 `HTMLSafeJSON` 序列化包含 `Decimal`、`datetime`、`UUID` 的对象，结果与 3.22 一致（与 `DjangoJSONEncoder` 输出相同的值表示）。
+  - AC-04-3：在空数据库上执行 `python manage.py migrate`，全部迁移（含 `product.0096_raw_html_to_json`、`page.0008_raw_html_to_json`）执行成功，无 `ImportError`/`ModuleNotFoundError`。
+  - AC-04-4：执行 `python manage.py makemigrations --check --dry-run`，输出 "No changes detected"。
+
+### R05 · 移除 Adyen 与 NP Atobarai 内置支付插件，存量数据不受影响
+- 来源：Instruction："Implement the coordinated production-code migration to 3.23.0 … build/dependency declarations." 推导依据：
+  - 目标清单移除了 `Adyen` 与 `posuto`，而 `saleor/payment/gateways/adyen/*` 直接依赖 `Adyen` SDK，`saleor/payment/gateways/np_atobarai/api_helpers.py` 依赖 `posuto`。
+  - 两者都在 `settings.BUILTIN_PLUGINS` 中（`saleor.payment.gateways.adyen.plugin.AdyenGatewayPlugin`、`saleor.payment.gateways.np_atobarai.plugin.NPAtobaraiGatewayPlugin`）。
+  - 3.22 CHANGELOG："We plan to remove deprecated plugins in the future versions of Saleor."
+- 优先级：P0
+- 需求描述：
+  - 从 `BUILTIN_PLUGINS` 中移除 Adyen（`mirumee.payments.adyen`）与 NP Atobarai 插件，并删除对应的网关代码，使系统在不安装 `Adyen`、`posuto` 时能完整启动和运行。
+  - 兼容要求：
+    1. 数据库中残留的这两个插件的 `PluginConfiguration` 记录不得导致插件管理器加载失败、`plugins` 查询报错或结算流程异常，这类记录被忽略。
+    2. 历史 `Payment`/`TransactionItem` 记录（含 `gateway="mirumee.payments.adyen"` 以及 `legacy_adyen_plugin_result_code`、`legacy_adyen_plugin_payment_method` 字段）保留在库中，可通过现有 API 正常读取。本次不删除这些模型字段和已有迁移。
+    3. 与上述插件无关的其他内置插件（Stripe、Braintree、Razorpay、AuthorizeNet、Avatax、Webhook、Dummy、Sendgrid、UserEmail、AdminEmail、OpenIDConnect 等）的行为不变。
+  - 是否在 3.23 同时移除其他已 deprecated 插件，按 §5 Q2 处理，本需求不扩大范围。
+- 验收条件：
+  - AC-05-1：在环境中屏蔽 `Adyen`、`posuto` 模块后，`python manage.py check` 与 API 启动均成功；`settings.BUILTIN_PLUGINS` 中不含上述两个插件路径。
+  - AC-05-2：数据库中存在 `identifier="mirumee.payments.adyen"` 的 `PluginConfiguration` 记录时，以 `MANAGE_PLUGINS` 权限查询 `plugins(first: 100)`，返回成功、无 `errors`，结果中不含该插件；同一请求中其他插件正常返回。
+  - AC-05-3：已有一条 `gateway="mirumee.payments.adyen"` 的订单支付记录，以 `MANAGE_ORDERS` 权限查询该订单的 `payments { gateway total { amount } }`，返回成功，`gateway` 值保持原样。
+  - AC-05-4：在默认 Dummy/Stripe 等插件配置下完成一次结算（`checkoutComplete`），流程与 3.22 一致，返回订单且无错误。
+
+#### C. GraphQL 契约与生成产物
+
+### R06 · Core 提供 App 扩展的 `mountName`、`targetName`、`settings` 字段
+- 来源：Instruction："Keep the backend API and Dashboard behavior consistent, including their GraphQL contracts." 推导依据：
+  - Dashboard 的 `schema.graphql` 中 `AppExtension` 与 `AppManifestExtension` 含 `mountName: String!`、`targetName: String!`、`settings: JSON!`（"Added in Saleor 3.22"），旧字段 `mount`/`target` 标注 `@deprecated(reason: "Use \`mountName\` instead.")`/`"Use \`targetName\` instead."`，`AppExtension.options` 标注 `@deprecated(reason: "Use \`settings\` field instead.")`。
+  - Dashboard 3.22.9 CHANGELOG："Switched to the new AppExtension fields introduced in 3.22 patch (mount -> mountName, target -> targetName, options -> settings)."
+  - Dashboard 的 `useExtensions.ts`/`AppWidgets.tsx` 按 `settings.newTabTarget.method`、`settings.widgetTarget.method` 读取设置；`mountName`/`targetName` 的取值为大写枚举名（如 `PRODUCT_OVERVIEW_CREATE`、`NEW_TAB`）。
+- 优先级：P0
+- 需求描述：
+  - Core 的 GraphQL 类型 `AppExtension` 与 `AppManifestExtension` 新增以下字段，描述文字与 Dashboard schema 一致：
+    - `mountName: String!`：挂载点名称，值为对应 `AppExtensionMountEnum` 的大写名，例如库中 `mount="product_overview_create"` 返回 `PRODUCT_OVERVIEW_CREATE`。
+    - `targetName: String!`：打开方式名称，值为对应 `AppExtensionTargetEnum` 的大写名；未设置时与现有 `target` 的默认值（`POPUP`）一致。
+    - `settings: JSON!`：扩展设置对象。对 `NEW_TAB` 目标返回 `{"newTabTarget": {"method": "GET"|"POST"}}`，对 `WIDGET` 目标返回 `{"widgetTarget": {"method": "GET"|"POST"}}`，其他目标返回 `{}`。数据来源于现有 `http_target_method`；manifest 预览时来源于 manifest 中的 `options`/`settings`。
+  - 旧字段 `mount`、`target`、`AppExtension.options` 保留，返回值不变，加上与 Dashboard schema 一致的 `@deprecated` 原因。
+  - `saleor/graphql/schema.graphql` 重新生成，与代码定义一致。
+  - App 安装、manifest 拉取（`appFetchManifest`）、扩展校验的现有规则不变，例如 WIDGET 仅允许在特定挂载点、POST 方法需要 `options` 合法。
+- 验收条件：
+  - AC-06-1：已安装 App 的扩展 `mount=product_overview_create`、`target=new_tab`、`http_target_method=POST`。以 staff token 查询 `appExtensions { edges { node { mountName targetName settings mount target } } }`，返回 `mountName="PRODUCT_OVERVIEW_CREATE"`、`targetName="NEW_TAB"`、`settings={"newTabTarget":{"method":"POST"}}`、`mount="PRODUCT_OVERVIEW_CREATE"`、`target="NEW_TAB"`。
+  - AC-06-2：扩展 `target=widget`、`http_target_method=GET`，查询 `settings` 返回 `{"widgetTarget":{"method":"GET"}}`；`target=popup` 的扩展返回 `{}`。
+  - AC-06-3：对一个声明了 `extensions` 的 manifest 执行 `appFetchManifest`，`manifest.extensions` 中每项都可查询 `mountName`、`targetName`、`settings`，值与 manifest 声明一致；未声明 target 的扩展 `targetName` 为 `POPUP`。
+  - AC-06-4：生成后的 Core schema 中，`AppExtension.mount`、`AppExtension.target`、`AppExtension.options`、`AppManifestExtension.mount`、`AppManifestExtension.target` 带有 `@deprecated`，原因文本与 Dashboard 的 `schema.graphql` 相同。
+  - AC-06-5：在 Dashboard 中打开配置了商品列表"创建"扩展的页面，扩展按钮显示；点击 NEW_TAB 且 POST 的扩展时以 POST 方式打开新标签页；配置了订单详情 WIDGET 的页面渲染该小部件。浏览器控制台不出现 "Invalid extension configuration"。
+
+### R07 · Core 与 Dashboard 的 schema 文件及 Dashboard 生成产物一致
+- 来源：Instruction："Keep the backend API and Dashboard behavior consistent, including their GraphQL contracts, generated client artifacts …" 推导依据：
+  - 运行时只用 vite 重新构建 Dashboard，不会重新运行 codegen，因此已提交的 `src/graphql/{types,hooks,fragmentTypes,typePolicies}.generated.ts` 必须与 schema 和文档一致。
+  - 目标 `package.json` 的脚本：`fetch-schema:main` 输出到 `schema-main.graphql`，`fetch-schema:staging` 输出到 `schema-staging.graphql`；`generate:main`/`generate:staging` 分别使用 `codegen-main.ts`/`codegen-staging.ts`。
+  - `src/fragments/errors.ts` 中重复定义了 `PageTypeDeleteErrorFragment`。
+- 优先级：P0
+- 需求描述：
+  - Dashboard 用于 codegen 的主 schema（3.23 稳定版，对应 `schema-main.graphql`；保留 `schema.graphql` 的方式由研发确定，但所有引用 schema 的配置，包括 `codegen-*.ts`、`graphql.config.ts`、`Dockerfile`、`scripts/fetch-local-schema.cjs`，必须指向实际存在的文件）与 Core 生成的 `saleor/graphql/schema.graphql` 在类型、字段、参数、枚举、deprecated 标注上一致，不存在一方有、另一方没有的项。
+  - 提供 `codegen-main.ts` 与 `codegen-staging.ts`：main 生成现有 `src/graphql/*.generated.ts`，staging 用于对照 Saleor main 分支的 schema，输出位置由研发定义，不得覆盖 main 产物。
+  - 修正重复片段 `PageTypeDeleteErrorFragment`，保证所有 GraphQL 文档中片段名唯一。
+  - 已提交的生成产物与当前 schema 和文档重新生成的结果完全一致。
+- 验收条件：
+  - AC-07-1：用 `graphql` 的 `buildSchema` 加载 Core 的 `saleor/graphql/schema.graphql` 与 Dashboard 的主 schema 文件，`findBreakingChanges` 双向结果均为空，且两边没有单向新增的类型、字段或枚举值。
+  - AC-07-2：用 Core 的 schema 校验 Dashboard `codegen` 配置覆盖的全部文档（`src/**/queries.ts`、`src/**/mutations.ts`、`src/**/fragments/*.ts`、`src/searches/*.ts`），字段错误为 0，重复片段名为 0。
+  - AC-07-3：离线执行 `pnpm run generate:main`，执行后 `git status` 显示 `src/graphql/*.generated.ts` 无变更。
+  - AC-07-4：`pnpm run check-types`（`tsc`）通过，无类型错误。
+
+#### D. API 行为
+
+### R08 · API 支持可配置的根 mutation 数量上限 `GRAPHQL_MUTATION_COUNT_LIMIT`
+- 来源：Instruction："Keep the backend API and Dashboard behavior consistent." 推导依据：运行时 `/opt/runtime/services.sh` 以 `GRAPHQL_MUTATION_COUNT_LIMIT=4 uvicorn saleor.asgi:application …` 启动 API，注释为 "Dashboard VariantUpdate sends four root mutations. Scope the deployment limit to the API process; pytest retains upstream settings and validator coverage"。这说明 3.23 Core 有对应的设置项和校验器，而当前 Core 的 `settings.py` 中只有 `GRAPHQL_QUERY_MAX_COMPLEXITY`。Dashboard 文档中根 mutation 数量的统计：`VariantUpdate` 4 个，`MenuUpdate` 3 个，`CollectionAssignProduct`、`OrderSettingsUpdate`、`ShopSettingsUpdate`、`UpdateMetadata`、`UpdatePrivateMetadata` 各 2 个。
+- 优先级：P0
+- 需求描述：
+  - Core 新增设置 `GRAPHQL_MUTATION_COUNT_LIMIT`，从同名环境变量读取整数。请求在执行前做校验：单个 mutation 操作中根级 mutation 字段的数量超过上限时，整个请求被拒绝，不执行其中任何 mutation，返回标准 GraphQL `errors`，错误信息说明超限及上限值。
+  - 计数规则：按操作中根选择集里的 mutation 字段计数，同一字段使用不同 alias 各计一次；通过片段展开到根的字段同样计入。只统计本次实际执行的操作，查询（query）与订阅不受影响。
+  - 未设置环境变量时采用上游默认值（具体数值见 §5 Q4）；按 Saleor 现有惯例，值为 `0` 表示关闭限制。
+  - 校验错误的处理与 query cost 校验一致：在 API 响应中可识别，不产生副作用，并记录可观测性信息（参照 `QUERY_COST_FAILED_OPERATION` 的处理方式）。
+  - Dashboard 方面：在 `GRAPHQL_MUTATION_COUNT_LIMIT=4` 的部署下，Dashboard 所有现有文档都不得超限，最多的 `VariantUpdate` 为 4。新增或修改的 Dashboard mutation 文档不得超过 4 个根 mutation。
+- 验收条件：
+  - AC-08-1：设置 `GRAPHQL_MUTATION_COUNT_LIMIT=2`，发送包含 3 个根 mutation 的请求（如 3 个带 alias 的 `updateMetadata`），响应 `errors` 非空且说明超限，`data` 中无执行结果，数据库中 3 处元数据均未改变。
+  - AC-08-2：设置 `GRAPHQL_MUTATION_COUNT_LIMIT=2`，发送包含 2 个根 mutation 的请求，正常执行并返回两个结果。
+  - AC-08-3：设置 `GRAPHQL_MUTATION_COUNT_LIMIT=1`，发送包含 5 个根字段的 query，正常返回，不受限制。
+  - AC-08-4：设置 `GRAPHQL_MUTATION_COUNT_LIMIT=0`，发送包含 10 个根 mutation 的请求，不因数量被拒绝。
+  - AC-08-5：在运行时环境（`GRAPHQL_MUTATION_COUNT_LIMIT=4`）中，于 Dashboard 编辑一个商品变体的属性、价格、库存和元数据后点击保存，出现成功通知（`[data-test-type="success"]`），刷新后修改均已保存。
+  - AC-08-6：统计 Dashboard 全部 GraphQL mutation 文档的根 mutation 数，最大值不超过 4。
+
+### R09 · 客户搜索支持 `search_vector`（全文检索）
+- 来源：Instruction："Keep … database migrations … consistent." "Do not replace missing production features with test-specific stubs." 推导依据：`/opt/runtime/seed_e2e_fixtures.py` 的 `tier_user_search` 会判断 `User` 有 `search_vector` 字段时调用 `saleor.account.search.update_user_search_vector(user)`，否则回退到 `search_document`。这表明 3.23 的 `User` 新增了 `search_vector`。`Order`、`Product` 已采用 `SearchVectorField` + GIN 索引的模式（`saleor/order/search.py` 的 `update_order_search_vector`），`saleor/account/search.py` 已有 `generate_address_search_vector_value`。
+- 优先级：P1
+- 需求描述：
+  - `User` 新增 `search_vector`（`SearchVectorField`，可空）及 GIN 索引，通过新的数据库迁移添加。迁移在 3.22 存量库上可执行，不长时间锁表；存量数据通过后台任务或迁移中的批处理回填，具体方式由研发按 Saleor 现有惯例选择。
+  - `saleor.account.search` 提供 `update_user_search_vector(user, *, save=True)`（签名与 `update_order_search_vector` 风格一致），内容覆盖现有 `search_document` 所包含的字段：邮箱、名、姓，以及各地址的姓名、公司、街道、城市、邮编、国家、电话等。
+  - 所有现在会更新 `search_document` 的写入路径同步维护 `search_vector`，包括客户/员工创建与更新、地址增删改、`customerBulkUpdate` 等。
+  - `customers`/`staffUsers` 的 `search`/`filter.search` 行为对用户等价或更好：按邮箱、姓名、地址字段、电话搜索能命中原来命中的记录。是否保留 `search_document` 及回退逻辑由研发决定，前提是搜索结果不倒退。
+- 验收条件：
+  - AC-09-1：在 3.22 数据库上执行 `migrate`，`account_user` 表新增 `search_vector` 列和对应 GIN 索引；执行完回填后，现有用户的 `search_vector` 非空。
+  - AC-09-2：创建客户 `email=jane.doe@example.com`、`firstName=Jane`、地址城市 `Wrocław`，随后以 `customers(search: "jane")`、`customers(search: "doe@example")`、`customers(search: "Wrocław")` 查询，均返回该客户。
+  - AC-09-3：更新上述客户的姓为 `Smith` 后，`customers(search: "smith")` 能找到该客户。
+  - AC-09-4：E2E 播种脚本 `tier_user_search` 走 `search_vector` 分支并成功执行；Dashboard 客户列表按邮箱搜索（`playwright/tests/customers.spec.ts` 中的场景）能定位到目标客户。
+
+#### E. Dashboard 依赖、构建与工程化
+
+### R10 · Dashboard 依赖与构建声明和 3.23.0 目标清单一致
+- 来源：Instruction："Keep … build/dependency declarations." "Required dependencies and development tools are preinstalled. Work offline." 推导依据：目标清单 `/opt/environment/dependencies/target/saleor-dashboard/package.json`；当前 `pnpm-workspace.yaml`、`pnpm-lock.yaml`；`Dockerfile` 仍是 `node:20-alpine` 加 `npm ci --legacy-peer-deps` 并 `COPY package*.json`，而 `package-lock.json` 已移除，`engines` 要求 node `>=24 <25` 和 pnpm `>=10`。
+- 优先级：P0
+- 需求描述：
+  - `package.json` 的 `dependencies`/`devDependencies`/`scripts`/`engines`/`packageManager`/`config` 与目标清单一致：
+    - 移除 `@material-ui/icons`、`@saleor/sdk`。
+    - 新增直接依赖 `@react-editor-js/core` 2.1.0、`history` 4.10.1、`moment` 2.30.1、`react-transition-group` 4.4.5、`sonner` ^2.0.7。代码中已在直接 import 的包需要显式声明。
+  - `pnpm-workspace.yaml` 与目标一致，包括 `blockExoticSubdeps`、`minimumReleaseAge`（及排除项 `@saleor/app-sdk`、`@saleor/macaw-ui`）、`trustPolicy: no-downgrade`、`overrides`、`auditConfig.ignoreCves` 等。
+  - `pnpm-lock.yaml` 与 `package.json` 同步：去掉 `@saleor/sdk` 等不再需要的条目，加入 `sonner@2.0.7` 等条目。全程离线，所需包已存在于 `node_modules` 中。
+  - 构建入口与包管理方式一致：`Dockerfile` 与 CI 中的安装/构建命令改为 pnpm，Node 版本与 `engines` 一致，不再引用已删除的 `package-lock.json`；需要复制的配置文件（如 `codegen-*.ts`、`pnpm-workspace.yaml`、`pnpm-lock.yaml`、`.npmrc`、schema 文件）齐全。
+- 验收条件：
+  - AC-10-1：对比当前与目标的 `package.json`，`dependencies`、`devDependencies`、`scripts`、`engines`、`packageManager`、`config.saleor.schemaVersion`、`version` 各键逐项一致。
+  - AC-10-2：离线执行 `pnpm install --frozen-lockfile --offline`（或等价的锁文件一致性校验），不报锁文件与 `package.json` 不一致。
+  - AC-10-3：在 `src/` 中检索 `from "@saleor/sdk` 与 `from "@material-ui/icons`，结果为空。
+  - AC-10-4：`pnpm run build`（vite 构建）成功，产物可由 nginx 在 :9000 提供访问，登录页正常渲染。
+  - AC-10-5：`Dockerfile` 中不出现 `npm ci` 和 `package-lock.json`，基础镜像 Node 主版本为 24，安装步骤使用 pnpm 和 `pnpm-lock.yaml`。
+
+### R11 · 以本地实现替代 `@saleor/sdk`，登录与会话能力不变
+- 来源：Instruction："Preserve existing behavior covered by regression tests while implementing the target behavior. Do not replace missing production features with test-specific stubs." 推导依据：
+  - 目标清单移除了 `@saleor/sdk`。
+  - `src/graphql/client.ts:37` 注释："TODO: Remove once @saleor/sdk is removed in favor of local implementation for auth"。
+  - SDK 的使用位置：`src/index.tsx`（`SaleorProvider`）、`src/graphql/client.ts`（`createFetch`、`createSaleorClient`）、`src/auth/hooks/useAuthProvider.ts`（`useAuth`、`useAuthState`）、`src/auth/types.ts`、`src/auth/views/NewPassword.tsx`、`src/components/AppLayout/AppChannelContext.tsx`（`useSaleorConfig`）、`src/components/DevModePanel/utils.ts`（`createFetch`），以及多处 `@saleor/sdk/dist/apollo/types` 类型导入。
+- 优先级：P0
+- 需求描述：在 Dashboard 内部实现鉴权客户端与上下文，覆盖原 SDK 提供的全部在用能力，对使用者行为无变化：
+  1. 邮箱密码登录（`tokenCreate`）。非 staff 用户登录后立即登出并提示无权限。保留登录尝试限流错误（`loginAttemptDelay`）与通用登录错误（`loginError`）的映射。
+  2. Access token 存于内存/存储，过期前或收到鉴权错误时用 refresh token（含 CSRF token）自动刷新，并发请求只触发一次刷新。刷新失败时清理会话并回到登录页。
+  3. 登出（`tokenDeactivateAll`/外部登出 `externalLogout`），有外部登出 URL 时跳转。
+  4. 外部登录（OpenID Connect 等）：`externalAuthenticationUrl`、`externalObtainAccessTokens`、`externalRefresh`。
+  5. 设置新密码（`setPassword`，`NewPassword` 视图）与找回密码。
+  6. 浏览器凭据管理 API 登录（`credentialsManagement`）。
+  7. 带鉴权头的 `fetch`，供 Apollo 客户端与 DevModePanel 使用，同时支持 App 扩展所需的令牌。
+  8. `AppChannelContext` 现在从 `useSaleorConfig` 读取的配置改为本地等价来源。
+  - 原从 `@saleor/sdk/dist/apollo/types` 导入的类型改为使用本仓库的 `src/graphql` 生成类型或本地类型。
+  - 不得以测试专用的 mock 或桩代码代替上述生产实现；已有测试中的 `jest.mock("@saleor/sdk")` 属于测试代码，由官方测试处理，研发不修改评估测试。
+- 验收条件：
+  - AC-11-1：在运行时环境中，以 `admin@example.com`/`admin` 在登录页登录，进入首页并显示用户菜单；刷新浏览器后仍处于登录状态。
+  - AC-11-2：以非 staff 客户账号登录，停留在登录页并显示无权限类错误提示，且之后不再携带该用户的令牌请求 API。
+  - AC-11-3：使用错误密码登录，显示登录失败提示；连续失败触发限流后，显示需要等待的提示。
+  - AC-11-4：登录后将 access token 人为置为过期，再执行一次列表查询，客户端自动刷新令牌后查询成功，用户无感知；refresh token 失效时跳转回登录页。
+  - AC-11-5：在用户菜单点击登出，回到登录页；之后直接访问受保护页面会被重定向到登录页。
+  - AC-11-6：通过"重置密码"邮件链接打开新密码页，输入新密码提交后自动登录成功；用新密码可再次登录。
+  - AC-11-7：Playwright `auth.setup.ts` 与 `login.spec.ts` 的场景在运行时环境中通过。
+
+### R12 · 移除 `@material-ui/icons`，图标替换为现有图标库且外观、交互不变
+- 来源：Instruction："build/dependency declarations." "Preserve existing behavior." 推导依据：目标清单移除了 `@material-ui/icons`，而该包仍在 9 个文件中使用：`ProductTypeVariantAttributes`、`CardAddItemsFooter`、`TranslationFields`、`AppWidgets`、`CountryList`、`Chip`、`ConfirmButton`、`ChannelAllocationStrategy`、`configuration/index.tsx`。仓库已依赖 `lucide-react`，并有 lint 规则 `no-deprecated-icons`。
+- 优先级：P0
+- 需求描述：用仓库已有的图标方案（`lucide-react` 或 macaw-ui 图标）替换上述 9 处，语义保持一致：帮助提示、添加、下拉箭头、外链、关闭、勾选、支付配置图标。尺寸、可点击区域、`data-test-id` 等测试选择器、无障碍属性不变。
+- 验收条件：
+  - AC-12-1：`src/` 中不再存在对 `@material-ui/icons` 的导入，ESLint（含 `no-deprecated-icons` 规则）无错误。
+  - AC-12-2：在"配置"页能看到支付相关配置项及其图标，点击可进入对应页面。
+  - AC-12-3：在商品库存卡片点击"添加"按钮（`CardAddItemsFooter`），打开分配仓库的入口，与 3.22 行为一致。
+  - AC-12-4：`ConfirmButton` 在保存成功后显示勾选状态的图标；`Chip` 的关闭图标点击后移除对应条目。
+  - AC-12-5：Dashboard 单元测试（`dash-unit`）中与上述组件相关的快照或断言通过。
+
+### R13 · 通知改用 `sonner`，保持现有通知契约
+- 来源：Instruction："Preserve existing behavior covered by regression tests while implementing the target behavior." 推导依据：目标清单新增 `sonner` ^2.0.7（Toast 通知库）。当前通知由 `src/components/messages`（`MessageDisplay`、`Transition`，基于 `react-transition-group` 与 macaw-ui `Notification`）实现。Playwright 依赖 `[data-test-type="success"]`、`[data-test-type="error"]`、`[data-test-type="info"]` 定位通知（`playwright/data/commonLocators.ts`）。
+- 优先级：P1
+- 需求描述：
+  - 以 `sonner` 作为通知的渲染层。`useNotifier`/`MessageContext` 的对外 API（`status`、`title`、`text`、`apiMessage`、`actionBtn`、`autohide`/`timeout`）保持不变，业务代码无需改动。
+  - 保持的行为：success/error/info/warning 四种状态；默认自动隐藏，可配置时长；悬停时暂停计时；可手动关闭；`apiMessage` 支持展开、收起原始错误；支持动作按钮；多条通知堆叠显示在右上角。
+  - 每条通知的 DOM 上保留 `data-test-type="<status>"`，E2E 定位方式不变。
+- 验收条件：
+  - AC-13-1：在任意详情页保存成功后，页面出现一个 `[data-test-type="success"]` 元素，文本包含成功标题，约数秒后自动消失。
+  - AC-13-2：触发一个返回 API 错误的保存，出现 `[data-test-type="error"]` 通知；点击"查看错误"后显示原始错误文本，再次点击则收起。
+  - AC-13-3：鼠标悬停在通知上超过其自动隐藏时长，通知不消失；移开后按剩余时间消失。
+  - AC-13-4：点击通知关闭按钮，通知立即消失。
+  - AC-13-5：带 `actionBtn` 的通知显示动作按钮，点击后执行对应回调。
+
+### R14 · Dashboard 工程脚本与配置补齐（codegen、lint 规则测试、支付资源）
+- 来源：Instruction："build/dependency declarations." 推导依据：目标 `package.json` 新增了以下脚本：
+  - `test`：`jest && pnpm run test:lint-rules`；`test:ci` 同样追加 `test:lint-rules`。
+  - `test:lint-rules`：`node lint/rules/named-styles.test.mjs && node lint/rules/named-effects.test.mjs`，而当前仓库只有 `named-styles.test.cjs`，没有 `named-effects` 规则。
+  - `generate:main`/`generate:staging`（`codegen-main.ts`/`codegen-staging.ts`）、`fetch-schema:main`/`fetch-schema:staging`、`update-payment-assets`（`node scripts/update-payment-assets.cjs`，当前不存在该脚本文件）。
+  - `dev:no-strict`（`VITE_DISABLE_STRICT_MODE`）、`e2e:clean-auth`、`graphql-lint-unused`、`chromatic`、`test-storybook`、`test-storybook:coverage`。
+- 优先级：P1
+- 需求描述：
+  - 每个新增脚本引用的文件和配置都必须真实存在且可执行，不能出现脚本指向不存在文件的情况。
+  - `lint/rules/named-effects`：新增 ESLint 规则，要求 `useEffect` 等副作用回调使用具名函数，便于调试和堆栈识别。规则在 `lint/rules/index.mjs` 中注册，并配有 `named-effects.test.mjs` 自测，基于 ESLint `RuleTester`。规则的启用级别由研发决定，但不得让现有代码 lint 失败。
+  - `named-styles.test.mjs`：以 ESM 形式提供，与 `test:lint-rules` 一致。
+  - `scripts/update-payment-assets.cjs`：用于更新支付方式图标等静态资源的维护脚本。运行时不应影响构建，也不在构建中自动联网。
+  - `VITE_DISABLE_STRICT_MODE=true` 时以非 StrictMode 渲染根组件，默认仍为 StrictMode。
+- 验收条件：
+  - AC-14-1：`pnpm run test:lint-rules` 离线执行成功，退出码为 0，`named-styles` 与 `named-effects` 两个规则的测试用例均通过。
+  - AC-14-2：`pnpm run lint`（或 ESLint 对 `src/` 的检查）在启用 `named-effects` 后无新增错误。
+  - AC-14-3：`codegen-main.ts`、`codegen-staging.ts`、`scripts/update-payment-assets.cjs` 均存在；`node --check scripts/update-payment-assets.cjs` 退出码为 0。
+  - AC-14-4：以 `VITE_DISABLE_STRICT_MODE=true` 启动开发服务器，根组件不包裹 `React.StrictMode`；未设置时包裹。
+
+#### F. 到期清理与已知缺陷
+
+### R15 · 移除标注于 3.23 到期的旧变体路径重定向
+- 来源：Instruction："implementing the target behavior." 推导依据：`src/products/index.tsx:134` 写有 "Redirect old product variant path to new format / TODO: Remove in Saleor Dashboard 3.23"；`src/products/urls.ts:97` 写有 "@deprecated TODO: Remove in Saleor Dashboard 3.23"（`productVariantLegacyEditPath`）。
+- 优先级：P2
+- 需求描述：删除旧格式 `/products/:productId/variant/:variantId` 到新格式 `/products/variant/:variantId` 的重定向路由，以及 `productVariantLegacyEditPath`。新格式路径与其他商品路由不受影响。
+- 验收条件：
+  - AC-15-1：`src/` 中检索 `productVariantLegacyEditPath`，结果为空。
+  - AC-15-2：访问 `/products/variant/<variantId>`，正常打开变体编辑页；从商品详情页点击变体，跳转到新格式路径并成功加载。
+
+### R16 · 集合分配商品后列表即时刷新
+- 来源：Instruction："Preserve existing behavior covered by regression tests while implementing the target behavior." 推导依据：`/opt/runtime/seed_e2e_fixtures.py` 第 276 行起："KNOWN UNRESOLVED: that test still fails here. CollectionAssignProduct (collections/mutations.ts:30) returns only `errors` -- not the collection or its products -- and graphql/client.ts declares no typePolicy or refetchQueries for it, so Apollo never refreshes CollectionProducts and the page keeps showing 'No products found' even though the row is in the DB." 对应 E2E 场景 SALEOR_113。
+- 优先级：P1
+- 需求描述：在集合详情页通过"分配商品"对话框为集合添加商品后，商品列表应立即显示新分配的商品，用户无需手动刷新页面。实现方式可以是 mutation 返回集合及其商品，或在 mutation 后重新获取 `CollectionProducts` 等查询。改动不得超过 R08 的根 mutation 上限。
+- 验收条件：
+  - AC-16-1：集合（pk=166）当前没有商品，在详情页打开"分配商品"对话框，勾选 1 个商品并确认后，不刷新浏览器的情况下列表显示 1 行且为所选商品，并出现成功通知。
+  - AC-16-2：在上述状态下刷新浏览器，列表仍显示同一个商品，与数据库一致。
+
+#### G. 质量与回归
+
+### R17 · 数据库迁移完整、一致，可从 3.22 存量库升级
+- 来源：Instruction："Keep … database migrations … consistent."
+- 优先级：P0
+- 需求描述：本次所有模型变更（如 R09 的 `search_vector`）都有对应迁移；迁移依赖链正确，没有冲突的叶子节点（leaf node）；在空库和 3.22 存量库（含 `populatedb` 样例数据）上都能执行；需要回填的数据处理对大表安全，可分批执行或交给异步任务。
+- 验收条件：
+  - AC-17-1：在空库上执行 `python manage.py migrate` 成功，随后执行 `python manage.py populatedb --createsuperuser` 成功。
+  - AC-17-2：在已执行完 3.22 全部迁移并有样例数据的库上执行 3.23 的 `migrate`，成功且无数据丢失：迁移前后商品、订单、用户、支付记录的数量一致。
+  - AC-17-3：`python manage.py makemigrations --check --dry-run` 输出 "No changes detected"。
+  - AC-17-4：`python manage.py migrate --plan` 不报 "Conflicting migrations detected"。
+
+### R18 · 现有回归行为保持，测试可正常收集与执行
+- 来源：Instruction："Preserve existing behavior covered by regression tests while implementing the target behavior. Do not replace missing production features with test-specific stubs." "The intended acceptance rule requires all selected fail-to-pass tests to pass after your changes and all selected pass-to-pass tests to remain passing. Collection failures and missing selected results are not passes." "Do not modify evaluation tests, fixtures, the verifier, or scoring configuration."
+- 优先级：P0
+- 需求描述：
+  - 在运行时环境中执行 `/opt/runtime/run-suite.sh <attempt> core-unit core-e2e dash-unit dash-e2e`，四个套件都要能完成收集并产出结果。基线时 Core 可收集 16598 个测试用例，迁移后不得出现收集失败，例如因移除模块导致测试导入的生产模块不存在。官方测试中针对已移除插件的测试由官方测试集合处理，研发不修改测试。
+  - 生产代码改动不能针对测试数据或测试名做特殊分支。
+  - 不修改评估测试、fixtures、verifier、评分配置，也不修改 `/opt/runtime` 下的运行时脚本。
+- 验收条件：
+  - AC-18-1：执行 `/opt/runtime/run-suite.sh <attempt> core-unit`，pytest 收集阶段 0 个 error，套件产出结果文件。
+  - AC-18-2：执行 `dash-unit`（jest），无 "Test suite failed to run" 类的收集失败。
+  - AC-18-3：执行 `core-e2e` 与 `dash-e2e`，运行时健康检查通过后，测试实际执行并产出结果；仅健康检查通过不算通过。
+  - AC-18-4：本次变更的 diff 中，测试目录（`**/tests/**`、`playwright/**`、`*.test.ts(x)`、fixtures）及 `/opt/runtime`、verifier 相关文件无改动。
+  - AC-18-5：基线中通过的候选 P2P 用例在变更后仍全部通过；候选 F2P 用例全部通过（以官方提供的列表为准，见 §5 Q1）。
+
+### R19 · 发布说明记录 3.23 变更
+- 来源：Instruction："Implement the coordinated production-code migration to 3.23.0." 推导依据：Core 的 `CHANGELOG.md` 按版本记录 Breaking changes、GraphQL API、Deprecations；Dashboard 使用 changesets（`.changeset/`）并维护 `CHANGELOG.md`。
+- 优先级：P2
+- 需求描述：Core 的 `CHANGELOG.md` 新增 3.23.0 小节，记录以下内容：移除 Adyen 与 NP Atobarai 插件（Breaking）、新增 `GRAPHQL_MUTATION_COUNT_LIMIT`、`AppExtension`/`AppManifestExtension` 新字段及旧字段 deprecated、依赖变化。Dashboard 以 changeset 或 `CHANGELOG.md` 记录：移除 `@saleor/sdk`、通知改用 sonner、移除旧变体路由、改用 pnpm。
+- 验收条件：
+  - AC-19-1：Core 的 `CHANGELOG.md` 中存在 `3.23.0` 标题，其下至少包含插件移除、mutation 数量限制、App 扩展字段三项说明。
+  - AC-19-2：Dashboard 的 `.changeset/` 或 `CHANGELOG.md` 中存在描述上述 Dashboard 变更的条目。
+
+## 4. 范围与非目标
+
+**本次包含**
+
+- Core（`/workspace/saleor`）与 Dashboard（`/workspace/saleor-dashboard`）两个仓库的生产代码、schema 文件、生成产物、迁移、依赖与构建声明，从 3.22 协同升级到 3.23.0（R01–R19）。
+- 依赖移除带来的代码替换：AVIF、HTML 安全 JSON、历史迁移、Adyen/NP Atobarai 插件、`@saleor/sdk`、`@material-ui/icons`。
+- 由运行时与播种脚本推导出的 3.23 行为：根 mutation 数量限制、用户 `search_vector`、集合分配后刷新。
+
+**明确不做**
+
+- 不联网获取 3.23 上游源码、schema 或安装、升级任何包（Instruction："Work offline"）。锁文件以本地目标清单为准。
+- 不修改评估测试、fixtures、verifier、评分配置，不修改 `/opt/runtime` 下的运行时脚本。
+- 不用测试专用桩代码代替生产功能。
+- 不追求与上游 3.23 源码逐字节一致（Instruction："the evaluated tree is not required to be byte-for-byte identical to the upstream target tree"）。
+- 不删除 `Transaction`/`Payment` 上的 legacy Adyen 字段及已有迁移，避免破坏存量数据和迁移链。
+- 除 Adyen、NP Atobarai 外，不主动移除其他已 deprecated 的插件（Braintree、Razorpay、Sendgrid、Dummy、DummyCreditCard、Avalara、Stripe 插件），除非得到 §5 Q2 的确认。
+- 无法从现有材料推导的 3.23 新功能（例如新的 GraphQL 查询或 mutation、新的 Dashboard 页面）不在本次范围内。如官方 F2P 用例暴露此类需求，以修订版 PRD 补充，编号向后递增。
+- `@material-ui/core`/`lab`/`styles` 的整体移除不在范围内，目标清单仍保留这些包。
+
+**延期事项**
+
+- 其余 deprecated 插件的移除：延期至确认上游版本计划后处理。
+- `search_document` 字段的最终移除：保留到 `search_vector` 稳定运行之后，避免一次性切换带来搜索倒退。
+
+## 5. 其他
+
+**事实依据**
+
+- 基线：Core 为 `6cfb774`（Release 3.22.0）加环境补丁 `c864e66`，Dashboard 为 `e934ff0`（Release 3.22）加环境补丁 `aebb240`（`/workspace/base-revisions.json`）。环境补丁已完成 Django 5.2.13、authlib、cryptography、pillow 的升级，以及 Dashboard 改用 pnpm 和 jest `transformIgnorePatterns` 的调整，这些不再列为需求。
+- 目标依赖清单：`/opt/environment/dependencies/target/saleor/{pyproject.toml,uv.lock}`、`/opt/environment/dependencies/target/saleor-dashboard/package.json`。所列目标包都已预装：Python 环境中可导入 `nh3`、`orjson`、`idna`、`kombu`；`node_modules` 中存在 `sonner` 等包。
+- 用 `deptry` 按目标 `pyproject.toml` 检查当前 Core，有 14 个问题：`kombu`、`nh3`、`idna`、`orjson` 声明未使用（DEP002）；`pillow_avif`、`draftjs_sanitizer`、`html_to_draftjs`、`Adyen`、`posuto` 是未声明的传递依赖（DEP003）。
+- 用 Core 的 schema 校验 Dashboard 文档：`AppExtension.mountName`、`targetName`、`settings` 共 3 个字段错误，另有重复片段 `PageTypeDeleteErrorFragment`。两份 schema 的差异只有 `AppExtension`/`AppManifestExtension` 上的这 6 个字段。
+- 运行时：API 以 `GRAPHQL_MUTATION_COUNT_LIMIT=4` 启动；Dashboard 用 vite 重新构建，不重新运行 codegen；E2E 播种脚本根据是否存在 `User.search_vector` 选择分支，并注明 SALEOR_113（集合分配商品）为已知未解决问题。
+
+**产品决策**
+
+- D1：Adyen、NP Atobarai 采取"移除插件、保留存量数据可读"的策略（R05）。依据是目标依赖清单移除了它们唯一依赖的 SDK，而 Instruction 禁止联网安装，也不允许用桩代码冒充生产功能。
+- D2：根 mutation 数量限制作为 API 层通用能力实现（R08），Dashboard 侧保证所有文档不超过 4 个根 mutation，不另行拆分 `VariantUpdate`。
+- D3：`@saleor/sdk` 的替代采用 Dashboard 内部实现（R11），沿用 `src/graphql/client.ts` 注释中的既定方向。
+- D4：通知改用 sonner 时，以 E2E 选择器 `data-test-type` 与 `useNotifier` API 不变作为硬约束（R13）。
+
+**假设**
+
+- A1：上游 3.23 中，`AppExtension.mountName`/`targetName` 的值为大写枚举名，`settings` 的结构为 `{newTabTarget|widgetTarget: {method}}`。依据是 Dashboard 现有代码与单测数据，例如 `mountName: "PRODUCT_OVERVIEW_CREATE"`、`settings: { newTabTarget: { method: "POST" } }`。
+- A2：`GRAPHQL_MUTATION_COUNT_LIMIT` 的语义是"单个操作的根 mutation 字段数上限"。依据是运行时注释 "VariantUpdate sends four root mutations"。
+- A3：E2E 播种脚本对 `update_user_search_vector(user)` 的调用方式（单参数，默认保存）就是该函数的公开签名。
+
+**待确认项**
+
+- Q1：候选 F2P/P2P 列表尚未冻结（Instruction："maintainer acceptance and scoring-list freeze are pending … Formal grading remains disabled"）。本 PRD 中由推导得出的需求（R08、R09、R13、R14、R16）以官方用例为最终判定依据；若官方用例与本文 AC 冲突，以官方用例为准，并通过修订本 PRD 处理。
+- Q2：3.23 是否同时移除其他已 deprecated 的插件（CHANGELOG 3.22 所列 Braintree、Razorpay、Sendgrid、Dummy、DummyCreditCard、Avalara，以及 Stripe 插件）。目标依赖清单仍保留 `braintree`、`razorpay`、`sendgrid`、`stripe`，因此本次默认不移除。
+- Q3：`nh3`、`orjson`、`idna`、`kombu[sqs]` 在上游 3.23 中的具体使用位置未知（离线无法核对）。研发需要为每个依赖找到真实的生产用途，如 HTML 清洗、JSON 编码、域名或邮箱规范化、SQS broker 支持，并在技术方案中说明。如果没有合理用途，需要回到产品确认，不得仅为通过 deptry 而写空导入。
+- Q4：`GRAPHQL_MUTATION_COUNT_LIMIT` 未配置时的默认值。运行时注释暗示上游默认值可能小于 4，具体数值待确认；在确认前，研发应以官方测试为准，并保证在默认值下现有 Core 测试通过。
+- Q5：R09 中 `search_document` 是否在 3.23 中删除或停止维护。本 PRD 默认保留。
+- Q6：Dashboard 是否保留根目录 `schema.graphql`，还是完全改为 `schema-main.graphql`/`schema-staging.graphql`。本 PRD 只要求所有配置引用一致，且主 schema 与 Core 一致（R07）。

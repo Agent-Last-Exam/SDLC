@@ -1,0 +1,12 @@
+{"kind": "request", "id": "04a50a7145ec476db0d2e29fcc5355bf", "model": "deepseek/deepseek-v4.1-flash", "effort": "high", "thinking": {"type": "adaptive"}, "cache_breakpoints": 3, "stream": true, "messages": 2, "tool_results": 0, "time": "2026-10-13T17:07:52.659692+00:00"}
+{"kind": "response", "id": "04a50a7145ec476db0d2e29fcc5355bf", "http_status": 200, "time": "2026-10-13T17:07:54.109205+00:00"}
+{"kind": "usage", "id": "04a50a7145ec476db0d2e29fcc5355bf", "usage": {"input_tokens": 7360, "output_tokens": 1, "cache_read_input_tokens": 384}, "time": "2026-10-13T17:07:54.109803+00:00"}
+{"kind": "usage", "id": "04a50a7145ec476db0d2e29fcc5355bf", "usage": {"input_tokens": 7360, "output_tokens": 113, "cache_creation_input_tokens": 0, "cache_read_input_tokens": 384}, "time": "2026-10-13T17:07:54.514039+00:00"}
+{"kind": "request", "id": "6be44b575bf9458ca33ebe93fc051a32", "model": "deepseek/deepseek-v4.1-flash", "effort": "high", "thinking": {"type": "adaptive"}, "cache_breakpoints": 3, "stream": true, "messages": 5, "tool_results": 1, "time": "2026-10-13T17:07:54.636748+00:00"}
+{"kind": "response", "id": "6be44b575bf9458ca33ebe93fc051a32", "http_status": 200, "time": "2026-10-13T17:07:56.133997+00:00"}
+{"kind": "usage", "id": "6be44b575bf9458ca33ebe93fc051a32", "usage": {"input_tokens": 215, "output_tokens": 13, "cache_read_input_tokens": 7680}, "time": "2026-10-13T17:07:56.134402+00:00"}
+{"kind": "usage", "id": "6be44b575bf9458ca33ebe93fc051a32", "usage": {"input_tokens": 215, "output_tokens": 83, "cache_creation_input_tokens": 0, "cache_read_input_tokens": 7680}, "time": "2026-10-13T17:07:56.344371+00:00"}
+{"kind": "request", "id": "86029e90ee5a4395aecb43cf8697dc77", "model": "deepseek/deepseek-v4.1-flash", "effort": "high", "thinking": {"type": "adaptive"}, "cache_breakpoints": 3, "stream": true, "messages": 8, "tool_results": 2, "time": "2026-10-13T17:07:56.445293+00:00"}
+{"kind": "response", "id": "86029e90ee5a4395aecb43cf8697dc77", "http_status": 200, "time": "2026-10-13T17:07:58.151462+00:00"}
+{"kind": "usage", "id": "86029e90ee5a4395aecb43cf8697dc77", "usage": {"input_tokens": 208, "output_tokens": 5, "cache_read_input_tokens": 7808}, "time": "2026-10-13T17:07:58.151830+00:00"}
+{"kind": "usage", "id": "86029e90ee5a4395aecb43cf8697dc77", "usage": {"input_tokens": 208, "output_tokens": 5, "cache_creation_input_tokens": 0, "cache_read_input_tokens": 7808}, "time": "2026-10-13T17:07:58.217858+00:00"}

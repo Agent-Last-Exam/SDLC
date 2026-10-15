@@ -1,0 +1,108 @@
+[
+  {
+    "principal_session": "99fa9cb2-5403-45c0-a655-947213c9a0a2",
+    "recovery_source": "/home/iriszeng18_gmail_com/software-last-exam/jobs/single-docs-opus55-high-20261014/task__vMvSwRQ",
+    "test_case_count": 144,
+    "model": "anthropic/claude-opus-5.5",
+    "effort": "high",
+    "label": "opus55-high-continuation",
+    "status": "stopped_at_boundary",
+    "error": null,
+    "accepted_stages": 3,
+    "runtime_from_first_stage_execution_sec": 17040.13,
+    "max_runtime_sec": null,
+    "request_profile_verified": true,
+    "usage": {
+      "requests": 553,
+      "requests_with_usage": 553,
+      "input_tokens_including_cache": 58637449,
+      "output_tokens": 1648079,
+      "cache_read_input_tokens": 56217045,
+      "cache_creation_input_tokens": 1176042,
+      "gateway_reported_cost_usd": 53.918911,
+      "requests_with_gateway_cost": 551,
+      "gateway_cost_complete": false
+    },
+    "outputs": [
+      {
+        "stage": "sprint1/prd",
+        "file": "prd.md",
+        "status": "accepted",
+        "sha256": "c0abf99fc5af86e0e22da3a70ddf91d5972819a30e75494720c620a4d4f999e8"
+      },
+      {
+        "stage": "sprint1/tech-design",
+        "file": "frontend-design.md",
+        "status": "accepted",
+        "sha256": "5bbe824ab92c68c307f4c7a135ae9c9463e1474d4810e25dc1d47bfb7eed7fc3"
+      },
+      {
+        "stage": "sprint1/tech-design",
+        "file": "backend-design.md",
+        "status": "accepted",
+        "sha256": "2e2e0718deced7ca34d20a94dd971a8b8a1e9cc9aabf8445016a98c0091f147b"
+      },
+      {
+        "stage": "sprint1/tech-design",
+        "file": "interface-contract.md",
+        "status": "accepted",
+        "sha256": "5052cc9f617a397e3ce83debf477a5921d0da6b24bacdda776ab0b8f219c7115"
+      },
+      {
+        "stage": "sprint1/tech-design",
+        "file": "target-schema.graphql",
+        "status": "accepted",
+        "sha256": "4fa23faa263234ed2283f1d6daea4c20c22d4f3df39ffd850ecad1e4ecbfdef8"
+      },
+      {
+        "stage": "sprint1/test-design",
+        "file": "test-cases.v1.csv",
+        "status": "accepted",
+        "sha256": "4e6b5b4954bf43735be29c9458af3a1d3e829f0cb1e06370b3ba825d74aeabf2"
+      }
+    ],
+    "native": [
+      {
+        "stage": "sprint1/prd",
+        "model": "anthropic/claude-opus-5.5",
+        "version": "2.1.280",
+        "subagent_tool_available": false
+      },
+      {
+        "stage": "sprint1/tech-design",
+        "model": "anthropic/claude-opus-5.5",
+        "version": "2.1.280",
+        "subagent_tool_available": false
+      },
+      {
+        "stage": "sprint1/test-design",
+        "model": "anthropic/claude-opus-5.5",
+        "version": "2.1.280",
+        "subagent_tool_available": false
+      }
+    ],
+    "client_results": [
+      {
+        "stage": "sprint1/prd",
+        "stop_reason": "end_turn",
+        "is_error": false,
+        "terminal_reason": "completed",
+        "subagents_spawned": 0
+      },
+      {
+        "stage": "sprint1/tech-design",
+        "stop_reason": "end_turn",
+        "is_error": false,
+        "terminal_reason": "completed",
+        "subagents_spawned": 0
+      },
+      {
+        "stage": "sprint1/test-design",
+        "stop_reason": "end_turn",
+        "is_error": false,
+        "terminal_reason": "completed",
+        "subagents_spawned": 0
+      }
+    ]
+  }
+]

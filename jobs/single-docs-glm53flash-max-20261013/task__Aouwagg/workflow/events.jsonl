@@ -1,0 +1,8 @@
+{"time": 1791914681.3173058, "event": "run_started"}
+{"time": 1791914681.3181596, "event": "stage_started", "stage": "sprint1/prd", "resume_session": null, "role_sha256": "08ca77a00383eed67358affa92954023f39ee1d0e5f3ee76885c377f1f4035cd", "prd_input_sha256": null, "missing_inputs": []}
+{"time": 1791914704.7127197, "event": "stage_execution_started", "stage": "sprint1/prd"}
+{"time": 1791916565.9374478, "event": "stage_accepted", "stage": "sprint1/prd", "hashes": {"prd.md": "43374a7aceea98478902ef12101d8400fa5be9219b1097977d2061e7c62db114"}, "missing_outputs": [], "cost_usd": 48.502294}
+{"time": 1791916566.33465, "event": "stage_started", "stage": "sprint1/tech-design", "resume_session": "66d2827e-46f7-429d-86aa-d790cab0b780", "role_sha256": "1bbeac97331ac12182de3e0d4cf69dc05f8e097ebb0478580755fa2b24c5544a", "prd_input_sha256": "43374a7aceea98478902ef12101d8400fa5be9219b1097977d2061e7c62db114", "missing_inputs": []}
+{"time": 1791916569.0704906, "event": "stage_execution_started", "stage": "sprint1/tech-design"}
+{"time": 1791918305.9463298, "event": "run_failed", "error": ""}
+{"time": 1791918306.1099477, "event": "runtime_deadline_exhausted"}

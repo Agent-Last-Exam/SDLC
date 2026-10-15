@@ -1,0 +1,29 @@
+{
+    "task": {
+        "path": "/home/iriszeng18_gmail_com/software-last-exam/.prepared/single-docs-opus55-xhigh-retry-20261014/task"
+    },
+    "trial_name": "task__3UfmikH",
+    "trials_dir": "/home/iriszeng18_gmail_com/software-last-exam/jobs/single-docs-opus55-xhigh-retry-20261014",
+    "agent": {
+        "import_path": "runtime.workflow_agent:WorkflowClaudeCode",
+        "model_name": "anthropic/claude-opus-5.5",
+        "override_timeout_sec": 3900.0,
+        "override_setup_timeout_sec": 600.0,
+        "kwargs": {
+            "prepared_path": "/home/iriszeng18_gmail_com/software-last-exam/.prepared/single-docs-opus55-xhigh-retry-20261014",
+            "smoke": false,
+            "reasoning_effort": "xhigh",
+            "max_runtime_sec": 3600.0,
+            "request_profile": true,
+            "client_version": "2.1.280",
+            "smoke_scenario": "repair",
+            "role_probe": false,
+            "stop_after_stage": "sprint1/test-design",
+            "missing_output_policy": "fail"
+        }
+    },
+    "verifier": {
+        "disable": true
+    },
+    "job_id": "f33fcf9e-6aba-4631-8f89-cf5e5ff72088"
+}

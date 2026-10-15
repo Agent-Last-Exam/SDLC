@@ -1,0 +1,63 @@
+{
+  "status": "user_stopped",
+  "model": "anthropic/claude-opus-5.5",
+  "effort": "xhigh",
+  "thinking": {
+    "type": "adaptive"
+  },
+  "principal_session": "5dbaeee0-a251-4942-bd3b-23aa420ddc5d",
+  "completed_stages": 0,
+  "formal_documents": 0,
+  "parts": [
+    {
+      "job_name": "single-docs-opus55-xhigh-retry-20261014",
+      "captured_execution_interval_sec": 1364.52,
+      "usage": {
+        "requests": 49,
+        "requests_with_usage": 49,
+        "input_tokens_including_cache": 4564127,
+        "output_tokens": 131405,
+        "cache_read_input_tokens": 4276581,
+        "cache_creation_input_tokens": 144179,
+        "gateway_reported_cost_usd": 4.2046952,
+        "requests_with_gateway_cost": 48,
+        "gateway_cost_complete": false
+      },
+      "raw_state_status": "failed"
+    },
+    {
+      "job_name": "single-docs-opus55-xhigh-resume-20261014",
+      "captured_execution_interval_sec": 5404.28,
+      "usage": {
+        "requests": 132,
+        "requests_with_usage": 132,
+        "input_tokens_including_cache": 10498838,
+        "output_tokens": 519904,
+        "cache_read_input_tokens": 9999663,
+        "cache_creation_input_tokens": 252723,
+        "gateway_reported_cost_usd": 14.2187716,
+        "requests_with_gateway_cost": 131,
+        "gateway_cost_complete": false
+      },
+      "raw_state_status": "failed"
+    }
+  ],
+  "usage": {
+    "requests": 181,
+    "requests_with_usage": 181,
+    "input_tokens_including_cache": 15062965,
+    "output_tokens": 651309,
+    "cache_read_input_tokens": 14276244,
+    "cache_creation_input_tokens": 396902,
+    "gateway_reported_cost_usd": 18.4234668,
+    "requests_with_gateway_cost": 179,
+    "gateway_cost_complete": false
+  },
+  "notes": [
+    "人工中断以取消限时后，原会话续做；此轮受干预。",
+    "最后由用户要求停止；原始运行器 failed/exit143 记录保留，表示客户端中断，不冒充正常完成。",
+    "token 使用按每请求最后已捕获快照合并；两次中断请求可能缺少最终 usage 或费用。",
+    "缓存包含在输入总量中，不重复加总。",
+    "网关响应报告费用不是后台账单对账值。"
+  ]
+}

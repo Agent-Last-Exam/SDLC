@@ -1,0 +1,160 @@
+用例编号,一级模块,二级模块,用例标题,覆盖,优先级,前置条件,操作步骤,预期结果
+TC001,需求条目,R01 · 后端版本声明与 Schema 版本升级至 3.23,升级后的 core 版本声明为 3.23.0 且派生 schema_version 为 3.23,AC-01-1;BD01;I07,P0,core 仓库完成升级改动且 Python 依赖可用,"1. 在 /workspace/repos/saleor 目录执行 python -c ""import saleor; print(saleor.__version__, saleor.schema_version)""
+2. 读取 pyproject.toml 的 version 字段","1. 输出为 3.23.0 3.23
+2. version 字段为 3.23.0"
+TC002,需求条目,R01 · 后端版本声明与 Schema 版本升级至 3.23,升级后的 core GraphQL 服务可启动且 schema 内省可用,AC-01-2;BD01,P0,core 升级改动完成且本地数据库可用,"1. 使用升级后的 core 代码启动 GraphQL 服务（run-suite.sh 运行时或等价启动方式）
+2. 对 POST /graphql/ 发送 schema 内省查询（__schema { queryType { name } mutationType { name } }）","1. 服务启动成功、健康检查通过
+2. 内省查询返回 200 且 data.__schema 非空，无 schema 构建错误"
+TC003,需求条目,R02 · Dashboard 版本与 GraphQL Schema 对齐升级,Dashboard 的 package.json 版本与 schemaVersion 声明升级到 3.23,AC-02-1;FD01;I07,P0,dashboard 仓库完成升级改动,"1. 在 /workspace/repos/saleor-dashboard 执行 node -e ""const p=require('./package.json'); console.log(p.version, p.config.saleor.schemaVersion)""","1. 输出为 3.23.0 3.23"
+TC004,需求条目,R02 · Dashboard 版本与 GraphQL Schema 对齐升级,Dashboard 的 schema.graphql 与后端 3.23 schema 一致且生成产物匹配、类型检查通过,AC-02-2;FD01;I06,P0,dashboard 完成 FD01 改动且 core 完成 BD06 并已重新生成 schema；本地 node_modules 可用,"1. 对比 /workspace/repos/saleor-dashboard/schema.graphql 与升级后 core 的 saleor/graphql/schema.graphql（diff）
+2. 在 dashboard 执行 pnpm run generate 后确认 src/graphql/ 下 types/hooks/fragmentTypes/typePolicies 四个 .generated.ts 无未提交差异漂移
+3. 执行 pnpm run check-types","1. diff 为空（两端 schema 一致）
+2. 生成产物与 schema.graphql 匹配
+3. 类型检查零错误"
+TC005,需求条目,R02 · Dashboard 版本与 GraphQL Schema 对齐升级,Dashboard 使用 pnpm 工具链完成 generate 与 build 且不回退 npm,AC-02-3;FD01;BD09,P0,离线环境；本地 node_modules 已就绪,"1. 执行 pnpm run generate
+2. 执行 pnpm run build
+3. 检查仓库中不存在 package-lock.json 且 scripts 未被改回 npm","1. codegen 成功完成
+2. 构建成功完成
+3. 无 package-lock.json，脚本保持 pnpm 调用"
+TC006,需求条目,R03 · 数据库迁移与存量数据平滑过渡,在含 3.22 业务数据的本地数据库上执行全部迁移成功且无数据错误,AC-03-1;BD02,P0,本地数据库已加载预置数据（replica_user.sql 等）；core 升级改动完成,"1. 执行 python manage.py showmigrations 检查迁移链连续性
+2. 执行 python manage.py migrate 运行全部迁移","1. 迁移链无断链、无冲突依赖
+2. migrate 全部成功完成，无数据错误、无 InconsistentMigrationHistory"
+TC007,需求条目,R03 · 数据库迁移与存量数据平滑过渡,迁移完成后 3.22 存量业务数据可被 3.23 代码正常读写,AC-03-2;BD02,P0,TC006 迁移已完成,"1. 通过 GraphQL 查询 3.22 时期已存在的订单、商品、页面（Models）、属性、退款设置（shop.refundSettings）
+2. 对其中一个订单执行一次常规写操作（如添加订单备注）","1. 各查询返回既有数据，无字段解析错误
+2. 写操作成功，数据持久化"
+TC008,需求条目,R03 · 数据库迁移与存量数据平滑过渡,迁移链从全新空库到 3.23 最新迁移一次性通过,AC-03-3;BD02,P0,可创建一个全新的空数据库,"1. 创建空数据库并指向 core
+2. 执行 python manage.py migrate","1. 数据库创建成功
+2. 从初始迁移到 3.23 末端迁移一次性全部应用成功"
+TC009,需求条目,R04 · 订单（orders）查询 where/search 过滤与全文搜索,orders 的 where 支持 AND/OR 组合与 eq/oneOf/range 操作符且结果正确,AC-04-1;BD03;I01,P0,core 服务运行；数据库含多状态/多渠道/多时间段订单数据；具备 MANAGE_ORDERS 权限的 staff token,"1. 以 staff 身份查询 orders(where: {AND: [{status: {eq: UNFULFILLED}}, {totalGross: {range: {gte: ""10"", lte: ""100""}}}]}, first: 20)
+2. 查询 orders(where: {OR: [{status: {oneOf: [CANCELED, RETURNED]}}, {customer: {eq: ""<已存在客户邮箱>""}}]}, first: 20)","1. 返回订单均满足状态为 UNFULFILLED 且 gross 总额落在区间内；errors 为空
+2. 返回订单满足两个条件之一；分页结构正常"
+TC010,需求条目,R04 · 订单（orders）查询 where/search 过滤与全文搜索,orders 的 where 覆盖 PRD 列出的全部过滤字段且每个字段查询可执行,AC-04-1;BD03;I01,P0,同 TC009；测试数据包含发票、履行单、优惠券、礼品卡、订单行等关联数据,"1. 依次以 where 的各字段单独发起查询：ids、channelId、customer、createdAt、updatedAt、status、authorizeStatus、chargeStatus、paymentStatus、isClickAndCollect、isPreorder、checkoutToken、checkoutId、isGiftCardUsed、isGiftCardBought、number、metadata、user、userEmail、voucherCode、hasInvoices、invoices、hasFulfillments、fulfillments、lines、linesCount、transactions、totalGross、totalNet、productTypeId、events、billingAddress、shippingAddress","1. 每个字段的查询均通过 schema 校验并返回与条件语义一致的结果集（无 GraphQL 校验错误；无匹配时返回空 edges 而非报错）"
+TC011,需求条目,R04 · 订单（orders）查询 where/search 过滤与全文搜索,orders 的 search 全文检索按字段权重排序命中结果,AC-04-2;BD03;I01,P0,构造检索词 X：使订单 A 的订单号含 X（权重 A 字段），订单 B 的客户备注或地址字段含 X（权重 B 字段）,"1. 查询 orders(search: ""X"", first: 20)","1. 返回结果中订单 A 排在订单 B 之前；命中订单号/ID/邮箱/姓名等高权重字段的结果整体先于仅命中低权重字段的结果"
+TC012,需求条目,R04 · 订单（orders）查询 where/search 过滤与全文搜索,废弃的 orders filter 参数在 3.23 上保持向后兼容,AC-04-3;BD03;I01,P0,同 TC009 数据环境,"1. 以 3.22 形态发起 orders(filter: {status: UNFULFILLED}, first: 20) 查询
+2. 对比同条件 where 查询的结果集","1. 查询成功返回（无 schema 错误），filter 参数仅标记废弃仍可使用
+2. 两种写法的订单集合一致"
+TC013,需求条目,R04 · 订单（orders）查询 where/search 过滤与全文搜索,orders 支持按订单状态排序,AC-04-4;BD03;I01,P0,数据库含多种状态的订单,"1. 查询 orders(sortBy: {field: STATUS, direction: ASC}, first: 50)
+2. 查询 orders(sortBy: {field: STATUS, direction: DESC}, first: 50)","1. 返回订单按状态排序规则升序排列
+2. 返回订单按同一规则降序排列"
+TC014,需求条目,R05 · 草稿订单（draftOrders）与 Models/Pages（pages）查询 where/search,draftOrders 的 where/search 结果正确且 orders 专有字段在 schema 中不存在,AC-05-1;BD04;I02,P0,core 服务运行；数据库含草稿订单；staff token 具备 MANAGE_ORDERS,"1. 查询 draftOrders(where: {number: {eq: <既有草稿订单号>}}, first: 10) 与 draftOrders(search: ""<草稿订单客户邮箱片段>"")
+2. 尝试 draftOrders(where: {status: {eq: DRAFT}})","1. 两个查询均返回符合语义的草稿订单集合
+2. 查询被 schema 校验拒绝（字段不存在），而非静默忽略"
+TC015,需求条目,R05 · 草稿订单（draftOrders）与 Models/Pages（pages）查询 where/search,pages 的 where 支持数值/布尔/日期/引用属性过滤及 containsAll/containsAny,AC-05-2;BD04;I02,P0,数据库含带数值、布尔、日期、引用属性赋值的 Page 数据；staff token 具备 MANAGE_PAGES,"1. 按数值属性过滤：pages(where: {attributes: [{slug: ""<数值属性slug>"", value: {numeric: {eq: 5}}}]})
+2. 按数值范围过滤：同属性 value.numeric.range {gte: 1, lte: 10}
+3. 按布尔、日期属性分别过滤
+4. 按引用属性以页面 ID 与 slug 两种方式过滤
+5. 多属性组合：containsAll 与 containsAny 各执行一次","1. 返回属性值等于 5 的页面集合
+2. 返回属性值落在区间的页面集合
+3. 布尔/日期过滤返回符合语义的集合
+4. 两种引用方式命中同一引用对象的页面
+5. containsAll 返回同时满足全部条件的页面，containsAny 返回满足任一条件的页面"
+TC016,需求条目,R05 · 草稿订单（draftOrders）与 Models/Pages（pages）查询 where/search,pages 的独立 search 参数检索行为与 3.22 的 filter.search 一致且废弃 filter 继续可用,AC-05-3;BD04;I02,P0,数据库含标题/slug/内容可检索的页面,"1. 查询 pages(search: ""<标题关键词>"")
+2. 以同关键词查询 pages(filter: {search: ""<标题关键词>""})
+3. 分别以 slug 片段与正文片段作为 search 词查询","1. 命中标题含关键词的页面
+2. 两次查询结果集一致
+3. 分别命中 slug 与内容匹配的页面；filter 参数不产生 schema 错误"
+TC017,需求条目,R06 · 属性体系扩展：SINGLE_REFERENCE 类型、referenceTypes 限定、AssignedAttribute 接口、属性 choices 查询,创建 SINGLE_REFERENCE 属性并赋值时仅允许单个引用对象且各实体类型可作引用目标,AC-06-1;BD05;I03,P0,staff token 具备属性管理权限；数据库含可作引用目标的产品/页面/分类/集合,"1. attributeCreate 创建 inputType: SINGLE_REFERENCE、entityType: PRODUCT 的属性并保存
+2. 对某产品赋值该属性：先赋单个产品引用（成功路径），再尝试赋两个引用
+3. 分别以 entityType 为 PAGE、CATEGORY、COLLECTION 创建 SINGLE_REFERENCE 属性","1. 创建成功，attribute.inputType 返回 SINGLE_REFERENCE
+2. 单引用赋值成功；赋多个引用被拒绝并返回校验错误
+3. 各实体类型均创建成功，PAGE/CATEGORY/COLLECTION 均可作为引用目标"
+TC018,需求条目,R06 · 属性体系扩展：SINGLE_REFERENCE 类型、referenceTypes 限定、AssignedAttribute 接口、属性 choices 查询,referenceTypes 限定引用取值范围且四个属性 mutation 均可读写该字段,AC-06-2;BD05;I03,P0,数据库含至少两个 ProductType 与一个 PageType；staff 权限同 TC017,"1. attributeCreate（entityType: PRODUCT，inputType: REFERENCE）时传入 referenceTypes: [<ProductTypeA 的全局 ID>]
+2. 对取值不在 ProductTypeA 内的产品执行引用赋值
+3. 分别通过 attributeUpdate、attributeBulkCreate、attributeBulkUpdate 设置或修改 referenceTypes 并回读 attribute.referenceTypes
+4. 创建不设置 referenceTypes 的引用属性并对任意 ProductType 的产品赋值","1. 创建成功且 referenceTypes 返回 ProductTypeA
+2. 赋值被拒绝并返回明确校验错误
+3. 四个 mutation 均可成功写入，回读结果与写入一致
+4. 赋值成功，未设置时不做限定"
+TC019,需求条目,R06 · 属性体系扩展：SINGLE_REFERENCE 类型、referenceTypes 限定、AssignedAttribute 接口、属性 choices 查询,assignedAttribute/assignedAttributes 返回正确结构且废弃的 attribute/attributes 数据不变,AC-06-3;BD05;I03,P0,数据库含已赋多类型属性（文本、数值、单选、多选、引用等）的 Page/Product/ProductVariant,"1. 查询 page(id){ assignedAttributes { attribute { slug } ... on AssignedNumericAttribute { value } } } 及 assignedAttribute(slug)
+2. 对同一 page 查询废弃字段 attribute(slug) 与 attributes
+3. 对 product 与 productVariant 执行同样的新旧字段查询","1. 返回 AssignedAttribute 接口结构，按实现类型返回类型化 value，attribute 信息正确
+2. 废弃字段返回与 3.22 相同的数据（无 schema 错误）
+3. 三类对象的新旧字段查询均成功且数据一致"
+TC020,需求条目,R06 · 属性体系扩展：SINGLE_REFERENCE 类型、referenceTypes 限定、AssignedAttribute 接口、属性 choices 查询,attribute.choices 支持 where（含 name）与 search 查询且废弃 filter 继续可用,AC-06-4;BD05;I03,P0,数据库含带多个选项值（已知名称与 slug）的单选/多选属性,"1. 查询 attribute(id){ choices(where: {name: {eq: ""<已知选项名>""}}, first: 10) { edges { node { name slug } } } }
+2. 以 slug 的 eq 与 oneOf 各查询一次
+3. 查询 choices(search: ""<名称片段>"")
+4. 以废弃写法 choices(filter: {search: ""<名称片段>""}) 查询并对比","1. 返回名称精确匹配的选项
+2. 两种方式均返回符合语义的选项集合
+3. 命中名称/slug 含该片段的选项
+4. filter 查询成功且结果与 search 一致"
+TC021,需求条目,R07 · 退款设置（RefundSettings）与结构化退款原因,未配置退款原因类型时 staff 的五个退款 mutation 无需原因即可成功,AC-07-1;BD07;I04,P0,shop.refundSettings.reasonReferenceType 为 null；存在可退款的已支付订单与已履行 fulfillment；staff token 具备 MANAGE_ORDERS,"1. 查询 shop { refundSettings { reasonReferenceType { id } } } 确认为空
+2. 以 staff 身份依次执行 orderGrantRefundCreate、orderGrantRefundUpdate（更新已授予退款）、orderRefund、fulfillmentRefundProducts、transactionRequestAction（REFUND 动作），均不传 reasonReference","1. reasonReferenceType 返回 null
+2. 各 mutation 的 errors 为空、操作成功（按各订单状态可执行的用例逐一通过）"
+TC022,需求条目,R07 · 退款设置（RefundSettings）与结构化退款原因,配置原因引用类型后 staff 缺少 reasonReference 或引用类型不符被拒、提供正确引用成功且原因被记录,AC-07-2;BD07;I04,P0,已创建专用 PageType（Model Type）R 及其下一个 Page 实例 P1，另有其他 PageType 的页面 P2；staff 具备 MANAGE_SETTINGS 与 MANAGE_ORDERS,"1. 执行 refundSettingsUpdate(input: {refundReasonReferenceType: ""<R 的全局 ID>""})
+2. 以 staff 执行 orderGrantRefundCreate 但不传 reasonReference
+3. 以 staff 执行 orderGrantRefundCreate 传 reasonReference: ""<P2 的 ID>""（PageType 不符）
+4. 以 staff 执行 orderGrantRefundCreate 传 reasonReference: ""<P1 的 ID>""，成功后查询该退款记录的原因引用","1. 配置成功，refundSettings 返回 R
+2. errors 非空，field 指向 reasonReference，为必填类错误
+3. 被拒绝并返回引用类型不符的明确错误
+4. errors 为空，退款记录的原因引用为 P1"
+TC023,需求条目,R07 · 退款设置（RefundSettings）与结构化退款原因,清除退款原因引用类型后退款不再要求原因且再传 reasonReference 报错,AC-07-3;BD07;I04,P0,已按 TC022 配置原因引用类型,"1. 执行 refundReasonReferenceClear
+2. 以 staff 执行 orderRefund 不传 reasonReference
+3. 以 staff 执行 orderRefund 传 reasonReference","1. 清除成功，refundSettings.reasonReferenceType 恢复为 null
+2. errors 为空，退款成功
+3. 请求被拒绝并返回明确错误（清除后不再接受原因引用）"
+TC024,需求条目,R07 · 退款设置（RefundSettings）与结构化退款原因,App 身份执行退款操作不强制要求退款原因,AC-07-4;BD07;I04,P0,已配置退款原因引用类型（TC022 状态）；具备 MANAGE_ORDERS 权限的 App token；存在可退款订单,"1. 以 App 身份执行 orderGrantRefundCreate，不传 reasonReference
+2. 以 App 身份执行 transactionRequestAction（REFUND），不传 reasonReference","1. errors 为空，操作成功
+2. errors 为空，操作成功"
+TC025,需求条目,R07 · 退款设置（RefundSettings）与结构化退款原因,Dashboard 退款配置页可设置/清除原因引用类型且退款表单在启用配置后提供原因选择并提交 reasonReference,AC-07-5;FD02;I04,P0,core 与 dashboard 联调环境运行；staff 账号可登录 Dashboard；已存在 Model Type 及其 Model,"1. 在 Dashboard 打开退款设置页（src/refundsSettings 对应路由），选择某 Model Type 作为退款原因引用类型并保存
+2. 刷新后确认页面展示已保存的类型；随后执行清除操作并保存
+3. 重新设置类型后，打开某订单的退款表单（OrderGrantRefundPage），在退款原因输入域选择该类型的一个 Model 并提交退款","1. 保存成功，后台 refundSettings 记录该 PageType
+2. 清除后页面与后端均恢复未配置状态
+3. 表单提交携带 reasonReference，退款成功且原因被记录"
+TC026,需求条目,R08 · TransactionItem 结构化支付方式明细（paymentMethodDetails）与 Money 分数字段,三个交易 mutation 写入 CARD 与 OTHER 明细后可经 TransactionItem.paymentMethodDetails 查询回一致数据,AC-08-1;BD08;I05,P0,存在带 TransactionItem 的订单；staff/App 具备交易操作权限,"1. 对交易 A 执行 transactionCreate（或 transactionUpdate）写入 paymentMethodDetails: {card: {brand: ""Visa"", firstDigits: ""411111"", lastDigits: ""1111"", expMonth: 12, expYear: 2030}}
+2. 对交易 B 执行 transactionEventReport 写入 paymentMethodDetails: {other: {name: ""Klarna""}}
+3. 查询 order(id){ transactions { paymentMethodDetails { __typename name ... on CardPaymentMethodDetails { brand lastDigits expMonth expYear } } } }","1. mutation errors 为空
+2. mutation errors 为空
+3. 交易 A 返回 CardPaymentMethodDetails 且各字段与写入一致；交易 B 返回 OtherPaymentMethodDetails 且 name 为 Klarna"
+TC027,需求条目,R08 · TransactionItem 结构化支付方式明细（paymentMethodDetails）与 Money 分数字段,交易同步 webhook 响应中的 paymentMethodDetails 被写入对应 TransactionItem,AC-08-2;BD08;I05,P0,已注册监听 TRANSACTION_INITIALIZE_SESSION 或 TRANSACTION_PROCESS_SESSION 的 App（webhook 目标可连通）,"1. 触发对应交易会话流程，使 App webhook 响应中携带 paymentMethodDetails（card 或 other）
+2. 查询该 TransactionItem 的 paymentMethodDetails","1. 会话流程正常完成
+2. 明细已写入并可查询，字段与 webhook 响应一致"
+TC028,需求条目,R08 · TransactionItem 结构化支付方式明细（paymentMethodDetails）与 Money 分数字段,Money 类型返回正确的 fractionalAmount 与 fractionDigits,AC-08-3;BD08;I05,P0,数据库含 USD 与 JPY 货币的金额数据（如订单总额或商品价格）,"1. 查询任一 USD Money 字段（金额 12.95）的 amount、currency、fractionalAmount、fractionDigits
+2. 查询任一 JPY Money 字段的同一组字段","1. 返回 amount 12.95、currency USD、fractionalAmount 1295、fractionDigits 2
+2. 返回 fractionalAmount 等于金额整数本身、fractionDigits 0"
+TC029,需求条目,R08 · TransactionItem 结构化支付方式明细（paymentMethodDetails）与 Money 分数字段,orders/draftOrders 的 transactions 过滤可按支付方式名称与类型命中升级后写入明细的交易,AC-08-4;BD08;I05,P0,TC026 已写入 card（Visa）与 other（Klarna）明细的交易分属不同订单；另有升级前无明细的旧交易订单,"1. 查询 orders(where: {transactions: {paymentMethodDetails: {...按名称 ""Klarna"" 过滤...}}})
+2. 按 card 类型/品牌（Visa）过滤 orders 与 draftOrders
+3. 确认旧交易所在订单的过滤行为","1. 命中含 Klarna 明细交易的订单
+2. 命中含 Visa 卡明细交易的订单/草稿订单
+3. 仅对写入过明细的交易生效，旧数据不误命中"
+TC030,需求条目,R09 · App Extension 目标与挂载点扩展（NEW_TAB / WIDGET / options）,创建 NEW_TAB 扩展（GET/POST method）经 API 校验通过且 Dashboard 对应页面出现入口并按 method 新标签页打开,AC-09-1;BD06;FD03;I06,P0,core 完成 BD06；dashboard 联调环境运行；已注册含 extension 清单的 App（url 可达）,"1. 通过 App manifest 安装一个 target 为 NEW_TAB、挂载点为 ORDER_DETAILS_MORE_ACTIONS、options.newTabTarget.method 为 GET 的扩展
+2. 再安装/更新一个 method 为 POST 的同类扩展
+3. staff 登录 Dashboard 打开任一订单详情页，在更多动作中找到扩展入口并触发；对 GET 与 POST 扩展各执行一次","1. 安装校验通过，appExtensions 查询可见该扩展
+2. 同样校验通过
+3. 页面出现扩展入口；GET 扩展以新标签页直接打开目标 URL，POST 扩展以新标签页表单提交打开，均附带 accessToken 等上下文参数"
+TC031,需求条目,R09 · App Extension 目标与挂载点扩展（NEW_TAB / WIDGET / options）,WIDGET 扩展在详情页以 iframe 渲染且目标与挂载点的组合校验被强制执行,AC-09-2;BD06;FD03;I06,P0,同 TC030 环境,"1. 安装 target 为 WIDGET、挂载点为 ORDER_DETAILS_WIDGETS 的扩展（options.widgetTarget.method GET）
+2. staff 打开订单详情页查看 widget 区域
+3. 尝试将 WIDGET 目标挂载到非 widget 挂载点（如 PRODUCT_OVERVIEW_MORE_ACTIONS）
+4. 尝试将 NEW_TAB/POPUP 目标挂载到 ORDER_DETAILS_WIDGETS","1. 安装校验通过
+2. 详情页以内嵌 iframe 渲染该扩展内容
+3. 被 API 校验拒绝并返回明确错误
+4. 同样被拒绝"
+TC032,需求条目,R09 · App Extension 目标与挂载点扩展（NEW_TAB / WIDGET / options）,查询 AppExtension 的新旧字段返回与目标类型一致的 options/settings 结构,AC-09-3;BD06;I06,P0,已分别存在 NEW_TAB 与 WIDGET 扩展（TC030/TC031 数据）,"1. 查询 appExtensions { mount mountName target targetName settings options { __typename ... on AppExtensionOptionsNewTab { newTabTarget { method } } ... on AppExtensionOptionsWidget { widgetTarget { method } } } }
+2. 对 appInstallations 中的 AppManifestExtension 执行同类查询","1. NEW_TAB 扩展：options 返回 AppExtensionOptionsNewTab 且 method 正确；settings 为 {""newTabTarget"":{""method"":""...""}}；mountName/targetName 为对应字符串原值；WIDGET 扩展同理返回 widgetTarget 结构；旧字段 mount/target 仍返回枚举值
+2. AppManifestExtension 的新旧字段同样齐备且一致"
+TC033,需求条目,R09 · App Extension 目标与挂载点扩展（NEW_TAB / WIDGET / options）,3.22 已存在的扩展挂载点与目标行为保持不变,AC-09-4;BD06;I06,P0,数据库含 3.22 时期已安装的 APP_PAGE 与 POPUP 目标扩展,"1. 查询这些扩展的 mount/target/mountName/targetName/settings
+2. 在 Dashboard 触发 APP_PAGE 扩展（内嵌页面打开）与 POPUP 扩展（弹窗打开）","1. 旧字段返回原枚举值，settings 返回 {}，行为字段无新增错误
+2. 两种扩展的打开方式与 3.22 完全一致"
+TC034,需求条目,R10 · 构建与依赖声明的一致性,离线环境下 core 测试可按 setup.cfg 配置收集运行且 Dashboard 可用 pnpm 执行 generate/test/build,AC-10-1;BD09;FD01,P0,离线环境；依赖已预装；两仓库升级改动完成,"1. 在 core 执行 python -m pytest --collect-only（沿用 setup.cfg 的 --allow-hosts 与 --dist loadgroup 配置）
+2. 在 dashboard 依次执行 pnpm run generate、pnpm run test、pnpm run build","1. 测试收集成功、配置未被回退
+2. 三个脚本均成功完成"
+TC035,需求条目,R10 · 构建与依赖声明的一致性,两仓库锁文件与依赖声明一致且 dashboard 不重新出现 npm 锁文件,AC-10-2;BD09;FD01,P0,升级改动完成,"1. 检查 core 的 pyproject.toml 与 uv.lock 声明一致（静态比对或等价检查）
+2. 检查 dashboard 不存在 package-lock.json，且 pnpm-lock.yaml、pnpm-workspace.yaml、.npmrc（shamefully-hoist=true）保持环境补丁形态","1. 依赖声明与锁文件一致
+2. 无 npm 锁文件，pnpm 配套文件未被回退"
+TC036,需求条目,R10 · 构建与依赖声明的一致性,3.23 新增功能不引入需联网安装的新依赖且必要依赖声明完整,AC-10-3;BD09,P0,升级改动完成,"1. 对比两仓库相对基线的依赖清单差异（pyproject.toml/uv.lock、package.json/pnpm-lock.yaml）
+2. 在离线环境以现有依赖完成 core 测试收集与 dashboard 构建","1. 无新增需联网安装的依赖（预期无依赖新增；如有则已声明且与已安装环境匹配）
+2. 离线执行全部成功"
+TC037,需求条目,R11 · 回归行为保持（升级兼容）,评估选定的 pass-to-pass 回归测试在升级后保持通过,AC-11-1;BD10;FD06,P0,两仓库升级改动完成；本地数据库与服务可用,"1. 执行 /opt/runtime/run-suite.sh <attempt> core-unit core-e2e dash-unit dash-e2e
+2. 对比基线时期的 P2P 通过清单","1. 套件全部执行完成
+2. 全部选定 P2P 用例保持通过，无因本次改动引入的失败、无收集失败"
+TC038,需求条目,R11 · 回归行为保持（升级兼容）,3.23 标记废弃的字段与参数在升级后仍可正常查询使用,AC-11-2;BD10;I06,P0,core 服务运行；数据库含既有业务数据,"1. 以废弃参数发起查询：orders(filter: {...})、pages(filter: {...})、attribute.choices(filter: {...})、page 的 attribute/attributes 字段
+2. 查询 AppExtension 的 mount、target、options 及 options 子字段（widgetTarget.method、newTabTarget.method）","1. 全部查询成功返回且行为与 3.22 一致
+2. 废弃字段均正常返回，仅带 @deprecated 标注"
+TC039,需求条目,R11 · 回归行为保持（升级兼容）,新增 3.23 功能均为生产级实现且无测试环境特判与硬编码桩数据,AC-11-3;BD10,P0,升级改动完成,"1. 审查交付 diff 中全部新增/修改代码（重点 saleor/graphql/app/types.py 的 mountName/targetName/settings resolver 与 dashboard 生成产物配套消费代码）
+2. 全局检索 diff 中的 TESTING 环境分支、mock/stub 数据硬编码","1. 全部实现位于正常生产代码路径（settings 由既有列推导、对所有环境一致）
+2. 不存在测试环境特判与硬编码假数据"
+TC040,需求条目,R12 · 评估交付与工程约束,交付 diff 仅含生产代码改动且未触碰评估测试/fixtures/verifier/评分配置,AC-12-1;BD11;FD06,P0,两仓库升级改动完成,"1. 在 core 执行 git diff --stat c864e66，在 dashboard 执行 git diff --stat aebb240
+2. 逐项核对改动文件清单","1. core diff 预期仅含 saleor/__init__.py、pyproject.toml、saleor/graphql/app/types.py（或 manifest 类型所在文件）、saleor/graphql/schema.graphql；dashboard diff 预期仅含 package.json、schema.graphql（如有同步）、src/graphql/*.generated.ts 及必要消费点微调
+2. 清单中无任何评估测试、fixtures、verifier 与评分配置文件"
+TC041,需求条目,R12 · 评估交付与工程约束,本地 run-suite 验证通过且官方 F2P 转通过、P2P 保持通过,AC-12-2;BD11,P0,升级改动完成；本地运行时服务可用,"1. 执行 /opt/runtime/run-suite.sh <attempt> core-unit core-e2e dash-unit dash-e2e 并保存结果
+2. 提交评估后核对官方结果","1. 本地四个套件执行完成且结果符合预期（健康检查不单独视为通过）
+2. 选定 F2P 测试全部转为通过、P2P 全部保持通过，无收集失败或缺失结果"

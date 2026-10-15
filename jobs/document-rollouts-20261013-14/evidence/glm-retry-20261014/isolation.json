@@ -1,0 +1,50 @@
+[
+  {
+    "container": "/task__ougv9u2__env-main-1",
+    "networks": [
+      "task__ougv9u2__env_default"
+    ],
+    "published_ports": {},
+    "mounts": [
+      {
+        "source": "/home/iriszeng18_gmail_com/software-last-exam/jobs/single-docs-glm53flash-max-retry-20261014/task__oUgV9U2/agent",
+        "destination": "/logs/agent",
+        "writable": true
+      },
+      {
+        "source": "/home/iriszeng18_gmail_com/software-last-exam/jobs/single-docs-glm53flash-max-retry-20261014/task__oUgV9U2/artifacts/logs/artifacts",
+        "destination": "/logs/artifacts",
+        "writable": true
+      },
+      {
+        "source": "/home/iriszeng18_gmail_com/software-last-exam/jobs/single-docs-glm53flash-max-retry-20261014/task__oUgV9U2/verifier",
+        "destination": "/logs/verifier",
+        "writable": true
+      }
+    ]
+  },
+  {
+    "container": "/task__mjcf4mz__env-main-1",
+    "networks": [
+      "task__mjcf4mz__env_default"
+    ],
+    "published_ports": {},
+    "mounts": [
+      {
+        "source": "/home/iriszeng18_gmail_com/software-last-exam/jobs/single-docs-opus55-xhigh-resume-20261014/task__MjcF4mz/artifacts/logs/artifacts",
+        "destination": "/logs/artifacts",
+        "writable": true
+      },
+      {
+        "source": "/home/iriszeng18_gmail_com/software-last-exam/jobs/single-docs-opus55-xhigh-resume-20261014/task__MjcF4mz/verifier",
+        "destination": "/logs/verifier",
+        "writable": true
+      },
+      {
+        "source": "/home/iriszeng18_gmail_com/software-last-exam/jobs/single-docs-opus55-xhigh-resume-20261014/task__MjcF4mz/agent",
+        "destination": "/logs/agent",
+        "writable": true
+      }
+    ]
+  }
+]

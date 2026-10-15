@@ -1,0 +1,64 @@
+{
+  "runtime_tests": {
+    "passed": 88
+  },
+  "watchdog_in_container": "passed; three stage identities killed at deadline using mock upstream; no paid calls",
+  "native_client_version": "2.1.280",
+  "native_preflight": [
+    {
+      "model": "anthropic/claude-opus-5.5",
+      "effort": "xhigh",
+      "passed": true,
+      "exit_code": 0,
+      "elapsed_seconds": 8.39,
+      "requests": 3,
+      "tool_loop_verified": true,
+      "cache_read_input_tokens": 28010,
+      "cache_creation_input_tokens": 14245,
+      "usage_aggregation": "latest merged usage per request; SSE snapshots not summed"
+    },
+    {
+      "model": "deepseek/deepseek-v4.1-flash",
+      "effort": "high",
+      "passed": true,
+      "exit_code": 0,
+      "elapsed_seconds": 6.79,
+      "requests": 3,
+      "tool_loop_verified": true,
+      "cache_read_input_tokens": 16000,
+      "cache_creation_input_tokens": 0,
+      "usage_aggregation": "latest merged usage per request; SSE snapshots not summed"
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "effort": "max",
+      "passed": true,
+      "exit_code": 0,
+      "elapsed_seconds": 5.38,
+      "requests": 3,
+      "tool_loop_verified": true,
+      "cache_read_input_tokens": 14848,
+      "cache_creation_input_tokens": 0,
+      "usage_aggregation": "latest merged usage per request; SSE snapshots not summed"
+    },
+    {
+      "model": "z-ai/glm-5.3-flash",
+      "effort": "max",
+      "passed": true,
+      "exit_code": 0,
+      "elapsed_seconds": 16.97,
+      "requests": 3,
+      "tool_loop_verified": true,
+      "cache_read_input_tokens": 8000,
+      "cache_creation_input_tokens": 0,
+      "usage_aggregation": "latest merged usage per request; SSE snapshots not summed"
+    }
+  ],
+  "limitations": [
+    "Request audit verifies gateway-bound parameters, not private upstream routing or provider effort interpretation.",
+    "Cache enabled for all requests; hits depend on prefix matching and provider TTL.",
+    "Client total_cost_usd is not treated as actual gateway billing."
+  ],
+  "document_boundary_smoke": "passed; stopped_at_boundary after exactly three accepted stages",
+  "recovery_tests": "compaction summary excluded from actual role activation; continuation executes only QA on original session"
+}

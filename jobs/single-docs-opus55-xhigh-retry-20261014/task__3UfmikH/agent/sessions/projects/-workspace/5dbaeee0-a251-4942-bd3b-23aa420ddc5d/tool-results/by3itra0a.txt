@@ -1,0 +1,769 @@
+            email=email,
+            defaults={"first_name": f"e2e_customer_{i}", "last_name": "bulk-delete",
+                      "is_active": True, "is_confirmed": True},
+        )
+        if created:
+            user.set_password("password")
+            user.save(update_fields=["password"])
+
+    for email, first, last in [
+        ("user-for-password-reset@gmail.com", "e2e", "user"),
+        ("change-password-user@gmail.com", "change password", "user"),
+    ]:
+        user, created = User.objects.update_or_create(
+            email=email,
+            defaults={"first_name": first, "last_name": last, "is_active": True,
+                      "is_confirmed": True},
+        )
+        if created:
+            user.set_password("password")
+            user.save(update_fields=["password"])
+
+    bump(User)
+    bump(Address)
+    note(f"users: {User.objects.filter(pk__in=[s[0] for s in specs]).count()}/{len(specs)} by pk")
+
+
+def tier_permission_groups():
+    """e2eTestData.ts:654-687 PERMISSION_GROUPS."""
+    specs = [
+        (110, "e2e_permission_group_to_be_deleted"),
+        (111, "e2e_permission_group_to_be_updated"),
+    ]
+    for pk, name in specs:
+        Group.objects.update_or_create(pk=pk, defaults={"name": name})
+
+    members = [
+        ("e2e_permission_group_member_1@grr.la", "e2e_permission_group_member_1", "test"),
+        ("e2e_permission_group_member_2@grr.la", "e2e_permission_group_member_2", "test"),
+        ("e2e_permission_group_member_3@grr.la", "e2e_permission_group_member_3", "test"),
+    ]
+    group = Group.objects.get(pk=111)
+    group.user_set.clear()
+    for email, first, last in members:
+        user, created = User.objects.update_or_create(
+            email=email,
+            defaults={"first_name": first, "last_name": last, "is_staff": True,
+                      "is_active": True, "is_confirmed": True},
+        )
+        if created:
+            user.set_password("password")
+            user.save(update_fields=["password"])
+        group.user_set.add(user)
+
+    # assignedPermissions: MANAGE_PRODUCTS, MANAGE_PLUGINS, MANAGE_STAFF
+    group.permissions.set(
+        Permission.objects.filter(
+            codename__in=["manage_products", "manage_plugins", "manage_staff"]
+        )
+    )
+    # SALEOR_212 assigns the staff member to "Channels Management"; populatedb's
+    # create_staffs() derives group names from permission codenames and produces
+    # "Channels management" (lowercase m). Same class of snapshot/populatedb
+    # casing difference as "Polo Shirts" in tier_products.
+    Group.objects.filter(name="Channels management").update(name="Channels Management")
+
+    # USERS.staffToBeEdited retains its initial Apps management group in SALEOR_212.
+    apps_group, _ = Group.objects.get_or_create(name="Apps management")
+    apps_group.permissions.set(Permission.objects.filter(codename="manage_apps"))
+    User.objects.get(pk=1371).groups.set([apps_group])
+
+    bump(Group)
+    note(f"permission groups: {Group.objects.filter(pk__in=[p for p, _ in specs]).count()}/2 by pk, "
+         f"{group.user_set.count()} members")
+
+
+def tier_gift_cards():
+    """e2eTestData.ts:275-296 GIFT_CARDS. Tests locate cards by the last 4
+    characters of the code, so the codes are built to end in those.
+    """
+    specs = [
+        (53, "e2e-card-AD47"),
+        (54, "e2e-card-7FF8"),
+        (55, "e2e-card-F2DA"),
+        (6, "e2e-card-d_10"),
+    ]
+    channel = Channel.objects.get(slug="default-channel")
+    for pk, code in specs:
+        GiftCard.objects.update_or_create(
+            pk=pk,
+            defaults={
+                "code": code,
+                "initial_balance_amount": Decimal("50"),
+                "current_balance_amount": Decimal("50"),
+                "currency": channel.currency_code,
+                "is_active": pk != 54,  # 54 is "to be activated"
+                # SALEOR_110 *toggles* "Gift card expires" and saves without
+                # filling a date. Turning it ON with no date makes the API
+                # reject the update with HTTP 400, so the card has to start
+                # with an expiry date and the toggle clears it.
+                "expiry_date": (timezone.now() + datetime.timedelta(days=365)).date(),
+                # SALEOR_110 runs expandAndAddAllMetadata(), which assumes an
+                # empty metadata section: leftovers from a previous run make its
+                # `[name*='name']` locator match twice (strict mode violation).
+                "metadata": {},
+                "private_metadata": {},
+            },
+        )
+    # giftCardsToBeDeleted has both `names` and `last4`: SALEOR_111 selects rows
+    # by the names (which are gift card TAGS, the only free-text column in the
+    # grid) and then asserts the codes ending in last4 are gone.
+    from saleor.giftcard.models import GiftCardTag
+
+    for name, last4 in [("to be deleted 1/2", "5EE6"), ("to be deleted 2/2", "9E39")]:
+        card, _ = GiftCard.objects.update_or_create(
+            code=f"e2e-del-{last4}",
+            defaults={
+                "initial_balance_amount": Decimal("50"),
+                "current_balance_amount": Decimal("50"),
+                "currency": channel.currency_code,
+                "is_active": True,
+            },
+        )
+        tag, _ = GiftCardTag.objects.get_or_create(name=name)
+        card.tags.set([tag])
+    bump(GiftCard)
+    note(f"gift cards: {GiftCard.objects.filter(pk__in=[p for p, _ in specs]).count()}/4 by pk")
+
+
+def tier_apps():
+    """e2eTestData.ts:606-612 APPS.
+
+    Also fixes singlePermissions/extensions.spec.ts SALEOR_10: the installed
+    extensions list only renders its `extensions-installed` container when at
+    least one app exists (InstalledExtensionsList.tsx:199 returns EmptyListState
+    otherwise), so that test times out on an app-less database.
+    """
+    App.objects.update_or_create(
+        pk=70,
+        defaults={"name": "Saleor QA App", "is_active": True, "type": "local",
+                  "identifier": "saleor-qa-app"},
+    )
+    bump(App)
+    note(f"apps: {App.objects.filter(pk=70).count()}/1 by pk")
+
+
+def tier_promotions():
+    """e2eTestData.ts:76-182 DISCOUNTS. Promotion and PromotionRule use UUID pks.
+
+    An Order-type promotion's rules need an order_predicate; a Catalogue one's
+    need a catalogue_predicate. The dashboard refuses to render a rule whose
+    predicate does not match its promotion type.
+    """
+    from saleor.discount.models import Promotion, PromotionRule
+
+    usd = Channel.objects.get(slug="default-channel")
+    pln = Channel.objects.filter(slug="channel-pln").first() or usd
+
+    def catalogue_predicate():
+        """A PRODUCT predicate, not a category one.
+
+        SALEOR_166 opens a rule for editing and, when a condition row is
+        present, picks PRODUCTS.e2eProductWithVariant1 ("Colored Parrot
+        Cushion") from the value dropdown. That dropdown lists whatever the
+        predicate type is, so a categoryPredicate makes it offer categories and
+        the product is never found.
+        """
+        from saleor.graphql.core.utils import to_global_id_or_none
+
+        # Deliberately NOT product 85 ("Colored Parrot Cushion"): the test
+        # *selects* that one, and an already-selected value renders as a chip
+        # rather than an option, so getByRole("option", ...) never matches it.
+        product = Product.objects.filter(pk=763).first()
+        if not product:
+            return {}
+        return {"productPredicate": {"ids": [to_global_id_or_none(product)]}}
+
+    def order_predicate():
+        # Base SALEOR_163 expects subtotal25 and a fixed-amount reward.
+        # Equality avoids applying this editing fixture to unrelated order totals.
+        return {
+            "discountedObjectPredicate": {
+                "baseSubtotalPrice": {"eq": "25"}
+            }
+        }
+
+    # (encoded promotion id, name, type, [(encoded rule id, rule name, channel)])
+    promos = [
+        ("UHJvbW90aW9uOjI0MGVkZGVkLWYzMTAtNGUzZi1iNTlmLTFlMGFkYWE2ZWFkYg==",
+         "e2e promotion to be edited", "catalogue", []),
+        ("UHJvbW90aW9uOjRmNTQwMDc1LTZlZGMtNDI1NC1hY2U2LTQ2MzdlMGYxZWJhOA==",
+         "e2e Order predicate promotion without rules", "order", []),
+        ("UHJvbW90aW9uOmYyY2VjMDhkLTVkYmUtNGVjNC05NTNjLWMzMmQ5ZGQ2MTExYw==",
+         "e2e Catalog promo with rules to be deleted", "catalogue", [
+             ("UHJvbW90aW9uUnVsZTo3NDk4MGVhNS0zNDA2LTQxZGYtOTc3Mi1jMzg3MjNhMWEwOWM=", "rule 1", usd),
+             ("UHJvbW90aW9uUnVsZTozMTEyMTE0Yy1hYjFkLTQ3OTktODY0My1jZDhlODMwYzllZmE=", "rule 2", usd),
+             ("UHJvbW90aW9uUnVsZTozOWE3Zjc1Zi1jYTdmLTQ4ODgtOGE4NC02NzdjMTVhOGQ4Yjc=", "rule 3", usd),
+         ]),
+        ("UHJvbW90aW9uOjA1MDllZjhjLTc0ZTEtNGMyMC1iZDk5LWRhYWU1YWJlZDM1Nw==",
+         "e2e Order promo with rules to be deleted", "order", [
+             ("UHJvbW90aW9uUnVsZTo2ZTdlODNkOS1kNjJlLTQ2YmQtOGE2ZS03OTdlYTZiODk2NmQ=", "rule #1", usd),
+             ("UHJvbW90aW9uUnVsZTo1MzQwNjEyYy0wOWJhLTQxYzUtYmY2Yy1lYmUzZTQ3MjY0MjY=", "rule #2", usd),
+             ("UHJvbW90aW9uUnVsZTpjMzk5ZTM1Ni04OWFhLTQ0MTUtYWE0Zi01NThlZDQ2M2IwNTM=", "rule #3", usd),
+         ]),
+        ("UHJvbW90aW9uOjI0Njg3NmM5LWM1ZWMtNDBiYi1iMzExLWE3YWQ2YzBiZDc4NQ==",
+         "e2e Order promo with rules to be updated", "order", [
+             ("UHJvbW90aW9uUnVsZTo3NmEwOGYzZi0xMzZhLTRmNTUtYTc0NS1kZmIxNDZkOWI4ZGQ=", "rule 1", pln),
+             ("UHJvbW90aW9uUnVsZTpjODIxMWJhNS05ZGRmLTRhYzQtOTdlMS04YmM0MzNhZjRlOTM=", "rule 2", pln),
+         ]),
+        ("UHJvbW90aW9uOmJkZTgyNGQ4LTk4ZTktNDM1NC04ODE4LTE1YzVjNmI2MWU2NQ==",
+         "e2e Catalog promo with rules to be updated", "catalogue", [
+             ("UHJvbW90aW9uUnVsZTplOWZjNjc2NS1kNzM2LTRhMzMtYjBiMy1hZWMxY2FmNGVkMDE=", "rule #1", usd),
+             ("UHJvbW90aW9uUnVsZToyZjM3ZjRhOS01NjY0LTQzMDEtOWU4Zi0zZTliZGFjNmUyYjE=", "rule 2", usd),
+         ]),
+        ("UHJvbW90aW9uOjY0N2M2MzdhLTZjNTEtNDYxZC05MjQ2LTc0YTY0OGM0ZjAxNA==",
+         "e2e Catalog predicate promotion with rules", "catalogue", []),
+        ("UHJvbW90aW9uOjNmODZjZDAwLTUwNWEtNGVkNC04ZTliLTJmOGI4NGM3NGNlOQ==",
+         "e2e Catalog promotion for adding rules", "catalogue", []),
+        ("UHJvbW90aW9uOjJlM2VhNDkyLTRhMTAtNDYzOS05MWVmLTc1YzQ1OTUxNGQyMQ==",
+         "e2e Order promotion for adding rules", "order", []),
+    ]
+
+    for enc_promo, name, ptype, rules in promos:
+        promotion, _ = Promotion.objects.update_or_create(
+            pk=uid(enc_promo),
+            defaults={"name": name, "type": ptype,
+                      "start_date": timezone.now() - datetime.timedelta(days=1),
+                      # SALEOR_151 toggles the end date and asserts the input is
+                      # gone, so it has to be set to begin with.
+                      "end_date": timezone.now() + datetime.timedelta(days=30)},
+        )
+        # Rules the specs add get removed, so only the declared ones survive.
+        promotion.rules.exclude(pk__in=[uid(r[0]) for r in rules]).delete()
+        for enc_rule, rule_name, channel in rules:
+            rule, _ = PromotionRule.objects.update_or_create(
+                pk=uid(enc_rule),
+                defaults={
+                    "promotion": promotion, "name": rule_name,
+                    "reward_value_type": "fixed" if ptype == "order" else "percentage",
+                    "reward_value": Decimal("10"),
+                    "catalogue_predicate": (
+                        catalogue_predicate() if ptype == "catalogue" else {}
+                    ),
+                    "order_predicate": (
+                        order_predicate() if ptype == "order" else {}
+                    ),
+                    "reward_type": "subtotal_discount" if ptype == "order" else None,
+                },
+            )
+            rule.channels.set([channel])
+
+    note(f"promotions: {Promotion.objects.filter(pk__in=[uid(p[0]) for p in promos]).count()}"
+         f"/{len(promos)} by pk, {PromotionRule.objects.count()} rules")
+
+
+def tier_vouchers():
+    """e2eTestData.ts:52-75 VOUCHERS. A Voucher needs at least one VoucherCode
+    (the dashboard lists vouchers by code) and a channel listing to be editable.
+    """
+    from saleor.discount.models import Voucher, VoucherChannelListing, VoucherCode
+
+    # (pk, name)
+    specs = [
+        (202, "Free shipping voucher to be edited"),
+        (203, "Usage limits voucher to be edited"),
+        (204, "Minimum quantity voucher to be edited"),
+        (206, "Delete voucher"),
+        (209, "Assign category, product, collection"),
+    ]
+    for pk, name in specs:
+        voucher, _ = Voucher.objects.update_or_create(
+            pk=pk,
+            defaults={"name": name, "type": "entire_order",
+                      "discount_value_type": "fixed",
+                      # SALEOR_87 sets these; reset so a re-run starts clean.
+                      "usage_limit": None, "apply_once_per_customer": False,
+                      "only_for_staff": False, "single_use": False,
+                      "min_checkout_items_quantity": None},
+        )
+        VoucherCode.objects.update_or_create(
+            voucher=voucher, defaults={"code": f"E2E-VOUCHER-{pk}"}
+        )
+        for channel in Channel.objects.all():
+            VoucherChannelListing.objects.update_or_create(
+                voucher=voucher, channel=channel,
+                defaults={"discount_value": Decimal("10"),
+                          "currency": channel.currency_code},
+            )
+        # SALEOR_94/95/96 assign a category, collection and product to 209 and
+        # assert one row each afterwards, so it has to start unassigned.
+        if pk == 209:
+            voucher.categories.clear()
+            voucher.collections.clear()
+            voucher.products.clear()
+
+    for i in (1, 2):
+        name = f"Bulk delete voucher {i}/2"
+        voucher, _ = Voucher.objects.update_or_create(
+            name=name,
+            defaults={"type": "entire_order", "discount_value_type": "fixed"},
+        )
+        VoucherCode.objects.update_or_create(
+            voucher=voucher, defaults={"code": f"E2E-BULK-{i}"}
+        )
+        for channel in Channel.objects.all():
+            VoucherChannelListing.objects.update_or_create(
+                voucher=voucher, channel=channel,
+                defaults={"discount_value": Decimal("10"),
+                          "currency": channel.currency_code},
+            )
+
+    bump(Voucher)
+    note(f"vouchers: {Voucher.objects.filter(pk__in=[p for p, _ in specs]).count()}"
+         f"/{len(specs)} by pk")
+
+
+def tier_translations():
+    """e2eTestData.ts:614-630 TRANSLATIONS.
+
+    The three targets (Category:512, Product:78, Collection:1) are created by
+    other tiers; this only resets the translations the specs add or clear.
+    """
+    from saleor.discount.models import Voucher
+
+    # Product 78 (Green Juice) comes from tier_products.
+
+    # SALEOR_123 clears a translation on Collection:1, so one must exist; the
+    # other two specs add translations, which must therefore be absent.
+    from saleor.product.models import CollectionTranslation, ProductTranslation
+    from saleor.product.models import CategoryTranslation
+
+    # The specs navigate to PL_PL, which is the GraphQL enum for Django's
+    # "pl-pl" (Polish (Poland)) -- NOT "pl" (Polish); core/languages.py lists
+    # both, and populatedb writes "pl".
+    def editorjs(*paragraphs):
+        """Descriptions are editorjs documents; the dashboard renders each block
+        back to back, which is why the specs' expected strings have no spaces
+        between sentences."""
+        return {
+            "time": 0,
+            "blocks": [
+                {"id": f"b{i}", "type": "paragraph", "data": {"text": text}}
+                for i, text in enumerate(paragraphs)
+            ],
+            "version": "2.24.3",
+        }
+
+    # SALEOR_123 asserts this exact description is on screen before clearing it.
+    CollectionTranslation.objects.update_or_create(
+        collection_id=1, language_code="pl-pl",
+        defaults={
+            "name": "Kolekcja letnia",
+            # ONE block: SALEOR_123 calls translationRichText.clear(), whose
+            # locator resolves one [contenteditable] per editorjs block, so
+            # multiple blocks trigger a strict-mode violation. The expected
+            # string runs the sentences together with no space after each
+            # period, which is what a single block holds verbatim.
+            "description": editorjs(
+                "Letnia kolekcja Saleor obejmuje gamę produktów, które cieszą "
+                "się popularnością na rynku.Sklep demonstracyjny na każdą porę "
+                "roku.Saleor uchwycił słońce open source, e-commerce."
+            ),
+        },
+    )
+
+    # SALEOR_122 asserts the description starts with "Brukselka, szpinak", then
+    # replaces it -- so the translation must exist up front.
+    ProductTranslation.objects.update_or_create(
+        product_id=78, language_code="pl-pl",
+        defaults={
+            "name": "Zielony Sok",
+            "description": editorjs(
+                "Brukselka, szpinak, groszek, jarmuż, sałata, kapusta, cukinia. "
+                "Wszystkie warzywa, jakich będziesz potrzebować, w jednym pysznym soku."
+            ),
+        },
+    )
+    CategoryTranslation.objects.filter(category_id=512, language_code="pl-pl").delete()
+
+
+    note(f"translations: product 78 ok, collection 1 has "
+         f"{CollectionTranslation.objects.filter(collection_id=1).count()} translation(s)")
+
+
+def tier_taxes():
+    """taxes.spec.ts + CHANNELS.plnChannel (TaxConfiguration:1) and
+    COUNTRIES.countryToBeAddedInTaxes.
+
+    The taxes view lists channels via their TaxConfiguration, and populatedb
+    only creates one per channel it made itself -- channels added here would not
+    appear at all (SALEOR_116 waits for "a channel for tax tests").
+    typeAllTaxRatesForCountry() fills six rate inputs, i.e. one per tax class,
+    so six classes must exist.
+    """
+    from saleor.tax.models import (
+        TaxClass,
+        TaxClassCountryRate,
+        TaxConfiguration,
+        TaxConfigurationPerCountry,
+    )
+
+    for channel in Channel.objects.all():
+        TaxConfiguration.objects.update_or_create(
+            channel=channel,
+            defaults={"charge_taxes": True, "tax_calculation_strategy": "FLAT_RATES",
+                      "display_gross_prices": True, "prices_entered_with_tax": True},
+        )
+
+    # SALEOR_117 fills a rate per tax class and locates each input by the class
+    # name (taxesPage.ts:43-55), so the names must match exactly -- including
+    # the trailing space on the data-services one. populatedb's
+    # create_tax_classes() only makes "Groceries" and "Books".
+    names = [
+        "No Taxes",
+        "Audio Products (tapes, cds etc.)",
+        "Data services - storage and retrieval ",
+        "standard",
+        "Temporary Unmapped Other SKU - taxable default",
+    ]
+    for name in names:
+        tax_class, _ = TaxClass.objects.get_or_create(name=name)
+        # Rates for the countries the specs touch; the Countries tab renders
+        # nothing without at least one rate row.
+        for country, rate in [("PL", 23), ("US", 10), ("DE", 19)]:
+            TaxClassCountryRate.objects.update_or_create(
+                tax_class=tax_class, country=country,
+                defaults={"rate": Decimal(rate)},
+            )
+
+    # These specs ADD things, and the pickers hide what already exists, so a
+    # re-run needs the previous run's additions removed:
+    #   SALEOR_116 adds a Canada country exception to a channel
+    #   SALEOR_117 adds "Bosnia and Herzegovina" (BA) as a taxed country
+    #   SALEOR_118 creates the tax class "Automation test tax class"
+    TaxConfigurationPerCountry.objects.filter(country="CA").delete()
+    TaxClassCountryRate.objects.filter(country="BA").delete()
+    TaxClass.objects.filter(
+        name__in=["Automation test tax class", "New tax class"]
+    ).delete()
+
+    # Drop classes this seeder created under earlier, wrong names.
+    TaxClass.objects.filter(
+        name__in=["Standard", "Electronics", "Clothing", "Services"]
+    ).delete()
+
+    note(f"taxes: {TaxConfiguration.objects.count()} configs, "
+         f"{TaxClass.objects.count()} classes, {TaxClassCountryRate.objects.count()} rates")
+
+
+def tier_cleanup():
+    """Remove artifacts the tests themselves create.
+
+    Several specs create objects with FIXED identifiers, so they only pass on a
+    database where those do not exist yet:
+
+    * SALEOR_211/212 invite staff at test.staff.john.create@example.com and
+      test.staff.john.edit@example.com -- a re-run hits the unique email
+      constraint, the mutation errors and no success banner appears.
+    * SALEOR_105 issues a gift card, then looks for it in the grid, which is
+      paginated; cards accumulated by earlier runs push it off the first page.
+
+    Run last, so it also clears anything the current seed pass duplicated.
+    """
+    from saleor.giftcard.models import GiftCardTag
+
+    n_users = User.objects.filter(email__startswith="test.staff.john.").delete()[0]
+
+    # variantsPage.typeSku() defaults to the fixed SKU "sku dummy e2e"
+    # (variantsPage.ts:95), so SALEOR_27 creating a variant fails on the second
+    # run with "Product variant with this Sku already exists."
+    n_var = ProductVariant.objects.filter(sku="sku dummy e2e").delete()[0]
+
+    # SALEOR_46 uploads media to PRODUCTS.singleProductTypeToBeUpdated (761) and
+    # locates `product-image` afterwards; images pile up across runs until the
+    # locator matches many elements (strict-mode violation).
+    from saleor.product.models import ProductMedia
+
+    n_media = ProductMedia.objects.filter(product_id=761).delete()[0]
+
+    # Cards issued by SALEOR_105 carry this tag verbatim.
+    junk_tags = GiftCardTag.objects.filter(
+        name__in=["super ultra automation discount", "e2e-automation"]
+    )
+    n_cards = GiftCard.objects.filter(tags__in=junk_tags).distinct().delete()[0]
+    junk_tags.delete()
+
+    n_wh = Warehouse.objects.filter(name__startswith="e2e test - warehouse").delete()[0]
+
+    # Channel.orders is PROTECT, and the order specs create orders in the
+    # channels the channel specs leave behind, so those orders go first.
+    from saleor.order.models import Order
+
+    junk_channels = Channel.objects.filter(name="z - automation")
+    Order.objects.filter(channel__in=junk_channels).delete()
+    n_ch = junk_channels.delete()[0]
+
+    # SALEOR_105/111 locate cards in a paginated grid (20 rows). populatedb's
+    # demo cards (code "Gift_card_N") push the e2e fixtures past the first page,
+    # so the tests never see them. Nothing in e2eTestData.ts refers to the demo
+    # cards -- only ids 53/54/55/6 and the four last4 codes -- so they go.
+    n_demo = GiftCard.objects.filter(code__startswith="Gift_card_").delete()[0]
+
+    n_dup = 0  # handled in tier_products, before pk 79 is created
+
+    # Saleor's product list search reads product_product.search_vector, which is
+    # only populated by the API's own save paths -- rows written straight through
+    # the ORM leave it NULL and are unsearchable (SALEOR_57 searches for
+    # "beer with variants" and gets an empty grid).
+    from saleor.product.search import update_products_search_vector
+
+    stale = list(
+        Product.objects.filter(search_vector__isnull=True).values_list("pk", flat=True)
+    )
+    if stale:
+        update_products_search_vector(stale)
+    note(f"search vectors rebuilt: {len(stale)} products")
+
+    # taxes / giftCards / collections / categories specs call
+    # metadataSeoPage.expandAndAddAllMetadata(), whose `[name*='name']` locator
+    # assumes the metadata section starts empty -- a second run otherwise dies
+    # with a strict-mode violation on 2 matching inputs.
+    blank = {"metadata": {}, "private_metadata": {}}
+    Category.objects.filter(pk__in=[507, 511, 512]).update(**blank)
+    Collection.objects.filter(pk__in=[1, 166, 167]).update(**blank)
+    GiftCard.objects.filter(pk__in=[53, 54, 55, 6]).update(**blank)
+
+    note(f"cleanup: {n_users} staff, {n_cards} gift cards, {n_demo} demo cards, "
+         f"{n_dup} dup products, {n_var} variants, {n_media} media, {n_wh} warehouses, "
+         f"{n_ch} channels, metadata reset")
+
+
+def tier_shipping():
+    """e2eTestData.ts:523-566 SHIPPING_METHODS. `id` is a ShippingZone."""
+    specs = [
+        (2389, "e2e-test-shippingZone-to-be-deleted"),
+        (2390, "Shipping method that is used to add rates"),
+        (2392, "e2e-test-shippingZone-to-be-updated"),
+        (2393, "e2e-test-shippingZone-to-be-bulk-deleted-1"),
+        (2394, "e2e-test-shippingZone-to-be-bulk-deleted-2"),
+        (2395, "e2e-test-shippingZone-to-be-bulk-deleted-3"),
+    ]
+    for pk, name in specs:
+        zone, _ = ShippingZone.objects.update_or_create(
+            pk=pk, defaults={"name": name, "countries": ["PL", "US"]}
+        )
+        # One channel only: the shipping-rate form renders a price/min/max input
+        # per channel the zone belongs to, and SALEOR_32/33 fill them by test-id,
+        # so several channels make those locators ambiguous (strict violation).
+        zone.channels.set(Channel.objects.filter(slug="default-channel"))
+
+    # SALEOR_37 reads the zone's already-assigned warehouses (Oceania, Africa)
+    # and then assigns Americas and Europe, so the first two must be there and
+    # the last two must not.
+    zone_to_update = ShippingZone.objects.get(pk=2392)
+    zone_to_update.warehouses.set(
+        Warehouse.objects.filter(name__in=["Oceania", "Africa"])
+    )
+
+    # ShippingMethodType:2220 -- the rates the delete test removes from
+    # zone 2389.
+    zone = ShippingZone.objects.get(pk=2389)
+    ShippingMethod.objects.update_or_create(
+        pk=2220,
+        defaults={"name": "shippingMEthod_to-be-deleted", "type": "price",
+                  "shipping_zone": zone},
+    )
+    ShippingMethod.objects.update_or_create(
+        name="shippingMethod_to_be_deleted",
+        shipping_zone=zone,
+        defaults={"type": "weight"},
+    )
+    bump(ShippingZone)
+    bump(ShippingMethod)
+    note(f"shipping zones: {ShippingZone.objects.filter(pk__in=[p for p, _ in specs]).count()}/6 by pk")
+
+
+def tier_order_promotions():
+    """Initial promotion data required by SALEOR_215 and SALEOR_216."""
+    from saleor.discount.models import Promotion, PromotionRule
+    from saleor.product.utils.variants import fetch_variants_for_promotion_rules
+    from saleor.product.utils.variant_prices import update_discounted_prices_for_promotion
+    import base64
+
+    specs = [
+        ("catalogue", "channel-pln", 40,
+         {"productPredicate": {"ids": [base64.b64encode(b"Product:770").decode()]}}),
+        ("order", "e2e-channel-do-not-delete", 5,
+         {"discountedObjectPredicate": {"baseSubtotalPrice": {"range": {"gte": "20"}}}}),
+    ]
+    for kind, slug, percent, predicate in specs:
+        key = f"saleor-e2e-order-discount-{kind}"
+        promotion, _ = Promotion.objects.update_or_create(
+            pk=uuid.uuid5(uuid.NAMESPACE_URL, key),
+            defaults={"name": key, "type": kind,
+                      "start_date": timezone.now() - datetime.timedelta(days=1),
+                      "end_date": None},
+        )
+        rule, _ = PromotionRule.objects.update_or_create(
+            pk=uuid.uuid5(uuid.NAMESPACE_URL, key + "-rule"),
+            defaults={"promotion": promotion, "name": key,
+                      "reward_value_type": "percentage", "reward_value": percent,
+                      "reward_type": "subtotal_discount" if kind == "order" else None,
+                      "catalogue_predicate": predicate if kind == "catalogue" else {},
+                      "order_predicate": predicate if kind == "order" else {}},
+        )
+        rule.channels.set([Channel.objects.get(slug=slug)])
+        if kind == "catalogue":
+            fetch_variants_for_promotion_rules(PromotionRule.objects.filter(pk=rule.pk))
+    update_discounted_prices_for_promotion(Product.objects.filter(pk=770))
+    note("order promotions: PLN product770 40%; dedicated order channel subtotal20+ 5%")
+
+
+def tier_user_search():
+    """Refresh ORM-seeded users using the running application's search schema."""
+    fields = {field.name for field in User._meta.fields}
+    if "search_vector" in fields:
+        from saleor.account.search import update_user_search_vector
+        for user in User.objects.prefetch_related("addresses").all():
+            update_user_search_vector(user)
+    else:
+        from saleor.account.search import prepare_user_search_document_value
+        for user in User.objects.prefetch_related("addresses").all():
+            user.search_document = prepare_user_search_document_value(
+                user, already_prefetched=True
+            )
+            user.save(update_fields=["search_document"])
+    note(f"user search: rebuilt {User.objects.count()} users")
+
+
+def tier_orders():
+    """Initial states for active orders.spec.ts cases, using the pinned fixture IDs."""
+    from saleor.order import OrderChargeStatus, OrderOrigin
+    from saleor.order.models import Order, OrderLine
+    from saleor.payment.models import TransactionItem
+    from saleor.shipping.models import ShippingMethodChannelListing
+    from saleor.warehouse.models import Allocation, ChannelWarehouse, Stock
+
+    normal = Channel.objects.get(slug="default-channel")
+    transaction_channel = Channel.objects.get(slug="transaction-flow-channel")
+    pln = Channel.objects.get(slug="channel-pln")
+    warehouse = Warehouse.objects.get(name="Europe")
+    zone, _ = ShippingZone.objects.update_or_create(
+        name="e2e order shipping", defaults={"countries": ["PL", "US", "GB"]}
+    )
+    channels = [normal, transaction_channel, pln,
+                Channel.objects.get(slug="e2e-channel-do-not-delete")]
+    zone.channels.set(channels)
+    zone.warehouses.set([warehouse])
+    method, _ = ShippingMethod.objects.update_or_create(
+        shipping_zone=zone, name="e2e order delivery", defaults={"type": "price"}
+    )
+    for channel in channels:
+        ChannelWarehouse.objects.get_or_create(
+            channel=channel, warehouse=warehouse, defaults={"sort_order": 0}
+        )
+        ShippingMethodChannelListing.objects.update_or_create(
+            shipping_method=method, channel=channel,
+            defaults={"currency": channel.currency_code, "price_amount": 0,
+                      "minimum_order_price_amount": 0},
+        )
+    # Draft product search requests IN_STOCK, including discount test products.
+    for variant_id in [1239, 1241, 1243]:
+        Stock.objects.update_or_create(
+            warehouse=warehouse, product_variant_id=variant_id,
+            defaults={"quantity": 1000},
+        )
+    customer = User.objects.get(pk=1366)
+    # UUIDs decode directly from ORDERS.* in playwright/data/e2eTestData.ts.
+    specs = [
+        ("018ec44e-5800-44c4-9b30-d17a21b9c983", transaction_channel, "unfulfilled", 1240, 1, 10, False, True, None),
+        ("2a553d39-9e49-4ea9-b271-796eb98ba773", transaction_channel, "unfulfilled", 1240, 12, 10, False, True, None),
+        ("c86d33ba-109b-4352-93ab-99c0a7f98da9", normal, "unfulfilled", 1240, 1, 10, False, True, None),
+        ("3cdaa84b-7816-4eb6-a50c-814769ac4110", normal, "fulfilled", 1240, 1, 10, True, True, None),
+        ("02348f29-72b8-4e0d-b586-ce7960d24cd4", normal, "fulfilled", 1240, 1, 10, True, True, None),
+        ("eaaf0438-792b-4e7e-b285-10d25b23434d", normal, "unfulfilled", 1240, 1, 10, False, True, None),
+        ("f845977a-3f7c-4467-b77c-d64f8a0562d2", pln, "draft", 297, 1, 20, False, True, None),
+        ("03823843-b873-4e46-a552-674db0f16dfa", normal, "unfulfilled", 1240, 1, 10, False, False, None),
+        (str(uuid.uuid5(uuid.NAMESPACE_URL, "saleor-e2e-draft-3265")), normal, "draft", 1240, 1, 10, False, True, 3265),
+        (str(uuid.uuid5(uuid.NAMESPACE_URL, "saleor-e2e-draft-3266")), normal, "draft", 1240, 1, 10, False, True, 3266),
+    ]
+    fixture_ids = [row[0] for row in specs]
+    TransactionItem.objects.filter(order_id__in=fixture_ids).delete()
+    Order.objects.filter(pk__in=fixture_ids).delete()
+    for pk, channel, status, variant_id, quantity, unit, paid, has_customer, number in specs:
+        variant = ProductVariant.objects.get(pk=variant_id)
+        stock, _ = Stock.objects.update_or_create(
+            warehouse=warehouse, product_variant=variant, defaults={"quantity": 1000}
+        )
+        _publish_product(variant.product, unit, channels=[channel])
+        total = Decimal(unit) * quantity
+        order = Order.objects.create(
+            pk=pk, channel=channel, currency=channel.currency_code, status=status,
+            origin=OrderOrigin.DRAFT, user=customer if has_customer else None,
+            user_email=customer.email if has_customer else "",
+            billing_address=customer.default_billing_address.get_copy(),
+            shipping_address=customer.default_shipping_address.get_copy(),
+            shipping_method=method, shipping_method_name=method.name,
+            total_net_amount=total, total_gross_amount=total,
+            undiscounted_total_net_amount=total, undiscounted_total_gross_amount=total,
+            subtotal_net_amount=total, subtotal_gross_amount=total,
+            total_charged_amount=total if paid else 0,
+            charge_status=OrderChargeStatus.FULL if paid else OrderChargeStatus.NONE,
+            should_refresh_prices=False, lines_count=1,
+            **({"number": number} if number else {}),
+        )
+        line = OrderLine.objects.create(
+            order=order, variant=variant, product_name=variant.product.name,
+            variant_name=variant.name, product_sku=variant.sku,
+            product_type_id=variant.product.product_type_id,
+            is_shipping_required=True, is_gift_card=False,
+            quantity=quantity, quantity_fulfilled=quantity if status == "fulfilled" else 0,
+            currency=channel.currency_code,
+            unit_price_net_amount=unit, unit_price_gross_amount=unit,
+            total_price_net_amount=total, total_price_gross_amount=total,
+            undiscounted_unit_price_net_amount=unit, undiscounted_unit_price_gross_amount=unit,
+            undiscounted_total_price_net_amount=total, undiscounted_total_price_gross_amount=total,
+            base_unit_price_amount=unit, undiscounted_base_unit_price_amount=unit,
+            tax_rate=0,
+        )
+        if paid:
+            TransactionItem.objects.create(order=order, name="Seeded manual payment",
+                currency=channel.currency_code, charged_value=total)
+        if status == "fulfilled":
+            fulfillment = order.fulfillments.create()
+            fulfillment.lines.create(order_line=line, quantity=quantity, stock=stock)
+        elif status == "unfulfilled":
+            Allocation.objects.create(order_line=line, stock=stock, quantity_allocated=quantity)
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT setval('order_order_number_seq', (SELECT MAX(number) FROM order_order))")
+    note(f"orders: {len(specs)} active-case fixtures, with stock, shipping and payment state")
+
+
+# Dependency order: leaves first, then things that reference them.
+TIERS = [
+    ("attributes", tier_attributes),
+    ("page-types", tier_page_types),
+    ("product-types", tier_product_types),
+    ("categories", tier_categories),
+    ("collections", tier_collections),
+    ("channels", tier_channels),
+    ("menus", tier_menus),
+    ("warehouses", tier_warehouses),
+    ("shipping", tier_shipping),
+    ("products", tier_products),
+    ("assigned-content", tier_assigned_content),
+    ("users", tier_users),
+    ("permission-groups", tier_permission_groups),
+    ("gift-cards", tier_gift_cards),
+    ("apps", tier_apps),
+    ("promotions", tier_promotions),
+    ("vouchers", tier_vouchers),
+    ("translations", tier_translations),
+    ("taxes", tier_taxes),
+    ("orders", tier_orders),
+    ("order-promotions", tier_order_promotions),
+    ("user-search", tier_user_search),
+    ("cleanup", tier_cleanup),   # must stay last
+]
+
+if __name__ == "__main__":
+    names = [n for n, _ in TIERS]
+    wanted = sys.argv[1:] or names
+    unknown = [w for w in wanted if w not in names]
+    if unknown:
+        sys.exit(f"unknown tier(s): {', '.join(unknown)}\nknown: {', '.join(names)}")
+    lookup = dict(TIERS)
+    for name in wanted:
+        print(f"--- {name} ---")
+        lookup[name]()
+    print(f"\nseeded {len(wanted)} tier(s)")

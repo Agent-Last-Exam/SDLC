@@ -1,0 +1,8 @@
+{"time": 1791946053.1610458, "event": "run_started"}
+{"time": 1791946053.1620612, "event": "stage_started", "stage": "sprint1/prd", "resume_session": null, "role_sha256": "08ca77a00383eed67358affa92954023f39ee1d0e5f3ee76885c377f1f4035cd", "prd_input_sha256": null, "missing_inputs": []}
+{"time": 1791946076.9010198, "event": "stage_execution_started", "stage": "sprint1/prd"}
+{"time": 1791948378.285642, "event": "stage_accepted", "stage": "sprint1/prd", "hashes": {"prd.md": "c0abf99fc5af86e0e22da3a70ddf91d5972819a30e75494720c620a4d4f999e8"}, "missing_outputs": [], "cost_usd": 12.603685}
+{"time": 1791948378.782182, "event": "stage_started", "stage": "sprint1/tech-design", "resume_session": "99fa9cb2-5403-45c0-a655-947213c9a0a2", "role_sha256": "1bbeac97331ac12182de3e0d4cf69dc05f8e097ebb0478580755fa2b24c5544a", "prd_input_sha256": "c0abf99fc5af86e0e22da3a70ddf91d5972819a30e75494720c620a4d4f999e8", "missing_inputs": []}
+{"time": 1791948382.6842117, "event": "stage_execution_started", "stage": "sprint1/tech-design"}
+{"time": 1791952984.960922, "event": "stage_accepted", "stage": "sprint1/tech-design", "hashes": {"backend-design.md": "2e2e0718deced7ca34d20a94dd971a8b8a1e9cc9aabf8445016a98c0091f147b", "frontend-design.md": "5bbe824ab92c68c307f4c7a135ae9c9463e1474d4810e25dc1d47bfb7eed7fc3", "interface-contract.md": "5052cc9f617a397e3ce83debf477a5921d0da6b24bacdda776ab0b8f219c7115", "target-schema.graphql": "4fa23faa263234ed2283f1d6daea4c20c22d4f3df39ffd850ecad1e4ecbfdef8"}, "missing_outputs": [], "cost_usd": 57.283726}
+{"time": 1791952984.9617333, "event": "budget_exhausted", "budget": "max_cost_usd", "cost_usd": 57.283726, "limit": 50.0, "stage": "sprint1/tech-design"}

@@ -1,0 +1,32 @@
+Traceback (most recent call last):
+  File "/home/iriszeng18_gmail_com/.local/share/uv/tools/harbor/lib/python3.14/site-packages/harbor/trial/trial.py", line 500, in run
+    await self._run()
+  File "/home/iriszeng18_gmail_com/.local/share/uv/tools/harbor/lib/python3.14/site-packages/harbor/trial/single_step.py", line 40, in _run
+    await self._run_agent()
+  File "/home/iriszeng18_gmail_com/.local/share/uv/tools/harbor/lib/python3.14/site-packages/harbor/trial/single_step.py", line 76, in _run_agent
+    await self._run_agent_phase(
+    ...<5 lines>...
+    )
+  File "/home/iriszeng18_gmail_com/.local/share/uv/tools/harbor/lib/python3.14/site-packages/harbor/trial/trial.py", line 651, in _run_agent_phase
+    await asyncio.wait_for(
+    ...<6 lines>...
+    )
+  File "/home/iriszeng18_gmail_com/.local/share/uv/python/cpython-3.14-linux-x86_64-gnu/lib/python3.14/asyncio/tasks.py", line 488, in wait_for
+    return await fut
+           ^^^^^^^^^
+  File "/home/iriszeng18_gmail_com/software-last-exam/runtime/workflow_agent.py", line 1031, in run
+    await controller.run()
+  File "/home/iriszeng18_gmail_com/software-last-exam/runtime/workflow_controller.py", line 227, in run
+    actual_session = await self.backend.execute(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        stage, active_prompt, instruction, resume_session, stage_dir
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/iriszeng18_gmail_com/software-last-exam/runtime/workflow_agent.py", line 348, in execute
+    evidence = native_role_evidence(
+        stage_dir / "sessions", session_id, stage["role"], stage["stage_id"]
+    )
+  File "/home/iriszeng18_gmail_com/software-last-exam/runtime/workflow_agent.py", line 60, in native_role_evidence
+    raise RuntimeError("Native transcript does not contain the current stage-role activation")
+RuntimeError: Native transcript does not contain the current stage-role activation

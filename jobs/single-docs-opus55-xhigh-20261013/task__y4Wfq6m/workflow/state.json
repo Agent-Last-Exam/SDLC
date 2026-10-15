@@ -1,0 +1,25 @@
+{
+  "mode": "single",
+  "status": "failed",
+  "cursor": 0,
+  "stages": [
+    {
+      "id": "sprint1/prd",
+      "role": "pm",
+      "status": "failed",
+      "execution_started": true,
+      "session_id": "2e3049af-652b-4e71-a874-c4b60ae16870",
+      "prd_input_sha256": null,
+      "input_sha256": {},
+      "missing_inputs": []
+    }
+  ],
+  "model_called": true,
+  "synthetic": false,
+  "missing_output_policy": "fail",
+  "delivery_complete": true,
+  "max_cost_usd": 50.0,
+  "cost_usd": 0.0,
+  "principal_session": "2e3049af-652b-4e71-a874-c4b60ae16870",
+  "error": "Missing regular output: /workspace/artifacts/sprint1/prd/prd.md"
+}

@@ -1,0 +1,14 @@
+[
+  {
+    "job_name": "single-docs-opus55-xhigh-resume-20261014",
+    "model": "anthropic/claude-opus-5.5",
+    "effort": "xhigh",
+    "stop_after_stage": "sprint1/test-design",
+    "max_runtime_sec": null,
+    "subagents": false,
+    "cache": "explicit ephemeral prefix plus upstream automatic cache",
+    "recipe": "/home/iriszeng18_gmail_com/software-last-exam/.prepared/single-docs-opus55-xhigh-resume-20261014/job.json",
+    "client_version": "2.1.280",
+    "intervention": "Manual interruption followed by same-session resume; user removed runtime limit"
+  }
+]

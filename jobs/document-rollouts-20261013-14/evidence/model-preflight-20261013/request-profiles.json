@@ -1,0 +1,122 @@
+{
+  "endpoint": "/v1/messages",
+  "profiles": [
+    {
+      "model": "anthropic/claude-opus-5.5",
+      "effort": "xhigh",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "official_effort_levels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "request_fields": {
+        "thinking": {
+          "type": "adaptive"
+        },
+        "output_config": {
+          "effort": "xhigh"
+        }
+      },
+      "cache_strategy": "explicit_ephemeral_breakpoint",
+      "cache_verified": true
+    },
+    {
+      "model": "deepseek/deepseek-v4.1-flash",
+      "effort": "max",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "official_effort_levels": [
+        "low",
+        "high",
+        "max"
+      ],
+      "request_fields": {
+        "thinking": {
+          "type": "adaptive"
+        },
+        "output_config": {
+          "effort": "max"
+        }
+      },
+      "cache_strategy": "upstream_automatic_prefix_cache",
+      "cache_verified": true,
+      "native_openai_fields": {
+        "reasoning_effort": "max",
+        "thinking": {
+          "type": "enabled"
+        }
+      }
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "effort": "max",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "official_effort_levels": [
+        "low",
+        "high",
+        "max"
+      ],
+      "request_fields": {
+        "thinking": {
+          "type": "adaptive"
+        },
+        "output_config": {
+          "effort": "max"
+        }
+      },
+      "cache_strategy": "upstream_automatic_prefix_cache",
+      "cache_verified": true,
+      "native_openai_fields": {
+        "reasoning_effort": "max"
+      }
+    },
+    {
+      "model": "z-ai/glm-5.3-flash",
+      "effort": "max",
+      "thinking": {
+        "type": "adaptive"
+      },
+      "official_effort_levels": [
+        "low",
+        "high",
+        "max"
+      ],
+      "request_fields": {
+        "thinking": {
+          "type": "adaptive"
+        },
+        "output_config": {
+          "effort": "max"
+        }
+      },
+      "cache_strategy": "upstream_automatic_prefix_cache",
+      "cache_verified": true,
+      "native_openai_fields": {
+        "reasoning_effort": "max",
+        "thinking": {
+          "type": "enabled",
+          "clear_thinking": false
+        }
+      }
+    }
+  ],
+  "cache_control": {
+    "type": "ephemeral"
+  },
+  "status": "preflight_only_not_rollout_configuration",
+  "limitation": "HTTP acceptance does not prove upstream effort passthrough.",
+  "notes": [
+    "Profiles tested directly through /v1/messages; not yet wired into workflow launcher.",
+    "Cache hit observed in second identical request for all four models.",
+    "HTTP acceptance is not proof that effort is forwarded unchanged to upstream.",
+    "Different provider effort levels are not calibrated equivalents of GPT-6.1-sol xhigh."
+  ]
+}

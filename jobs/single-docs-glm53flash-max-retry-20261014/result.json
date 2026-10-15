@@ -1,0 +1,33 @@
+{
+    "id": "7907ffa5-fc9e-4031-8e76-049b503831b7",
+    "started_at": "2026-10-14T01:13:24.752101",
+    "updated_at": "2026-10-14T02:41:35.010472",
+    "finished_at": "2026-10-14T02:41:35.010472",
+    "n_total_trials": 1,
+    "stats": {
+        "n_completed_trials": 1,
+        "n_errored_trials": 0,
+        "n_running_trials": 0,
+        "n_pending_trials": 0,
+        "n_cancelled_trials": 0,
+        "n_retries": 0,
+        "evals": {
+            "sdlc-workflow-claude-code__glm-5.3-flash__adhoc": {
+                "n_trials": 0,
+                "n_errors": 0,
+                "metrics": [
+                    {
+                        "mean": 0.0
+                    }
+                ],
+                "pass_at_k": {},
+                "reward_stats": {},
+                "exception_stats": {}
+            }
+        },
+        "n_input_tokens": 43220642,
+        "n_cache_tokens": 42752384,
+        "n_output_tokens": 127619,
+        "cost_usd": 56.06391399999997
+    }
+}

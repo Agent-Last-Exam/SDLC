@@ -1,0 +1,6 @@
+{"time": 1791915326.1020179, "event": "document_checkpoint_restored", "session_id": "d0b9d926-dbc7-4a69-ba56-4a5afa8ce1d8"}
+{"time": 1791915326.2147236, "event": "run_started"}
+{"time": 1791915326.4905303, "event": "stage_started", "stage": "sprint1/test-design", "resume_session": "d0b9d926-dbc7-4a69-ba56-4a5afa8ce1d8", "role_sha256": "a58b72ce82ae5b916e817eebdb8d55770e1723e6488fb2d4e601dee7a9fb0f65", "prd_input_sha256": "3ac1073c623840ea611384759eb79026e4395551bf9f332858baef3fe0848bd2", "missing_inputs": []}
+{"time": 1791915350.5631976, "event": "stage_execution_started", "stage": "sprint1/test-design"}
+{"time": 1791915456.6562831, "event": "stage_accepted", "stage": "sprint1/test-design", "hashes": {"test-cases.v1.csv": "88b6e29c5b5bf0127dcf0501e356ff66ffc260cdcfdf50efa6516ddfe6a651ba"}, "missing_outputs": [], "cost_usd": 22.231962}
+{"time": 1791915456.6567962, "event": "run_stopped_at_boundary", "stage": "sprint1/test-design"}

@@ -1,0 +1,15 @@
+[
+  {
+    "job_name": "single-docs-opus55-high-20261014",
+    "model": "anthropic/claude-opus-5.5",
+    "effort": "high",
+    "max_runtime_sec": null,
+    "stop_after_stage": "sprint1/test-design",
+    "subagents": false,
+    "cache": "explicit ephemeral prefix plus upstream automatic cache",
+    "recipe": "/home/iriszeng18_gmail_com/software-last-exam/.prepared/single-docs-opus55-high-20261014/job.json",
+    "client_version": "2.1.280",
+    "fresh_session": true,
+    "progress_interval_minutes": 10
+  }
+]
