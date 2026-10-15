@@ -91,7 +91,7 @@ harbor view /tmp/sdlc-context-view --host 127.0.0.1
 
 输出目录必须尚不存在，并且位于源 jobs 目录之外。命令校验轨迹和快照哈希后才生成文件；不调用模型、不执行任务，不覆盖历史 `agent/trajectory.json` 或运行结果。只处理带 `prompt-snapshots/manifest.json` 的已归档记录，不会把当前工作区模板当成历史提示词。
 
-在 Viewer 选择 `context--` 开头的归档，进入 Rollouts，打开 `archive-view` 的 Trajectory。开头的 system 卡片明确标为“归档补充上下文 · 非原始对话事件”，显示原始 job/trial、阶段、角色、继承来源、缺失证据、注入方式、保存的提示词及 SHA-256。跨 job 续跑、继承快照和失败尝试分别标明；这些卡片的排列不是消息发送时间线。卡片默认可能折叠，点击步骤编号或卡片可展开提示词全文。随后才显示原始对话与工具调用。
+在 Viewer 选择 `context--` 开头的归档，进入 Rollouts，打开 `archive-view` 的 Trajectory。开头的 system 卡片明确标为“归档补充上下文 · 非原始对话事件”，显示原始 job/trial、阶段、角色、继承来源、缺失证据、注入方式、保存的提示词及 SHA-256。跨 job 续跑、继承快照和失败尝试分别标明；这些卡片的排列不是消息发送时间线。卡片默认可能折叠，点击提示词正文区域可展开全文（步骤编号用于复制链接）。随后才显示原始对话与工具调用。
 
 展示副本只顺延对话的展示编号，并在各步 `extra.archive_original_step_id` 保存原编号。原始时间戳、消息、工具返回、sidechain 标记和 token/cost 指标保持不变；补充卡片不计为模型调用。CLI 内置 system prompt、未保存的项目指令和缺失子会话不能从这些快照重建，界面会明确说明边界。
 
