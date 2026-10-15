@@ -16,7 +16,7 @@
 | test_workflow_runtime.py | 原生角色证据与子 Agent 配置 |
 | test_reporting.py | 报告状态、正式文件哈希、探针区分、异常信息处理和手写报告保护 |
 | test_team_protocol.py / test_team_broker.py | Lead/成员 JSON 协议、并行写域、成员会话、不可变 revision、stale 和闭包 |
-| test_hierarchical_controller.py | 持续 Lead、同 Stage 多成员并行与预算终止 |
+| test_hierarchical_controller.py | 持续 Lead、同 Stage 多成员并行与调度上限 |
 | test_agent_cost.py | 从 Agent result 事件读取成本：累计、未知与畸形行的处理 |
 | test_team_workspace.py | 独立代码副本 diff、冲突拒绝、受控集成和链接防护 |
 | test_trajectory.py | Single、Flat 与 Hierarchical Lead/成员嵌套 ATIF 导出 |
@@ -28,3 +28,8 @@
 `test_deployment_boundary.py` 验证部署重建、候选摘要不匹配拒绝、旧链接隔离，以及清理阶段资源时保留服务文件。容器 smoke 还会实际执行 prepare、跨 QA 访问服务临时文件并重新挂接共享内存。
 
 `test_lifecycle.py` 同时验证 PRD/用例基线绑定、跨轮次摘要一致，以及文件被修改、删除、替换为链接或基线清单被修改时终止；工具异常也不能绕过基线检查。
+
+`test_workflow_checkpoint.py` 验证 Single 原会话恢复、Flat 仅恢复文件，以及输入、模型、
+阶段契约和封存内容不一致时拒绝续跑；同时验证镜像硬链接物化后仍可通过严格 inventory。
+`test_request_relay.py` 用本地 HTTP 服务验证审计透传、显式 profile 改写和敏感内容不落日志。
+`test_request_usage.py` 验证流式用量去重与费用缺失保持未知。

@@ -47,7 +47,7 @@ class Controller:
         # The stage graph is the only source of QA rounds; a sprint added there
         # raises the count with no configuration to keep in step.
         self.qa_rounds = max(
-            stage["round"] for stage in compiled["stages"] if stage["role"] == "qa"
+            (stage["round"] for stage in compiled["stages"] if stage["role"] == "qa"), default=0
         )
         if compiled["contract"].get("scope") != "local_sdlc":
             raise ValueError("Only the local_sdlc lifecycle contract is supported")
@@ -130,13 +130,15 @@ class Controller:
         atomic_json(self.directory / "state.json", self.state)
 
     async def run(self):
-        session = None
-        flat_sessions = set()
+        session = self.state.get("principal_session")
+        flat_sessions = {row["session_id"] for row in self.state.get("principal_sessions", [])}
         continuous_session = self.compiled["mode"] == "single"
         repair_plan = None
         self.event("run_started")
         try:
             for index, stage in enumerate(self.compiled["stages"]):
+                if index < self.state["cursor"]:
+                    continue
                 if self.state["cursor"] != index:
                     raise RuntimeError("Invalid stage cursor")
                 self.backend.stage_index = index
@@ -195,7 +197,8 @@ class Controller:
                 subagents = self.compiled["run"]["execution"].get("subagents", {})
                 if subagents.get("enabled"):
                     active_prompt += (
-                        "\n当前 Stage 允许使用 Claude Code multi-agent，把互相独立的工作拆给多个 subagent。"
+                        "\n当前 Stage 允许使用 Claude Code multi-agent，由你自行决定是否调用 subagent；不要求使用。"
+                        "需要时可把互相独立的工作拆给多个 subagent。"
                         "所有 subagent 只服务当前 Stage，并共享当前 Sandbox/Workspace。"
                         "并发写任务必须划分互不重叠的文件或写入范围，禁止多个 Agent 同时修改同一文件。"
                         "你作为当前 Stage 主 Agent，负责检查并整合正式交付。"

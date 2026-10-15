@@ -63,6 +63,90 @@ class TaskFixture(unittest.TestCase):
         )
 
 class ModeProfileTests(TaskFixture):
+    def test_document_only_preserves_subagent_policy(self):
+        import contextlib
+        import io
+        from unittest.mock import patch
+        from runtime import run_workflow
+
+        for mode, enabled in ((m, e) for m in ("single", "flat") for e in (True, False)):
+            with self.subTest(mode=mode, enabled=enabled):
+                compiled = self.compile(mode)
+                compiled["run"]["execution"]["subagents"]["enabled"] = enabled
+                name = f"document-only-{mode}-{enabled}"
+                args = ["run_workflow", "--task", str(self.task), "--mode", mode, "--document-only",
+                        "--prepare-only", "--job-name", name]
+                with patch.object(run_workflow, "HERE", self.root), \
+                        patch.object(run_workflow, "compile_workflow", return_value=compiled), \
+                        patch("sys.argv", args), contextlib.redirect_stdout(io.StringIO()):
+                    self.assertEqual(run_workflow.main(), 0)
+                prepared = self.root / ".prepared" / name
+                resolved = json.loads((prepared / "resolved-workflow.json").read_text())
+                self.assertEqual(resolved["run"]["execution"]["subagents"]["enabled"], enabled)
+                self.assertEqual([s["role"] for s in resolved["stages"]],
+                                 ["pm", "architect", "qa-design"])
+                recipe = json.loads((prepared / "job.json").read_text())
+                self.assertEqual(recipe["agents"][0]["kwargs"]["stop_after_stage"],
+                                 "sprint1/test-design")
+                self.assertEqual(recipe["agents"][0]["kwargs"]["stage_timeout_sec"], 14400)
+                self.assertGreater(recipe["agents"][0]["override_timeout_sec"], 3 * 14400)
+
+    def test_resume_recipe_preserves_checkpoint_and_selected_policy(self):
+        import contextlib
+        import io
+        from unittest.mock import patch
+        from runtime import run_workflow
+
+        source = self.root / "trial"
+        args = ["run_workflow", "--task", str(self.task), "--mode", "flat", "--prepare-only",
+                "--resume-from", str(source), "--stop-after-stage", "sprint1/development",
+                "--job-name", "resume-recipe", "--model", "selected"]
+        with patch.object(run_workflow, "HERE", self.root), \
+                patch.object(run_workflow, "compile_workflow", return_value=self.compile("flat")), \
+                patch("runtime.workflow_checkpoint.validate_checkpoint", return_value={"cursor": 3}), \
+                patch("sys.argv", args), contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(run_workflow.main(), 0)
+        recipe = json.loads((self.root / ".prepared/resume-recipe/job.json").read_text())
+        agent = recipe["agents"][0]
+        self.assertEqual(agent["kwargs"]["resume_from"], str(source))
+        self.assertEqual(agent["kwargs"]["stop_after_stage"], "sprint1/development")
+        self.assertLess(agent["override_timeout_sec"], 2 * 14400)
+
+    def test_single_flat_prepared_timeout_covers_all_stage_budgets(self):
+        import tomllib
+        from runtime.workflow_timeouts import DEFAULT_STAGE_TIMEOUT_SEC
+
+        for mode in ("single", "flat"):
+            compiled = self.compile(mode)
+            task = tomllib.loads(compiled["harbor_generated"]["task.toml"])
+            self.assertEqual(DEFAULT_STAGE_TIMEOUT_SEC, 14400)
+            self.assertGreater(task["agent"]["timeout_sec"], len(compiled["stages"]) * 14400)
+
+    def test_custom_stage_timeout_and_explicit_total_in_recipe(self):
+        import contextlib
+        import io
+        from unittest.mock import patch
+        from runtime import run_workflow
+
+        for total in (None, 3600):
+            name = f"stage-timeout-{total}"
+            args = ["run_workflow", "--task", str(self.task), "--mode", "flat",
+                    "--prepare-only", "--job-name", name, "--stage-timeout-sec", "18000",
+                    "--stop-after-stage", "sprint1/development"]
+            if total is not None:
+                args.extend(["--max-runtime-sec", str(total)])
+            with patch.object(run_workflow, "HERE", self.root), \
+                    patch.object(run_workflow, "compile_workflow", return_value=self.compile("flat")), \
+                    patch("sys.argv", args), contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(run_workflow.main(), 0)
+            recipe = json.loads((self.root / ".prepared" / name / "job.json").read_text())
+            agent = recipe["agents"][0]
+            self.assertEqual(agent["kwargs"]["stage_timeout_sec"], 18000)
+            if total is None:
+                self.assertGreater(agent["override_timeout_sec"], 4 * 18000)
+            else:
+                self.assertEqual(agent["override_timeout_sec"], total + 600)
+
     def test_each_mode_loads_its_own_runtime_profile(self):
         for mode in MODES:
             with self.subTest(mode=mode):

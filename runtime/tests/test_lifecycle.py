@@ -10,7 +10,7 @@ from unittest.mock import patch
 from runtime.prepare_workflow import CONTRACT, DEFAULTS, HERE, compile_workflow
 
 PRUNED = HERE / 'tasks/saleor-3.23-pruned'
-from runtime.workflow_controller import Controller, stage_routing
+from runtime.workflow_controller import Controller, stage_routing, digest
 from runtime.workflow_smoke import SmokeBackend, write_stage_fixture
 from runtime.local_deployment import validate_manifest
 from runtime.workspace_snapshot import inventory
@@ -103,6 +103,24 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
         backend = LifecycleBackend(self.workspace, **kwargs)
         controller = Controller(self.config, self.workspace, self.root / 'control', backend)
         return await controller.run(), backend
+
+    async def test_document_checkpoint_continues_only_qa_on_original_session(self):
+        self.config['stages'] = self.config['stages'][:3]
+        backend = LifecycleBackend(self.workspace)
+        controller = Controller(self.config, self.workspace, self.root / 'control', backend,
+                                stop_after_stage='sprint1/test-design')
+        for stage in self.config['stages'][:2]:
+            directory = controller.directory / 'accepted' / stage['stage_id']
+            write_stage_fixture(directory, stage, self.workspace, 'pass')
+            hashes = {str(p.relative_to(directory)): digest(p) for p in directory.rglob('*') if p.is_file()}
+            controller.freeze_baseline(stage, hashes)
+            controller.state['stages'].append({'id': stage['stage_id'], 'role': stage['role'], 'status': 'accepted', 'outputs': hashes})
+        controller.accepted_prd = controller.directory / 'accepted/sprint1/prd/prd.md'
+        controller.state.update(cursor=2, principal_session='single-native-session')
+        state = await controller.run()
+        self.assertEqual([call[0] for call in backend.calls], ['sprint1/test-design'])
+        self.assertEqual(backend.calls[0][1], 'single-native-session')
+        self.assertEqual(state['status'], 'stopped_at_boundary')
 
     async def test_container_smoke_copies_repository_fixture_inside_container(self):
         class Result:

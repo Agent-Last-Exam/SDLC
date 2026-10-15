@@ -17,6 +17,7 @@ import tempfile
 import tomllib
 
 import yaml
+from runtime.workflow_timeouts import harbor_timeout_sec
 
 HERE = Path(__file__).resolve().parents[1]
 DEFAULTS = Path(__file__).resolve().parent / "defaults"
@@ -148,7 +149,7 @@ def derive_base_revisions(manifest):
     return derived
 
 
-def generated_task_toml(task_toml, mode):
+def generated_task_toml(task_toml, mode, agent_timeout_sec=10800.0):
     environment = task_toml["environment"]
     name, task_id = task_toml["task"]["name"], task_toml["metadata"]["task_id"]
     for value in (name, task_id):
@@ -166,7 +167,7 @@ source_task = "{task_id}"
 scope = "Workflow rollout; benchmark verifier remains owned by the source task"
 
 [agent]
-timeout_sec = 10800.0
+timeout_sec = {float(agent_timeout_sec)}
 network_mode = "public"
 user = "root"
 
@@ -412,6 +413,10 @@ def compile_workflow(mode, task, verify_repos=True, contract_path=CONTRACT):
     )
     if image:
         harbor_generated["Dockerfile"] = generated_dockerfile(image, revisions)
+        if mode in {"single", "flat"}:
+            harbor_generated["task.toml"] = generated_task_toml(
+                task_toml, mode, harbor_timeout_sec(stages)
+            )
     if verify_repos and repos_source == "host":
         for name, revision in revisions.items():
             repo = Path(sources["inputs"]["repos"]) / name
