@@ -1,0 +1,3 @@
+** -text
+documents/** -whitespace linguist-generated=true
+trajectories/** linguist-generated=true
