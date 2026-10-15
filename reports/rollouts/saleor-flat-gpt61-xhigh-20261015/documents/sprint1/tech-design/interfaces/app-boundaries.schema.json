@@ -1,0 +1,1944 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:saleor:sprint1:tech-design:app-boundaries:v1",
+  "title": "Saleor 当前 App manifest、扩展目录、EditorJS及表单消息边界 v1",
+  "description": "由提供Base和设计推导，不是升级版本下载。入口按$defs/Manifest、Catalog、FormMessage、FormContext、FormReady、FormAck分别消费。权限/唯一性/当前上下文/URL正规化及外部IO由运行时实现。",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/Manifest"
+    },
+    {
+      "$ref": "#/$defs/Catalog"
+    },
+    {
+      "$ref": "#/$defs/FormMessage"
+    },
+    {
+      "$ref": "#/$defs/FormContext"
+    },
+    {
+      "$ref": "#/$defs/FormReady"
+    },
+    {
+      "$ref": "#/$defs/FormAck"
+    }
+  ],
+  "$defs": {
+    "HttpUrl": {
+      "type": "string",
+      "pattern": "^https?://[^\\s\\x00-\\x1f\\x7f]+$",
+      "description": "必须另以URL parser拒绝凭据、反斜线、非法host、控制符及部署禁止的内网目标；生产沿用ENABLE_SSL。JSON Schema不是SSRF/origin授权。"
+    },
+    "RelativePath": {
+      "type": "string",
+      "pattern": "^/(?!/)[^\\s\\\\\\x00-\\x1f\\x7f]*$",
+      "description": "站内绝对路径；不得为protocol-relative。扩展relative path按Base appUrl/APP_PAGE规则解析。"
+    },
+    "ExtensionUrl": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/HttpUrl"
+        },
+        {
+          "$ref": "#/$defs/RelativePath"
+        }
+      ]
+    },
+    "Permission": {
+      "type": "string",
+      "enum": [
+        "MANAGE_USERS",
+        "MANAGE_STAFF",
+        "IMPERSONATE_USER",
+        "MANAGE_APPS",
+        "MANAGE_OBSERVABILITY",
+        "MANAGE_CHECKOUTS",
+        "HANDLE_CHECKOUTS",
+        "HANDLE_TAXES",
+        "MANAGE_TAXES",
+        "MANAGE_CHANNELS",
+        "MANAGE_DISCOUNTS",
+        "MANAGE_GIFT_CARD",
+        "MANAGE_MENUS",
+        "MANAGE_ORDERS",
+        "MANAGE_ORDERS_IMPORT",
+        "MANAGE_PAGES",
+        "MANAGE_PAGE_TYPES_AND_ATTRIBUTES",
+        "HANDLE_PAYMENTS",
+        "MANAGE_PLUGINS",
+        "MANAGE_PRODUCTS",
+        "MANAGE_PRODUCT_TYPES_AND_ATTRIBUTES",
+        "MANAGE_SHIPPING",
+        "MANAGE_SETTINGS",
+        "MANAGE_TRANSLATIONS",
+        "MANAGE_PRODUCT_EXPORTS",
+        "MANAGE_GIFT_CARD_EXPORTS",
+        "MANAGE_VOUCHER_EXPORTS"
+      ]
+    },
+    "ExtensionMount": {
+      "type": "string",
+      "enum": [
+        "CATEGORY_OVERVIEW_CREATE",
+        "CATEGORY_OVERVIEW_MORE_ACTIONS",
+        "CATEGORY_DETAILS_MORE_ACTIONS",
+        "COLLECTION_OVERVIEW_CREATE",
+        "COLLECTION_OVERVIEW_MORE_ACTIONS",
+        "COLLECTION_DETAILS_MORE_ACTIONS",
+        "COLLECTION_DETAILS_WIDGETS",
+        "GIFT_CARD_OVERVIEW_CREATE",
+        "GIFT_CARD_OVERVIEW_MORE_ACTIONS",
+        "GIFT_CARD_DETAILS_MORE_ACTIONS",
+        "GIFT_CARD_DETAILS_WIDGETS",
+        "CUSTOMER_OVERVIEW_CREATE",
+        "CUSTOMER_OVERVIEW_MORE_ACTIONS",
+        "CUSTOMER_DETAILS_MORE_ACTIONS",
+        "CUSTOMER_DETAILS_WIDGETS",
+        "PRODUCT_OVERVIEW_CREATE",
+        "PRODUCT_OVERVIEW_MORE_ACTIONS",
+        "PRODUCT_DETAILS_MORE_ACTIONS",
+        "PRODUCT_DETAILS_WIDGETS",
+        "NAVIGATION_CATALOG",
+        "NAVIGATION_ORDERS",
+        "NAVIGATION_CUSTOMERS",
+        "NAVIGATION_DISCOUNTS",
+        "NAVIGATION_TRANSLATIONS",
+        "NAVIGATION_PAGES",
+        "ORDER_DETAILS_MORE_ACTIONS",
+        "ORDER_OVERVIEW_CREATE",
+        "ORDER_OVERVIEW_MORE_ACTIONS",
+        "ORDER_DETAILS_WIDGETS",
+        "DRAFT_ORDER_DETAILS_MORE_ACTIONS",
+        "DRAFT_ORDER_OVERVIEW_CREATE",
+        "DRAFT_ORDER_OVERVIEW_MORE_ACTIONS",
+        "DRAFT_ORDER_DETAILS_WIDGETS",
+        "DISCOUNT_DETAILS_MORE_ACTIONS",
+        "DISCOUNT_OVERVIEW_CREATE",
+        "DISCOUNT_OVERVIEW_MORE_ACTIONS",
+        "VOUCHER_DETAILS_MORE_ACTIONS",
+        "VOUCHER_OVERVIEW_CREATE",
+        "VOUCHER_OVERVIEW_MORE_ACTIONS",
+        "VOUCHER_DETAILS_WIDGETS",
+        "PAGE_DETAILS_MORE_ACTIONS",
+        "PAGE_OVERVIEW_CREATE",
+        "PAGE_OVERVIEW_MORE_ACTIONS",
+        "PAGE_TYPE_OVERVIEW_CREATE",
+        "PAGE_TYPE_OVERVIEW_MORE_ACTIONS",
+        "PAGE_TYPE_DETAILS_MORE_ACTIONS",
+        "MENU_OVERVIEW_CREATE",
+        "MENU_OVERVIEW_MORE_ACTIONS",
+        "MENU_DETAILS_MORE_ACTIONS"
+      ]
+    },
+    "ExtensionTarget": {
+      "type": "string",
+      "enum": [
+        "POPUP",
+        "APP_PAGE",
+        "NEW_TAB",
+        "WIDGET"
+      ]
+    },
+    "HttpTargetSettings": {
+      "type": "object",
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": [
+            "GET",
+            "POST"
+          ],
+          "default": "GET"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "Extension": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "url": {
+          "$ref": "#/$defs/ExtensionUrl"
+        },
+        "permissions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Permission"
+          },
+          "uniqueItems": true,
+          "default": []
+        },
+        "mountName": {
+          "$ref": "#/$defs/ExtensionMount"
+        },
+        "targetName": {
+          "$ref": "#/$defs/ExtensionTarget"
+        },
+        "settings": {
+          "type": "object",
+          "default": {}
+        }
+      },
+      "required": [
+        "label",
+        "url",
+        "mountName",
+        "targetName"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "targetName": {
+                "enum": [
+                  "NEW_TAB",
+                  "WIDGET"
+                ]
+              }
+            },
+            "required": [
+              "targetName"
+            ]
+          },
+          "then": {
+            "properties": {
+              "settings": {
+                "$ref": "#/$defs/HttpTargetSettings"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "targetName": {
+                "enum": [
+                  "POPUP",
+                  "APP_PAGE"
+                ]
+              }
+            },
+            "required": [
+              "targetName"
+            ]
+          },
+          "then": {
+            "properties": {
+              "settings": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "targetName": {
+                "const": "APP_PAGE"
+              }
+            },
+            "required": [
+              "targetName"
+            ]
+          },
+          "then": {
+            "properties": {
+              "url": {
+                "$ref": "#/$defs/RelativePath"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "targetName": {
+                "const": "WIDGET"
+              }
+            },
+            "required": [
+              "targetName"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mountName": {
+                "enum": [
+                  "COLLECTION_DETAILS_WIDGETS",
+                  "GIFT_CARD_DETAILS_WIDGETS",
+                  "CUSTOMER_DETAILS_WIDGETS",
+                  "PRODUCT_DETAILS_WIDGETS",
+                  "ORDER_DETAILS_WIDGETS",
+                  "DRAFT_ORDER_DETAILS_WIDGETS",
+                  "VOUCHER_DETAILS_WIDGETS"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "description": "I18当前manifest输入。旧mount/target/options拒绝并给MIGRATION_REQUIRED；旧数据库仅作兼容读取，不是此schema输入。缺省settings显式正规化为{}，GET/POST默认GET。POST NEW_TAB/WIDGET需manifest.tokenTargetUrl且解析后完整origin一致；相对URL按appUrl解析，APP_PAGE为已有例外。扩展权限<=App权限，JSONschema default不等于自动写值。"
+    },
+    "CustomHeaders": {
+      "type": "object",
+      "maxProperties": 5,
+      "propertyNames": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "^([xX]-|[aA][uU][tT][hH][oO][rR][iI][zZ][aA][tT][iI][oO][nN]|[bB][rR][oO][kK][eE][rR][pP][rR][oO][pP][eE][rR][tT][iI][eE][sS]$)[\\x21-\\x7e]*$"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[\\x09\\x20-\\x7e]*$"
+      },
+      "description": "Base webhook/validators.py约束：最多5个头；每对key+value+2<=998；key可见ASCII，value可见ASCII/space/tab；按lowercase规范化。长度之和与保留传输身份/签名冲突由运行时校验，绝不允许目录或frame泄露Authorization。"
+    },
+    "ManifestWebhook": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "targetUrl": {
+          "type": "string",
+          "pattern": "^(https?|awssqs|gcpubsub)://[^\\s\\x00-\\x1f\\x7f]+$",
+          "description": "Base四scheme；队列凭据按既有安全配置处理、不记日志。"
+        },
+        "query": {
+          "type": "string",
+          "minLength": 1
+        },
+        "asyncEvents": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "ANY_EVENTS",
+              "ACCOUNT_CONFIRMATION_REQUESTED",
+              "ACCOUNT_CHANGE_EMAIL_REQUESTED",
+              "ACCOUNT_EMAIL_CHANGED",
+              "ACCOUNT_SET_PASSWORD_REQUESTED",
+              "ACCOUNT_CONFIRMED",
+              "ACCOUNT_DELETE_REQUESTED",
+              "ACCOUNT_DELETED",
+              "ADDRESS_CREATED",
+              "ADDRESS_UPDATED",
+              "ADDRESS_DELETED",
+              "APP_INSTALLED",
+              "APP_UPDATED",
+              "APP_DELETED",
+              "APP_STATUS_CHANGED",
+              "ATTRIBUTE_CREATED",
+              "ATTRIBUTE_UPDATED",
+              "ATTRIBUTE_DELETED",
+              "ATTRIBUTE_VALUE_CREATED",
+              "ATTRIBUTE_VALUE_UPDATED",
+              "ATTRIBUTE_VALUE_DELETED",
+              "CATEGORY_CREATED",
+              "CATEGORY_UPDATED",
+              "CATEGORY_DELETED",
+              "CHANNEL_CREATED",
+              "CHANNEL_UPDATED",
+              "CHANNEL_DELETED",
+              "CHANNEL_STATUS_CHANGED",
+              "CHANNEL_METADATA_UPDATED",
+              "GIFT_CARD_CREATED",
+              "GIFT_CARD_UPDATED",
+              "GIFT_CARD_DELETED",
+              "GIFT_CARD_SENT",
+              "GIFT_CARD_STATUS_CHANGED",
+              "GIFT_CARD_METADATA_UPDATED",
+              "GIFT_CARD_EXPORT_COMPLETED",
+              "MENU_CREATED",
+              "MENU_UPDATED",
+              "MENU_DELETED",
+              "MENU_ITEM_CREATED",
+              "MENU_ITEM_UPDATED",
+              "MENU_ITEM_DELETED",
+              "ORDER_CREATED",
+              "ORDER_CONFIRMED",
+              "ORDER_PAID",
+              "ORDER_FULLY_PAID",
+              "ORDER_REFUNDED",
+              "ORDER_FULLY_REFUNDED",
+              "ORDER_UPDATED",
+              "ORDER_CANCELLED",
+              "ORDER_EXPIRED",
+              "ORDER_FULFILLED",
+              "ORDER_METADATA_UPDATED",
+              "ORDER_BULK_CREATED",
+              "FULFILLMENT_CREATED",
+              "FULFILLMENT_CANCELED",
+              "FULFILLMENT_APPROVED",
+              "FULFILLMENT_METADATA_UPDATED",
+              "FULFILLMENT_TRACKING_NUMBER_UPDATED",
+              "DRAFT_ORDER_CREATED",
+              "DRAFT_ORDER_UPDATED",
+              "DRAFT_ORDER_DELETED",
+              "SALE_CREATED",
+              "SALE_UPDATED",
+              "SALE_DELETED",
+              "SALE_TOGGLE",
+              "PROMOTION_CREATED",
+              "PROMOTION_UPDATED",
+              "PROMOTION_DELETED",
+              "PROMOTION_STARTED",
+              "PROMOTION_ENDED",
+              "PROMOTION_RULE_CREATED",
+              "PROMOTION_RULE_UPDATED",
+              "PROMOTION_RULE_DELETED",
+              "INVOICE_REQUESTED",
+              "INVOICE_DELETED",
+              "INVOICE_SENT",
+              "CUSTOMER_CREATED",
+              "CUSTOMER_UPDATED",
+              "CUSTOMER_DELETED",
+              "CUSTOMER_METADATA_UPDATED",
+              "COLLECTION_CREATED",
+              "COLLECTION_UPDATED",
+              "COLLECTION_DELETED",
+              "COLLECTION_METADATA_UPDATED",
+              "PRODUCT_CREATED",
+              "PRODUCT_UPDATED",
+              "PRODUCT_DELETED",
+              "PRODUCT_METADATA_UPDATED",
+              "PRODUCT_EXPORT_COMPLETED",
+              "PRODUCT_MEDIA_CREATED",
+              "PRODUCT_MEDIA_UPDATED",
+              "PRODUCT_MEDIA_DELETED",
+              "PRODUCT_VARIANT_CREATED",
+              "PRODUCT_VARIANT_UPDATED",
+              "PRODUCT_VARIANT_DELETED",
+              "PRODUCT_VARIANT_METADATA_UPDATED",
+              "PRODUCT_VARIANT_OUT_OF_STOCK",
+              "PRODUCT_VARIANT_BACK_IN_STOCK",
+              "PRODUCT_VARIANT_STOCK_UPDATED",
+              "CHECKOUT_CREATED",
+              "CHECKOUT_UPDATED",
+              "CHECKOUT_FULLY_AUTHORIZED",
+              "CHECKOUT_FULLY_PAID",
+              "CHECKOUT_METADATA_UPDATED",
+              "NOTIFY_USER",
+              "PAGE_CREATED",
+              "PAGE_UPDATED",
+              "PAGE_DELETED",
+              "PAGE_TYPE_CREATED",
+              "PAGE_TYPE_UPDATED",
+              "PAGE_TYPE_DELETED",
+              "PERMISSION_GROUP_CREATED",
+              "PERMISSION_GROUP_UPDATED",
+              "PERMISSION_GROUP_DELETED",
+              "SHIPPING_PRICE_CREATED",
+              "SHIPPING_PRICE_UPDATED",
+              "SHIPPING_PRICE_DELETED",
+              "SHIPPING_ZONE_CREATED",
+              "SHIPPING_ZONE_UPDATED",
+              "SHIPPING_ZONE_DELETED",
+              "SHIPPING_ZONE_METADATA_UPDATED",
+              "STAFF_CREATED",
+              "STAFF_UPDATED",
+              "STAFF_DELETED",
+              "STAFF_SET_PASSWORD_REQUESTED",
+              "TRANSACTION_ITEM_METADATA_UPDATED",
+              "TRANSLATION_CREATED",
+              "TRANSLATION_UPDATED",
+              "WAREHOUSE_CREATED",
+              "WAREHOUSE_UPDATED",
+              "WAREHOUSE_DELETED",
+              "WAREHOUSE_METADATA_UPDATED",
+              "VOUCHER_CREATED",
+              "VOUCHER_UPDATED",
+              "VOUCHER_DELETED",
+              "VOUCHER_CODES_CREATED",
+              "VOUCHER_CODES_DELETED",
+              "VOUCHER_METADATA_UPDATED",
+              "VOUCHER_CODE_EXPORT_COMPLETED",
+              "OBSERVABILITY",
+              "THUMBNAIL_CREATED",
+              "SHOP_METADATA_UPDATED"
+            ]
+          },
+          "uniqueItems": true,
+          "default": []
+        },
+        "syncEvents": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "PAYMENT_LIST_GATEWAYS",
+              "PAYMENT_AUTHORIZE",
+              "PAYMENT_CAPTURE",
+              "PAYMENT_REFUND",
+              "PAYMENT_VOID",
+              "PAYMENT_CONFIRM",
+              "PAYMENT_PROCESS",
+              "CHECKOUT_CALCULATE_TAXES",
+              "ORDER_CALCULATE_TAXES",
+              "TRANSACTION_CHARGE_REQUESTED",
+              "TRANSACTION_REFUND_REQUESTED",
+              "TRANSACTION_CANCELATION_REQUESTED",
+              "SHIPPING_LIST_METHODS_FOR_CHECKOUT",
+              "CHECKOUT_FILTER_SHIPPING_METHODS",
+              "ORDER_FILTER_SHIPPING_METHODS",
+              "PAYMENT_GATEWAY_INITIALIZE_SESSION",
+              "TRANSACTION_INITIALIZE_SESSION",
+              "TRANSACTION_PROCESS_SESSION",
+              "LIST_STORED_PAYMENT_METHODS",
+              "STORED_PAYMENT_METHOD_DELETE_REQUESTED",
+              "PAYMENT_GATEWAY_INITIALIZE_TOKENIZATION_SESSION",
+              "PAYMENT_METHOD_INITIALIZE_TOKENIZATION_SESSION",
+              "PAYMENT_METHOD_PROCESS_TOKENIZATION_SESSION"
+            ]
+          },
+          "uniqueItems": true,
+          "default": []
+        },
+        "isActive": {
+          "type": "boolean",
+          "default": true
+        },
+        "customHeaders": {
+          "$ref": "#/$defs/CustomHeaders"
+        }
+      },
+      "required": [
+        "name",
+        "targetUrl",
+        "query"
+      ],
+      "additionalProperties": false,
+      "description": "query必须是target-schema中合法subscription，selection驱动解析；非空query按Base提取事件，不另造异步事件类型。isActive/customHeaders为manifest JSON输入，不宣称GraphQL Manifest预览已有这两个字段。"
+    },
+    "ManifestBrand": {
+      "type": "object",
+      "properties": {
+        "logo": {
+          "type": "object",
+          "properties": {
+            "default": {
+              "$ref": "#/$defs/HttpUrl"
+            }
+          },
+          "required": [
+            "default"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "logo"
+      ],
+      "additionalProperties": false
+    },
+    "Manifest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "about": {
+          "type": "string"
+        },
+        "permissions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Permission"
+          },
+          "uniqueItems": true,
+          "default": []
+        },
+        "appUrl": {
+          "$ref": "#/$defs/HttpUrl"
+        },
+        "configurationUrl": {
+          "$ref": "#/$defs/HttpUrl",
+          "deprecated": true,
+          "description": "兼容读取/解析，当前使用appUrl。"
+        },
+        "tokenTargetUrl": {
+          "$ref": "#/$defs/HttpUrl"
+        },
+        "dataPrivacy": {
+          "type": "string",
+          "deprecated": true
+        },
+        "dataPrivacyUrl": {
+          "$ref": "#/$defs/HttpUrl"
+        },
+        "homepageUrl": {
+          "$ref": "#/$defs/HttpUrl"
+        },
+        "supportUrl": {
+          "$ref": "#/$defs/HttpUrl"
+        },
+        "extensions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Extension"
+          },
+          "default": []
+        },
+        "webhooks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ManifestWebhook"
+          },
+          "default": []
+        },
+        "audience": {
+          "type": "string"
+        },
+        "requiredSaleorVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "author": {
+          "type": "string",
+          "minLength": 1
+        },
+        "brand": {
+          "$ref": "#/$defs/ManifestBrand"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "name"
+      ],
+      "additionalProperties": false,
+      "description": "完整当前App manifest JSON；version/requiredSaleorVersion按Base SemVer/NpmSpec解析。可选字段省略，null不代替缺省。tokenTargetUrl可省，合法GET/POPUP不投递token；依赖token的POST目标必须安全配置并同origin。identifier唯一/权限子集/订阅有效性/SSRF为运行时规则。安装响应从GraphQL读取，不把manifest下载成功当installed。"
+    },
+    "LocalizedText": {
+      "type": "object",
+      "properties": {
+        "en": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "en"
+      ],
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "CatalogLogo": {
+      "type": "object",
+      "properties": {
+        "light": {
+          "type": "object",
+          "properties": {
+            "source": {
+              "$ref": "#/$defs/HttpUrl"
+            }
+          },
+          "required": [
+            "source"
+          ],
+          "additionalProperties": false
+        },
+        "dark": {
+          "type": "object",
+          "properties": {
+            "source": {
+              "$ref": "#/$defs/HttpUrl"
+            }
+          },
+          "required": [
+            "source"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "light",
+        "dark"
+      ],
+      "additionalProperties": false
+    },
+    "CatalogApp": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "description": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "logo": {
+          "$ref": "#/$defs/CatalogLogo"
+        },
+        "installed": {
+          "type": "boolean"
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "type": {
+          "const": "APP"
+        },
+        "kind": {
+          "enum": [
+            "OFFICIAL",
+            "OSS"
+          ]
+        },
+        "manifestUrl": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HttpUrl"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "repositoryUrl": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HttpUrl"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "isCustomApp": {
+          "type": "boolean"
+        },
+        "appId": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "logo",
+        "type",
+        "kind",
+        "manifestUrl",
+        "repositoryUrl"
+      ],
+      "additionalProperties": false
+    },
+    "CatalogPlugin": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "description": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "logo": {
+          "$ref": "#/$defs/CatalogLogo"
+        },
+        "installed": {
+          "type": "boolean"
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "type": {
+          "const": "PLUGIN"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "logo",
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "CatalogGroup": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "enum": [
+            "payments",
+            "taxes",
+            "cms",
+            "automation"
+          ]
+        },
+        "name": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "extensions": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/CatalogApp"
+              },
+              {
+                "$ref": "#/$defs/CatalogPlugin"
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "extensions"
+      ],
+      "additionalProperties": false
+    },
+    "Catalog": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/CatalogGroup"
+      },
+      "description": "I20 Base APIExtensionsResponse分组数组。组id唯一，组内扩展id唯一由运行时验证。[]合法；缺配置本地空目录有明确未配置提示。installed/appId只提示，实际授权安装状态以Core完整分页结果为准，无权/失败unknown。不得含token或成为安装授权。"
+    },
+    "ListMetadata": {
+      "type": "object",
+      "properties": {
+        "start": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "counterType": {
+          "enum": [
+            "numeric",
+            "lower-roman",
+            "upper-roman",
+            "lower-alpha",
+            "upper-alpha"
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "ListItem10": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "checked": {
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "items": {
+          "type": "array",
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "content"
+      ],
+      "additionalProperties": false
+    },
+    "ListItem9": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "checked": {
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ListItem10"
+          }
+        }
+      },
+      "required": [
+        "content"
+      ],
+      "additionalProperties": false
+    },
+    "ListItem8": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "checked": {
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ListItem9"
+          }
+        }
+      },
+      "required": [
+        "content"
+      ],
+      "additionalProperties": false
+    },
+    "ListItem7": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "checked": {
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ListItem8"
+          }
+        }
+      },
+      "required": [
+        "content"
+      ],
+      "additionalProperties": false
+    },
+    "ListItem6": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "checked": {
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ListItem7"
+          }
+        }
+      },
+      "required": [
+        "content"
+      ],
+      "additionalProperties": false
+    },
+    "ListItem5": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "checked": {
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ListItem6"
+          }
+        }
+      },
+      "required": [
+        "content"
+      ],
+      "additionalProperties": false
+    },
+    "ListItem4": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "checked": {
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ListItem5"
+          }
+        }
+      },
+      "required": [
+        "content"
+      ],
+      "additionalProperties": false
+    },
+    "ListItem3": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "checked": {
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ListItem4"
+          }
+        }
+      },
+      "required": [
+        "content"
+      ],
+      "additionalProperties": false
+    },
+    "ListItem2": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "checked": {
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ListItem3"
+          }
+        }
+      },
+      "required": [
+        "content"
+      ],
+      "additionalProperties": false
+    },
+    "ListItem1": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "checked": {
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ListItem2"
+          }
+        }
+      },
+      "required": [
+        "content"
+      ],
+      "additionalProperties": false
+    },
+    "EditorJS": {
+      "type": "object",
+      "properties": {
+        "time": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "blocks": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "type": {
+                    "const": "paragraph"
+                  },
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "text": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "text"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "tunes": {
+                    "type": "object",
+                    "properties": {},
+                    "required": [],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "type",
+                  "data"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "type": {
+                    "const": "header"
+                  },
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "text": {
+                        "type": "string"
+                      },
+                      "level": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 6
+                      }
+                    },
+                    "required": [
+                      "text",
+                      "level"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "tunes": {
+                    "type": "object",
+                    "properties": {},
+                    "required": [],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "type",
+                  "data"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "type": {
+                    "const": "quote"
+                  },
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "text": {
+                        "type": "string"
+                      },
+                      "caption": {
+                        "type": "string"
+                      },
+                      "alignment": {
+                        "enum": [
+                          "left",
+                          "center"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "text"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "tunes": {
+                    "type": "object",
+                    "properties": {},
+                    "required": [],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "type",
+                  "data"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "type": {
+                    "const": "list"
+                  },
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "style": {
+                        "enum": [
+                          "ordered",
+                          "unordered",
+                          "checklist"
+                        ]
+                      },
+                      "meta": {
+                        "$ref": "#/$defs/ListMetadata"
+                      },
+                      "items": {
+                        "anyOf": [
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "$ref": "#/$defs/ListItem1"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "style",
+                      "items"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "tunes": {
+                    "type": "object",
+                    "properties": {},
+                    "required": [],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "type",
+                  "data"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "type": {
+                    "const": "image"
+                  },
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "file": {
+                        "type": "object",
+                        "properties": {
+                          "url": {
+                            "$ref": "#/$defs/ExtensionUrl"
+                          },
+                          "width": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "height": {
+                            "type": "integer",
+                            "minimum": 0
+                          }
+                        },
+                        "required": [
+                          "url"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "caption": {
+                        "type": "string"
+                      },
+                      "withBorder": {
+                        "type": "boolean"
+                      },
+                      "withBackground": {
+                        "type": "boolean"
+                      },
+                      "stretched": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "file"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "tunes": {
+                    "type": "object",
+                    "properties": {},
+                    "required": [],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "type",
+                  "data"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "type": {
+                    "const": "embed"
+                  },
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "service": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "source": {
+                        "$ref": "#/$defs/HttpUrl"
+                      },
+                      "embed": {
+                        "$ref": "#/$defs/HttpUrl"
+                      },
+                      "width": {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      "height": {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      "caption": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "service",
+                      "source",
+                      "embed"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "tunes": {
+                    "type": "object",
+                    "properties": {},
+                    "required": [],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "type",
+                  "data"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "blocks"
+      ],
+      "additionalProperties": false,
+      "description": "I17/I19：Dashboard当前paragraph/header/quote/list/embed及Core已支持image；legacy字符串list和结构化nested list均支持，根item=1最多10。顶层及block/data/tunes未知字段拒，当前无额外tunes。HTML text字段仍须解码后URL/HTML安全validator；只准http/https/mailto/tel或安全相对URL，禁止配置扩scheme。不能仅Schema通过就认为已sanitize。停止convertEditorJSListBlocks只取顶层content造成nested丢失的旧转换；读旧字符串list继续兼容。"
+    },
+    "ProductFormValues": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "slug": {
+          "type": "string",
+          "minLength": 1
+        },
+        "seoTitle": {
+          "type": "string"
+        },
+        "seoDescription": {
+          "type": "string"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EditorJS"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "TranslationFormValues": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "seoTitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "seoDescription": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "description": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EditorJS"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "FieldError": {
+      "type": "object",
+      "properties": {
+        "field": {
+          "type": "string",
+          "minLength": 1
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "field",
+        "code",
+        "message"
+      ],
+      "additionalProperties": false
+    },
+    "FormMessage": {
+      "type": "object",
+      "properties": {
+        "frameId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "contextVersion": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "actionId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "const": "SALEOR_FORM_RESPONSE"
+        },
+        "action": {
+          "const": "formResult"
+        },
+        "formType": {
+          "enum": [
+            "PRODUCT",
+            "TRANSLATION"
+          ]
+        },
+        "status": {
+          "enum": [
+            "SUCCESS",
+            "VALIDATION_ERROR",
+            "PERMISSION_ERROR",
+            "CLOSED"
+          ]
+        },
+        "values": {
+          "type": "object"
+        },
+        "previewValues": {
+          "type": "object"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FieldError"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "type",
+        "action",
+        "frameId",
+        "requestId",
+        "contextVersion",
+        "formType",
+        "status"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "formType": {
+                "const": "PRODUCT"
+              }
+            },
+            "required": [
+              "formType"
+            ]
+          },
+          "then": {
+            "properties": {
+              "values": {
+                "$ref": "#/$defs/ProductFormValues"
+              },
+              "previewValues": {
+                "$ref": "#/$defs/ProductFormValues"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "formType": {
+                "const": "TRANSLATION"
+              }
+            },
+            "required": [
+              "formType"
+            ]
+          },
+          "then": {
+            "properties": {
+              "values": {
+                "$ref": "#/$defs/TranslationFormValues"
+              },
+              "previewValues": {
+                "$ref": "#/$defs/TranslationFormValues"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "SUCCESS"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "required": [
+              "values"
+            ],
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "errors"
+                  ]
+                },
+                {
+                  "required": [
+                    "previewValues"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "VALIDATION_ERROR"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "required": [
+              "errors"
+            ],
+            "not": {
+              "required": [
+                "values"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "PERMISSION_ERROR",
+                  "CLOSED"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "values"
+                  ]
+                },
+                {
+                  "required": [
+                    "previewValues"
+                  ]
+                },
+                {
+                  "required": [
+                    "errors"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "description": "I19 opt-in新form action。完整origin/source/contentWindow/ready/frame/request/context/formType全校验；values还须属于本次握手allowedFields，null仅nullableFields允许。SUCCESS {}为合法no-op，省略字段保留；VALIDATION_ERROR可带previewValues只展示已验证字段而不自动合并/不保存。permission/closed不修改draft。每request结果一次记录及ACK，同message重播回原ACK不重apply，same request不同结果拒。旧actionId仅相关性echo、不代替授权；未知action本地拒/忽略，不throw页崩。"
+    },
+    "FormContext": {
+      "type": "object",
+      "properties": {
+        "frameId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "contextVersion": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "actionId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "const": "SALEOR_FORM_CONTEXT"
+        },
+        "action": {
+          "const": "formContext"
+        },
+        "formType": {
+          "enum": [
+            "PRODUCT",
+            "TRANSLATION"
+          ]
+        },
+        "objectId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "languageCode": {
+          "type": "string",
+          "minLength": 1
+        },
+        "allowedFields": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "name",
+              "slug",
+              "seoTitle",
+              "seoDescription",
+              "description"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "nullableFields": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "name",
+              "seoTitle",
+              "seoDescription",
+              "description"
+            ]
+          },
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "type",
+        "action",
+        "frameId",
+        "requestId",
+        "contextVersion",
+        "formType",
+        "objectId",
+        "allowedFields",
+        "nullableFields"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "formType": {
+                "const": "TRANSLATION"
+              }
+            },
+            "required": [
+              "formType"
+            ]
+          },
+          "then": {
+            "required": [
+              "languageCode"
+            ],
+            "properties": {
+              "allowedFields": {
+                "items": {
+                  "enum": [
+                    "name",
+                    "seoTitle",
+                    "seoDescription",
+                    "description"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      ],
+      "description": "Dashboard→指定frame握手，明确字段子集。nullableFields必须是allowedFields子集，且属于Core字段实际清除规则；产品name/slug不得nullable。只传必要context，不附token/private metadata。用户编辑或对象/语言切换递增contextVersion并废止旧request。"
+    },
+    "FormReady": {
+      "type": "object",
+      "properties": {
+        "frameId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "contextVersion": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "actionId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "const": "SALEOR_FORM_READY"
+        },
+        "action": {
+          "const": "formReady"
+        }
+      },
+      "required": [
+        "type",
+        "action",
+        "frameId",
+        "requestId",
+        "contextVersion"
+      ],
+      "additionalProperties": false,
+      "description": "App→Dashboard echo当前握手frame/request/version；通过origin/source校验后置ready。在ready前的任何form response不应用。"
+    },
+    "FormAck": {
+      "type": "object",
+      "properties": {
+        "frameId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "contextVersion": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "actionId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "const": "SALEOR_FORM_ACK"
+        },
+        "action": {
+          "const": "formResult"
+        },
+        "status": {
+          "enum": [
+            "APPLIED",
+            "PREVIEWED",
+            "CLOSED",
+            "REJECTED"
+          ]
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "type",
+        "action",
+        "frameId",
+        "requestId",
+        "contextVersion",
+        "status"
+      ],
+      "additionalProperties": false,
+      "description": "Dashboard→固定targetOrigin的确认；APPLIED仅draft更新，PREVIEWED为字段错误/安全预览，CLOSED无写入，REJECTED为协议/权限/世代拒绝。不是Core保存成功；非可信source不发带业务信息ACK。重复原message回完全相同已记录ACK。"
+    }
+  }
+}

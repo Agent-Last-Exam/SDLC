@@ -1,0 +1,317 @@
+openapi: 3.1.0
+info:
+  title: Saleor 当前 App 与 Webhook 既有 HTTP 边界
+  version: 1.0.0
+  description: |
+    I18/I20/I21 的补充协议，由给定 Base 与本次设计推导。不是新增 Core REST API。
+    所有路径均由 App manifest 或 EXTENSIONS_API_URL 提供，路径可完全不同：servers 的 origin
+    和每个 path 的变量由部署/manifest 解析，不代表固定生产域名或实际已部署服务。
+    Core 安装、修改、delivery 查询与重试仍用 target-schema.graphql。postMessage 的完整结构见
+    app-boundaries.schema.json。HTTP 描述不替代对象权限、签名验证、SSRF 防护或真实资金确认。
+    JSON Schema defaults 必须由接收者明确正规化；不能依赖校验器自动写入。token/secret不得记日志。
+servers:
+  - url: '{origin}'
+    description: 占位 origin，分别替换为目录/manifest/token/webhook 接收方的实际允许 origin。
+    variables:
+      origin:
+        default: https://app.example.invalid
+        description: 非生产地址；生产沿用 ENABLE_SSL 及现有允许地址与超时规则。
+tags:
+  - name: Catalog
+    description: I20，Dashboard 静态扩展目录读取。
+  - name: Manifest
+    description: I18，Core 获取 App manifest；受理安装不等于安装完成。
+  - name: InstallationToken
+    description: I18，只有明确需要时才发安装 token。
+  - name: Webhook
+    description: I21，Core 向已授权订阅接收者投递原始 JSON。
+paths:
+  /{catalogPath}:
+    parameters:
+      - name: catalogPath
+        in: path
+        required: true
+        description: EXTENSIONS_API_URL 中完整目录路径的表示，可包含下级路径；不是新 Core 路由。
+        schema: { type: string, minLength: 1 }
+    get:
+      tags: [Catalog]
+      operationId: readConfiguredExtensionCatalog
+      summary: 获取当前部署配置的只读扩展目录
+      description: |
+        无配置时 Dashboard 使用本地 [] 并显示未配置，不请求必然不可用的旧地址。
+        配置后按实际 HTTP 数据源请求，AbortController + generation + JSON Schema 验证；空数组为合法空态。
+        跨域时服务须按部署配置允许 Dashboard origin，不能让 CORS/网络错误伪装为空目录。
+        数据中的 installed/appId 不是授权事实，须与 Core 获准且完整分页的安装列表对照；查询失败为 unknown。
+        本 GET 不安装 App、不配置 plugin、不产 token。目录可使用静态文件，不能含凭据。
+      security: []
+      responses:
+        '200':
+          description: 合法目录，分组/扩展 id 必须唯一；[] 为正常空结果。
+          content:
+            application/json:
+              schema: { $ref: './app-boundaries.schema.json#/$defs/Catalog' }
+              examples:
+                empty:
+                  value: []
+                basic:
+                  value:
+                    - id: cms
+                      name: { en: Content }
+                      extensions:
+                        - id: example.cms
+                          type: APP
+                          kind: OSS
+                          name: { en: Example CMS }
+                          description: { en: Product and translation editing }
+                          logo:
+                            light: { source: 'https://app.example.invalid/logo-light.svg' }
+                            dark: { source: 'https://app.example.invalid/logo-dark.svg' }
+                          manifestUrl: https://app.example.invalid/manifest.json
+                          repositoryUrl: null
+        '304':
+          description: 静态服务可条件缓存；Dashboard 仅在有同配置URL的已验证缓存时复用，不能将空body当[]。
+        '404':
+          description: 配置地址不存在，显示局部错误和重试，不当作合法空态。
+        '5XX':
+          description: 目录服务错误，保留安全错误状态；不创建安装成功状态。
+        default:
+          description: 非预期状态或无效JSON/schema均视为目录加载失败；协议不强制第三方错误body形状。
+  /{manifestPath}:
+    parameters:
+      - name: manifestPath
+        in: path
+        required: true
+        description: 来自 appInstall.manifestUrl 或 appFetchManifest 的实际完整路径。
+        schema: { type: string, minLength: 1 }
+    get:
+      tags: [Manifest]
+      operationId: fetchAppManifest
+      summary: 按既有安装边界获取完整当前 manifest
+      description: |
+        Core GET 不携带新安装 auth token，使用既有请求超时/允许目标地址策略，不跟随重定向。
+        required id/version/name 非空；permissions/extensions/webhooks 缺省为 []，settings 缺省为 {}。
+        tokenTargetUrl 可省；合法无需token GET/POPUP可安装。POST NEW_TAB/WIDGET需要token时，必须
+        有可信 tokenTargetUrl，且 extension URL 经 appUrl 解析后与它的完整 scheme/host/port origin一致。
+        APP_PAGE 仅安全相对路径沿Base例外；其他relative URL需appUrl。
+        不接受新manifest旧mount/target/options，GraphQL安全返回MIGRATION_REQUIRED；已存历史读取迁移另行处理。
+        manifest query/webhook事件必须按目标GraphQL schema和App权限验证；schema检查不等于已安装。
+        HTTP/内容/输入失败由Core转换为AppError，而不是返回token或破坏已有效App。
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/SchemaVersion'
+      responses:
+        '200':
+          description: UTF-8 当前完整 manifest JSON，经Core验证后才进入异步安装作业。
+          content:
+            application/json:
+              schema: { $ref: './app-boundaries.schema.json#/$defs/Manifest' }
+              example:
+                id: example.editor
+                version: 1.0.0
+                name: Example editor
+                permissions: [MANAGE_PRODUCTS, MANAGE_TRANSLATIONS]
+                appUrl: https://app.example.invalid/app
+                extensions:
+                  - label: Edit description
+                    url: https://app.example.invalid/edit
+                    mountName: PRODUCT_DETAILS_MORE_ACTIONS
+                    targetName: POPUP
+                    permissions: [MANAGE_PRODUCTS]
+                    settings: {}
+                webhooks: []
+        '3XX':
+          description: 不跟随redirect；转换为安装/获取manifest失败，不转发token到新origin。
+        '4XX':
+          description: App服务拒绝或manifest不存在；Core返回安全App错误并保留有效旧数据。
+        '5XX':
+          description: App服务失败；进入真实失败/允许重试，不假装installed。
+        default:
+          description: 非JSON/不合法结构/连接失败/超时映射INVALID_MANIFEST_FORMAT或MANIFEST_URL_CANT_CONNECT等真实Core错误。
+  /{tokenTargetPath}:
+    parameters:
+      - name: tokenTargetPath
+        in: path
+        required: true
+        description: 可选 manifest.tokenTargetUrl 的实际路径，不是Core认证路由。
+        schema: { type: string, minLength: 1 }
+    post:
+      tags: [InstallationToken]
+      operationId: receiveInstallationToken
+      summary: App 接收明确需要的安装 token
+      description: |
+        tokenTargetUrl缺省且不需要token时完全不执行本操作、不返回新token。
+        路径有需要时沿Base请求：JSON body仅auth_token；Saleor-Domain/Api-Url/Schema-Version及兼容X-Saleor-Domain。
+        TLS/允许目标地址检查和禁止redirect保留；token不出public manifest/settings/error、Dashboard form message或日志。
+        App接收200/其他2xx是token投递成功，不意味着GraphQL安装/升级整体已完成；最终看AppInstallation。
+        Base本请求无Saleor-Signature头，不虚构自动签名或事件ID。
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Domain'
+        - $ref: '#/components/parameters/DeprecatedDomain'
+        - $ref: '#/components/parameters/ApiUrl'
+        - $ref: '#/components/parameters/SchemaVersion'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [auth_token]
+              properties:
+                auth_token:
+                  type: string
+                  minLength: 1
+                  writeOnly: true
+                  description: 敏感App凭据；禁止回显或记录。
+      responses:
+        '200':
+          description: App接受token，Base不依赖成功响应body，可返回空body。
+        '2XX':
+          description: 其他成功HTTP状态；仍以Core完成整个安装为业务依据。
+        '3XX':
+          description: 不跟随redirect，token投递失败。
+        '4XX':
+          description: token拒绝或配置错误；Base可解析error.message，不能包含token。
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RemoteInstallationError' }
+        '5XX':
+          description: App端失败，安装作业失败/受控重试；不无限创建新token，不假装安装完成。
+        default:
+          description: 连接/超时等未确认结果保留作业失败事实并脱敏。
+  /{webhookPath}:
+    parameters:
+      - name: webhookPath
+        in: path
+        required: true
+        description: 已验证Webhook.targetUrl的HTTP(S)实际路径，AWS SQS/Google PubSub不是该HTTP操作。
+        schema: { type: string, minLength: 1 }
+    post:
+      tags: [Webhook]
+      operationId: receiveSubscribedWebhook
+      summary: 接收按真实订阅构造的事件载荷
+      description: |
+        body是订阅GraphQL响应/沿Base兼容事件的原始UTF-8 JSON，无额外delivery包装；不能强制每个事件有相同对象字段。
+        订阅payload按本地target schema和实际selection定义；只有选择字段才解析，App权限/对象范围同query。
+        secret已配置时Saleor-Signature为HMAC-SHA256(raw body bytes, UTF-8 secret)的小写hex；无secret时为
+        Base JWT manager 的JWS，接收方使用既有Saleor公钥配置核验，不重新序列化JSON后验签。
+        必须结合获准来源/domain/signature验证，不能只信header；内部/event敏感snapshot不向其他App共享。
+        不新增Saleor-Event-Id/Saleor-Delivery-Id。远端幂等沿既有事件载荷业务key+签名/处理记录，不能声称远端exactly-once。
+        2xx为此HTTP投递成功；重试/异步payload构建状态以Core EventDelivery为准，未受理绝不能空body假success。
+        每(event,webhook)本地唯一delivery，A失败不阻断B/C；手工retry只该delivery，先重建缺失payload。
+        customHeaders最多5个，仍受Base长度/键名约束，不得覆盖保留的来源/签名头；tracer头沿既有注入。
+        禁止redirect，沿用当前timeout/最大次数/指数退避/熔断配置。同步事件返回按各自现有服务合同JSON，
+        不能用异步ack替代同步税务/配送/交易结果；此文件不重定义已有GraphQL event专有响应形状。
+      security:
+        - saleorWebhookSignature: []
+      parameters:
+        - $ref: '#/components/parameters/Event'
+        - $ref: '#/components/parameters/Domain'
+        - $ref: '#/components/parameters/Signature'
+        - $ref: '#/components/parameters/ApiUrl'
+        - $ref: '#/components/parameters/DeprecatedEvent'
+        - $ref: '#/components/parameters/DeprecatedDomain'
+        - $ref: '#/components/parameters/DeprecatedSignature'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SubscribedPayload' }
+      responses:
+        '200':
+          description: 已接受本delivery；纯async成功响应body不要求结构，同步响应须对应实际事件服务合同。
+        '2XX':
+          description: Base其他成功状态包括204；仍不代表未完成的其他delivery或业务资金到账。
+        '3XX':
+          description: redirect不跟随，记录FAILED/受控重试。
+        '4XX':
+          description: 接收方拒绝/签名或输入错误，记录失败及安全attempt信息，按现有策略处理。
+        '5XX':
+          description: 接收方失败，记录并按独立delivery已有重试策略处理，不阻断其他订阅者。
+        default:
+          description: 连接超时/异常为未确认投递，不能标SUCCESS；可能重复投递，接收方仍须幂等。
+components:
+  securitySchemes:
+    saleorWebhookSignature:
+      type: apiKey
+      in: header
+      name: Saleor-Signature
+      description: HMAC hex 或 Base JWS；参数存在不代替真实raw-byte密码学验证。
+  parameters:
+    SchemaVersion:
+      name: Saleor-Schema-Version
+      in: header
+      required: true
+      schema: { type: string, minLength: 1 }
+      description: 当前Core schema_version，不从目标版本号推断实际部署状态。
+    Domain:
+      name: Saleor-Domain
+      in: header
+      required: true
+      schema: { type: string, minLength: 1 }
+    ApiUrl:
+      name: Saleor-Api-Url
+      in: header
+      required: true
+      schema: { type: string, pattern: '^https?://' }
+      description: Core绝对GraphQL URL，沿Base构造。
+    Event:
+      name: Saleor-Event
+      in: header
+      required: true
+      schema: { type: string, minLength: 1 }
+      description: Base event_type字符串（如order_created），不是任意新事件ID。
+    Signature:
+      name: Saleor-Signature
+      in: header
+      required: true
+      schema: { type: string, minLength: 1 }
+    DeprecatedDomain:
+      name: X-Saleor-Domain
+      in: header
+      required: true
+      deprecated: true
+      schema: { type: string, minLength: 1 }
+      description: Base兼容头，当前值与Saleor-Domain一致。
+    DeprecatedEvent:
+      name: X-Saleor-Event
+      in: header
+      required: true
+      deprecated: true
+      schema: { type: string, minLength: 1 }
+    DeprecatedSignature:
+      name: X-Saleor-Signature
+      in: header
+      required: true
+      deprecated: true
+      schema: { type: string, minLength: 1 }
+  schemas:
+    RemoteInstallationError:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [message]
+          properties:
+            message: { type: string, description: 可安全展示的安装错误，不含token/secret。 }
+    SubscribedPayload:
+      description: |
+        Base订阅/legacy事件的真实JSON值。具体字段由target GraphQL subscription selection及事件既有合同决定，
+        可为对象或legacy批量数组；不新增信封，也不承诺额外event/delivery id字段。签名使用此值的原始传输字节。
+      oneOf:
+        - type: object
+          additionalProperties: true
+        - type: array
+          items: { type: object, additionalProperties: true }
+x-non-http-boundaries:
+  postMessage:
+    schema: ./app-boundaries.schema.json
+    definitions: [FormContext, FormReady, FormMessage, FormAck]
+    transport: browser postMessage
+    validation: origin + source/contentWindow + frameId + requestId + contextVersion + ready；无Core自动保存。
+  awssqs:
+    description: Base targetUrl awssqs，不转换为REST。原JSON MessageBody，MessageAttributes沿Base SaleorDomain/SaleorApiUrl/EventType/Signature；FIFO的MessageGroupId沿Base。
+  gcpubsub:
+    description: Base targetUrl gcpubsub，不转换为REST。原payload bytes及saleorDomain/saleorApiUrl/eventType/signature attributes，服务账户及超时沿既有配置。

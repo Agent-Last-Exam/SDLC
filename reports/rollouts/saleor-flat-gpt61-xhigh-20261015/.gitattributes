@@ -1,0 +1,5 @@
+# Preserve archived artifact bytes and patch context lines.
+** -text
+code-diffs/** -whitespace linguist-generated=true
+documents/** -whitespace linguist-generated=true
+trajectories/** linguist-generated=true
