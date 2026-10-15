@@ -1,0 +1,20 @@
+{
+  "label": "flat-initial",
+  "mode": "flat",
+  "source_job": "flat-coding-deepseek41-high-20261014-r2",
+  "source_trial": "task__B2eCFbL",
+  "model": "deepseek/deepseek-v4.1-flash",
+  "reasoning_effort": "high",
+  "workflow_status": "interrupted",
+  "workflow_error": "",
+  "harbor_exception_type": "AgentTimeoutError",
+  "harbor_exception_message": "Agent execution timed out after 10800.0 seconds",
+  "trajectory_steps": 3748,
+  "trajectory_sidechain_steps": 3196,
+  "trajectory_scope": "Recovered development session only; document trajectories are archived separately in PR #7.",
+  "accepted_development": false,
+  "snapshot_recovered": false,
+  "cost_caveat": "Historical CLI/converter estimates are not actual billing; interrupted stages may have missing or incomplete accounting.",
+  "source_native_stage_log_sha256": "de668b26148f14dca10a1d8ab057f7953ca7ae83e1b753a9406302f4ef3c68f4",
+  "source_workflow_state_sha256": "47b59ad919746dc3103825142f04eb452b21adeb2c3074c92b7bf56f4afa66ae"
+}
