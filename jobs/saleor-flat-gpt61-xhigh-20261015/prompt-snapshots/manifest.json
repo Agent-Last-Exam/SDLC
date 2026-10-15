@@ -1,0 +1,440 @@
+{
+  "schema_version": 1,
+  "archive": "saleor-flat-gpt61-xhigh-20261015",
+  "scope": "Saved stage role.md, instruction.md and native-evidence.json only; not a full provider request or CLI built-in system prompt. Current templates are never substituted.",
+  "inheritance_rule": "Identical role, instruction and native evidence in the direct recovery source are marked inherited. Execution flags alone are not used to claim reruns.",
+  "trajectory": {
+    "path": "trajectories/trajectory.atif.json.gz",
+    "sha256": "479559e03f9e0ed679ea9ed533b902841817f08a1b945d1c4bb2f1fa88875002",
+    "steps": 3698,
+    "sidechain_marked_steps": 3262,
+    "boundary": "Existing export left unchanged. Sidechain flags describe included steps, not proof every child session was exported. Prompt snapshots do not add missing session transcripts."
+  },
+  "rollouts": [
+    {
+      "source_job": "flat-docs-gpt61-xhigh-20261014-r2",
+      "source_trial": "task__mNZwqCY",
+      "source_state_sha256": "94792d0b5e736a441edd0f6aeea7ff42778aa31cb574f67627031170120eaad5",
+      "recorded_workflow_status": "stopped_at_boundary",
+      "recovery_source": null,
+      "stages": [
+        {
+          "stage_id": "sprint1/prd",
+          "recorded_status": "accepted",
+          "role": "pm",
+          "session_id": "ff93b650-b787-4ab3-a78b-f38098b3b44e",
+          "session_present_in_published_trajectory_metadata": true,
+          "identical_snapshot_in_recovery_source": false,
+          "provenance_note": "Snapshot found in this trial; no matching snapshot/evidence in its direct recovery source.",
+          "role_hash_matches_native_evidence": true,
+          "system_prompt_transport": "--append-system-prompt",
+          "files": [
+            {
+              "path": "flat-docs-gpt61-xhigh-20261014-r2/task__mNZwqCY/stages/sprint1/prd/role.md",
+              "source_sha256": "be536b645fe628eadd9b0bf80291aed0d616ce5d3d2a5302a53f4249fcb7ec40",
+              "export_sha256": "be536b645fe628eadd9b0bf80291aed0d616ce5d3d2a5302a53f4249fcb7ec40",
+              "redacted": false
+            },
+            {
+              "path": "flat-docs-gpt61-xhigh-20261014-r2/task__mNZwqCY/stages/sprint1/prd/instruction.md",
+              "source_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "export_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "redacted": false
+            },
+            {
+              "path": "flat-docs-gpt61-xhigh-20261014-r2/task__mNZwqCY/stages/sprint1/prd/native-evidence.json",
+              "source_sha256": "b77fdde27ef5d662a5f467bbd114238dadb2ffa64e2edc17131eb6f9a2535cf0",
+              "export_sha256": "b77fdde27ef5d662a5f467bbd114238dadb2ffa64e2edc17131eb6f9a2535cf0",
+              "redacted": false
+            }
+          ],
+          "missing_snapshot_files": []
+        },
+        {
+          "stage_id": "sprint1/tech-design",
+          "recorded_status": "accepted",
+          "role": "architect",
+          "session_id": "ea28bfa0-817e-4bb2-bd97-a36fc51a7ae4",
+          "session_present_in_published_trajectory_metadata": true,
+          "identical_snapshot_in_recovery_source": false,
+          "provenance_note": "Snapshot found in this trial; no matching snapshot/evidence in its direct recovery source.",
+          "role_hash_matches_native_evidence": true,
+          "system_prompt_transport": "--append-system-prompt",
+          "files": [
+            {
+              "path": "flat-docs-gpt61-xhigh-20261014-r2/task__mNZwqCY/stages/sprint1/tech-design/role.md",
+              "source_sha256": "f4e8512a88d75aefcd2b5a13af6b85f912893f96ee9d2c65d510fe129118205d",
+              "export_sha256": "f4e8512a88d75aefcd2b5a13af6b85f912893f96ee9d2c65d510fe129118205d",
+              "redacted": false
+            },
+            {
+              "path": "flat-docs-gpt61-xhigh-20261014-r2/task__mNZwqCY/stages/sprint1/tech-design/instruction.md",
+              "source_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "export_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "redacted": false
+            },
+            {
+              "path": "flat-docs-gpt61-xhigh-20261014-r2/task__mNZwqCY/stages/sprint1/tech-design/native-evidence.json",
+              "source_sha256": "937af0f698eec7a436474be19231035101120a47abb06e5ea8da9c500a2aaf75",
+              "export_sha256": "937af0f698eec7a436474be19231035101120a47abb06e5ea8da9c500a2aaf75",
+              "redacted": false
+            }
+          ],
+          "missing_snapshot_files": []
+        }
+      ]
+    },
+    {
+      "source_job": "flat-qa-gpt61-xhigh-20261015",
+      "source_trial": "task__EAUAgkr",
+      "source_state_sha256": "22968786e51706bd574d1ca1d8703316a3f9b896c7b74c98890d3241a3364238",
+      "recorded_workflow_status": "failed",
+      "recovery_source": {
+        "job": "flat-docs-gpt61-xhigh-20261014-r2",
+        "trial": "task__mNZwqCY"
+      },
+      "stages": [
+        {
+          "stage_id": "sprint1/prd",
+          "recorded_status": "accepted",
+          "role": "pm",
+          "session_id": "ff93b650-b787-4ab3-a78b-f38098b3b44e",
+          "session_present_in_published_trajectory_metadata": true,
+          "identical_snapshot_in_recovery_source": true,
+          "provenance_note": "Inherited snapshot retained from recovery source; not evidence this stage ran again.",
+          "role_hash_matches_native_evidence": true,
+          "system_prompt_transport": "--append-system-prompt",
+          "files": [
+            {
+              "path": "flat-qa-gpt61-xhigh-20261015/task__EAUAgkr/stages/sprint1/prd/role.md",
+              "source_sha256": "be536b645fe628eadd9b0bf80291aed0d616ce5d3d2a5302a53f4249fcb7ec40",
+              "export_sha256": "be536b645fe628eadd9b0bf80291aed0d616ce5d3d2a5302a53f4249fcb7ec40",
+              "redacted": false
+            },
+            {
+              "path": "flat-qa-gpt61-xhigh-20261015/task__EAUAgkr/stages/sprint1/prd/instruction.md",
+              "source_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "export_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "redacted": false
+            },
+            {
+              "path": "flat-qa-gpt61-xhigh-20261015/task__EAUAgkr/stages/sprint1/prd/native-evidence.json",
+              "source_sha256": "b77fdde27ef5d662a5f467bbd114238dadb2ffa64e2edc17131eb6f9a2535cf0",
+              "export_sha256": "b77fdde27ef5d662a5f467bbd114238dadb2ffa64e2edc17131eb6f9a2535cf0",
+              "redacted": false
+            }
+          ],
+          "missing_snapshot_files": []
+        },
+        {
+          "stage_id": "sprint1/tech-design",
+          "recorded_status": "accepted",
+          "role": "architect",
+          "session_id": "ea28bfa0-817e-4bb2-bd97-a36fc51a7ae4",
+          "session_present_in_published_trajectory_metadata": true,
+          "identical_snapshot_in_recovery_source": true,
+          "provenance_note": "Inherited snapshot retained from recovery source; not evidence this stage ran again.",
+          "role_hash_matches_native_evidence": true,
+          "system_prompt_transport": "--append-system-prompt",
+          "files": [
+            {
+              "path": "flat-qa-gpt61-xhigh-20261015/task__EAUAgkr/stages/sprint1/tech-design/role.md",
+              "source_sha256": "f4e8512a88d75aefcd2b5a13af6b85f912893f96ee9d2c65d510fe129118205d",
+              "export_sha256": "f4e8512a88d75aefcd2b5a13af6b85f912893f96ee9d2c65d510fe129118205d",
+              "redacted": false
+            },
+            {
+              "path": "flat-qa-gpt61-xhigh-20261015/task__EAUAgkr/stages/sprint1/tech-design/instruction.md",
+              "source_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "export_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "redacted": false
+            },
+            {
+              "path": "flat-qa-gpt61-xhigh-20261015/task__EAUAgkr/stages/sprint1/tech-design/native-evidence.json",
+              "source_sha256": "937af0f698eec7a436474be19231035101120a47abb06e5ea8da9c500a2aaf75",
+              "export_sha256": "937af0f698eec7a436474be19231035101120a47abb06e5ea8da9c500a2aaf75",
+              "redacted": false
+            }
+          ],
+          "missing_snapshot_files": []
+        },
+        {
+          "stage_id": "sprint1/test-design",
+          "recorded_status": "failed",
+          "role": "qa-design",
+          "session_id": null,
+          "session_present_in_published_trajectory_metadata": null,
+          "identical_snapshot_in_recovery_source": false,
+          "provenance_note": "Snapshot found in this trial; no matching snapshot/evidence in its direct recovery source.",
+          "role_hash_matches_native_evidence": null,
+          "system_prompt_transport": null,
+          "files": [
+            {
+              "path": "flat-qa-gpt61-xhigh-20261015/task__EAUAgkr/stages/sprint1/test-design/role.md",
+              "source_sha256": "35ac1990653a1eace419539d6cb5449b995867a2e16385a4670a940099077242",
+              "export_sha256": "35ac1990653a1eace419539d6cb5449b995867a2e16385a4670a940099077242",
+              "redacted": false
+            },
+            {
+              "path": "flat-qa-gpt61-xhigh-20261015/task__EAUAgkr/stages/sprint1/test-design/instruction.md",
+              "source_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "export_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "redacted": false
+            }
+          ],
+          "missing_snapshot_files": [
+            "native-evidence.json"
+          ]
+        }
+      ]
+    },
+    {
+      "source_job": "flat-qa-gpt61-xhigh-20261015-r2",
+      "source_trial": "task__hQuP84i",
+      "source_state_sha256": "9055b7dccd5aa03e788a1b559c695d45350ded4ca78ad0725baf8d657e3725ea",
+      "recorded_workflow_status": "stopped_at_boundary",
+      "recovery_source": {
+        "job": "flat-docs-gpt61-xhigh-20261014-r2",
+        "trial": "task__mNZwqCY"
+      },
+      "stages": [
+        {
+          "stage_id": "sprint1/prd",
+          "recorded_status": "accepted",
+          "role": "pm",
+          "session_id": "ff93b650-b787-4ab3-a78b-f38098b3b44e",
+          "session_present_in_published_trajectory_metadata": true,
+          "identical_snapshot_in_recovery_source": true,
+          "provenance_note": "Inherited snapshot retained from recovery source; not evidence this stage ran again.",
+          "role_hash_matches_native_evidence": true,
+          "system_prompt_transport": "--append-system-prompt",
+          "files": [
+            {
+              "path": "flat-qa-gpt61-xhigh-20261015-r2/task__hQuP84i/stages/sprint1/prd/role.md",
+              "source_sha256": "be536b645fe628eadd9b0bf80291aed0d616ce5d3d2a5302a53f4249fcb7ec40",
+              "export_sha256": "be536b645fe628eadd9b0bf80291aed0d616ce5d3d2a5302a53f4249fcb7ec40",
+              "redacted": false
+            },
+            {
+              "path": "flat-qa-gpt61-xhigh-20261015-r2/task__hQuP84i/stages/sprint1/prd/instruction.md",
+              "source_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "export_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "redacted": false
+            },
+            {
+              "path": "flat-qa-gpt61-xhigh-20261015-r2/task__hQuP84i/stages/sprint1/prd/native-evidence.json",
+              "source_sha256": "b77fdde27ef5d662a5f467bbd114238dadb2ffa64e2edc17131eb6f9a2535cf0",
+              "export_sha256": "b77fdde27ef5d662a5f467bbd114238dadb2ffa64e2edc17131eb6f9a2535cf0",
+              "redacted": false
+            }
+          ],
+          "missing_snapshot_files": []
+        },
+        {
+          "stage_id": "sprint1/tech-design",
+          "recorded_status": "accepted",
+          "role": "architect",
+          "session_id": "ea28bfa0-817e-4bb2-bd97-a36fc51a7ae4",
+          "session_present_in_published_trajectory_metadata": true,
+          "identical_snapshot_in_recovery_source": true,
+          "provenance_note": "Inherited snapshot retained from recovery source; not evidence this stage ran again.",
+          "role_hash_matches_native_evidence": true,
+          "system_prompt_transport": "--append-system-prompt",
+          "files": [
+            {
+              "path": "flat-qa-gpt61-xhigh-20261015-r2/task__hQuP84i/stages/sprint1/tech-design/role.md",
+              "source_sha256": "f4e8512a88d75aefcd2b5a13af6b85f912893f96ee9d2c65d510fe129118205d",
+              "export_sha256": "f4e8512a88d75aefcd2b5a13af6b85f912893f96ee9d2c65d510fe129118205d",
+              "redacted": false
+            },
+            {
+              "path": "flat-qa-gpt61-xhigh-20261015-r2/task__hQuP84i/stages/sprint1/tech-design/instruction.md",
+              "source_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "export_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "redacted": false
+            },
+            {
+              "path": "flat-qa-gpt61-xhigh-20261015-r2/task__hQuP84i/stages/sprint1/tech-design/native-evidence.json",
+              "source_sha256": "937af0f698eec7a436474be19231035101120a47abb06e5ea8da9c500a2aaf75",
+              "export_sha256": "937af0f698eec7a436474be19231035101120a47abb06e5ea8da9c500a2aaf75",
+              "redacted": false
+            }
+          ],
+          "missing_snapshot_files": []
+        },
+        {
+          "stage_id": "sprint1/test-design",
+          "recorded_status": "accepted",
+          "role": "qa-design",
+          "session_id": "15da765f-96b2-4327-92b5-cd0092298cc5",
+          "session_present_in_published_trajectory_metadata": true,
+          "identical_snapshot_in_recovery_source": false,
+          "provenance_note": "Snapshot found in this trial; no matching snapshot/evidence in its direct recovery source.",
+          "role_hash_matches_native_evidence": true,
+          "system_prompt_transport": "--append-system-prompt",
+          "files": [
+            {
+              "path": "flat-qa-gpt61-xhigh-20261015-r2/task__hQuP84i/stages/sprint1/test-design/role.md",
+              "source_sha256": "35ac1990653a1eace419539d6cb5449b995867a2e16385a4670a940099077242",
+              "export_sha256": "35ac1990653a1eace419539d6cb5449b995867a2e16385a4670a940099077242",
+              "redacted": false
+            },
+            {
+              "path": "flat-qa-gpt61-xhigh-20261015-r2/task__hQuP84i/stages/sprint1/test-design/instruction.md",
+              "source_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "export_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "redacted": false
+            },
+            {
+              "path": "flat-qa-gpt61-xhigh-20261015-r2/task__hQuP84i/stages/sprint1/test-design/native-evidence.json",
+              "source_sha256": "78d8054e34a0382460412cd247a609216de78e016c88f52f6d1eedd1a45c5a32",
+              "export_sha256": "78d8054e34a0382460412cd247a609216de78e016c88f52f6d1eedd1a45c5a32",
+              "redacted": false
+            }
+          ],
+          "missing_snapshot_files": []
+        }
+      ]
+    },
+    {
+      "source_job": "flat-coding-gpt61-xhigh-20261015",
+      "source_trial": "task__LLJigf4",
+      "source_state_sha256": "e65f437f992b40347815f839feb30926402eeec2beef3dde5bdc7560720b80ec",
+      "recorded_workflow_status": "stopped_at_boundary",
+      "recovery_source": {
+        "job": "flat-qa-gpt61-xhigh-20261015-r2",
+        "trial": "task__hQuP84i"
+      },
+      "stages": [
+        {
+          "stage_id": "sprint1/development",
+          "recorded_status": "accepted",
+          "role": "developer",
+          "session_id": "4816d43d-e4ff-4fe6-a3c2-a3876a343154",
+          "session_present_in_published_trajectory_metadata": true,
+          "identical_snapshot_in_recovery_source": false,
+          "provenance_note": "Snapshot found in this trial; no matching snapshot/evidence in its direct recovery source.",
+          "role_hash_matches_native_evidence": true,
+          "system_prompt_transport": "--append-system-prompt",
+          "files": [
+            {
+              "path": "flat-coding-gpt61-xhigh-20261015/task__LLJigf4/stages/sprint1/development/role.md",
+              "source_sha256": "47c1d098f9f90919e24b05bf7ca339d0dbb53f56c3b010cc71242133b0264211",
+              "export_sha256": "47c1d098f9f90919e24b05bf7ca339d0dbb53f56c3b010cc71242133b0264211",
+              "redacted": false
+            },
+            {
+              "path": "flat-coding-gpt61-xhigh-20261015/task__LLJigf4/stages/sprint1/development/instruction.md",
+              "source_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "export_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "redacted": false
+            },
+            {
+              "path": "flat-coding-gpt61-xhigh-20261015/task__LLJigf4/stages/sprint1/development/native-evidence.json",
+              "source_sha256": "31af2cd6d242fe1edf3d268de2b84668e2c2404ddd583227775e4b46eea93a91",
+              "export_sha256": "31af2cd6d242fe1edf3d268de2b84668e2c2404ddd583227775e4b46eea93a91",
+              "redacted": false
+            }
+          ],
+          "missing_snapshot_files": []
+        },
+        {
+          "stage_id": "sprint1/prd",
+          "recorded_status": "accepted",
+          "role": "pm",
+          "session_id": "ff93b650-b787-4ab3-a78b-f38098b3b44e",
+          "session_present_in_published_trajectory_metadata": true,
+          "identical_snapshot_in_recovery_source": true,
+          "provenance_note": "Inherited snapshot retained from recovery source; not evidence this stage ran again.",
+          "role_hash_matches_native_evidence": true,
+          "system_prompt_transport": "--append-system-prompt",
+          "files": [
+            {
+              "path": "flat-coding-gpt61-xhigh-20261015/task__LLJigf4/stages/sprint1/prd/role.md",
+              "source_sha256": "be536b645fe628eadd9b0bf80291aed0d616ce5d3d2a5302a53f4249fcb7ec40",
+              "export_sha256": "be536b645fe628eadd9b0bf80291aed0d616ce5d3d2a5302a53f4249fcb7ec40",
+              "redacted": false
+            },
+            {
+              "path": "flat-coding-gpt61-xhigh-20261015/task__LLJigf4/stages/sprint1/prd/instruction.md",
+              "source_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "export_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "redacted": false
+            },
+            {
+              "path": "flat-coding-gpt61-xhigh-20261015/task__LLJigf4/stages/sprint1/prd/native-evidence.json",
+              "source_sha256": "b77fdde27ef5d662a5f467bbd114238dadb2ffa64e2edc17131eb6f9a2535cf0",
+              "export_sha256": "b77fdde27ef5d662a5f467bbd114238dadb2ffa64e2edc17131eb6f9a2535cf0",
+              "redacted": false
+            }
+          ],
+          "missing_snapshot_files": []
+        },
+        {
+          "stage_id": "sprint1/tech-design",
+          "recorded_status": "accepted",
+          "role": "architect",
+          "session_id": "ea28bfa0-817e-4bb2-bd97-a36fc51a7ae4",
+          "session_present_in_published_trajectory_metadata": true,
+          "identical_snapshot_in_recovery_source": true,
+          "provenance_note": "Inherited snapshot retained from recovery source; not evidence this stage ran again.",
+          "role_hash_matches_native_evidence": true,
+          "system_prompt_transport": "--append-system-prompt",
+          "files": [
+            {
+              "path": "flat-coding-gpt61-xhigh-20261015/task__LLJigf4/stages/sprint1/tech-design/role.md",
+              "source_sha256": "f4e8512a88d75aefcd2b5a13af6b85f912893f96ee9d2c65d510fe129118205d",
+              "export_sha256": "f4e8512a88d75aefcd2b5a13af6b85f912893f96ee9d2c65d510fe129118205d",
+              "redacted": false
+            },
+            {
+              "path": "flat-coding-gpt61-xhigh-20261015/task__LLJigf4/stages/sprint1/tech-design/instruction.md",
+              "source_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "export_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "redacted": false
+            },
+            {
+              "path": "flat-coding-gpt61-xhigh-20261015/task__LLJigf4/stages/sprint1/tech-design/native-evidence.json",
+              "source_sha256": "937af0f698eec7a436474be19231035101120a47abb06e5ea8da9c500a2aaf75",
+              "export_sha256": "937af0f698eec7a436474be19231035101120a47abb06e5ea8da9c500a2aaf75",
+              "redacted": false
+            }
+          ],
+          "missing_snapshot_files": []
+        },
+        {
+          "stage_id": "sprint1/test-design",
+          "recorded_status": "accepted",
+          "role": "qa-design",
+          "session_id": "15da765f-96b2-4327-92b5-cd0092298cc5",
+          "session_present_in_published_trajectory_metadata": true,
+          "identical_snapshot_in_recovery_source": true,
+          "provenance_note": "Inherited snapshot retained from recovery source; not evidence this stage ran again.",
+          "role_hash_matches_native_evidence": true,
+          "system_prompt_transport": "--append-system-prompt",
+          "files": [
+            {
+              "path": "flat-coding-gpt61-xhigh-20261015/task__LLJigf4/stages/sprint1/test-design/role.md",
+              "source_sha256": "35ac1990653a1eace419539d6cb5449b995867a2e16385a4670a940099077242",
+              "export_sha256": "35ac1990653a1eace419539d6cb5449b995867a2e16385a4670a940099077242",
+              "redacted": false
+            },
+            {
+              "path": "flat-coding-gpt61-xhigh-20261015/task__LLJigf4/stages/sprint1/test-design/instruction.md",
+              "source_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "export_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "redacted": false
+            },
+            {
+              "path": "flat-coding-gpt61-xhigh-20261015/task__LLJigf4/stages/sprint1/test-design/native-evidence.json",
+              "source_sha256": "78d8054e34a0382460412cd247a609216de78e016c88f52f6d1eedd1a45c5a32",
+              "export_sha256": "78d8054e34a0382460412cd247a609216de78e016c88f52f6d1eedd1a45c5a32",
+              "redacted": false
+            }
+          ],
+          "missing_snapshot_files": []
+        }
+      ]
+    }
+  ]
+}

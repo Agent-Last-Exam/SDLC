@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "archive": "single-docs-gpt61-xhigh-instruction-20261014",
+  "scope": "Saved stage role.md, instruction.md and native-evidence.json only; not a full provider request or CLI built-in system prompt. Current templates are never substituted.",
+  "inheritance_rule": "Identical role, instruction and native evidence in the direct recovery source are marked inherited. Execution flags alone are not used to claim reruns.",
+  "trajectory": {
+    "path": "agent/trajectory.json.gz",
+    "sha256": "9d36c9a39584b5d56456a4f7cb72787e798e6e4e23920338be4cdfe6b8e7d066",
+    "steps": 120,
+    "sidechain_marked_steps": 0,
+    "boundary": "Existing export left unchanged. Sidechain flags describe included steps, not proof every child session was exported. Prompt snapshots do not add missing session transcripts."
+  },
+  "rollouts": [
+    {
+      "source_job": "single-docs-gpt61-xhigh-instruction-20261014",
+      "source_trial": "task__Fq5bK83",
+      "source_state_sha256": "f30495c263b2082a489fcc53ddae9b05fb230ab9361aea59f2c2d1357b4e45e9",
+      "recorded_workflow_status": "stopped_at_boundary",
+      "recovery_source": null,
+      "stages": [
+        {
+          "stage_id": "sprint1/prd",
+          "recorded_status": "accepted",
+          "role": "pm",
+          "session_id": "1f1deb22-afde-4b2d-81ea-aa0c8ef95902",
+          "session_present_in_published_trajectory_metadata": true,
+          "identical_snapshot_in_recovery_source": false,
+          "provenance_note": "Snapshot found in this trial; no matching snapshot/evidence in its direct recovery source.",
+          "role_hash_matches_native_evidence": true,
+          "system_prompt_transport": "--append-system-prompt",
+          "files": [
+            {
+              "path": "single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/stages/sprint1/prd/role.md",
+              "source_sha256": "395ffcd6a423f82afb0e11e20b704c29b32c0e7fb9a5b494fd65bae4ea09d9ee",
+              "export_sha256": "395ffcd6a423f82afb0e11e20b704c29b32c0e7fb9a5b494fd65bae4ea09d9ee",
+              "redacted": false
+            },
+            {
+              "path": "single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/stages/sprint1/prd/instruction.md",
+              "source_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "export_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "redacted": false
+            },
+            {
+              "path": "single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/stages/sprint1/prd/native-evidence.json",
+              "source_sha256": "6b246f656cd591b199edbf36708ee9ba39b5de57254b01338ab7a5ed02e092bb",
+              "export_sha256": "6b246f656cd591b199edbf36708ee9ba39b5de57254b01338ab7a5ed02e092bb",
+              "redacted": false
+            }
+          ],
+          "missing_snapshot_files": []
+        },
+        {
+          "stage_id": "sprint1/tech-design",
+          "recorded_status": "accepted",
+          "role": "architect",
+          "session_id": "1f1deb22-afde-4b2d-81ea-aa0c8ef95902",
+          "session_present_in_published_trajectory_metadata": true,
+          "identical_snapshot_in_recovery_source": false,
+          "provenance_note": "Snapshot found in this trial; no matching snapshot/evidence in its direct recovery source.",
+          "role_hash_matches_native_evidence": true,
+          "system_prompt_transport": "--append-system-prompt",
+          "files": [
+            {
+              "path": "single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/stages/sprint1/tech-design/role.md",
+              "source_sha256": "6a6cdb44641cb1a7f0ede03f0d0ab81aa42c819526caa1827d4b4a715e0c0ab1",
+              "export_sha256": "6a6cdb44641cb1a7f0ede03f0d0ab81aa42c819526caa1827d4b4a715e0c0ab1",
+              "redacted": false
+            },
+            {
+              "path": "single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/stages/sprint1/tech-design/instruction.md",
+              "source_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "export_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "redacted": false
+            },
+            {
+              "path": "single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/stages/sprint1/tech-design/native-evidence.json",
+              "source_sha256": "aceda7f3d49523b47b25a1a5839b4c00c9be259a3e9c63c67c5971636f2c3229",
+              "export_sha256": "aceda7f3d49523b47b25a1a5839b4c00c9be259a3e9c63c67c5971636f2c3229",
+              "redacted": false
+            }
+          ],
+          "missing_snapshot_files": []
+        },
+        {
+          "stage_id": "sprint1/test-design",
+          "recorded_status": "accepted",
+          "role": "qa-design",
+          "session_id": "1f1deb22-afde-4b2d-81ea-aa0c8ef95902",
+          "session_present_in_published_trajectory_metadata": true,
+          "identical_snapshot_in_recovery_source": false,
+          "provenance_note": "Snapshot found in this trial; no matching snapshot/evidence in its direct recovery source.",
+          "role_hash_matches_native_evidence": true,
+          "system_prompt_transport": "--append-system-prompt",
+          "files": [
+            {
+              "path": "single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/stages/sprint1/test-design/role.md",
+              "source_sha256": "fea60030c959402b8e32ba2312c189ba13107ce33ec40edbf4018df0119d3a10",
+              "export_sha256": "fea60030c959402b8e32ba2312c189ba13107ce33ec40edbf4018df0119d3a10",
+              "redacted": false
+            },
+            {
+              "path": "single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/stages/sprint1/test-design/instruction.md",
+              "source_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "export_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "redacted": false
+            },
+            {
+              "path": "single-docs-gpt61-xhigh-instruction-20261014/task__Fq5bK83/stages/sprint1/test-design/native-evidence.json",
+              "source_sha256": "2f66b158dce973907f1d2f702d89400ecc8c2e4804210c5cc1dc39fe7b248049",
+              "export_sha256": "2f66b158dce973907f1d2f702d89400ecc8c2e4804210c5cc1dc39fe7b248049",
+              "redacted": false
+            }
+          ],
+          "missing_snapshot_files": []
+        }
+      ]
+    }
+  ]
+}

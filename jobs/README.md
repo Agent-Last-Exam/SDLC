@@ -2,6 +2,8 @@
 
 # Rollout 记录索引
 
+各次运行的阶段提示词见 [提示词快照索引](prompt-snapshots.md)。
+
 先读每个 job 的 report.md，再按链接查看状态、原生日志和已接受产物。历史失败记录保留。
 
 阶段性验收记录与历史摘要见 [checks/](checks/README.md)。

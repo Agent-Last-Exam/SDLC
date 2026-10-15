@@ -1,0 +1,11 @@
+{
+  "session_id": "b7d33038-1e0b-4274-959f-9c4e2431b4e3",
+  "active_role": "architect",
+  "stage_id": "sprint1/tech-design",
+  "native_user_activation_verified": true,
+  "role_activations_recorded": 1,
+  "transport": "claude-code-jsonl",
+  "role_prompt_sha256": "5020b036aabe1bf8370167b233472f39125c23615b0459ec6a280762e071f0d7",
+  "session_continuity_verified": true,
+  "system_prompt_transport": "--append-system-prompt"
+}

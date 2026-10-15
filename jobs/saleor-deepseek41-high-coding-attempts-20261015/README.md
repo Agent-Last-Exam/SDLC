@@ -21,3 +21,11 @@ Single 首次续跑在客户端路径检查失败；Flat 首次全流程启动�
 文档产物分别已归档于 PR #4（DeepSeek Single）和 PR #7（DeepSeek Flat），此处不重复提交。全部发布文本和解压轨迹已扫描配置凭证/端点及常见 token 模式，敏感值替换为 `[REDACTED]`，操作员本机路径已规范化；原始本地记录不修改。全量请求审计和原生日志留本地，不重复堆叠。可执行 `sha256sum -c checksums.sha256` 检查归档。
 
 Single 和 Flat 恢复的是各自生成的文档检查点，coding 起点、会话历史及时间预算不同；本归档用于复盘，不构成控制变量充分的模式优劣实验。Single 未回收到代码，不能用它与 Flat 做同等源码或测试成绩比较。
+
+## 分次运行的提示词快照
+
+- [single-continuation](single-continuation/prompt-snapshots/README.md)：`single-coding-deepseek41-high-continuation-20261015-r2 / task__n9Njzk6`。
+- [flat-initial](flat-initial/prompt-snapshots/README.md)：`flat-coding-deepseek41-high-20261014-r2 / task__B2eCFbL`。
+- [flat-restart](flat-restart/prompt-snapshots/README.md)：`flat-coding-deepseek41-high-restart-20261015-r3 / task__G8uLjvp`。
+
+每次记录单独保留，继承阶段与新增阶段的身份见各自 manifest；提示词快照不代表已导出全部子会话。
