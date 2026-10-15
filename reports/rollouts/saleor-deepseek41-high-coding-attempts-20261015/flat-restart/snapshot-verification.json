@@ -1,0 +1,64 @@
+{
+  "archive_sha256": "836d92e0c3df95db7ccc5aa79ae698d9aaaea052a5b90d00412cfe304a9b8ba2",
+  "file_hashes_verified": 101309,
+  "mismatch_count": 0,
+  "missing_count": 0,
+  "frozen_docs": [
+    {
+      "name": "prd.md",
+      "sha256": "a2c792971f133ae0b52bd8c199120ffea5e37663d43c65f9eff33e43e8ae49c3",
+      "matching_paths": [
+        "accepted/sprint1/prd/prd.md"
+      ]
+    },
+    {
+      "name": "backend-design.md",
+      "sha256": "bf4090f5a4f16de3aa1be4457ee40c05df3b2344c7a2e9456ee3c25721a3cbcb",
+      "matching_paths": [
+        "accepted/sprint1/tech-design/backend-design.md"
+      ]
+    },
+    {
+      "name": "frontend-design.md",
+      "sha256": "1486404273326262d3c24aa00dceb55785afda85566d7330a2cafc39c35b47c7",
+      "matching_paths": [
+        "accepted/sprint1/tech-design/frontend-design.md"
+      ]
+    },
+    {
+      "name": "interface-contract.md",
+      "sha256": "398f79c3187bd83764b7482ecf0e7a2c47200449684ffa4f46414f202208d0e5",
+      "matching_paths": [
+        "accepted/sprint1/tech-design/interface-contract.md"
+      ]
+    },
+    {
+      "name": "interfaces/delivery-option-id.md",
+      "sha256": "2123c2f68b35d5ff2deb92856061855cbc97d69d98bbe547eaa4712a623d245a",
+      "matching_paths": [
+        "accepted/sprint1/tech-design/interfaces/delivery-option-id.md"
+      ]
+    },
+    {
+      "name": "interfaces/event-delivery-status.md",
+      "sha256": "f676b4d60fc77a81c6453e19be9bea33d4f1dbfef53b8177d2440b8280a8f720",
+      "matching_paths": [
+        "accepted/sprint1/tech-design/interfaces/event-delivery-status.md"
+      ]
+    },
+    {
+      "name": "target-schema.graphql",
+      "sha256": "39c40416702bc32f1f4497cb4fc9990232e8cefcf97d8e0ea62ea021fa7a3b14",
+      "matching_paths": [
+        "accepted/sprint1/tech-design/target-schema.graphql"
+      ]
+    },
+    {
+      "name": "test-cases.v1.csv",
+      "sha256": "9b875de9edd7fd51faecbd0ed4a77f1ddef6c14b372378d92f05c2aa60121bce",
+      "matching_paths": [
+        "accepted/sprint1/test-design/test-cases.v1.csv"
+      ]
+    }
+  ]
+}

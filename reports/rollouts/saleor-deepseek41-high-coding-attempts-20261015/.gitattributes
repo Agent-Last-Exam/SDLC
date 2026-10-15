@@ -1,0 +1,3 @@
+** -text
+**/*.patch -whitespace linguist-generated=true
+**/*.gz linguist-generated=true

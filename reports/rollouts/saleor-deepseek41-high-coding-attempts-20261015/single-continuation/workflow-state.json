@@ -1,0 +1,88 @@
+{
+  "mode": "single",
+  "status": "interrupted",
+  "cursor": 3,
+  "stages": [
+    {
+      "id": "sprint1/prd",
+      "role": "pm",
+      "status": "accepted",
+      "execution_started": true,
+      "session_id": "76db98f8-1d2e-450c-83b1-3086d82b664c",
+      "prd_input_sha256": null,
+      "input_sha256": {},
+      "missing_inputs": [],
+      "outputs": {
+        "prd.md": "284a9e7c3877e84983b8a4c69fcb0f9fca20fde3b04a56e2821897ce46f824a5"
+      },
+      "missing_outputs": [],
+      "delivery_complete": true,
+      "cost_usd": 21.886401,
+      "recovered_from": "<source-repository>/jobs/single-coding-deepseek41-high-instruction-20261014/task__DkkX3ja"
+    },
+    {
+      "id": "sprint1/tech-design",
+      "role": "architect",
+      "status": "accepted",
+      "execution_started": true,
+      "session_id": "76db98f8-1d2e-450c-83b1-3086d82b664c",
+      "prd_input_sha256": "284a9e7c3877e84983b8a4c69fcb0f9fca20fde3b04a56e2821897ce46f824a5",
+      "input_sha256": {
+        "artifact:sprint1/prd/prd": "284a9e7c3877e84983b8a4c69fcb0f9fca20fde3b04a56e2821897ce46f824a5"
+      },
+      "missing_inputs": [],
+      "outputs": {
+        "backend-design.md": "aef7f8fd74e31a69808e11e5d412991c549174ce567e408a12c42568e49bc0ff",
+        "frontend-design.md": "1b06e7563a8f017d8583c0b213e242689f637606ddb82fb60a4e2989b5180372",
+        "interface-contract.md": "9254fec4efd7785c6f5a1b09795eb01f0fae8bf4baa18337ee2c98ea3236239b",
+        "interfaces/oidc-offline-access.md": "7adeb98e986fcc33adda9527f9df6e7281815b0b3bcc506e96eecdcea4d2f475",
+        "target-schema.graphql": "388332a158e78fef224dfe31282b78164f97ee21dc57c3fe0f9474ade4e1c037"
+      },
+      "missing_outputs": [],
+      "delivery_complete": true,
+      "cost_usd": 61.916646,
+      "recovered_from": "<source-repository>/jobs/single-coding-deepseek41-high-instruction-20261014/task__DkkX3ja"
+    },
+    {
+      "id": "sprint1/test-design",
+      "role": "qa-design",
+      "status": "accepted",
+      "execution_started": true,
+      "session_id": "76db98f8-1d2e-450c-83b1-3086d82b664c",
+      "prd_input_sha256": "284a9e7c3877e84983b8a4c69fcb0f9fca20fde3b04a56e2821897ce46f824a5",
+      "input_sha256": {
+        "artifact:sprint1/prd/prd": "284a9e7c3877e84983b8a4c69fcb0f9fca20fde3b04a56e2821897ce46f824a5",
+        "artifact:sprint1/tech-design/frontend_design": "1b06e7563a8f017d8583c0b213e242689f637606ddb82fb60a4e2989b5180372",
+        "artifact:sprint1/tech-design/backend_design": "aef7f8fd74e31a69808e11e5d412991c549174ce567e408a12c42568e49bc0ff",
+        "artifact:sprint1/tech-design/interface_contract": "9254fec4efd7785c6f5a1b09795eb01f0fae8bf4baa18337ee2c98ea3236239b",
+        "artifact:sprint1/tech-design/target_schema": "388332a158e78fef224dfe31282b78164f97ee21dc57c3fe0f9474ade4e1c037"
+      },
+      "missing_inputs": [],
+      "outputs": {
+        "test-cases.v1.csv": "1d79257c96443157ae2b0efb358663e9e4dfca532eac24e39ab6f9ba56586d83"
+      },
+      "missing_outputs": [],
+      "delivery_complete": true,
+      "cost_usd": 115.150053,
+      "recovered_from": "<source-repository>/jobs/single-coding-deepseek41-high-instruction-20261014/task__DkkX3ja"
+    },
+    {
+      "id": "sprint1/development",
+      "role": "developer",
+      "status": "failed",
+      "execution_started": true
+    }
+  ],
+  "model_called": true,
+  "synthetic": false,
+  "missing_output_policy": "fail",
+  "delivery_complete": true,
+  "cost_usd": 0.0,
+  "baseline_sha256": "d3808712e43e3e5e61c95061e7e10f707e16366cc3af68b7f6dc5821100623c4",
+  "principal_session": "76db98f8-1d2e-450c-83b1-3086d82b664c",
+  "recovery_source": "<source-repository>/jobs/single-coding-deepseek41-high-instruction-20261014/task__DkkX3ja",
+  "recovery_reason": "user_authorized_coding_after_document_boundary",
+  "prior_document_cost_usd": 115.150053,
+  "cost_scope": "development continuation only",
+  "error": ""
+}

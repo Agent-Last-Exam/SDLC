@@ -1,0 +1,20 @@
+{
+  "label": "single-continuation",
+  "mode": "single",
+  "source_job": "single-coding-deepseek41-high-continuation-20261015-r2",
+  "source_trial": "task__n9Njzk6",
+  "model": "deepseek/deepseek-v4.1-flash",
+  "reasoning_effort": "high",
+  "workflow_status": "interrupted",
+  "workflow_error": "",
+  "harbor_exception_type": "AgentTimeoutError",
+  "harbor_exception_message": "Agent execution timed out after 10800.0 seconds",
+  "trajectory_steps": 2803,
+  "trajectory_sidechain_steps": 2276,
+  "trajectory_scope": "Continuous principal session including prior document history and coding continuation; not a coding-only slice.",
+  "accepted_development": false,
+  "snapshot_recovered": false,
+  "cost_caveat": "Historical CLI/converter estimates are not actual billing; interrupted stages may have missing or incomplete accounting.",
+  "source_native_stage_log_sha256": "5d8de9265fc1d79971735f36b65ffcf9b0f82aa73b8f7bea8c6cb64e0ffaba42",
+  "source_workflow_state_sha256": "be5d72632c74e4f6365731b82cf498dc5ae70bcd2634cdaa3ed36758d9e73eb0"
+}

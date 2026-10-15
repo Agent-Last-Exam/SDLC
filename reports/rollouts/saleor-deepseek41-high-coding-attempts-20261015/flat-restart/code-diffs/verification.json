@@ -1,0 +1,20 @@
+{
+  "saleor": {
+    "baseline": "c864e66b8e537d30732ddba62d3a4c47e49e4a3e",
+    "changed_files": 161,
+    "verified_source_files": 4468,
+    "patch_sha256": "a03a62b90904fdf4f6530bb9804a09d8f1f7e4235793c4e0bf997309985eae1a",
+    "candidate_git_tree": "935ab9feb30322b7a10559e73959648753c0277d",
+    "apply_check": true,
+    "full_source_replay_matches_manifest": true
+  },
+  "saleor-dashboard": {
+    "baseline": "aebb2401b5079fbbb8c60150289d1896c108feca",
+    "changed_files": 150,
+    "verified_source_files": 3829,
+    "patch_sha256": "95023ba1ad247fb0739b369dd7124741c7a1c45092d565995d69783bc3a951c3",
+    "candidate_git_tree": "eeb4b5362017ff0cda16c25277a25473ea2b4a66",
+    "apply_check": true,
+    "full_source_replay_matches_manifest": true
+  }
+}
