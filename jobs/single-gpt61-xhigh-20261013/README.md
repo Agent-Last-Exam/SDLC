@@ -23,3 +23,7 @@
 ## 后续代码评测
 
 [coding-evaluation/README.md](coding-evaluation/README.md)：本次候选 F2P 95/5182、P2P 15009/15012、reward=0；含参考 Oracle 对照及逐项 CSV。原 rollout 的 verifier 关闭与原始失败记录保持不变。
+
+## 当次阶段提示词
+
+当时保存的职责、用户阶段指令及原生注入证据见 [prompt-snapshots/](prompt-snapshots/README.md)，按原始 job、trial、阶段区分，并标记继承快照。该补充不代表完整供应商请求或全部子会话日志。

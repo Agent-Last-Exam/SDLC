@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "archive": "saleor-deepseek41-high-coding-attempts-20261015/single-continuation",
+  "scope": "Saved stage role.md, instruction.md and native-evidence.json only; not a full provider request or CLI built-in system prompt. Current templates are never substituted.",
+  "inheritance_rule": "Identical role, instruction and native evidence in the direct recovery source are marked inherited. Execution flags alone are not used to claim reruns.",
+  "trajectory": {
+    "path": "trajectory.atif.json.gz",
+    "sha256": "1e838fac4091d8785492a28867129177293fc6bdf6653f337d9ed03102537c6a",
+    "steps": 2803,
+    "sidechain_marked_steps": 2276,
+    "boundary": "Existing export left unchanged. Sidechain flags describe included steps, not proof every child session was exported. Prompt snapshots do not add missing session transcripts."
+  },
+  "rollouts": [
+    {
+      "source_job": "single-coding-deepseek41-high-continuation-20261015-r2",
+      "source_trial": "task__n9Njzk6",
+      "source_state_sha256": "be5d72632c74e4f6365731b82cf498dc5ae70bcd2634cdaa3ed36758d9e73eb0",
+      "recorded_workflow_status": "interrupted",
+      "recovery_source": {
+        "job": "single-coding-deepseek41-high-instruction-20261014",
+        "trial": "task__DkkX3ja"
+      },
+      "stages": [
+        {
+          "stage_id": "sprint1/development",
+          "recorded_status": "failed",
+          "role": "developer",
+          "session_id": null,
+          "session_present_in_published_trajectory_metadata": null,
+          "identical_snapshot_in_recovery_source": false,
+          "provenance_note": "Snapshot found in this trial; no matching snapshot/evidence in its direct recovery source.",
+          "role_hash_matches_native_evidence": null,
+          "system_prompt_transport": null,
+          "files": [
+            {
+              "path": "single-coding-deepseek41-high-continuation-20261015-r2/task__n9Njzk6/stages/sprint1/development/role.md",
+              "source_sha256": "f988f3bcd86205e60a41156f7f06dd54227d5759cc5d453e0006f5f9df0f5977",
+              "export_sha256": "f988f3bcd86205e60a41156f7f06dd54227d5759cc5d453e0006f5f9df0f5977",
+              "redacted": false
+            },
+            {
+              "path": "single-coding-deepseek41-high-continuation-20261015-r2/task__n9Njzk6/stages/sprint1/development/instruction.md",
+              "source_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "export_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "redacted": false
+            }
+          ],
+          "missing_snapshot_files": [
+            "native-evidence.json"
+          ]
+        },
+        {
+          "stage_id": "sprint1/prd",
+          "recorded_status": "accepted",
+          "role": "pm",
+          "session_id": "76db98f8-1d2e-450c-83b1-3086d82b664c",
+          "session_present_in_published_trajectory_metadata": true,
+          "identical_snapshot_in_recovery_source": true,
+          "provenance_note": "Inherited snapshot retained from recovery source; not evidence this stage ran again.",
+          "role_hash_matches_native_evidence": true,
+          "system_prompt_transport": "--append-system-prompt",
+          "files": [
+            {
+              "path": "single-coding-deepseek41-high-continuation-20261015-r2/task__n9Njzk6/stages/sprint1/prd/role.md",
+              "source_sha256": "dc74df4c279ef2d50898ae28a274d160b8b742df8d8d5462b3c12ea17c787627",
+              "export_sha256": "dc74df4c279ef2d50898ae28a274d160b8b742df8d8d5462b3c12ea17c787627",
+              "redacted": false
+            },
+            {
+              "path": "single-coding-deepseek41-high-continuation-20261015-r2/task__n9Njzk6/stages/sprint1/prd/instruction.md",
+              "source_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "export_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "redacted": false
+            },
+            {
+              "path": "single-coding-deepseek41-high-continuation-20261015-r2/task__n9Njzk6/stages/sprint1/prd/native-evidence.json",
+              "source_sha256": "abe64b014c3c6a82145e56d5aaedee12f5626c0229b3497c07f845eb26fa4b23",
+              "export_sha256": "abe64b014c3c6a82145e56d5aaedee12f5626c0229b3497c07f845eb26fa4b23",
+              "redacted": false
+            }
+          ],
+          "missing_snapshot_files": []
+        },
+        {
+          "stage_id": "sprint1/tech-design",
+          "recorded_status": "accepted",
+          "role": "architect",
+          "session_id": "76db98f8-1d2e-450c-83b1-3086d82b664c",
+          "session_present_in_published_trajectory_metadata": true,
+          "identical_snapshot_in_recovery_source": true,
+          "provenance_note": "Inherited snapshot retained from recovery source; not evidence this stage ran again.",
+          "role_hash_matches_native_evidence": true,
+          "system_prompt_transport": "--append-system-prompt",
+          "files": [
+            {
+              "path": "single-coding-deepseek41-high-continuation-20261015-r2/task__n9Njzk6/stages/sprint1/tech-design/role.md",
+              "source_sha256": "28f393fb2a1f11665134c6bec6eb3c7a6280c53b6f0c4a195159b3bc532e350f",
+              "export_sha256": "28f393fb2a1f11665134c6bec6eb3c7a6280c53b6f0c4a195159b3bc532e350f",
+              "redacted": false
+            },
+            {
+              "path": "single-coding-deepseek41-high-continuation-20261015-r2/task__n9Njzk6/stages/sprint1/tech-design/instruction.md",
+              "source_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "export_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "redacted": false
+            },
+            {
+              "path": "single-coding-deepseek41-high-continuation-20261015-r2/task__n9Njzk6/stages/sprint1/tech-design/native-evidence.json",
+              "source_sha256": "bc56ac8a8c7ac4e3277401d9b1fac9a6c19be317785b9ff9759bdb62e15bebf9",
+              "export_sha256": "bc56ac8a8c7ac4e3277401d9b1fac9a6c19be317785b9ff9759bdb62e15bebf9",
+              "redacted": false
+            }
+          ],
+          "missing_snapshot_files": []
+        },
+        {
+          "stage_id": "sprint1/test-design",
+          "recorded_status": "accepted",
+          "role": "qa-design",
+          "session_id": "76db98f8-1d2e-450c-83b1-3086d82b664c",
+          "session_present_in_published_trajectory_metadata": true,
+          "identical_snapshot_in_recovery_source": true,
+          "provenance_note": "Inherited snapshot retained from recovery source; not evidence this stage ran again.",
+          "role_hash_matches_native_evidence": true,
+          "system_prompt_transport": "--append-system-prompt",
+          "files": [
+            {
+              "path": "single-coding-deepseek41-high-continuation-20261015-r2/task__n9Njzk6/stages/sprint1/test-design/role.md",
+              "source_sha256": "c208fb100280e6bdb54f1001c2186fef418cf078266253048e342fda3bcf7f11",
+              "export_sha256": "c208fb100280e6bdb54f1001c2186fef418cf078266253048e342fda3bcf7f11",
+              "redacted": false
+            },
+            {
+              "path": "single-coding-deepseek41-high-continuation-20261015-r2/task__n9Njzk6/stages/sprint1/test-design/instruction.md",
+              "source_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "export_sha256": "a52a26aa07ca75d09dad7f4bc2a70673c7d6c57d451b98149ec116742d1472e8",
+              "redacted": false
+            },
+            {
+              "path": "single-coding-deepseek41-high-continuation-20261015-r2/task__n9Njzk6/stages/sprint1/test-design/native-evidence.json",
+              "source_sha256": "a84b3b0eae4e78c5d4cde64d479f5b32482ce3218a0f984f04df4d1d79da81a6",
+              "export_sha256": "a84b3b0eae4e78c5d4cde64d479f5b32482ce3218a0f984f04df4d1d79da81a6",
+              "redacted": false
+            }
+          ],
+          "missing_snapshot_files": []
+        }
+      ]
+    }
+  ]
+}

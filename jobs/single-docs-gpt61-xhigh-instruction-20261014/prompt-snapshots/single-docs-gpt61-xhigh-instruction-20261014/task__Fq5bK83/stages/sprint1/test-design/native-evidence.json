@@ -1,0 +1,11 @@
+{
+  "session_id": "1f1deb22-afde-4b2d-81ea-aa0c8ef95902",
+  "active_role": "qa-design",
+  "stage_id": "sprint1/test-design",
+  "native_user_activation_verified": true,
+  "role_activations_recorded": 3,
+  "transport": "claude-code-jsonl",
+  "role_prompt_sha256": "fea60030c959402b8e32ba2312c189ba13107ce33ec40edbf4018df0119d3a10",
+  "session_continuity_verified": true,
+  "system_prompt_transport": "--append-system-prompt"
+}

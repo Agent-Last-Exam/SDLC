@@ -1,0 +1,11 @@
+{
+  "session_id": "76db98f8-1d2e-450c-83b1-3086d82b664c",
+  "active_role": "pm",
+  "stage_id": "sprint1/prd",
+  "native_user_activation_verified": true,
+  "role_activations_recorded": 1,
+  "transport": "claude-code-jsonl",
+  "role_prompt_sha256": "dc74df4c279ef2d50898ae28a274d160b8b742df8d8d5462b3c12ea17c787627",
+  "session_continuity_verified": true,
+  "system_prompt_transport": "--append-system-prompt"
+}
