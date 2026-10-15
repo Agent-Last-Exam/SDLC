@@ -1,0 +1,1712 @@
+{
+  "schema_version": 1,
+  "rubric_set_id": "saleor-pruned-docs",
+  "rubric_version": "2026-10-14-v5-pruned-business-inputs",
+  "source_revisions": {
+    "tdd_rubric_doc": "OMSqdrbv0oRjjuxYSbrcIOVtnOg@161",
+    "stage_evaluation_doc": "NAsmdh9NVoVbPBxW8A8cI2Q7n8p@266",
+    "golden_prd_sha256": "f2d608680bf0d6a1a9ddd0f69bda6156b83c024a1f44104de6b884826d4acb29",
+    "evaluation_scope": "documents-only; GraphQL GT checker deferred",
+    "instruction_sha256": "02fcc6fa0bdb37428d76e0d57e76ddff4eeefd237d11b2016980077ec55f7a73",
+    "business_conversations_sha256": "6d31106a4aabdc4e9e3342b6d036523e0a1bf6154d25d5c218548e5e33cb689d",
+    "task": "saleor-3.23-pruned",
+    "business_input_layout": "instruction-and-business-v1"
+  },
+  "aggregation": "min_group_pass_rate",
+  "rewards": {
+    "reward": 0.875,
+    "rubric_pass_rate": 0.909091,
+    "critical_pass_rate": 1.0,
+    "document_acceptance": 0,
+    "rubric_passed": 20,
+    "rubric_total": 22,
+    "group_prd": 0.875,
+    "group_tech_design": 0.875,
+    "group_test_design": 1.0,
+    "delivery_completeness": 1
+  },
+  "groups": {
+    "prd": 0.875,
+    "tech_design": 0.875,
+    "test_design": 1.0
+  },
+  "results": [
+    {
+      "group_id": "prd",
+      "stage": "sprint1/prd",
+      "rubric_id": "PRD1",
+      "title": "目标与范围对齐",
+      "weight": 1.0,
+      "critical": true,
+      "verdict": "P",
+      "evidence": [
+        {
+          "path": "/candidate/sprint1/prd/prd.md",
+          "location": "修订说明",
+          "quote": "未执行代码变更、数据库迁移或运行验收，不表示任何环境已升级成功。"
+        },
+        {
+          "path": "/candidate/sprint1/prd/prd.md",
+          "location": "§1 交付目标后段",
+          "quote": "材料未提供现有转化率、人工处理量、吞吐量、响应时长或目标提升比例，本 PRD 不虚构业务收益、性能 SLA 或部署结果。"
+        },
+        {
+          "path": "/candidate/sprint1/prd/prd.md",
+          "location": "§4 排除项表",
+          "quote": "| App Problems | 类型/字段、创建/关闭、问题列表及隐藏入口 | Webhook delivery 状态、失败告警及有权单条重试 |"
+        }
+      ],
+      "reason": "PRD 承接了 Instruction 的链路目标与五项交付目标。第 4 节完整列出范围，并逐项给出非目标与保留边界，与 Instruction 和 BC-031 一致。文中明确不虚构收益、SLA 或部署结果，并把基线代码事实与目标需求分开，没有把计划写成已实现事实。",
+      "issue_id": null
+    },
+    {
+      "group_id": "prd",
+      "stage": "sprint1/prd",
+      "rubric_id": "PRD2",
+      "title": "用户与接入方覆盖",
+      "weight": 1.0,
+      "critical": false,
+      "verdict": "P",
+      "evidence": [
+        {
+          "path": "/candidate/sprint1/prd/prd.md",
+          "location": "§2 用户表",
+          "quote": "| 支付、App、Webhook 集成方 | 按合法业务标识查交易，安装/更新扩展，回填当前表单，订阅事件与处理 delivery |"
+        },
+        {
+          "path": "/candidate/sprint1/prd/prd.md",
+          "location": "§2 用户表",
+          "quote": "| 自托管商店管理员与只读人员 | 浏览筛选扩展目录，按权限查看或配置，诊断 Webhook 失败 |"
+        },
+        {
+          "path": "/candidate/sprint1/prd/prd.md",
+          "location": "§2 表后说明",
+          "quote": "客户身份、员工身份和 App 身份不得因换成列表、弹窗、导出、关联查询或错误路径而扩大可见范围。"
+        }
+      ],
+      "reason": "PRD 识别了八类公开输入涉及的角色：客户/Storefront、商户/渠道管理员、商品内容运营、客服售后、库存履约、商店身份管理员、支付/App/Webhook 集成方、自托管与只读人员。每类均写明典型任务（目标与入口）以及必须遵守的事实，并统一说明权限、归属与范围边界。",
+      "issue_id": null
+    },
+    {
+      "group_id": "prd",
+      "stage": "sprint1/prd",
+      "rubric_id": "PRD3",
+      "title": "核心流程与结果完整",
+      "weight": 1.0,
+      "critical": true,
+      "verdict": "P",
+      "evidence": [
+        {
+          "path": "/candidate/sprint1/prd/prd.md",
+          "location": "§3 开头",
+          "quote": "本节 R01～R31 与 BC-001～BC-031 对应。"
+        },
+        {
+          "path": "/candidate/sprint1/prd/prd.md",
+          "location": "R05 需求描述",
+          "quote": "批次入选与实际提交前均校验最新事实，实际完成复用可靠成单规则。"
+        },
+        {
+          "path": "/candidate/sprint1/prd/prd.md",
+          "location": "R23 需求描述",
+          "quote": "已定义事件，包括商品变体折扣价更新，满足实质变化触发条件时产生合同正确的一次逻辑通知"
+        }
+      ],
+      "reason": "31 条需求逐一对应 BC 片段，均说明触发条件、业务行为与可观察结果。抽查以下细项均未遗漏：配送重算、更新与完成重校验、库存模式、诊断、批量自动成单、cutoff/延迟、礼品卡授权/取消/扣款/退款、金额摘要、资金动作、基础交易查询、搜索、锁定筛选、认证策略、OIDC、富文本、扩展、Webhook、配送快照、员工实际删除、草稿动作限制等。voucherCode、tokenTargetUrl、变体折扣价事件等细项也已覆盖。",
+      "issue_id": null
+    },
+    {
+      "group_id": "prd",
+      "stage": "sprint1/prd",
+      "rubric_id": "PRD4",
+      "title": "异常、安全与数据边界完整",
+      "weight": 1.0,
+      "critical": true,
+      "verdict": "P",
+      "evidence": [
+        {
+          "path": "/candidate/sprint1/prd/prd.md",
+          "location": "AC-11-5",
+          "quote": "客户、员工及 App 分别查询越过自己对象/渠道范围的交易时，不泄露详情、金额或事件；无权限与合法零结果有可辨别的合同响应。"
+        },
+        {
+          "path": "/candidate/sprint1/prd/prd.md",
+          "location": "AC-07-6",
+          "quote": "无权限或状态非法请求不改变任何余额。"
+        },
+        {
+          "path": "/candidate/sprint1/prd/prd.md",
+          "location": "R18 需求描述",
+          "quote": "非法 URL scheme 或超允许深度须拒绝整项写入并指出字段/链接/深度问题，不持久化部分危险内容。"
+        }
+      ],
+      "reason": "各需求分别写出了失败路径、权限限制、安全约束与数据边界。读取范围（R11、R28）、写入拒绝且原值不变（R25、R10）、错误中不泄露信息（R17、R28）、失败不伪装成功或空结果（R26）被分别表述，没有相互替代。",
+      "issue_id": null
+    },
+    {
+      "group_id": "prd",
+      "stage": "sprint1/prd",
+      "rubric_id": "PRD5",
+      "title": "兼容与存量连续性完整",
+      "weight": 1.0,
+      "critical": true,
+      "verdict": "P",
+      "evidence": [
+        {
+          "path": "/candidate/sprint1/prd/prd.md",
+          "location": "R03 需求描述",
+          "quote": "旧模式继续遵守既有配送区域、地址及仓库关联规则；升级、读取或缺省输入不自动切换。"
+        },
+        {
+          "path": "/candidate/sprint1/prd/prd.md",
+          "location": "R02 需求描述",
+          "quote": "旧 `shippingMethod` 等配送读取字段保留明确弃用与替代说明，新客户端使用当前 `deliveryMethod` 约定。"
+        },
+        {
+          "path": "/candidate/sprint1/prd/prd.md",
+          "location": "R27 需求描述",
+          "quote": "草稿订单新客户端使用 `voucherCode` 替代旧 `voucher` 输入。"
+        }
+      ],
+      "reason": "以下兼容义务均有具体保留或迁移条款与验收：旧配送标识与弃用字段、未切换库存模式商店的旧行为、旧渠道自动完成默认关闭、升级商店的密码行为、历史扩展无需重装、历史礼品卡订单不重算、旧导出 mutation 弃用、已退出插件与 Payment.partial 返回迁移错误、voucherCode 替代、历史配送元数据迁移。没有用概括性兼容表述代替具体义务。",
+      "issue_id": null
+    },
+    {
+      "group_id": "prd",
+      "stage": "sprint1/prd",
+      "rubric_id": "PRD6",
+      "title": "迁移、恢复与补偿完整",
+      "weight": 1.0,
+      "critical": true,
+      "verdict": "P",
+      "evidence": [
+        {
+          "path": "/candidate/sprint1/prd/prd.md",
+          "location": "R27 需求描述",
+          "quote": "迁移可在空库执行，也覆盖有订单、交易、扩展、库存与元数据的旧库；保留关联与业务含义，不默认开启新策略，不重算已完成历史订单"
+        },
+        {
+          "path": "/candidate/sprint1/prd/prd.md",
+          "location": "AC-08-4",
+          "quote": "已扣款资金不能通过取消授权获得第二次恢复；重复取消或退款以及失败后同一请求重试均只产生一次应有资金变化。"
+        },
+        {
+          "path": "/candidate/sprint1/prd/prd.md",
+          "location": "§5 待确认项说明",
+          "quote": "固定材料不安排追问，下列未给定数值/技术合同按待确认项记录，不擅自补成已批准要求。"
+        }
+      ],
+      "reason": "各类适用要求均已明确：库存模式需显式切换；空库与旧库迁移且重跑无副作用；自动成单与 delivery 失败后可重试；礼品卡取消与退款构成资金补偿；已扣款不可经取消回退、历史快照不回写等不可回退边界。延迟单位、目录来源、支付支持矩阵等未知外部条件以 Q01～Q06 标注，未被删除。",
+      "issue_id": null
+    },
+    {
+      "group_id": "prd",
+      "stage": "sprint1/prd",
+      "rubric_id": "PRD7",
+      "title": "验收条件可判定",
+      "weight": 1.0,
+      "critical": true,
+      "verdict": "P",
+      "evidence": [
+        {
+          "path": "/candidate/sprint1/prd/prd.md",
+          "location": "AC-06-3",
+          "quote": "当 `now - last_change = D` 时尚不入选，超过 D 才可入选"
+        },
+        {
+          "path": "/candidate/sprint1/prd/prd.md",
+          "location": "AC-09-2",
+          "quote": "服务端与 Dashboard 均解释已扣款合计 80、剩余待付 20，礼品卡 30 不再作为额外折扣重复扣除。"
+        },
+        {
+          "path": "/candidate/sprint1/prd/prd.md",
+          "location": "AC-10-3",
+          "quote": "当前可捕获授权为 60 时，捕获 60 可成功且额度相应消耗；捕获超过 60 或负金额时被拒绝"
+        }
+      ],
+      "reason": "每条需求都有编号 AC，采用给定/操作/结果形式，断言可观察的业务结果。AC 覆盖适用的权限、失败、边界值、兼容、幂等、并发与迁移场景。L 深度、一致性窗口等缺数值的部分已作为参数化边界与待确认项处理，不影响可判定性。",
+      "issue_id": null
+    },
+    {
+      "group_id": "prd",
+      "stage": "sprint1/prd",
+      "rubric_id": "PRD8",
+      "title": "优先级与交付决策明确",
+      "weight": 1.0,
+      "critical": false,
+      "verdict": "F",
+      "evidence": [
+        {
+          "path": "/candidate/sprint1/prd/prd.md",
+          "location": "§3 优先级说明",
+          "quote": "各条均属于本轮范围，不以优先级替代非目标边界。"
+        },
+        {
+          "path": "/candidate/sprint1/prd/prd.md",
+          "location": "R15",
+          "quote": "- 优先级：P1"
+        },
+        {
+          "path": "/candidate/sprint1/prd/prd.md",
+          "location": "R21",
+          "quote": "- 优先级：P0"
+        }
+      ],
+      "reason": "31 条需求中 30 条标为 P0，仅 R15 为 P1。商品诊断、搜索、扩展目录、重量与日期展示等体验或运营类需求也被列为 P0，与资金、库存、安全类需求同级，无法支撑取舍与排期。文档也没有集中的依赖关系、风险评估、发布门槛或切换窗口说明，待确认项只要求在实现前落实，缺乏交付决策所需的门槛与风险分析。",
+      "issue_id": "PRD8-priority-undifferentiated-no-risk-gating"
+    },
+    {
+      "group_id": "tech_design",
+      "stage": "sprint1/tech-design",
+      "rubric_id": "TDD1",
+      "title": "需求追踪与设计归属",
+      "weight": 1.0,
+      "critical": true,
+      "verdict": "P",
+      "evidence": [
+        {
+          "path": "/candidate/sprint1/tech-design/frontend-design.md",
+          "location": "§2 需求覆盖",
+          "quote": "不直接承接：R01/R02 是 Storefront 的配送调用与 Core 校验，当前 Dashboard 无独立客户结账页面"
+        },
+        {
+          "path": "/candidate/sprint1/tech-design/backend-design.md",
+          "location": "§2 需求覆盖",
+          "quote": "R15 | BD10（去重、稳定对象分页；布局/返回路径由前端负责）"
+        },
+        {
+          "path": "/candidate/sprint1/tech-design/interface-contract.md",
+          "location": "I17",
+          "quote": "所属设计单元：BD13"
+        }
+      ],
+      "reason": "后端将 R01–R31 全部映射到 BD01–BD17。前端将 R03–R31 映射到 FD01–FD13，并说明了不直接承接的需求及原因。I01–I26 各自归属一个 BD，前端依赖表将 I 映射到 FD，BT01–BT10 标明各自覆盖的 BD。共享职责有明确划分，例如 R15、R29、R30 的前后端分工，以及 I17 由 Dashboard 提供、BD13 共管协议。未发现无人承担或重复定义的情况。两份意见一致，复核后维持 P。",
+      "issue_id": null
+    },
+    {
+      "group_id": "tech_design",
+      "stage": "sprint1/tech-design",
+      "rubric_id": "TDD2",
+      "title": "前端行为设计充分",
+      "weight": 1.0,
+      "critical": true,
+      "verdict": "P",
+      "evidence": [
+        {
+          "path": "/candidate/sprint1/tech-design/frontend-design.md",
+          "location": "FD01",
+          "quote": "保存按钮pending防二次提交、errors映射field、CONFLICT显示当前版本并允许重新读取/合并，不自动覆盖dirty值"
+        },
+        {
+          "path": "/candidate/sprint1/tech-design/frontend-design.md",
+          "location": "FD03",
+          "quote": "每次用户意图产生idempotencyKey，固定于该pending操作，double-click/网络重试复用"
+        },
+        {
+          "path": "/candidate/sprint1/tech-design/frontend-design.md",
+          "location": "FD12",
+          "quote": "初始loaded首次填未脏字段，刷新只fill同context未脏字段，旧context response丢弃"
+        }
+      ],
+      "reason": "各 FD 都给出了具体组件落点、入口，以及 loading/empty/forbidden/network/stale/conflict 等状态。交互规则（脏字段保护、迟到响应丢弃、防双击、幂等键）、权限门控、失败保留输入与重试也都有说明。限制同样写明，例如不模拟后台完成、不本地重算库存、不新增 async fallback。内容是实际行为设计，不是复述 PRD。",
+      "issue_id": null
+    },
+    {
+      "group_id": "tech_design",
+      "stage": "sprint1/tech-design",
+      "rubric_id": "TDD3",
+      "title": "后端状态与数据设计充分",
+      "weight": 1.0,
+      "critical": true,
+      "verdict": "P",
+      "evidence": [
+        {
+          "path": "/candidate/sprint1/tech-design/backend-design.md",
+          "location": "BD05",
+          "quote": "状态：DISABLED / WAITING（时间或未足额）→ PROCESSING → COMPLETED；资格失败 BLOCKED；可恢复网络/数据库失败 RETRYING。"
+        },
+        {
+          "path": "/candidate/sprint1/tech-design/backend-design.md",
+          "location": "BD06",
+          "quote": "book=100，authorize30 → book100/hold30/available70；capture30 → book70/hold0/available70"
+        },
+        {
+          "path": "/candidate/sprint1/tech-design/backend-design.md",
+          "location": "BD14",
+          "quote": "订单/草稿/履约适用事件事务内只写 `DomainEventOutbox`"
+        }
+      ],
+      "reason": "后端明确了服务职责和新增模型：CheckoutCompletion、GiftCardLedgerEntry、PaymentCommand、DomainEventOutbox、配送快照。数据身份已定义，例如 checkout_token unique、scope/key unique、logical_key。状态转换和持久化结果清楚，异步边界也明确：PSP 调用在事务外，on_commit 后由 worker 构建 payload。主流程收敛到唯一订单、唯一账本结果和唯一逻辑事件。",
+      "issue_id": null
+    },
+    {
+      "group_id": "tech_design",
+      "stage": "sprint1/tech-design",
+      "rubric_id": "TDD4",
+      "title": "接口叙述契约内部一致",
+      "weight": 1.0,
+      "critical": true,
+      "verdict": "P",
+      "evidence": [
+        {
+          "path": "/candidate/sprint1/tech-design/interface-contract.md",
+          "location": "§1 通用约定",
+          "quote": "mutation成功必须payload存在、errors=[]及需要的result存在，不能仅HTTP200或data非null。"
+        },
+        {
+          "path": "/candidate/sprint1/tech-design/interface-contract.md",
+          "location": "I08 完成判定",
+          "quote": "对App异步action只表示已受理，待transactioneventterminal才资金成功。"
+        },
+        {
+          "path": "/candidate/sprint1/tech-design/interface-contract.md",
+          "location": "I20 完成判定",
+          "quote": "retry返回同delivery已受理RETRYING，只是一条排队不是sendcompleted"
+        }
+      ],
+      "reason": "各接口叙述都写明了提供方、调用方、权限、错误分层（标准 GraphQL 层与业务 field/code/message）、完成判定和兼容过渡。这些内容与前后端设计一致：I08 权限与 BD07、FD03 相符，I05 的 delay/cutoff 边界与 BD04 相符，I16 的 issueToken 与 appUpdate.manifestUrl 与 BD13 相符。接收请求与业务完成被统一区分，覆盖异步 action、安装 Job、retry 排队、设置保存与执行。schema 字段与可空性按评分项规定不作判断。",
+      "issue_id": null
+    },
+    {
+      "group_id": "tech_design",
+      "stage": "sprint1/tech-design",
+      "rubric_id": "TDD5",
+      "title": "失败、并发与恢复机制闭环",
+      "weight": 1.0,
+      "critical": true,
+      "verdict": "P",
+      "evidence": [
+        {
+          "path": "/candidate/sprint1/tech-design/backend-design.md",
+          "location": "BD02",
+          "quote": "移动资金与成单遵守一个全局锁层级：必要的 completion 幂等记录→目标 checkout/order（同类主键升序）→channel/settings→TransactionItem/Payment"
+        },
+        {
+          "path": "/candidate/sprint1/tech-design/backend-design.md",
+          "location": "BD05",
+          "quote": "资格变化而 PSP 已成功不创建半订单，持久记录进入待修复/补偿流程（可识别 payment state），不能以 DB rollback 声称 PSP 未扣款；按同 command reconcile 或补偿 refund，不换 key 重扣。"
+        },
+        {
+          "path": "/candidate/sprint1/tech-design/backend-design.md",
+          "location": "BD07",
+          "quote": "PSP failure 释放本命令占用，timeout 保持 pending 并 reconcile，不能直接当失败重发另一扣款。"
+        }
+      ],
+      "reason": "重复、并发、超时、部分失败、重试、幂等和补偿都有具体机制：全局锁序、lease、scope/key 加 input hash、额度预占与释放、outbox 与 delivery 唯一键、PSP 三步流程与补偿退款。每种机制都写明负责方、状态变化（PENDING/RETRYING/BLOCKED/COMPLETED/FAILED）和终止条件，例如沿用既有重试上限、COMPLETED 后不再变更。",
+      "issue_id": null
+    },
+    {
+      "group_id": "tech_design",
+      "stage": "sprint1/tech-design",
+      "rubric_id": "TDD6",
+      "title": "安全与隐私边界可落实",
+      "weight": 1.0,
+      "critical": true,
+      "verdict": "P",
+      "evidence": [
+        {
+          "path": "/candidate/sprint1/tech-design/backend-design.md",
+          "location": "BD11",
+          "quote": "JWT新增auth_source（password/external）和policy版本。策略改变立即校验当前policy并拒绝不被支持的password token"
+        },
+        {
+          "path": "/candidate/sprint1/tech-design/backend-design.md",
+          "location": "BD14",
+          "quote": "权限收窄后旧payload不能泄露，安全重新过滤/阻断投递并记录原因，不能提升可见范围。"
+        },
+        {
+          "path": "/candidate/sprint1/tech-design/interfaces/extension-form-response.md",
+          "location": "端点与鉴别",
+          "quote": "Dashboard 接收端同时校验 `event.origin === resolvedAppOrigin` 和 `event.source === registeredFrame.contentWindow`。"
+        }
+      ],
+      "reason": "身份与权限都有具体机制：JWT 记录认证来源和 credential epoch，OIDC 按 issuer/sub 绑定，list/node/export/subscription 共用统一 scope。HANDLE_TAXES 仅限特定字段，EditorJS 采用白名单，frame 做 origin/source 鉴别，token 只在内存中传递且 issueToken 默认 false。礼品卡只返回 last4，CheckoutCompletion 不存敏感 message，错误脱敏，webhook payload 按权限重新过滤。日志、事件和响应均未扩大可见范围。",
+      "issue_id": null
+    },
+    {
+      "group_id": "tech_design",
+      "stage": "sprint1/tech-design",
+      "rubric_id": "TDD7",
+      "title": "性能与容量假设明确",
+      "weight": 1.0,
+      "critical": false,
+      "verdict": "F",
+      "evidence": [
+        {
+          "path": "/candidate/sprint1/tech-design/frontend-design.md",
+          "location": "FD05",
+          "quote": "分页循环上限100、可取消，切context则停并提示重新发起"
+        },
+        {
+          "path": "/candidate/sprint1/tech-design/frontend-design.md",
+          "location": "FD05",
+          "quote": "较大数据可继续明确使用deprecated legacy异步job"
+        },
+        {
+          "path": "/candidate/sprint1/tech-design/frontend-design.md",
+          "location": "§5 其他",
+          "quote": "大数据read-only导出浏览器内存（分页可取消/大数据legacy明确降级）"
+        }
+      ],
+      "reason": "多数约束已有明确口径：分页 1..100、默认 20；搜索 ≤256 字符、≤32 词；EditorJS 1MiB/1000 blocks/深度 8；delay 0..10080。Q01 搜索窗口已列为待确认，扫描周期和批量明确交给部署配置，webhook 沿用既有上限，也未伪造运行结论。但设计本身把导出改为浏览器内逐页读取，由此引入容量约束，而这部分口径含糊。第一，“分页循环上限100”没有说明是页数还是条数，也没有说明超限后的行为。第二，“较大数据”降级到 legacy job 的阈值未定义。第三，可导出数据规模既没有假设，也没有列为待确认条件，只在风险中笼统提及。按“含糊即 F”的规则判为 F，与第一份意见一致。",
+      "issue_id": "TDD7-export-capacity-assumptions-unstated"
+    },
+    {
+      "group_id": "tech_design",
+      "stage": "sprint1/tech-design",
+      "rubric_id": "TDD8",
+      "title": "开发依赖与联调可执行",
+      "weight": 1.0,
+      "critical": false,
+      "verdict": "P",
+      "evidence": [
+        {
+          "path": "/candidate/sprint1/tech-design/backend-design.md",
+          "location": "§5 BT09",
+          "quote": "依赖：BT03、BT04、BT05、BT08。"
+        },
+        {
+          "path": "/candidate/sprint1/tech-design/frontend-design.md",
+          "location": "§4 依赖与联调",
+          "quote": "I06 | FD01、FD03 | R05、R06 | 等BT05实际状态，不mock后台完成成功"
+        },
+        {
+          "path": "/candidate/sprint1/tech-design/frontend-design.md",
+          "location": "§4 联调顺序",
+          "quote": "先Core新增与迁移安全默认，后Dashboard切current消费，再停用退出操作"
+        }
+      ],
+      "reason": "BT01–BT10 的依赖构成无环图（BT01→BT02→BT03/BT04→BT05→BT09→BT10，BT06/BT07/BT08 分支汇入 BT10），每个 BT 都标明覆盖的 BD。前端按接口列出消费方 FD、可独立 mock 的部分和需等待的 BT，阻塞条件明确，并要求 fixture 覆盖多种状态。联调顺序和发布顺序与接口成熟度一致。",
+      "issue_id": null
+    },
+    {
+      "group_id": "test_design",
+      "stage": "sprint1/test-design",
+      "rubric_id": "TEST1",
+      "title": "需求追踪完整",
+      "weight": 1.0,
+      "critical": true,
+      "verdict": "P",
+      "evidence": [
+        {
+          "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+          "location": "TC001 覆盖列",
+          "quote": "AC-01-1;BD01;I01"
+        },
+        {
+          "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+          "location": "TC245 覆盖列",
+          "quote": "AC-31-5;FD13;BD16;BD17;I24"
+        },
+        {
+          "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+          "location": "TC124 覆盖列",
+          "quote": "AC-15-1;FD05;BD10;I12"
+        }
+      ],
+      "reason": "所有用例的覆盖列都指向有效的 PRD AC，并按需关联 FD、BD 和 I。逐条比对 R01～R31 的验收条件，AC-01-1 至 AC-31-5 均至少有一条用例承接。补充用例 TC246～TC260 同样标明了 AC 来源，未发现无来源用例或关键 AC 遗漏。",
+      "issue_id": null
+    },
+    {
+      "group_id": "test_design",
+      "stage": "sprint1/test-design",
+      "rubric_id": "TEST2",
+      "title": "核心业务结果覆盖",
+      "weight": 1.0,
+      "critical": true,
+      "verdict": "P",
+      "evidence": [
+        {
+          "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+          "location": "TC072 预期结果",
+          "quote": "netCharged=80、successfulCharged=80、giftCardCharged=30、totalBalance=-20、remainingDue=20"
+        },
+        {
+          "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+          "location": "TC021 预期结果",
+          "quote": "新模式初始可用10→预留后8→另2件draft分配后6"
+        },
+        {
+          "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+          "location": "TC042 预期结果",
+          "quote": "至多一个order、一份有效allocation、一次应有资金及一次逻辑完成通知"
+        }
+      ],
+      "reason": "核心链路均有用例覆盖，包括配送重算、成单、库存、自动完成、礼品卡、金额摘要、资金动作、导出和快照。断言针对具体余额、可用库存、订单数量、事件次数及 Dashboard 与 API 的一致性，而非仅检查请求成功或字段存在。跨前后端契约同样有用例，例如 TC072 的两个订单视图、TC115 的导出集合以及 TC160 的扩展表单。",
+      "issue_id": null
+    },
+    {
+      "group_id": "test_design",
+      "stage": "sprint1/test-design",
+      "rubric_id": "TEST3",
+      "title": "权限与安全场景覆盖",
+      "weight": 1.0,
+      "critical": true,
+      "verdict": "P",
+      "evidence": [
+        {
+          "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+          "location": "TC089 预期结果",
+          "quote": "均被拒绝，不能因换mutation绕过两权限与scope；错误不含受限余额上限。"
+        },
+        {
+          "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+          "location": "TC223 预期结果",
+          "quote": "相同业务授权和channel/warehouse scope，范围外无读写/导出/事件泄露，数量不成旁路。"
+        },
+        {
+          "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+          "location": "TC220 预期结果",
+          "quote": "账户、orders、funds全不变，无假STAFF_DELETED/成功UI。"
+        }
+      ],
+      "reason": "以下场景均有可判定用例：客户、员工、App 等不同身份；对象与渠道/仓库范围；HANDLE_TAXES 及私有快照；密码策略与 OIDC 接管；富文本危险链接；扩展 frame 鉴别；delivery 重试权限。用例普遍验证拒绝后原值、余额和关联历史保持不变，并区分权限错误与合法空结果。",
+      "issue_id": null
+    },
+    {
+      "group_id": "test_design",
+      "stage": "sprint1/test-design",
+      "rubric_id": "TEST4",
+      "title": "异常与连续性场景覆盖",
+      "weight": 1.0,
+      "critical": true,
+      "verdict": "P",
+      "evidence": [
+        {
+          "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+          "location": "TC045 预期结果",
+          "quote": "命令保留未知/待对账状态，恢复以原provider key查询，不能直接换key再扣。"
+        },
+        {
+          "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+          "location": "TC046 预期结果",
+          "quote": "保留已发生支付事实与待修复/补偿状态，不声称DB rollback撤销外部扣款。"
+        },
+        {
+          "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+          "location": "TC104 预期结果",
+          "quote": "未给值记录时延验收受阻，不擅自用20秒或把任务已运行当时延通过。"
+        }
+      ],
+      "reason": "失败、边界值（如 L/L+1、延迟和 cutoff 等值）、兼容、空库与旧库迁移及重跑、回退、幂等重放、并发、部分成功（混合批次、bulk 逐项结果）、PSP 崩溃对账、补偿和恢复均有可判定场景。尚不能执行的外部条件已显式标注，例如 Q01 一致性窗口、TC031 中缺少 Core WARNING 触发规则时记为阻塞，以及仅在测试 gateway 能力通过验证时才执行后台捕获。",
+      "issue_id": null
+    },
+    {
+      "group_id": "test_design",
+      "stage": "sprint1/test-design",
+      "rubric_id": "TEST5",
+      "title": "步骤与断言对应",
+      "weight": 1.0,
+      "critical": false,
+      "verdict": "P",
+      "evidence": [
+        {
+          "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+          "location": "TC050 操作步骤/预期结果",
+          "quote": "恰300秒不入选，301秒且其他资格合法可入选。"
+        },
+        {
+          "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+          "location": "TC083 前置与预期",
+          "quote": "60可成功或按外部合同受理后终结；其他执行前拒绝，0不记有效资金成功。"
+        }
+      ],
+      "reason": "每条用例都给出本例测试数据，操作步骤与预期结果按 1、2 编号逐项对应，成功和失败判定包含具体数值、错误码类别及状态核对。参数化变体在同一步骤内列出，并给出对应的期望。",
+      "issue_id": null
+    },
+    {
+      "group_id": "test_design",
+      "stage": "sprint1/test-design",
+      "rubric_id": "TEST6",
+      "title": "可执行性与独立性",
+      "weight": 1.0,
+      "critical": false,
+      "verdict": "P",
+      "evidence": [
+        {
+          "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+          "location": "各用例前置条件",
+          "quote": "参数化矩阵每项使用独立可重置fixture并逐项完成全部步骤"
+        },
+        {
+          "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+          "location": "TC031 前置条件",
+          "quote": "缺失时该集成子场景记阻塞不得伪通过"
+        },
+        {
+          "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+          "location": "TC209 前置条件",
+          "quote": "在实施授权副本执行生成，不修改本次冻结材料"
+        }
+      ],
+      "reason": "每条用例都声明了隔离验收环境、所需身份权限和可控测试服务，测试数据在前置条件中自行准备。各用例使用独立可重置的 fixture，不依赖隐含执行顺序。尚未具备的外部条件已显式标注为阻塞或待提供，包括尚未实现的系统、Q01 窗口、WARNING 规则、gateway 能力及迁移产物。",
+      "issue_id": null
+    }
+  ],
+  "delivery": {
+    "required_files": [
+      "sprint1/prd/prd.md",
+      "sprint1/tech-design/frontend-design.md",
+      "sprint1/tech-design/backend-design.md",
+      "sprint1/tech-design/interface-contract.md",
+      "sprint1/tech-design/target-schema.graphql",
+      "sprint1/test-design/test-cases.v1.csv"
+    ],
+    "missing_files": [],
+    "complete": true,
+    "reward_gate": "all_required_files_present"
+  },
+  "judge": {
+    "model": "claude-opus-5.5",
+    "backend": "direct",
+    "evidence_delivery": "fixed_inline_packet",
+    "replicas": 2,
+    "protocol_retries": [],
+    "adjudicated_groups": [
+      "tech_design"
+    ],
+    "raw_results": {
+      "prd": [
+        {
+          "group_id": "prd",
+          "results": [
+            {
+              "rubric_id": "PRD1",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "修订说明",
+                  "quote": "未执行代码变更、数据库迁移或运行验收，不表示任何环境已升级成功。"
+                },
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "§1 交付目标后段",
+                  "quote": "材料未提供现有转化率、人工处理量、吞吐量、响应时长或目标提升比例，本 PRD 不虚构业务收益、性能 SLA 或部署结果。"
+                },
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "§4 排除项表",
+                  "quote": "| App Problems | 类型/字段、创建/关闭、问题列表及隐藏入口 | Webhook delivery 状态、失败告警及有权单条重试 |"
+                }
+              ],
+              "reason": "PRD 承接了 Instruction 的链路目标与五项交付目标。第 4 节完整列出范围，并逐项给出非目标与保留边界，与 Instruction 和 BC-031 一致。文中明确不虚构收益、SLA 或部署结果，并把基线代码事实与目标需求分开，没有把计划写成已实现事实。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "PRD2",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "§2 用户表",
+                  "quote": "| 支付、App、Webhook 集成方 | 按合法业务标识查交易，安装/更新扩展，回填当前表单，订阅事件与处理 delivery |"
+                },
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "§2 用户表",
+                  "quote": "| 自托管商店管理员与只读人员 | 浏览筛选扩展目录，按权限查看或配置，诊断 Webhook 失败 |"
+                },
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "§2 表后说明",
+                  "quote": "客户身份、员工身份和 App 身份不得因换成列表、弹窗、导出、关联查询或错误路径而扩大可见范围。"
+                }
+              ],
+              "reason": "PRD 识别了八类公开输入涉及的角色：客户/Storefront、商户/渠道管理员、商品内容运营、客服售后、库存履约、商店身份管理员、支付/App/Webhook 集成方、自托管与只读人员。每类均写明典型任务（目标与入口）以及必须遵守的事实，并统一说明权限、归属与范围边界。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "PRD3",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "§3 开头",
+                  "quote": "本节 R01～R31 与 BC-001～BC-031 对应。"
+                },
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "R05 需求描述",
+                  "quote": "批次入选与实际提交前均校验最新事实，实际完成复用可靠成单规则。"
+                },
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "R23 需求描述",
+                  "quote": "已定义事件，包括商品变体折扣价更新，满足实质变化触发条件时产生合同正确的一次逻辑通知"
+                }
+              ],
+              "reason": "31 条需求逐一对应 BC 片段，均说明触发条件、业务行为与可观察结果。抽查以下细项均未遗漏：配送重算、更新与完成重校验、库存模式、诊断、批量自动成单、cutoff/延迟、礼品卡授权/取消/扣款/退款、金额摘要、资金动作、基础交易查询、搜索、锁定筛选、认证策略、OIDC、富文本、扩展、Webhook、配送快照、员工实际删除、草稿动作限制等。voucherCode、tokenTargetUrl、变体折扣价事件等细项也已覆盖。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "PRD4",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "AC-11-5",
+                  "quote": "客户、员工及 App 分别查询越过自己对象/渠道范围的交易时，不泄露详情、金额或事件；无权限与合法零结果有可辨别的合同响应。"
+                },
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "AC-07-6",
+                  "quote": "无权限或状态非法请求不改变任何余额。"
+                },
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "R18 需求描述",
+                  "quote": "非法 URL scheme 或超允许深度须拒绝整项写入并指出字段/链接/深度问题，不持久化部分危险内容。"
+                }
+              ],
+              "reason": "各需求分别写出了失败路径、权限限制、安全约束与数据边界。读取范围（R11、R28）、写入拒绝且原值不变（R25、R10）、错误中不泄露信息（R17、R28）、失败不伪装成功或空结果（R26）被分别表述，没有相互替代。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "PRD5",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "R03 需求描述",
+                  "quote": "旧模式继续遵守既有配送区域、地址及仓库关联规则；升级、读取或缺省输入不自动切换。"
+                },
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "R02 需求描述",
+                  "quote": "旧 `shippingMethod` 等配送读取字段保留明确弃用与替代说明，新客户端使用当前 `deliveryMethod` 约定。"
+                },
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "R27 需求描述",
+                  "quote": "草稿订单新客户端使用 `voucherCode` 替代旧 `voucher` 输入。"
+                }
+              ],
+              "reason": "以下兼容义务均有具体保留或迁移条款与验收：旧配送标识与弃用字段、未切换库存模式商店的旧行为、旧渠道自动完成默认关闭、升级商店的密码行为、历史扩展无需重装、历史礼品卡订单不重算、旧导出 mutation 弃用、已退出插件与 Payment.partial 返回迁移错误、voucherCode 替代、历史配送元数据迁移。没有用概括性兼容表述代替具体义务。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "PRD6",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "R27 需求描述",
+                  "quote": "迁移可在空库执行，也覆盖有订单、交易、扩展、库存与元数据的旧库；保留关联与业务含义，不默认开启新策略，不重算已完成历史订单"
+                },
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "AC-08-4",
+                  "quote": "已扣款资金不能通过取消授权获得第二次恢复；重复取消或退款以及失败后同一请求重试均只产生一次应有资金变化。"
+                },
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "§5 待确认项说明",
+                  "quote": "固定材料不安排追问，下列未给定数值/技术合同按待确认项记录，不擅自补成已批准要求。"
+                }
+              ],
+              "reason": "各类适用要求均已明确：库存模式需显式切换；空库与旧库迁移且重跑无副作用；自动成单与 delivery 失败后可重试；礼品卡取消与退款构成资金补偿；已扣款不可经取消回退、历史快照不回写等不可回退边界。延迟单位、目录来源、支付支持矩阵等未知外部条件以 Q01～Q06 标注，未被删除。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "PRD7",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "AC-06-3",
+                  "quote": "当 `now - last_change = D` 时尚不入选，超过 D 才可入选"
+                },
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "AC-09-2",
+                  "quote": "服务端与 Dashboard 均解释已扣款合计 80、剩余待付 20，礼品卡 30 不再作为额外折扣重复扣除。"
+                },
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "AC-10-3",
+                  "quote": "当前可捕获授权为 60 时，捕获 60 可成功且额度相应消耗；捕获超过 60 或负金额时被拒绝"
+                }
+              ],
+              "reason": "每条需求都有编号 AC，采用给定/操作/结果形式，断言可观察的业务结果。AC 覆盖适用的权限、失败、边界值、兼容、幂等、并发与迁移场景。L 深度、一致性窗口等缺数值的部分已作为参数化边界与待确认项处理，不影响可判定性。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "PRD8",
+              "verdict": "F",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "§3 优先级说明",
+                  "quote": "各条均属于本轮范围，不以优先级替代非目标边界。"
+                },
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "R15",
+                  "quote": "- 优先级：P1"
+                },
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "R21",
+                  "quote": "- 优先级：P0"
+                }
+              ],
+              "reason": "31 条需求中 30 条标为 P0，仅 R15 为 P1。商品诊断、搜索、扩展目录、重量与日期展示等体验或运营类需求也被列为 P0，与资金、库存、安全类需求同级，无法支撑取舍与排期。文档也没有集中的依赖关系、风险评估、发布门槛或切换窗口说明，待确认项只要求在实现前落实，缺乏交付决策所需的门槛与风险分析。",
+              "issue_id": "PRD8-priority-undifferentiated-no-risk-gating"
+            }
+          ]
+        },
+        {
+          "group_id": "prd",
+          "results": [
+            {
+              "rubric_id": "PRD1",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "文档头·修订",
+                  "quote": "未执行代码变更、数据库迁移或运行验收，不表示任何环境已升级成功。"
+                },
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "§1 交付目标后",
+                  "quote": "本 PRD 不虚构业务收益、性能 SLA 或部署结果。"
+                },
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "§4 范围与非目标",
+                  "quote": "本轮明确不交付，并非承诺下一轮日期"
+                }
+              ],
+              "reason": "背景与交付目标准确承接 Instruction 的整条商业链路和 Core 3.22.0 / Dashboard 3.22.9 升级起点。非目标表逐项覆盖 App Problems、Page/User 高级搜索、交易查询增强、外链图片异步能力、独立变体生成器和独立元数据管理，并写明各项仍须保留的基础能力。文档声明未虚构收益或部署结果；基线代码事实与目标合同分开表述，未把后续实现写成已交付事实。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "PRD2",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "§2 用户与场景表",
+                  "quote": "支付、App、Webhook 集成方 | 按合法业务标识查交易，安装/更新扩展，回填当前表单，订阅事件与处理 delivery"
+                },
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "§2 表后说明",
+                  "quote": "客户身份、员工身份和 App 身份不得因换成列表、弹窗、导出、关联查询或错误路径而扩大可见范围。"
+                }
+              ],
+              "reason": "用户表覆盖公开输入涉及的全部角色：客户与 Storefront、商户与渠道管理员、商品及内容运营、客服售后、库存履约、商店与身份管理员、支付/App/Webhook 集成方、自托管与只读人员。每类角色都列出典型任务（目标与入口）和必须遵守的事实与权限边界，表后另有统一的权限范围约束。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "PRD3",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "§3 开头",
+                  "quote": "本节 R01～R31 与 BC-001～BC-031 对应。"
+                },
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "R05 需求描述",
+                  "quote": "根据 R06 生效渠道策略，分批发现和处理符合资格的结账。仅“收到过支付”或存在支付记录不代表合格。"
+                }
+              ],
+              "reason": "R01–R31 与 BC-001–BC-031 逐条对应，覆盖以下核心流程：配送重算与校验、库存策略、可售诊断、自动成单与配置、礼品卡生命周期、金额摘要、资金动作、交易定位、搜索、筛选、认证、富文本、扩展、Webhook、快照、元数据、API、迁移、权限、工作台和非目标保留。各条均写明触发条件、业务行为和可观察结果，未发现明确义务被删除。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "PRD4",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "R11 需求描述",
+                  "quote": "无权限、非法输入、过滤类型错误、非法分页不能伪装为成功空结果。"
+                },
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "R28 需求描述",
+                  "quote": "权限不足与没有数据可区分，失败不呈现操作成功；不在无权错误中回传受限余额、地址或身份信息。"
+                },
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "R18 需求描述",
+                  "quote": "不能通过配置追加任意协议逃逸。"
+                }
+              ],
+              "reason": "失败路径、权限限制、安全约束和数据边界均已转化为需求，覆盖富文本、OIDC、密码策略、对象/字段权限、HANDLE_TAXES、资金边界、部分写入、Federation 和分页等。读取限制、写入限制、信息披露与失败结果分别表述，未互相替代，例如 R25、R28 将无权读取、无权写入、错误泄露和失败不呈现成功分开约束。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "PRD5",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "R03 需求描述",
+                  "quote": "旧模式继续遵守既有配送区域、地址及仓库关联规则；升级、读取或缺省输入不自动切换。"
+                },
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "R27 需求描述",
+                  "quote": "草稿订单新客户端使用 `voucherCode` 替代旧 `voucher` 输入。"
+                },
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "R19 需求描述",
+                  "quote": "对历史 mount/target/options 等实际旧表示提供必要迁移或读取适配，保留设置内容和默认行为，不要求重新安装。"
+                }
+              ],
+              "reason": "兼容义务均分项落实，没有用概括性表述替代：旧配送标识与弃用字段、未切换库存策略的旧行为、旧渠道自动完成默认关闭、历史礼品卡订单不重算、历史扩展迁移免重装、旧导出 mutation 弃用、voucherCode 替代、退出插件返回明确错误、升级商店密码默认行为、配送元数据历史迁移。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "PRD6",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "R27 需求描述",
+                  "quote": "迁移可在空库执行，也覆盖有订单、交易、扩展、库存与元数据的旧库；保留关联与业务含义，不默认开启新策略，不重算已完成历史订单"
+                },
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "§5 待确认项",
+                  "quote": "固定材料不安排追问，下列未给定数值/技术合同按待确认项记录，不擅自补成已批准要求。"
+                },
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "R08 需求描述",
+                  "quote": "已扣款订单使用退款而非取消授权恢复已消费余额，退款不得超过当前可退余额"
+                }
+              ],
+              "reason": "各项要求均有明确条款：库存模式需显式切换；空库与旧库迁移均覆盖，且可重跑无副作用；失败不部分写入；自动成单失败后可修复重试且只形成一次结果；礼品卡取消与退款作为资金补偿，并以当前余额为界；历史快照不能用新源值伪造。未知外部条件（一致性窗口、延迟默认值、深度 L、目录来源、支付支持矩阵）列为 Q01–Q06 待确认项而未删除。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "PRD7",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "AC-07-2",
+                  "quote": "对账面余额 100、无占用的同币种礼品卡授权 30 后，可解释的可用余额为 70"
+                },
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "AC-06-3",
+                  "quote": "当 `now - last_change = D` 时尚不入选，超过 D 才可入选"
+                },
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "AC-05-6",
+                  "quote": "最多存在一个关联订单、一份有效库存分配及一次应有逻辑完成通知，不重复扣款"
+                }
+              ],
+              "reason": "每条需求都有编号且直接对应的多条 AC，采用给定条件加可观察结果的写法，断言业务结果（余额、订单数、选择不变、错误类型）。AC 覆盖适用的权限、失败、兼容、幂等、并发、边界值和迁移重跑场景。依赖未定数值的 AC（L、一致性窗口）已与待确认项关联。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "PRD8",
+              "verdict": "F",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "§3 优先级说明",
+                  "quote": "P1 为不移除主体能力但使明确使用者减少重复操作的体验要求。"
+                },
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "R21 优先级",
+                  "quote": "### R21 · 自托管扩展目录可用且按权限操作\n- 来源：Instruction“自托管商店也要有可用的扩展目录体验”；BC-021“目录不依赖不可用的旧地址”。\n- 优先级：P0"
+                },
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "R30 优先级",
+                  "quote": "### R30 · 正确展示重量、媒体、金额和日期并限制草稿动作\n- 来源：Instruction“重量、金额、媒体状态和订单时间展示应准确；草稿订单动作只在渠道和商品条件允许时可用，并说明不可用原因”；BC-030。\n- 优先级：P0"
+                }
+              ],
+              "reason": "31 条需求中 30 条标为 P0，仅 R15 为 P1。自托管扩展目录、重量与日期展示、配置加载体验等也被列为 P0，与文档自定义的 P0 口径（资金/库存/状态正确性、安全、升级可信性）不完全相符，优先级失去区分度，难以支持取舍。文档也缺少需求间依赖顺序、风险清单、维护窗口和切换/发布门槛：待确认项只说明须在实现前落实，没有给出交付决策所需的放行条件。",
+              "issue_id": "PRD8-priority-inflation-no-gating"
+            }
+          ]
+        }
+      ],
+      "tech_design": [
+        {
+          "group_id": "tech_design",
+          "results": [
+            {
+              "rubric_id": "TDD1",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/tech-design/frontend-design.md",
+                  "location": "§2 需求覆盖",
+                  "quote": "不直接承接：R01/R02 是 Storefront 的配送调用与 Core 校验，当前 Dashboard 无独立客户结账页面"
+                },
+                {
+                  "path": "/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "§2 需求覆盖",
+                  "quote": "R15 | BD10（去重、稳定对象分页；布局/返回路径由前端负责）"
+                },
+                {
+                  "path": "/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "§4 接口清单",
+                  "quote": "I01、I02 | BD01 | 显式重算、现有选择/完成重新验证"
+                },
+                {
+                  "path": "/candidate/sprint1/tech-design/interface-contract.md",
+                  "location": "I17",
+                  "quote": "所属设计单元：BD13"
+                }
+              ],
+              "reason": "R01–R31 均映射到 FD 或 BD。前端明确说明不直接承接的需求及其归属，后端用括注划分前后端边界。I01–I26 各归属一个 BD，前端依赖表把 I 映射到 FD，BT01–BT10 覆盖 BD01–BD17。引用目标存在，归属一致，未见无人承担或重复定义的边界。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TDD2",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/tech-design/frontend-design.md",
+                  "location": "FD01",
+                  "quote": "保存按钮pending防二次提交、errors映射field、CONFLICT显示当前版本并允许重新读取/合并，不自动覆盖dirty值"
+                },
+                {
+                  "path": "/candidate/sprint1/tech-design/frontend-design.md",
+                  "location": "FD03",
+                  "quote": "每次用户意图产生idempotencyKey，固定于该pending操作，double-click/网络重试复用"
+                },
+                {
+                  "path": "/candidate/sprint1/tech-design/frontend-design.md",
+                  "location": "FD12",
+                  "quote": "初始loaded首次填未脏字段，刷新只fill同context未脏字段，旧context response丢弃"
+                }
+              ],
+              "reason": "各 FD 给出了具体入口、组件落点和状态划分（loading/empty/forbidden/networkError/loaded）。交互、权限门控、迟到响应保护、失败保留输入与重试、陈旧标记都有说明，并写明限制，例如不模拟后台完成、不本地重算库存。内容是实际行为设计，不是复述 PRD。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TDD3",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "BD05",
+                  "quote": "状态：DISABLED / WAITING（时间或未足额）→ PROCESSING → COMPLETED；资格失败 BLOCKED；可恢复网络/数据库失败 RETRYING。"
+                },
+                {
+                  "path": "/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "BD06",
+                  "quote": "book=100，authorize30 → book100/hold30/available70；capture30 → book70/hold0/available70"
+                },
+                {
+                  "path": "/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "BD14",
+                  "quote": "订单/草稿/履约适用事件事务内只写 `DomainEventOutbox`"
+                }
+              ],
+              "reason": "后端给出了服务责任和新增模型：CheckoutCompletion、GiftCardLedgerEntry、PaymentCommand、DomainEventOutbox、配送快照字段。数据身份（token unique、scope/key unique、logical_key）、状态转换、持久化结果和事务外 PSP/worker 的异步边界都已明确。主流程收敛到唯一订单或资金结果。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TDD4",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/tech-design/interface-contract.md",
+                  "location": "§1 通用约定",
+                  "quote": "mutation成功必须payload存在、errors=[]及需要的result存在，不能仅HTTP200或data非null。"
+                },
+                {
+                  "path": "/candidate/sprint1/tech-design/interface-contract.md",
+                  "location": "I08 完成判定",
+                  "quote": "对App异步action只表示已受理，待transactioneventterminal才资金成功。"
+                },
+                {
+                  "path": "/candidate/sprint1/tech-design/interface-contract.md",
+                  "location": "I20 完成判定",
+                  "quote": "retry返回同delivery已受理RETRYING，只是一条排队不是sendcompleted"
+                }
+              ],
+              "reason": "各接口都写明提供方、调用方、权限、错误分层（GraphQL 标准层与业务 field/code/message）、完成判定和兼容过渡。权限口径与前后端设计一致，例如 I08 的 MANAGE_ORDERS+HANDLE_PAYMENTS 与 BD07、FD03 一致。接收请求与业务完成被统一区分（异步 action、安装 Job、retry 排队、配置保存 vs 执行），未见叙述层矛盾。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TDD5",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "BD02",
+                  "quote": "移动资金与成单遵守一个全局锁层级：必要的 completion 幂等记录→目标 checkout/order（同类主键升序）→channel/settings→TransactionItem/Payment"
+                },
+                {
+                  "path": "/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "BD05",
+                  "quote": "资格变化而 PSP 已成功不创建半订单，持久记录进入待修复/补偿流程（可识别 payment state），不能以 DB rollback 声称 PSP 未扣款；按同 command reconcile 或补偿 refund，不换 key 重扣。"
+                },
+                {
+                  "path": "/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "BD07",
+                  "quote": "PSP failure 释放本命令占用，timeout 保持 pending 并 reconcile，不能直接当失败重发另一扣款。"
+                }
+              ],
+              "reason": "重复、并发、超时、部分失败、重试、幂等和补偿都有明确机制：锁顺序、lease、scope/key+input hash、outbox 唯一键、delivery 唯一键、额度预占与释放。每种情况都写明负责方、状态变化（PENDING/RETRYING/BLOCKED/COMPLETED）和终止条件，例如沿用既有重试上限、COMPLETED 不再变更。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TDD6",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "BD11",
+                  "quote": "JWT新增auth_source（password/external）和policy版本。策略改变立即校验当前policy并拒绝不被支持的password token"
+                },
+                {
+                  "path": "/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "BD14",
+                  "quote": "权限收窄后旧payload不能泄露，安全重新过滤/阻断投递并记录原因，不能提升可见范围。"
+                },
+                {
+                  "path": "/candidate/sprint1/tech-design/interfaces/extension-form-response.md",
+                  "location": "端点与鉴别",
+                  "quote": "Dashboard 接收端同时校验 `event.origin === resolvedAppOrigin` 和 `event.source === registeredFrame.contentWindow`。"
+                }
+              ],
+              "reason": "身份策略、OIDC 关联、EditorJS 白名单、frame 鉴别与 token 内存传递都有具体机制。礼品卡只返回 last4、错误脱敏、private 和税字段权限、导出列权限都已设计。CheckoutCompletion 只存 error field/code 不存敏感 message，webhook payload 按权限重过滤。失败日志、事件和响应均未扩大可见范围。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TDD7",
+              "verdict": "F",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "BD05",
+                  "quote": "配置扫描周期与批大小由部署配置，沿用当前队列/重试上限，不假称 PRD 指定数值。"
+                },
+                {
+                  "path": "/candidate/sprint1/tech-design/frontend-design.md",
+                  "location": "FD05",
+                  "quote": "分页循环上限100、可取消……较大数据可继续明确使用deprecated legacy异步job"
+                },
+                {
+                  "path": "/candidate/sprint1/tech-design/frontend-design.md",
+                  "location": "§5 其他",
+                  "quote": "大数据read-only导出浏览器内存（分页可取消/大数据legacy明确降级）"
+                }
+              ],
+              "reason": "搜索一致性窗口 Q01 已列为待确认，输入、分页、EditorJS 大小等资源上限也已给出。但影响容量的几项规模缺少口径和假设：自动完成批次扫描的周期和批量、浏览器内只读导出的数据规模、何时降级到 legacy job 的阈值。设计只写“部署配置”或“较大数据”，没有把这些未知规模列为待确认条件。“分页循环上限100”也存在歧义（页数还是每页条数）。",
+              "issue_id": "TDD7-capacity-assumptions-unstated"
+            },
+            {
+              "rubric_id": "TDD8",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "§5 BT09",
+                  "quote": "依赖：BT03、BT04、BT05、BT08。"
+                },
+                {
+                  "path": "/candidate/sprint1/tech-design/frontend-design.md",
+                  "location": "§4 依赖与联调",
+                  "quote": "I06 | FD01、FD03 | R05、R06 | 等BT05实际状态，不mock后台完成成功"
+                },
+                {
+                  "path": "/candidate/sprint1/tech-design/frontend-design.md",
+                  "location": "§4 联调顺序",
+                  "quote": "先Core新增与迁移安全默认，后Dashboard切current消费，再停用退出操作"
+                }
+              ],
+              "reason": "BT01–BT10 的依赖为无环 DAG（BT01→BT02→BT03…→BT10），每个 BT 都标明覆盖的 BD。前端按接口列出消费方、可独立 mock 的部分和需等待的 BT 阻塞条件，并要求 fixture 覆盖多种状态。联调顺序和发布顺序与接口成熟度一致。",
+              "issue_id": null
+            }
+          ]
+        },
+        {
+          "group_id": "tech_design",
+          "results": [
+            {
+              "rubric_id": "TDD1",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/tech-design/frontend-design.md",
+                  "location": "§2 需求覆盖",
+                  "quote": "不直接承接：R01/R02 是 Storefront 的配送调用与 Core 校验，当前 Dashboard 无独立客户结账页面"
+                },
+                {
+                  "path": "/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "§2 需求覆盖",
+                  "quote": "| R19、R20、R21 | BD13（R20 接收与 R21 展示主要在 Dashboard，协议由此共同管理） |"
+                },
+                {
+                  "path": "/candidate/sprint1/tech-design/interface-contract.md",
+                  "location": "I17",
+                  "quote": "提供方：saleor-dashboard / extensions/views/ViewManifestExtension/components/AppFrame/useAppActions.ts"
+                }
+              ],
+              "reason": "The backend coverage table traces R01–R31 to BD01–BD17. The frontend table traces R03–R31 to FD01–FD13 and states which requirements it does not own, with reasons. Every interface I01–I26 names its BD unit, provider and caller. The frontend dependency table maps I numbers to FD units, and each BT lists the BD units it covers. Responsibility splits are explained: R15 dedupe/stable pagination sits in the backend while layout and return paths sit in the frontend; I17 is provided by Dashboard but its protocol is co-managed under BD13. No unowned or duplicately defined responsibility was found.",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TDD2",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/tech-design/frontend-design.md",
+                  "location": "FD01",
+                  "quote": "保存按钮pending防二次提交、errors映射field、CONFLICT显示当前版本并允许重新读取/合并，不自动覆盖dirty值。"
+                },
+                {
+                  "path": "/candidate/sprint1/tech-design/frontend-design.md",
+                  "location": "FD03",
+                  "quote": "每次用户意图产生idempotencyKey，固定于该pending操作，double-click/网络重试复用"
+                },
+                {
+                  "path": "/candidate/sprint1/tech-design/frontend-design.md",
+                  "location": "FD12",
+                  "quote": "共同表单状态保持contextKey(objectId,channelId,locale)、requestSequence、editRevision、dirtyFieldSet、serverSnapshot、submittedSnapshot。"
+                }
+              ],
+              "reason": "Each FD unit specifies concrete entry points and component paths, plus the states it handles: loading, empty, forbidden, network error, stale and conflict. It also covers interaction rules (dirty-field protection, discarding late responses, double-click guards, idempotency keys), permission-based enabling/disabling, failure recovery and retry, and stated limitations. The content is real behavior design, not a restatement of the PRD.",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TDD3",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "BD05",
+                  "quote": "状态：DISABLED / WAITING（时间或未足额）→ PROCESSING → COMPLETED；资格失败 BLOCKED；可恢复网络/数据库失败 RETRYING。"
+                },
+                {
+                  "path": "/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "BD06",
+                  "quote": "book=100，authorize30 → book100/hold30/available70；capture30 → book70/hold0/available70"
+                },
+                {
+                  "path": "/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "BD14",
+                  "quote": "订单/草稿/履约适用事件事务内只写 `DomainEventOutbox`"
+                }
+              ],
+              "reason": "The backend defines service responsibilities and data identities, including CheckoutCompletion (keyed by checkout_token), the GiftCard ledger, PaymentCommand and DomainEventOutbox. It specifies state transitions and persisted results (ledger entries, snapshot status, revision). Async boundaries are explicit: on_commit, outbox and worker-built payloads. The main flows converge to clear business results: one order, one ledger result, one logical event.",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TDD4",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/tech-design/interface-contract.md",
+                  "location": "§1 通用约定",
+                  "quote": "异步accepted/pending不代表completed。"
+                },
+                {
+                  "path": "/candidate/sprint1/tech-design/interface-contract.md",
+                  "location": "I08 完成判定",
+                  "quote": "对App异步action只表示已受理，待transactioneventterminal才资金成功。"
+                },
+                {
+                  "path": "/candidate/sprint1/tech-design/interface-contract.md",
+                  "location": "I20 完成判定",
+                  "quote": "retry返回同delivery已受理RETRYING，只是一条排队不是sendcompleted"
+                }
+              ],
+              "reason": "Each interface states its provider, caller, identity and permissions, error classification (standard GraphQL layer vs. business errors), completion criteria and compatibility transition. These match the backend and frontend narratives, for example: delay default 0 and boundaries, idempotency keys optional in SDL but required at runtime, appUpdate manifestUrl semantics, and the legacy export IDS fallback. The documents consistently separate request acceptance from business completion (async actions, install Job, delivery retry, auto-completion status). Schema fields and nullability were not judged, as the rubric excludes them.",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TDD5",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "BD05",
+                  "quote": "资格变化而 PSP 已成功不创建半订单，持久记录进入待修复/补偿流程（可识别 payment state），不能以 DB rollback 声称 PSP 未扣款；按同 command reconcile 或补偿 refund，不换 key 重扣。"
+                },
+                {
+                  "path": "/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "BD07",
+                  "quote": "PSP failure 释放本命令占用，timeout 保持 pending 并 reconcile，不能直接当失败重发另一扣款。"
+                },
+                {
+                  "path": "/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "BD02",
+                  "quote": "移动资金与成单遵守一个全局锁层级"
+                }
+              ],
+              "reason": "The design covers duplicate submission, concurrency, timeout, partial failure, retry, idempotency and compensation. Mechanisms include scope/key plus input-hash idempotency with conflict rejection and a global lock order. It also uses lease timeout with reconciliation, a three-step PSP flow with compensating refund, and a unique outbox with per-delivery isolation. Each mechanism names an owner, the resulting state change and an end state: COMPLETED, BLOCKED, FAILED, a terminal event, or the existing retry cap.",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TDD6",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "BD14",
+                  "quote": "payload首次生成按事件时/当前权限交集；权限收窄后旧payload不能泄露，安全重新过滤/阻断投递并记录原因"
+                },
+                {
+                  "path": "/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "BD06",
+                  "quote": "GiftCardPaymentMethodDetails 只返回 cardId/last4/name，不显示 code"
+                },
+                {
+                  "path": "/candidate/sprint1/tech-design/interfaces/extension-form-response.md",
+                  "location": "端点与鉴别",
+                  "quote": "Dashboard 接收端同时校验 `event.origin === resolvedAppOrigin` 和 `event.source === registeredFrame.contentWindow`。"
+                }
+              ],
+              "reason": "Identity and permission controls are concrete:\n- JWT auth_source and credential epoch; issuer/sub binding.\n- Channel/object scope enforced uniformly across list, node, export and subscription.\n- HANDLE_TAXES limited to specific fields.\n- Token minimisation, with issueToken defaulting to false.\n- Frame origin/source authentication.\n\nError messages are redacted, gift card codes are masked, and event payloads are re-filtered by permission. Logs, events and responses do not widen data visibility.",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TDD7",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "BD05",
+                  "quote": "配置扫描周期与批大小由部署配置，沿用当前队列/重试上限，不假称 PRD 指定数值。"
+                },
+                {
+                  "path": "/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "BD09",
+                  "quote": "当前 20 seconds 调度默认不是 Q01 业务SLA；发布需确定最终窗口，监控 dirty age 与失败恢复"
+                },
+                {
+                  "path": "/candidate/sprint1/tech-design/interface-contract.md",
+                  "location": "§1 通用约定",
+                  "quote": "Relay连接first/last=1..100且互斥，无pagination默认20"
+                }
+              ],
+              "reason": "Applicable limits have explicit definitions and responses. Pagination is 1..100 with a default of 20. Search is capped at 256 characters and 32 terms. EditorJS is capped at 1MiB, 1000 blocks and depth L8. Delay is bounded to 0..10080. Webhooks keep existing timeout and circuit-breaker caps. Unknown scale items (search consistency window, scan period, batch size) are listed as pending or deployment-configured. Large-export memory risk is noted. No runtime performance conclusion is fabricated.",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TDD8",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/tech-design/frontend-design.md",
+                  "location": "§4 依赖与联调",
+                  "quote": "| I06 | FD01、FD03 | R05、R06 | 等BT05实际状态，不mock后台完成成功 |"
+                },
+                {
+                  "path": "/candidate/sprint1/tech-design/backend-design.md",
+                  "location": "BT09",
+                  "quote": "依赖：BT03、BT04、BT05、BT08。"
+                },
+                {
+                  "path": "/candidate/sprint1/tech-design/frontend-design.md",
+                  "location": "§4 联调顺序",
+                  "quote": "先Core新增与迁移安全默认，后Dashboard切current消费，再停用退出操作"
+                }
+              ],
+              "reason": "BT01–BT10 dependencies form an acyclic graph, and each BT maps to its BD units. The frontend lists, for each interface, the consuming FD unit, whether it can be developed with mocks, and which BT it waits on, with explicit blocking conditions. Integration order and release order (Core before Dashboard, then retirement of old operations) match interface maturity. Required fixture categories are also defined.",
+              "issue_id": null
+            }
+          ]
+        }
+      ],
+      "test_design": [
+        {
+          "group_id": "test_design",
+          "results": [
+            {
+              "rubric_id": "TEST1",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC001 覆盖列",
+                  "quote": "AC-01-1;BD01;I01"
+                },
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC245 覆盖列",
+                  "quote": "AC-31-5;FD13;BD16;BD17;I24"
+                },
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC124 覆盖列",
+                  "quote": "AC-15-1;FD05;BD10;I12"
+                }
+              ],
+              "reason": "所有用例的覆盖列都指向有效的 PRD AC，并按需关联 FD、BD 和 I。逐条比对 R01～R31 的验收条件，AC-01-1 至 AC-31-5 均至少有一条用例承接。补充用例 TC246～TC260 同样标明了 AC 来源，未发现无来源用例或关键 AC 遗漏。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TEST2",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC072 预期结果",
+                  "quote": "netCharged=80、successfulCharged=80、giftCardCharged=30、totalBalance=-20、remainingDue=20"
+                },
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC021 预期结果",
+                  "quote": "新模式初始可用10→预留后8→另2件draft分配后6"
+                },
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC042 预期结果",
+                  "quote": "至多一个order、一份有效allocation、一次应有资金及一次逻辑完成通知"
+                }
+              ],
+              "reason": "核心链路均有用例覆盖，包括配送重算、成单、库存、自动完成、礼品卡、金额摘要、资金动作、导出和快照。断言针对具体余额、可用库存、订单数量、事件次数及 Dashboard 与 API 的一致性，而非仅检查请求成功或字段存在。跨前后端契约同样有用例，例如 TC072 的两个订单视图、TC115 的导出集合以及 TC160 的扩展表单。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TEST3",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC089 预期结果",
+                  "quote": "均被拒绝，不能因换mutation绕过两权限与scope；错误不含受限余额上限。"
+                },
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC223 预期结果",
+                  "quote": "相同业务授权和channel/warehouse scope，范围外无读写/导出/事件泄露，数量不成旁路。"
+                },
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC220 预期结果",
+                  "quote": "账户、orders、funds全不变，无假STAFF_DELETED/成功UI。"
+                }
+              ],
+              "reason": "以下场景均有可判定用例：客户、员工、App 等不同身份；对象与渠道/仓库范围；HANDLE_TAXES 及私有快照；密码策略与 OIDC 接管；富文本危险链接；扩展 frame 鉴别；delivery 重试权限。用例普遍验证拒绝后原值、余额和关联历史保持不变，并区分权限错误与合法空结果。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TEST4",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC045 预期结果",
+                  "quote": "命令保留未知/待对账状态，恢复以原provider key查询，不能直接换key再扣。"
+                },
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC046 预期结果",
+                  "quote": "保留已发生支付事实与待修复/补偿状态，不声称DB rollback撤销外部扣款。"
+                },
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC104 预期结果",
+                  "quote": "未给值记录时延验收受阻，不擅自用20秒或把任务已运行当时延通过。"
+                }
+              ],
+              "reason": "失败、边界值（如 L/L+1、延迟和 cutoff 等值）、兼容、空库与旧库迁移及重跑、回退、幂等重放、并发、部分成功（混合批次、bulk 逐项结果）、PSP 崩溃对账、补偿和恢复均有可判定场景。尚不能执行的外部条件已显式标注，例如 Q01 一致性窗口、TC031 中缺少 Core WARNING 触发规则时记为阻塞，以及仅在测试 gateway 能力通过验证时才执行后台捕获。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TEST5",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC050 操作步骤/预期结果",
+                  "quote": "恰300秒不入选，301秒且其他资格合法可入选。"
+                },
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC083 前置与预期",
+                  "quote": "60可成功或按外部合同受理后终结；其他执行前拒绝，0不记有效资金成功。"
+                }
+              ],
+              "reason": "每条用例都给出本例测试数据，操作步骤与预期结果按 1、2 编号逐项对应，成功和失败判定包含具体数值、错误码类别及状态核对。参数化变体在同一步骤内列出，并给出对应的期望。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TEST6",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "各用例前置条件",
+                  "quote": "参数化矩阵每项使用独立可重置fixture并逐项完成全部步骤"
+                },
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC031 前置条件",
+                  "quote": "缺失时该集成子场景记阻塞不得伪通过"
+                },
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC209 前置条件",
+                  "quote": "在实施授权副本执行生成，不修改本次冻结材料"
+                }
+              ],
+              "reason": "每条用例都声明了隔离验收环境、所需身份权限和可控测试服务，测试数据在前置条件中自行准备。各用例使用独立可重置的 fixture，不依赖隐含执行顺序。尚未具备的外部条件已显式标注为阻塞或待提供，包括尚未实现的系统、Q01 窗口、WARNING 规则、gateway 能力及迁移产物。",
+              "issue_id": null
+            }
+          ]
+        },
+        {
+          "group_id": "test_design",
+          "results": [
+            {
+              "rubric_id": "TEST1",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC001 覆盖列",
+                  "quote": "AC-01-1;BD01;I01"
+                },
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC245 覆盖列",
+                  "quote": "AC-31-5;FD13;BD16;BD17;I24"
+                },
+                {
+                  "path": "/candidate/sprint1/prd/prd.md",
+                  "location": "R01 验收条件",
+                  "quote": "AC-01-7：使用不存在或不可访问的结账标识重算时"
+                }
+              ],
+              "reason": "每条用例的覆盖列都关联有效的 PRD AC，并按需关联 FD、BD 和 I 编号。逐项核对 R01～R31 的全部 AC（如 AC-01-1～7、AC-31-1～5），均至少有一条用例承接，未发现无来源用例。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TEST2",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC072 预期结果",
+                  "quote": "netCharged=80、successfulCharged=80、giftCardCharged=30、totalBalance=-20、remainingDue=20"
+                },
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC056 预期结果",
+                  "quote": "book70、hold0、available70，charged30"
+                },
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC021 预期结果",
+                  "quote": "新模式初始可用10→预留后8→另2件draft分配后6"
+                }
+              ],
+              "reason": "核心正常流程均有用例，包括配送重算与成单、库存跨入口、自动成单、礼品卡生命周期、金额摘要、交易定位和导出。跨前后端契约也有覆盖，例如 Dashboard 两个订单视图与 API 金额一致、生成客户端与 SDL 一致。断言针对真实余额、订单数、库存可用量和事件数，而非仅检查请求成功。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TEST3",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC089 预期结果",
+                  "quote": "均被拒绝，不能因换mutation绕过两权限与scope；错误不含受限余额上限"
+                },
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC025 预期结果",
+                  "quote": "原LEGACY与关系不变，失败值不进入生效缓存"
+                },
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC223 预期结果",
+                  "quote": "范围外无读写/导出/事件泄露，数量不成旁路"
+                }
+              ],
+              "reason": "覆盖了客户、员工、App 等不同身份，以及对象范围、渠道和仓库隔离、私有及税务敏感字段（TC191、TC222）、token 泄露（TC140、TC168）和员工删除限制。拒绝后的业务状态均被明确断言为不变，并区分无权限与合法空结果（TC224）。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TEST4",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC046 预期结果",
+                  "quote": "保留已发生支付事实与待修复/补偿状态，不声称DB rollback撤销外部扣款"
+                },
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC104 预期结果",
+                  "quote": "未给值记录时延验收受阻，不擅自用20秒或把任务已运行当时延通过"
+                },
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC031 前置条件",
+                  "quote": "缺失时该集成子场景记阻塞不得伪通过"
+                }
+              ],
+              "reason": "以下场景均有可判定用例：失败与边界值（L/L+1、delay 0/10080/10081、分页上下限）、兼容（旧配送标识、旧扩展字段）、迁移（空库/旧库/重跑/回退）、幂等与并发、部分成功（批次与 bulk 逐项结果）、补偿与崩溃恢复（TC045、TC047）。尚不能执行的外部条件已显式标为受阻，包括 Q01 时延窗口、Core WARNING 触发规则和受支持网关能力。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TEST5",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC050 步骤与预期",
+                  "quote": "对updatedAt=09:55:00Z与09:54:59Z两个checkout扫描"
+                },
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC050 预期结果",
+                  "quote": "恰300秒不入选，301秒且其他资格合法可入选"
+                },
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC057 预期结果",
+                  "quote": "按I07返回NOT_FOUND/INACTIVE/EXPIRED/CURRENCY_MISMATCH/INSUFFICIENT_FUNDS等稳定失败"
+                }
+              ],
+              "reason": "每条用例都给出具体测试数据，操作步骤与预期结果按 1、2 编号逐项对应。成功和失败的判定多给到具体数值、状态和错误码，例如金额算术、时间边界和 ACK code。个别预期使用“等”“或”的写法，但均受契约枚举约束，不需要测试者猜测隐含状态。",
+              "issue_id": null
+            },
+            {
+              "rubric_id": "TEST6",
+              "verdict": "P",
+              "evidence": [
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "各用例前置条件通用约束",
+                  "quote": "参数化矩阵每项使用独立可重置fixture并逐项完成全部步骤"
+                },
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC209 前置条件",
+                  "quote": "在实施授权副本执行生成，不修改本次冻结材料"
+                },
+                {
+                  "path": "/candidate/sprint1/test-design/test-cases.v1.csv",
+                  "location": "TC245 前置条件",
+                  "quote": "历史/空库验证产物待执行时提供"
+                }
+              ],
+              "reason": "每条用例都写明隔离环境前提、可准备的数据（可控时钟、可暂停 worker、受控 PSP/OIDC/receiver、独立数据库连接）以及可复现步骤。用例使用独立可重置 fixture，不依赖隐含执行顺序。无法执行的外部条件已显式标注，包括 Q01 窗口、WARNING 规则、网关能力和待执行时才提供的验证产物。",
+              "issue_id": null
+            }
+          ]
+        }
+      ]
+    },
+    "api_protocol": "anthropic_messages",
+    "reasoning_effort": "high",
+    "thinking": "adaptive"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "reward": 0.875,
+  "rubric_pass_rate": 0.909091,
+  "critical_pass_rate": 1.0,
+  "document_acceptance": 0,
+  "rubric_passed": 20,
+  "rubric_total": 22,
+  "group_prd": 0.875,
+  "group_tech_design": 0.875,
+  "group_test_design": 1.0,
+  "delivery_completeness": 1
+}
