@@ -1,0 +1,10 @@
+{
+  "rebuilt_image_id": "sha256:3eb1dff7b6329e862904a8111e91126d6495d8e3ab971b2cdd028294a78ec2d0",
+  "frozen_dockerfile_sha256": "d657d5a9f3080c154177568b1dedb07a885479a3baef839516c81b537e33e6ca",
+  "initial_attempt": "Failed before tests: missing image/pull denied; not counted as model zero",
+  "tests_config_sha256": "4d662040c49ccd6128a9c96ecdeb0144f5b0b12afd52d55aa13f242e15f84e88",
+  "frozen_test_patch_sha256": {
+    "saleor": "1f544aa7a18f316f6e9df997b4da0bd35be24eea4671b025b4368d3fa3599e80",
+    "saleor-dashboard": "14488c9b7e8127976f2ab8abfd78543185d2e48979d005965906358db4456bae"
+  }
+}

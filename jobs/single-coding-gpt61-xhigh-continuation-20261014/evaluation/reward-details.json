@@ -1,0 +1,24 @@
+{
+  "reward": 0,
+  "f2p_total": 5182,
+  "f2p_passed": 98,
+  "p2p_total": 15012,
+  "p2p_passed": 14671,
+  "f2p": 0.018911617136240833,
+  "p2p": 0.9772848387956302,
+  "partial": 0.7313558482717639,
+  "pre_f2p_passed": 0,
+  "pre_p2p_passed": 15012,
+  "reports": {
+    "pre": [
+      "/logs/verifier/pre/core-unit/results.xml",
+      "/logs/verifier/pre/core-e2e/results.xml",
+      "/logs/verifier/pre/dash-unit/results.json"
+    ],
+    "post": [
+      "/logs/verifier/post/core-unit/results.xml",
+      "/logs/verifier/post/core-e2e/results.xml",
+      "/logs/verifier/post/dash-unit/results.json"
+    ]
+  }
+}

@@ -1,0 +1,107 @@
+{
+  "job": "coding-f2p-p2p-gpt61-20261015-retry1",
+  "finished_at": "2026-10-15T03:06:05.185245Z",
+  "harbor_exception": null,
+  "by_group": {
+    "F2P": {
+      "pre": {
+        "passed": 0,
+        "failed": 1854,
+        "skipped": 0,
+        "missing": 3328
+      },
+      "post": {
+        "passed": 98,
+        "failed": 1756,
+        "skipped": 0,
+        "missing": 3328
+      }
+    },
+    "P2P": {
+      "pre": {
+        "passed": 15012,
+        "failed": 0,
+        "skipped": 0,
+        "missing": 0
+      },
+      "post": {
+        "passed": 14671,
+        "failed": 341,
+        "skipped": 0,
+        "missing": 0
+      }
+    }
+  },
+  "by_suite": {
+    "core-unit": {
+      "F2P": {
+        "pre": {
+          "failed": 1558,
+          "missing": 2492
+        },
+        "post": {
+          "failed": 1460,
+          "missing": 2492,
+          "passed": 98
+        }
+      },
+      "P2P": {
+        "pre": {
+          "passed": 12760
+        },
+        "post": {
+          "passed": 12615,
+          "failed": 145
+        }
+      }
+    },
+    "core-e2e": {
+      "F2P": {
+        "pre": {
+          "missing": 15
+        },
+        "post": {
+          "missing": 15
+        }
+      },
+      "P2P": {
+        "pre": {
+          "passed": 210
+        },
+        "post": {
+          "failed": 188,
+          "passed": 22
+        }
+      }
+    },
+    "dash-unit": {
+      "F2P": {
+        "pre": {
+          "failed": 296,
+          "missing": 821
+        },
+        "post": {
+          "failed": 296,
+          "missing": 821
+        }
+      },
+      "P2P": {
+        "pre": {
+          "passed": 2042
+        },
+        "post": {
+          "passed": 2034,
+          "failed": 8
+        }
+      }
+    }
+  },
+  "reward": 0,
+  "limitations": [
+    "No browser E2E",
+    "31 candidate test/fixture edits excluded from evaluation; original full candidate retained",
+    "Rebuilt image from frozen Dockerfile; original binary image was absent",
+    "Missing test reports count as non-passing under unchanged frozen grader",
+    "No independent LLM Judge; no candidate production repairs"
+  ]
+}

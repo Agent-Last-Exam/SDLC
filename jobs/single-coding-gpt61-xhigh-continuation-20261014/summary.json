@@ -8,11 +8,14 @@
   "insertions": 6772,
   "deletions": 943,
   "counts_include_tests_migrations_schema_generated_files": true,
-  "evaluation_job": "coding-f2p-p2p-gpt61-20261015",
-  "evaluation_status": "started",
+  "evaluation_job": "coding-f2p-p2p-gpt61-20261015-retry1",
+  "evaluation_status": "complete",
   "f2p": 5182,
   "p2p": 15012,
   "profile_excludes_browser_e2e": true,
   "original_candidate_patches_included": true,
-  "evaluation_uses_canonical_tests_and_fixtures": true
+  "evaluation_uses_canonical_tests_and_fixtures": true,
+  "f2p_passed": 98,
+  "p2p_passed": 14671,
+  "reward": 0
 }

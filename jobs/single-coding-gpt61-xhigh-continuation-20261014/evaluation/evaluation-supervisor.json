@@ -1,0 +1,8 @@
+{
+  "updated_at_epoch": 1792033571.803073,
+  "status": "harbor_finished",
+  "return_code": 0,
+  "job_name": "coding-f2p-p2p-gpt61-20261015-retry1",
+  "rebuilt_image_id": "sha256:3eb1dff7b6329e862904a8111e91126d6495d8e3ab971b2cdd028294a78ec2d0",
+  "requires_result_inspection": true
+}
