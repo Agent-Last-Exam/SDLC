@@ -17,6 +17,7 @@ import tempfile
 import tomllib
 
 import yaml
+from runtime.workflow_timeouts import harbor_timeout_sec
 
 HERE = Path(__file__).resolve().parents[1]
 DEFAULTS = Path(__file__).resolve().parent / "defaults"
@@ -51,16 +52,13 @@ def validate_run(run, path):
     if run.get("agent") != {"adapter": "claude_code"}:
         raise ValueError(f"Unsupported agent adapter in {path.name}")
     execution = run["execution"]
-    expected_execution = {"max_cost_usd"} | (
+    expected_execution = (
         set(HIERARCHICAL_BUDGETS) if mode == "hierarchical" else {"subagents"}
     )
     if set(execution) != expected_execution:
         raise ValueError(
             f"{path.name}: execution fields must be {sorted(expected_execution)}"
         )
-    cost = execution.get("max_cost_usd")
-    if type(cost) not in (int, float) or isinstance(cost, bool) or cost <= 0:
-        raise ValueError(f"{path.name}: max_cost_usd must be a positive number")
     if mode == "hierarchical":
         for key in HIERARCHICAL_BUDGETS:
             if type(execution.get(key)) is not int or execution[key] <= 0:
@@ -151,7 +149,7 @@ def derive_base_revisions(manifest):
     return derived
 
 
-def generated_task_toml(task_toml, mode):
+def generated_task_toml(task_toml, mode, agent_timeout_sec=10800.0):
     environment = task_toml["environment"]
     name, task_id = task_toml["task"]["name"], task_toml["metadata"]["task_id"]
     for value in (name, task_id):
@@ -169,7 +167,7 @@ source_task = "{task_id}"
 scope = "Workflow rollout; benchmark verifier remains owned by the source task"
 
 [agent]
-timeout_sec = 10800.0
+timeout_sec = {float(agent_timeout_sec)}
 network_mode = "public"
 user = "root"
 
@@ -415,6 +413,10 @@ def compile_workflow(mode, task, verify_repos=True, contract_path=CONTRACT):
     )
     if image:
         harbor_generated["Dockerfile"] = generated_dockerfile(image, revisions)
+        if mode in {"single", "flat"}:
+            harbor_generated["task.toml"] = generated_task_toml(
+                task_toml, mode, harbor_timeout_sec(stages)
+            )
     if verify_repos and repos_source == "host":
         for name, revision in revisions.items():
             repo = Path(sources["inputs"]["repos"]) / name

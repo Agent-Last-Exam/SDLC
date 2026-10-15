@@ -290,23 +290,15 @@ class TeamBrokerTests(unittest.TestCase):
         self.assertEqual(self.broker.state["status"], "complete")
         self.assertTrue(self.broker.state["delivery_complete"])
 
-    def test_cost_budget_accumulates_and_reports_exhaustion(self):
-        limit = self.broker.state["max_cost_usd"]
+    def test_cost_accumulates_without_terminating(self):
         self.assertEqual(self.broker.state["cost_usd"], 0.0)
-        self.assertFalse(self.broker.charge(limit / 4))
-        self.assertFalse(self.broker.charge(limit / 4))
-        self.assertEqual(self.broker.state["cost_usd"], limit / 2)
-        # Unknown spend must not be counted as zero nor invented.
-        self.assertFalse(self.broker.charge(None))
-        self.assertEqual(self.broker.state["cost_usd"], limit / 2)
-        self.assertTrue(self.broker.charge(limit / 2))
-
-    def test_cost_exhaustion_terminates_as_budget_exhausted(self):
-        self.broker.charge(self.broker.state["max_cost_usd"])
-        self.broker.terminate_budget("max_cost_usd")
-        self.assertEqual(self.broker.state["status"], "budget_exhausted")
-        self.assertFalse(self.broker.state["delivery_complete"])
-        self.assertIn("max_cost_usd", self.broker.state["error"])
+        self.broker.charge(60.0)
+        self.broker.charge(60.0)
+        self.assertEqual(self.broker.state["cost_usd"], 120.0)
+        self.broker.charge(None)
+        self.assertEqual(self.broker.state["cost_usd"], 120.0)
+        self.assertEqual(self.broker.state["status"], "running")
+        self.assertNotIn("max_cost_usd", self.broker.state)
 
     def test_lead_turn_budget_still_reports_its_own_name(self):
         self.broker.terminate_budget()

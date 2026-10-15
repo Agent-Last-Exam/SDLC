@@ -53,7 +53,6 @@ class TeamBroker:
             "model_called": True,
             "lead_session": None,
             "lead_turns": 0,
-            "max_cost_usd": self.execution["max_cost_usd"],
             "cost_usd": 0.0,
             "members": {},
             "assignments": {},
@@ -100,10 +99,9 @@ class TeamBroker:
         )
 
     def charge(self, spent):
-        """Accumulate reported spend; returns True when the cost budget is spent."""
+        """Accumulate reported spend for reporting only."""
         if spent is not None:
             self.state["cost_usd"] = round(self.state["cost_usd"] + spent, 6)
-        return self.state["cost_usd"] >= self._limit("max_cost_usd")
 
     def _new_revision_id(self):
         self._revision_sequence += 1

@@ -40,6 +40,14 @@ class PromptTests(unittest.TestCase):
         self.assertEqual(env["LITERAL"], "$(echo nope) `echo nope`")
         self.assertEqual(env["CLAUDE_MODEL"], "test-model")
 
+    def test_xhigh_effort_is_forwarded_to_native_claude_cli(self):
+        agent = PromptClaudeCode(
+            logs_dir=self.root / "logs", model_name="test-model",
+            system_prompt_path=self.prompt, reasoning_effort="xhigh",
+        )
+        tokens = shlex.split(agent.build_cli_flags())
+        self.assertEqual(tokens[tokens.index("--effort") + 1], "xhigh")
+
 
 if __name__ == "__main__":
     unittest.main()

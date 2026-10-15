@@ -5,6 +5,3 @@ contract: lifecycle.yaml
 agent: {adapter: claude_code}
 execution:
   subagents: {enabled: true}
-  # Spend ceiling for the whole run, checked at every Stage boundary. Exceeding
-  # it stops before the next Stage rather than mid-Stage.
-  max_cost_usd: 50.0

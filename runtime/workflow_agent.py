@@ -6,6 +6,7 @@ from pathlib import Path, PurePosixPath
 import re
 import shlex
 import shutil
+import time
 
 from harbor.agents.base import BaseAgent
 from runtime.agents import PromptClaudeCode
@@ -13,6 +14,7 @@ from runtime.hierarchical_controller import HierarchicalController
 from runtime.workflow_controller import Controller, digest
 from runtime.local_deployment import validate_manifest
 from runtime.trajectory import export_trajectory
+from runtime.workflow_timeouts import DEFAULT_STAGE_TIMEOUT_SEC, StageTimeoutError, TotalTimeoutError
 
 
 def _jsonl_rows(path):
@@ -50,7 +52,8 @@ def native_role_evidence(directory, session_id, role, stage_id=None):
         found = True
         activations.extend(
             row for row in rows
-            if row.get("type") == "user" and "SDLC_STAGE_ROLE:" in _event_text(row)
+            if row.get("type") == "user" and not row.get("isCompactSummary")
+            and "SDLC_STAGE_ROLE:" in _event_text(row)
         )
     if not found:
         raise RuntimeError("Principal native session transcript is missing")
@@ -108,6 +111,15 @@ def exact_resume_command(command, session_id):
 class StageClaudeCode(PromptClaudeCode):
     allow_subagents = True
     resume_session_id = None
+    use_request_relay = False
+    max_runtime_sec = None
+    execution_deadline = None
+
+    def build_cli_flags(self):
+        if not self.allow_subagents:
+            tools = (self.options.disallowed_tools or "").split(",")
+            self.options.disallowed_tools = ",".join(dict.fromkeys(t for t in [*tools, "Agent", "Task"] if t))
+        return super().build_cli_flags()
 
     async def exec_as_agent(self, environment, command, **kwargs):
         user = environment.default_user
@@ -115,6 +127,8 @@ class StageClaudeCode(PromptClaudeCode):
             kwargs["env"] = {**kwargs.get("env", {}), "HOME": "/home/" + user}
         if self.resume_session_id and "claude --verbose --output-format=stream-json" in command:
             command = exact_resume_command(command, self.resume_session_id)
+        if self.use_request_relay:
+            kwargs["env"] = {**kwargs.get("env", {}), "ANTHROPIC_BASE_URL": "http://127.0.0.1:18080"}
         return await super().exec_as_agent(environment, command, **kwargs)
 
 
@@ -134,6 +148,8 @@ class TeamClaudeCode(StageClaudeCode):
         }
         if self.resume_session_id and "claude --verbose --output-format=stream-json" in command:
             command = exact_resume_command(command, self.resume_session_id)
+        if self.use_request_relay:
+            kwargs["env"] = {**kwargs["env"], "ANTHROPIC_BASE_URL": "http://127.0.0.1:18080"}
         return await self._exec(
             environment, command, user=self.execution_user, **kwargs
         )
@@ -187,7 +203,10 @@ class HarborBackend:
         if stage.get("write_repos"):
             await self.root(f"chown -R {self.uid}:{self.uid} /workspace/repos; chmod -R u+rwX /workspace/repos")
         else:
-            await self.root("chown -R root:root /workspace/repos; chmod -R a-w /workspace/repos")
+            # Avoid copying unchanged image files into Docker's writable layer
+            # just to set ownership/modes they already have.
+            await self.root("find /workspace/repos ! -type l \\( ! -user root -o ! -group root -o -perm /222 \\) "
+                            "-exec chown root:root {} + -exec chmod a-w {} +")
         # Prove the actual execution identity cannot mutate workflow inputs or an
         # accepted stage. The subprocess runs as exactly the upcoming Agent UID.
         targets = ["/workspace/instruction.md", "/workspace/base-revisions.json",
@@ -296,14 +315,54 @@ class HarborBackend:
         )
         self.agent.resume_session_id = resume_session
         self.agent._resume = bool(resume_session)
+        execution_failed = False
         try:
-            await self.agent.run(activation, self.environment, self.context)
+            stage_limit = getattr(self.agent, "stage_timeout_sec", DEFAULT_STAGE_TIMEOUT_SEC)
+            timeout = stage_limit
+            total_is_limiting = False
+            if self.agent.max_runtime_sec:
+                if self.agent.execution_deadline is None:
+                    self.agent.execution_deadline = time.monotonic() + self.agent.max_runtime_sec
+                remaining = self.agent.execution_deadline - time.monotonic()
+                if remaining <= 0:
+                    raise TotalTimeoutError("Total model execution wall time exhausted")
+                total_is_limiting = remaining <= stage_limit
+                timeout = min(timeout, remaining)
+            deadline = asyncio.timeout(timeout)
+            try:
+                async with deadline:
+                    await self.agent.run(activation, self.environment, self.context)
+            except TimeoutError as exc:
+                if not deadline.expired():
+                    raise
+                if total_is_limiting:
+                    raise TotalTimeoutError("Total model execution wall time exhausted") from exc
+                raise StageTimeoutError(
+                    f"Stage {stage['stage_id']} execution timed out after {stage_limit} seconds"
+                ) from exc
+        except BaseException:
+            execution_failed = True
+            errors = []
+            for collect in (
+                self.quiesce,
+                lambda: self.environment.download_dir(stage["writable_directory"], stage_dir / "partial-artifacts"),
+                lambda: self.environment.download_file("/logs/agent/claude-code.txt", stage_dir / "claude-code.jsonl"),
+                lambda: self.environment.download_dir("/logs/agent/sessions", stage_dir / "sessions"),
+            ):
+                try:
+                    await collect()
+                except Exception as exc:
+                    errors.append(str(exc))
+            if errors:
+                (stage_dir / "recovery-errors.json").write_text(json.dumps(errors) + "\n")
+            raise
         finally:
             self.agent._resume = False
             self.agent.resume_session_id = None
             # Freeze the Stage before reading its logs. Controller.quiesce is an
             # exception-path fallback and becomes a no-op after this succeeds.
-            await self.quiesce()
+            if not execution_failed:
+                await self.quiesce()
         stream = stage_dir / "claude-code.jsonl"
         await self.environment.download_file("/logs/agent/claude-code.txt", stream)
         await self.environment.download_dir("/logs/agent/sessions", stage_dir / "sessions")
@@ -422,8 +481,8 @@ class TeamHarborBackend:
             model_name=self.owner.model_name,
             logger=self.owner.logger,
             system_prompt_path=self.workspace / "roles/workflow.system.md",
-            version="2.1.273",
-            reasoning_effort="high",
+            version=self.owner.client_version,
+            reasoning_effort=self.owner.reasoning_effort,
             disable_web_search=True,
             disallowed_tools=(
                 "Agent,Task,Write,Edit,NotebookEdit" if identity == "lead"
@@ -432,6 +491,7 @@ class TeamHarborBackend:
             extra_env=self.owner._extra_env,
         )
         agent.allow_subagents = False
+        agent.use_request_relay = self.owner.request_audit
         agent.execution_user = self.users[identity]
         self.agents[identity] = agent
         return agent
@@ -826,12 +886,41 @@ class TeamHarborBackend:
         return self.revision_path(revision_id) + "/" + revision["outputs"][ref]["path"]
 
 
+async def ensure_public_pinned_client(environment, version):
+    """Accept a verified image-installed client before trying root's bootstrap."""
+    if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version):
+        raise ValueError("Client version must be an exact numeric release")
+    check = await environment.exec("/usr/local/bin/claude --version", user="root")
+    if not check.return_code and check.stdout.strip().startswith(version + " "):
+        return
+    result = await environment.exec(
+        'set -eu; export PATH="$HOME/.local/bin:$PATH"; '
+        'sdlc_client_source="$(readlink -f "$(command -v claude)")"; '
+        f'test "$("$sdlc_client_source" --version | cut -d " " -f 1)" = {shlex.quote(version)}; '
+        'install -m 755 "$sdlc_client_source" /usr/local/bin/claude; '
+        '/usr/local/bin/claude --version', user="root"
+    )
+    if result.return_code or not result.stdout.strip().startswith(version + " "):
+        raise RuntimeError("Pinned Claude Code binary is unavailable to stage users")
+
+
 class WorkflowClaudeCode(BaseAgent):
     SUPPORTS_ATIF = True
 
     def __init__(self, *args, prepared_path, smoke=False, smoke_scenario="repair", role_probe=False,
-                 stop_after_stage=None, missing_output_policy="fail", **kwargs):
+                 stop_after_stage=None, missing_output_policy="fail", reasoning_effort="high",
+                 max_runtime_sec=None, request_profile=False, client_version="2.1.273",
+                 stage_timeout_sec=DEFAULT_STAGE_TIMEOUT_SEC, resume_from=None, request_audit=False, **kwargs):
         super().__init__(*args, **kwargs)
+        if reasoning_effort not in {"low", "medium", "high", "xhigh", "max"}:
+            raise ValueError("Invalid workflow reasoning effort")
+        self.reasoning_effort = reasoning_effort
+        if not isinstance(stage_timeout_sec, (int, float)) or not 0 < stage_timeout_sec < float("inf"):
+            raise ValueError("stage_timeout_sec must be positive and finite")
+        if max_runtime_sec is not None and not 0 < max_runtime_sec < float("inf"):
+            raise ValueError("max_runtime_sec must be positive and finite")
+        if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", client_version):
+            raise ValueError("Client version must be an exact numeric release")
         self.prepared = Path(prepared_path)
         self.compiled = json.loads((self.prepared / "resolved-workflow.json").read_text())
         self.smoke = smoke
@@ -839,20 +928,42 @@ class WorkflowClaudeCode(BaseAgent):
         self.role_probe = role_probe
         self.stop_after_stage = stop_after_stage
         self.missing_output_policy = missing_output_policy
+        self.resume_from = Path(resume_from) if resume_from else None
+        if self.resume_from and (smoke or role_probe):
+            raise ValueError("Checkpoint resume requires a real workflow")
+        self.request_profile = request_profile and not smoke
+        self.request_audit = (request_audit or request_profile) and not smoke
+        self.client_version = client_version
         self.delegate = StageClaudeCode(
             logs_dir=self.logs_dir, model_name=self.model_name, logger=self.logger,
             system_prompt_path=self.prepared / "workspace/roles/workflow.system.md",
-            version="2.1.273", reasoning_effort="high", disable_web_search=True,
+            version=client_version, reasoning_effort=self.reasoning_effort, disable_web_search=True,
             extra_env=self._extra_env,
         )
         self.delegate.allow_subagents = self.compiled["run"]["execution"].get("subagents", {}).get("enabled", False)
+        self.delegate.max_runtime_sec = max_runtime_sec
+        self.delegate.stage_timeout_sec = stage_timeout_sec
+        self.delegate.use_request_relay = self.request_audit
+        if self.resume_from:
+            self.validate_checkpoint()
+
+    def validate_checkpoint(self):
+        from runtime.workflow_checkpoint import validate_checkpoint
+        original = validate_checkpoint(self.resume_from, self.prepared, self.compiled,
+                                       self.model_name, self.reasoning_effort)
+        if self.stop_after_stage:
+            boundary = next(i for i, s in enumerate(self.compiled["stages"])
+                            if s["stage_id"] == self.stop_after_stage)
+            if boundary < original["cursor"]:
+                raise ValueError("Stop stage must follow the restored checkpoint")
+        return original
 
     @staticmethod
     def name():
         return "sdlc-workflow-claude-code"
 
     def version(self):
-        return "2.1.273"
+        return self.client_version
 
     def populate_context_post_run(self, context):
         # Harbor invokes this after syncing logs, including on failed runs.
@@ -872,13 +983,27 @@ class WorkflowClaudeCode(BaseAgent):
 
     async def setup(self, environment):
         await self.delegate.setup(environment)
+        await ensure_public_pinned_client(environment, self.client_version)
         await self.delegate.exec_as_root(environment, "mkdir -p /opt/sdlc")
         for name in (
             "workspace_snapshot.py", "local_deployment.py", "workspace_cleanup.py",
-            "team_workspace.py",
+            "team_workspace.py", "workspace_link_normalization.py",
         ):
             await environment.upload_file(Path(__file__).parent / name, "/opt/sdlc/" + name)
         await self.delegate.exec_as_root(environment, "chmod 555 /opt/sdlc/*.py")
+        if self.request_audit:
+            await environment.upload_file(Path(__file__).parent / "request_relay.py", "/opt/sdlc/request_relay.py")
+            upstream = self.delegate._get_env("ANTHROPIC_BASE_URL")
+            if not upstream:
+                raise ValueError("Request relay requires ANTHROPIC_BASE_URL")
+            command = ("nohup python3 /opt/sdlc/request_relay.py --upstream " + shlex.quote(upstream)
+                       + " --model " + shlex.quote(self.model_name) + " --effort " + self.reasoning_effort
+                       + (" --enforce-profile" if self.request_profile else "")
+                       + " > /logs/request-relay.stderr 2>&1 < /dev/null &")
+            await environment.exec(command, user="root")
+            check = await environment.exec("python3 -c 'import time,urllib.request; time.sleep(.3); urllib.request.urlopen(\"http://127.0.0.1:18080/health\")'", user="root")
+            if check.return_code:
+                raise RuntimeError("Request relay failed to start")
         # Prebuilt benchmark images keep the two frozen repositories directly
         # below /workspace. Native Kubernetes Jobs upload the public workflow
         # envelope after the image starts, so materialize clean, .git-free Base
@@ -897,6 +1022,11 @@ done'''
         result = await environment.exec(materialize, user="root", cwd="/workspace")
         if result.return_code:
             raise RuntimeError("Could not materialize frozen workflow Base repositories")
+        normalized = await environment.exec(
+            "python3 /opt/sdlc/workspace_link_normalization.py /workspace/repos", user="root")
+        if normalized.return_code:
+            raise RuntimeError("Could not normalize image hard links")
+        (self.logs_dir / "workspace-links.json").write_text(normalized.stdout)
 
     async def run(self, instruction, environment, context):
         # Sibling of /logs/agent, not inside any mounted Agent-writable log root.
@@ -962,9 +1092,48 @@ done'''
             controller = HierarchicalController(
                 self.compiled, self.prepared / "workspace", control_dir, team_backend
             )
-            await controller.run()
+            try:
+                await controller.run()
+            finally:
+                if self.request_audit:
+                    try:
+                        await environment.download_file("/logs/request-evidence.jsonl", control_dir / "request-evidence.jsonl")
+                    except Exception as exc:
+                        controller.event("request_evidence_collection_failed", error=str(exc))
             return
         controller = Controller(self.compiled, self.prepared / "workspace", control_dir, backend,
                                 stop_after_stage=self.stop_after_stage,
                                 missing_output_policy=self.missing_output_policy)
-        await controller.run()
+        try:
+            if self.resume_from:
+                from runtime.workflow_checkpoint import restore_checkpoint
+                await restore_checkpoint(self.resume_from, self.validate_checkpoint(), controller, backend)
+            await controller.run()
+        except StageTimeoutError as exc:
+            controller.state["status"] = "timed_out"
+            controller.state["error"] = str(exc)
+            controller.event("stage_deadline_exhausted", error=str(exc))
+            raise
+        except TotalTimeoutError:
+            controller.state["status"] = "timed_out"
+            controller.state["error"] = "Total model execution wall time exhausted"
+            controller.event("runtime_deadline_exhausted")
+            raise
+        finally:
+            if controller.state["status"] in {"failed", "interrupted", "timed_out"} and controller.state["stages"]:
+                failed = controller.state["stages"][-1]
+                stage = next(s for s in self.compiled["stages"] if s["stage_id"] == failed["id"])
+                if stage.get("write_repos") and failed["status"] != "accepted":
+                    try:
+                        await backend.quiesce()
+                        destination = control_dir / "partial-candidates" / stage["stage_id"]
+                        destination.mkdir(parents=True, exist_ok=True)
+                        candidate = await backend.capture_repositories(destination)
+                        controller.event("partial_candidate_captured", candidate=candidate, accepted=False)
+                    except Exception as exc:
+                        controller.event("partial_candidate_capture_failed", error=str(exc))
+            if self.request_audit:
+                try:
+                    await environment.download_file("/logs/request-evidence.jsonl", control_dir / "request-evidence.jsonl")
+                except Exception as exc:
+                    controller.event("request_evidence_collection_failed", error=str(exc))

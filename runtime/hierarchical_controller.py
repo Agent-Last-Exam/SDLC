@@ -199,7 +199,7 @@ class HierarchicalController:
                 self.broker.record_lead_turn()
                 # The turn is billed before its plan is judged: a rejected plan
                 # still spent the model call that produced it.
-                exhausted = self.broker.charge(
+                self.broker.charge(
                     stream_cost([turn_dir / "claude-code.jsonl"])
                 )
                 try:
@@ -211,11 +211,6 @@ class HierarchicalController:
                     self.broker.state["last_plan_error"] = str(exc)
                     (turn_dir / "plan-rejection.txt").write_text(str(exc) + "\n")
                     self.event("lead_plan_rejected", turn=turn, error=str(exc))
-                    if exhausted:
-                        self.broker.terminate_budget("max_cost_usd")
-                        self.event("budget_exhausted", budget="max_cost_usd",
-                                   cost_usd=self.broker.state["cost_usd"])
-                        break
                     continue
                 self.broker.state.pop("last_plan_error", None)
                 (turn_dir / "plan.json").write_text(
@@ -240,17 +235,12 @@ class HierarchicalController:
                     ))
                 # Add what the assignments spent on top of the already-billed turn.
                 if assignments:
-                    exhausted = self.broker.charge(stream_cost([
+                    self.broker.charge(stream_cost([
                         self.directory / "assignments" / task["id"] / "claude-code.jsonl"
                         for task in assignments
-                    ])) or exhausted
+                    ]))
                 self.event("lead_turn_finished", turn=turn,
                            cost_usd=self.broker.state["cost_usd"])
-                if exhausted and self.broker.state["status"] == "running":
-                    self.broker.terminate_budget("max_cost_usd")
-                    self.event("budget_exhausted", budget="max_cost_usd",
-                               cost_usd=self.broker.state["cost_usd"])
-                    break
             return self.broker.state
         except BaseException as exc:
             if self.broker.state["status"] == "running":

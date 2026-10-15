@@ -44,11 +44,10 @@ class Controller:
             raise ValueError("Only Single and Flat lifecycle execution are implemented")
         self.compiled, self.workspace = compiled, Path(workspace)
         self.directory, self.backend = Path(directory), backend
-        self.max_cost_usd = compiled["run"]["execution"]["max_cost_usd"]
         # The stage graph is the only source of QA rounds; a sprint added there
         # raises the count with no configuration to keep in step.
         self.qa_rounds = max(
-            stage["round"] for stage in compiled["stages"] if stage["role"] == "qa"
+            (stage["round"] for stage in compiled["stages"] if stage["role"] == "qa"), default=0
         )
         if compiled["contract"].get("scope") != "local_sdlc":
             raise ValueError("Only the local_sdlc lifecycle contract is supported")
@@ -73,14 +72,14 @@ class Controller:
         self.state = {"mode": compiled["mode"], "status": "running", "cursor": 0, "stages": [],
                       "model_called": not backend.synthetic, "synthetic": backend.synthetic,
                       "missing_output_policy": missing_output_policy, "delivery_complete": True,
-                      "max_cost_usd": self.max_cost_usd, "cost_usd": 0.0}
+                      "cost_usd": 0.0}
         if compiled["mode"] == "flat":
             self.state["principal_sessions"] = []
         self.accepted_prd = None
         self.baseline = {}
 
     def charge_stage(self, stage, stage_dir):
-        """Accumulate the Stage's reported spend; returns True when the budget is spent.
+        """Accumulate the Stage's reported spend for reporting only.
 
         Cost comes from the Agent's own result events. A Stage that reports nothing
         adds nothing, so a missing stream never fabricates spend or hides it.
@@ -88,7 +87,6 @@ class Controller:
         spent = stream_cost([stage_dir / "claude-code.jsonl"])
         if spent is not None:
             self.state["cost_usd"] = round(self.state["cost_usd"] + spent, 6)
-        return self.state["cost_usd"] >= self.max_cost_usd
 
     def freeze_baseline(self, stage, hashes):
         names = {"sprint1/prd": "prd.md", "sprint1/test-design": "test-cases.v1.csv"}
@@ -132,13 +130,15 @@ class Controller:
         atomic_json(self.directory / "state.json", self.state)
 
     async def run(self):
-        session = None
-        flat_sessions = set()
+        session = self.state.get("principal_session")
+        flat_sessions = {row["session_id"] for row in self.state.get("principal_sessions", [])}
         continuous_session = self.compiled["mode"] == "single"
         repair_plan = None
         self.event("run_started")
         try:
             for index, stage in enumerate(self.compiled["stages"]):
+                if index < self.state["cursor"]:
+                    continue
                 if self.state["cursor"] != index:
                     raise RuntimeError("Invalid stage cursor")
                 self.backend.stage_index = index
@@ -197,7 +197,8 @@ class Controller:
                 subagents = self.compiled["run"]["execution"].get("subagents", {})
                 if subagents.get("enabled"):
                     active_prompt += (
-                        "\n当前 Stage 允许使用 Claude Code multi-agent，把互相独立的工作拆给多个 subagent。"
+                        "\n当前 Stage 允许使用 Claude Code multi-agent，由你自行决定是否调用 subagent；不要求使用。"
+                        "需要时可把互相独立的工作拆给多个 subagent。"
                         "所有 subagent 只服务当前 Stage，并共享当前 Sandbox/Workspace。"
                         "并发写任务必须划分互不重叠的文件或写入范围，禁止多个 Agent 同时修改同一文件。"
                         "你作为当前 Stage 主 Agent，负责检查并整合正式交付。"
@@ -287,7 +288,7 @@ class Controller:
                     prd = sealed / "prd.md"
                     self.accepted_prd = prd if prd.is_file() and not prd.is_symlink() else None
                 self.state["cursor"] = index + 1
-                exhausted = self.charge_stage(stage, stage_dir)
+                self.charge_stage(stage, stage_dir)
                 stage_record["cost_usd"] = self.state["cost_usd"]
                 self.event("stage_accepted", stage=stage["stage_id"], hashes=hashes,
                            missing_outputs=missing_outputs, cost_usd=self.state["cost_usd"])
@@ -305,14 +306,6 @@ class Controller:
                         self.event("run_completed" if details["verdict"] == "pass" else "qa_rounds_exhausted",
                                    round=stage["round"], verdict=details["verdict"])
                         return self.state
-                # Checked last so a run that already reached its own end is not
-                # relabelled; the accepted Stage keeps its outputs either way.
-                if exhausted:
-                    self.state.update(status="budget_exhausted", delivery_complete=False)
-                    self.event("budget_exhausted", budget="max_cost_usd",
-                               cost_usd=self.state["cost_usd"], limit=self.max_cost_usd,
-                               stage=stage["stage_id"])
-                    return self.state
             self.state["status"] = "complete"
             self.event("run_completed")
             return self.state
