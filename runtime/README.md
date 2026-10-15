@@ -58,3 +58,5 @@ Controller 数据在 trial/workflow 下，不挂载给 Agent。Agent 只拥有�
 `--mode` 选择 [defaults/workflows/](defaults/README.md) 下对应的运行配置，`--task` 指定 task 包；配置只存在于 runtime，包里不放也不被查找。三个模式都累加 Agent 上报的 `total_cost_usd` 用于费用报告，不按费用终止运行；Hierarchical 保留六个 `max_*` 执行上限。Single/Flat 单向推进，QA 轮数由 `lifecycle.yaml` 的 `stages:` 决定。task 包声明 `docker_image` 时，Harbor 任务定义由运行器生成，仓库来自镜像既有位置并迁移到 `/workspace/repos/`；包自带 `environment/Dockerfile` 时改用该文件与宿主快照。契约中 `defaults:` 引用默认集，`task:` 与 `derive:` 相对 task 根解析，后者声明该输入由指定的包内文件推导而非复制。Single 完整阶段见 [生命周期说明](../docs/single-agent-lifecycle.md)。Flat 固定顺序推进；Hierarchical 的 Lead 根据共享交付契约动态创建成员、派工、返修和接受 revision。Hierarchical 不适用固定阶段 smoke/role-probe，需真实模型 rollout。
 
 Single/Flat 的每个实际 Stage 只执行一次；Hierarchical 可由 Lead 创建返工 assignment 和新 revision。运行器不检查文档内容，不自动补交。Controller 仅读取流程分支字段；`local_deployment.py` 管理容器内服务启动与健康检查；`workspace_snapshot.py` 保存开发候选的多仓归档和摘要。
+
+已归档提示词的 Viewer 展示适配器见 `viewer_context.py`：校验归档后生成独立、仅供查看的 Harbor 目录，将带来源和继承标记的阶段快照显示为补充 system 卡片。使用方式与展示边界见 [运行记录说明](../docs/rollout-records.md#在-harbor-viewer-中显示已归档的阶段提示词)。

@@ -18,3 +18,5 @@
 | `flat-coding-gpt61-xhigh-20261015` | `task__LLJigf4` | [提示词与来源](saleor-flat-gpt61-xhigh-20261015/prompt-snapshots/README.md) | 4 |
 
 快照仅包含运行器保存的阶段职责和指令。继承关系、原件与导出 SHA-256、原生会话 ID、已有轨迹覆盖范围分别记录在各归档的 manifest。没有以当前模板重建历史提示词，也没有把未导出的子会话宣称为完整记录。
+
+要在 Harbor Viewer 内直接查看提示词及继承关系，可生成独立展示副本，操作见 [Viewer 展示说明](../docs/rollout-records.md#在-harbor-viewer-中显示已归档的阶段提示词)。现有轨迹文件不改写，补充卡片不冒充原始对话事件。
