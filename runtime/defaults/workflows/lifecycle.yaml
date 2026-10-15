@@ -89,6 +89,7 @@ stages:
   - artifact:sprint1/tech-design/backend_design
   - artifact:sprint1/tech-design/interface_contract
   - artifact:sprint1/tech-design/target_schema
+  - artifact:sprint1/test-design/test_cases
   - template:test_handoff
   outputs:
     handoff: artifacts/sprint1/development/test-handoff.md
@@ -188,6 +189,7 @@ stages:
   - artifact:sprint2/tech-design/backend_design
   - artifact:sprint2/tech-design/interface_contract
   - artifact:sprint2/tech-design/target_schema
+  - artifact:sprint1/test-design/test_cases
   - template:test_handoff
   - artifact:sprint2/triage/repair_plan
   - artifact:sprint1/qa/report

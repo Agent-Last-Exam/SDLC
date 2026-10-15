@@ -249,6 +249,10 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
         self.assertFalse((accepted / 'sprint2/test-design').exists())
         case_ref = 'artifact:sprint1/test-design/test_cases'
         first_hash = state['stages'][5]['input_sha256'][case_ref]
+        for index in (3, 8):
+            self.assertEqual(first_hash, state['stages'][index]['input_sha256'][case_ref])
+            self.assertIn('/workspace/artifacts/sprint1/test-design/test-cases.v1.csv',
+                          backend.calls[index][2])
         self.assertEqual(first_hash, state['stages'][-1]['input_sha256'][case_ref])
         self.assertIn('/workspace/artifacts/sprint1/test-design/test-cases.v1.csv', backend.calls[-1][2])
 
