@@ -12,7 +12,7 @@
 | [coverage_eval/](coverage_eval/README.md) | 配置驱动的 Harbor 覆盖率评测、框架适配器和双组报告 | 运行代码覆盖率评测 |
 | [tasks/](tasks/README.md) | 每个 task 的 Instruction、workflow、roles、templates 和环境 | 修改任务、阶段输入输出和代码版本 |
 | [jobs/](jobs/README.md) | 每次 rollout 的 report、状态、轨迹、正式产物 | 看运行结果、定位失败 |
-| [reports/](reports/README.md) | 历史验收证据和运行报告导航 | 看已经验证了哪些能力 |
+| [reports/](reports/README.md) | 阶段性验收摘要与证据；单次运行报告在 jobs/ | 查阅当时的验收范围与结论 |
 | [docs/](docs/README.md) | 当前设计、运行记录说明、目录迁移说明 | 理解机制和目录关系 |
 | [examples/](examples/document-rubric-evaluation/README.md) | 脱敏后的真实候选文档、Rubric 与评分结果 | 理解和复现文档评测输出 |
 | [runtime/tests/](runtime/tests/README.md) | 不调用模型的单元测试 | 验证运行器改动 |
