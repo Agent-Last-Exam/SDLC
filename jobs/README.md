@@ -14,4 +14,4 @@
 
 - [GPT 6.1 Sol xhigh：正式业务题目三阶段运行](single-docs-gpt61-xhigh-instruction-20261014/README.md)：instruction＋business 输入，260条测试设计用例；已交付，尚未独立质量评分。
 
-- [GPT 6.1 xhigh：coding与独立F2P/P2P](single-coding-gpt61-xhigh-continuation-20261014/README.md)：同会话coding部分交付，F2P98/5182、P2P14671/15012、reward0；派生评测绑定见run-lineage.json。
+- [GPT 6.1 xhigh：coding与独立F2P/P2P](single-coding-gpt61-xhigh-continuation-20261014/README.md)：同会话coding部分交付，F2P98/5182、P2P14671/15012、reward0；派生评测边界见该目录README及evaluation/报告.md。

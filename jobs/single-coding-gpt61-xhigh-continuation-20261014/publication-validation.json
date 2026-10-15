@@ -1,8 +1,0 @@
-{
-  "configured_secret_scan_passed": true,
-  "decoded_files_scanned": 75,
-  "native_session_auth_settings_excluded": true,
-  "original_and_projected_patches_preserved_separately": true,
-  "coding_adapter_current_workspace_differs_from_recorded_hash": true,
-  "current_adapter_not_misrepresented_as_historical_execution_source": true
-}

@@ -1,5 +1,0 @@
-npm warn Unknown project config "shamefully-hoist". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
-
-> saleor-dashboard@3.22.9 extract-messages
-> formatjs extract 'src/**/*.{ts,tsx}' --ignore '**/*.d.ts' --out-file locale/defaultMessages.json --format scripts/formatter.cjs
-

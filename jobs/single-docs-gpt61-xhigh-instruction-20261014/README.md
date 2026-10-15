@@ -1,24 +1,11 @@
-# GPT 6.1 Sol xhigh：正式业务题目三阶段 rollout
+# GPT 6.1 Sol xhigh：新版题目文档交付
 
-本轮使用新版 instruction.md（原 query 全文）与独立 business-conversations.md；没有提供旧迁移 instruction 或 Golden。模型请求 gpt-6.1-sol / xhigh，客户端 Claude Code 2.1.280，Single 同会话完成三个文档阶段，按 test-design 边界正常停止，无人工阶段续做。
+运行：`single-docs-gpt61-xhigh-instruction-20261014 / task__Fq5bK83`。Single 同会话完成 PRD、技术设计和测试设计，约 131.69 分钟，260 条测试用例。
 
-- PRD：10:48:41–11:02:17 UTC。
-- 技术设计：11:02:20–12:21:48 UTC。
-- 测试设计：12:21:51–13:00:23 UTC，共260条用例、9列。
-- 模型执行起累计约 131.69 分钟；不含环境准备。13份产物封存哈希全部核对通过。accepted仅表示交付接受，尚未独立内容评分，未执行实现、测试或部署。
+- `artifacts/`：13 份正式文档，包括 PRD、前后端设计、接口协议、完整 GraphQL SDL 和测试用例 CSV。
+- `agent/trajectory.json.gz`：完整结构化轨迹。
+- 新版题目见仓库 `tasks/saleor-3.23-pruned/instruction.md` 和 `business-conversations.md`；本目录不重复提交输入与配置快照。
 
-## 记录导航
+产物已封存；流程接受不代表独立内容评分或业务验收通过。后续 coding 和独立 F2P/P2P 结果见相邻 `single-coding-gpt61-xhigh-continuation-20261014/`。旧五模型题目不同，不直接混排成绩。
 
-- `inputs/`：实际两份题目；`configuration/`：冻结输入清单、模型配置与执行代码哈希。
-- `artifacts/`：PRD、技术设计、完整SDL、补充协议及测试CSV。
-- `workflow/`：原始阶段状态、事件、基线、角色/阶段提示和网关请求用量记录。
-- `agent/trajectory.json.gz`：结构化完整轨迹；未发布本地原生会话、CLI设置、账号文件或凭据。
-- `summary.json`：按请求去重的用量；`source-files.json`：发布文件与原始来源哈希。
-
-## 比较与复现限制
-
-此前五模型运行只收到旧的通用迁移说明，本轮题目不同，不能直接做公平排名。网关报告费用为 $6.449312，未与后台账单对账；客户端估算费用不等于实际扣费。缓存读取已包含在输入总量，不重复相加；缺失字段不推测。请求记录确认发出的模型/effort，不证明网关私有底层路由。
-
-执行使用原工作区既有、未提交的文档边界/请求审计扩展；本PR不混入这些历史改动。配置与代码哈希用于核对该事实，不能把本PR当前CLI声明为上述历史命令的完整复现。
-
-本次只读审查发现的全局提示合并、续跑business哈希及权限探针缺口没有在运行中修改，不宣称已修复。当前两份输入实际只读。
+验证结论与历史执行环境限制见 PR 描述。辅助日志、请求审计与配置保留在本地原始记录，未纳入精简归档。
