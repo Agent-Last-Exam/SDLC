@@ -1,0 +1,91 @@
+{
+  "source_job": "flat-coding-deepseek41-high-20261014-r2",
+  "source_trial": "task__B2eCFbL",
+  "source_workflow_status": "interrupted",
+  "archive_scope": [
+    "sprint1/prd",
+    "sprint1/tech-design",
+    "sprint1/test-design"
+  ],
+  "model": "deepseek/deepseek-v4.1-flash",
+  "reasoning_effort": "high",
+  "mode": "flat",
+  "documents": [
+    {
+      "path": "documents/sprint1/prd/prd.md",
+      "source_sha256": "a2c792971f133ae0b52bd8c199120ffea5e37663d43c65f9eff33e43e8ae49c3",
+      "export_sha256": "a2c792971f133ae0b52bd8c199120ffea5e37663d43c65f9eff33e43e8ae49c3"
+    },
+    {
+      "path": "documents/sprint1/tech-design/backend-design.md",
+      "source_sha256": "bf4090f5a4f16de3aa1be4457ee40c05df3b2344c7a2e9456ee3c25721a3cbcb",
+      "export_sha256": "bf4090f5a4f16de3aa1be4457ee40c05df3b2344c7a2e9456ee3c25721a3cbcb"
+    },
+    {
+      "path": "documents/sprint1/tech-design/frontend-design.md",
+      "source_sha256": "1486404273326262d3c24aa00dceb55785afda85566d7330a2cafc39c35b47c7",
+      "export_sha256": "1486404273326262d3c24aa00dceb55785afda85566d7330a2cafc39c35b47c7"
+    },
+    {
+      "path": "documents/sprint1/tech-design/interface-contract.md",
+      "source_sha256": "398f79c3187bd83764b7482ecf0e7a2c47200449684ffa4f46414f202208d0e5",
+      "export_sha256": "398f79c3187bd83764b7482ecf0e7a2c47200449684ffa4f46414f202208d0e5"
+    },
+    {
+      "path": "documents/sprint1/tech-design/interfaces/delivery-option-id.md",
+      "source_sha256": "2123c2f68b35d5ff2deb92856061855cbc97d69d98bbe547eaa4712a623d245a",
+      "export_sha256": "2123c2f68b35d5ff2deb92856061855cbc97d69d98bbe547eaa4712a623d245a"
+    },
+    {
+      "path": "documents/sprint1/tech-design/interfaces/event-delivery-status.md",
+      "source_sha256": "f676b4d60fc77a81c6453e19be9bea33d4f1dbfef53b8177d2440b8280a8f720",
+      "export_sha256": "f676b4d60fc77a81c6453e19be9bea33d4f1dbfef53b8177d2440b8280a8f720"
+    },
+    {
+      "path": "documents/sprint1/tech-design/target-schema.graphql",
+      "source_sha256": "39c40416702bc32f1f4497cb4fc9990232e8cefcf97d8e0ea62ea021fa7a3b14",
+      "export_sha256": "39c40416702bc32f1f4497cb4fc9990232e8cefcf97d8e0ea62ea021fa7a3b14"
+    },
+    {
+      "path": "documents/sprint1/test-design/test-cases.v1.csv",
+      "source_sha256": "9b875de9edd7fd51faecbd0ed4a77f1ddef6c14b372378d92f05c2aa60121bce",
+      "export_sha256": "9b875de9edd7fd51faecbd0ed4a77f1ddef6c14b372378d92f05c2aa60121bce"
+    }
+  ],
+  "test_case_count": 217,
+  "trajectory": {
+    "schema_version": "ATIF-v1.8",
+    "steps": 1033,
+    "stage_step_counts": {
+      "sprint1/prd": 172,
+      "sprint1/tech-design": 819,
+      "sprint1/test-design": 42
+    },
+    "sidechain_steps": 755,
+    "principal_sessions": [
+      {
+        "stage_id": "sprint1/prd",
+        "role": "pm",
+        "session_id": "664fa711-e304-4f66-a047-cfc23e4544de"
+      },
+      {
+        "stage_id": "sprint1/tech-design",
+        "role": "architect",
+        "session_id": "b7d33038-1e0b-4274-959f-9c4e2431b4e3"
+      },
+      {
+        "stage_id": "sprint1/test-design",
+        "role": "qa-design",
+        "session_id": "52a37acd-6668-48a2-983d-298a812fc496"
+      }
+    ],
+    "source_sha256": "1f444dff25b4d82c0b2ef09e4ae0ef79016f7598478f60b6ff3b5c14f661e9f4",
+    "export_uncompressed_sha256": "1f444dff25b4d82c0b2ef09e4ae0ef79016f7598478f60b6ff3b5c14f661e9f4",
+    "credential_replacements": 0,
+    "sanitization": "Configured credentials/endpoints and common token patterns replaced if present; local operator home path normalized. Original source retained locally.",
+    "metrics_caveat": "Historical converter token/cost estimates retained as evidence; not verified billing and not used as a combined actual charge."
+  },
+  "coding_included": false,
+  "independent_business_acceptance": false,
+  "validation": "Document source/output SHA256 equality; JSON/gzip parsing; CSV count; stage/session scope; credential scan. No model rerun or business tests."
+}
