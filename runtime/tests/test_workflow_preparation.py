@@ -88,7 +88,7 @@ class ModeProfileTests(TaskFixture):
                     set(profile),
                     {"schema_version", "kind", "mode", "contract", "agent", "execution"},
                 )
-                expected = {"max_cost_usd"} | (
+                expected = (
                     set(HIERARCHICAL_BUDGETS)
                     if mode == "hierarchical" else {"subagents"}
                 )
@@ -109,10 +109,10 @@ class ModeProfileTests(TaskFixture):
             with self.subTest(mode=mode):
                 self.assertTrue(self.compile(mode)["run"]["execution"]["subagents"]["enabled"])
 
-    def test_every_mode_declares_a_cost_budget(self):
+    def test_no_mode_declares_a_cost_budget(self):
         for mode in MODES:
             with self.subTest(mode=mode):
-                self.assertGreater(self.compile(mode)["run"]["execution"]["max_cost_usd"], 0)
+                self.assertNotIn("max_cost_usd", self.compile(mode)["run"]["execution"])
 
     def test_hierarchical_budgets_are_positive_and_consistent(self):
         execution = self.compile("hierarchical")["run"]["execution"]
@@ -156,24 +156,13 @@ class ProfileValidationTests(unittest.TestCase):
             with self.subTest(change=change), self.assertRaisesRegex(ValueError, message):
                 validate_run(self.profile("flat", **change), resolve_mode("flat"))
 
-    def test_cost_budget_must_be_a_positive_number(self):
+    def test_removed_cost_budget_field_is_rejected(self):
         for mode in MODES:
-            for value in (0, -1.0, "fifty", None, True):
-                with self.subTest(mode=mode, value=value), \
-                        self.assertRaisesRegex(ValueError, "max_cost_usd"):
-                    validate_run(
-                        self.profile(mode, execution={"max_cost_usd": value}),
-                        resolve_mode(mode),
-                    )
-
-    def test_cost_budget_accepts_int_and_float(self):
-        for value in (25, 12.5):
-            with self.subTest(value=value):
-                run = validate_run(
-                    self.profile("flat", execution={"max_cost_usd": value}),
-                    resolve_mode("flat"),
+            with self.subTest(mode=mode), self.assertRaisesRegex(ValueError, "execution fields"):
+                validate_run(
+                    self.profile(mode, execution={"max_cost_usd": 50.0}),
+                    resolve_mode(mode),
                 )
-                self.assertEqual(run["execution"]["max_cost_usd"], value)
 
     def test_hierarchical_budgets_must_be_positive_and_consistent(self):
         for change, message in (

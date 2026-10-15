@@ -140,42 +140,38 @@ class HierarchicalControllerTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(state["lead_turns"], 1)
         self.assertIn("max_lead_turns", state["error"])
 
-    async def test_cost_budget_stops_the_lead_loop(self):
-        compiled = copy.deepcopy(self.compiled)
-        compiled["run"]["execution"]["max_cost_usd"] = 1.0
+    async def test_reported_cost_does_not_stop_the_lead_loop(self):
         spawn = {"summary": "spawn", "actions": [
             {"type": "spawn_member", "member_id": "pm-1", "role": "pm"},
         ]}
-        # Each turn reports 0.6; the second crosses the 1.0 ceiling.
-        backend = FakeTeamBackend([spawn, spawn, spawn], turn_cost=0.6)
+        stop = {"summary": "stop", "actions": [
+            {"type": "finish_delivery", "outcome": "blocked", "reason": "test boundary"},
+        ]}
+        backend = FakeTeamBackend([spawn, stop], turn_cost=60.0)
         state = await HierarchicalController(
-            compiled, DEFAULTS, self.root / "cost", backend
+            self.compiled, DEFAULTS, self.root / "cost", backend
         ).run()
-        self.assertEqual(state["status"], "budget_exhausted")
-        self.assertFalse(state["delivery_complete"])
-        self.assertIn("max_cost_usd", state["error"])
-        self.assertEqual(state["cost_usd"], 1.2)
-        # Stopped after the second turn rather than running the third.
+        self.assertEqual(state["status"], "blocked")
+        self.assertEqual(state["cost_usd"], 120.0)
         self.assertEqual(state["lead_turns"], 2)
+        self.assertNotIn("max_cost_usd", state)
         self.assertTrue(backend.stopped)
 
-    async def test_rejected_plan_is_still_billed(self):
-        compiled = copy.deepcopy(self.compiled)
-        compiled["run"]["execution"]["max_cost_usd"] = 1.0
-        # An invalid plan spends the model call that produced it.
+    async def test_rejected_plan_is_still_billed_without_cost_termination(self):
         invalid = {"summary": "invalid", "actions": [{"type": "no_such_action"}]}
-        backend = FakeTeamBackend([invalid, invalid, invalid], turn_cost=0.6)
+        stop = {"summary": "stop", "actions": [
+            {"type": "finish_delivery", "outcome": "blocked", "reason": "test boundary"},
+        ]}
+        backend = FakeTeamBackend([invalid, invalid, stop], turn_cost=60.0)
         state = await HierarchicalController(
-            compiled, DEFAULTS, self.root / "rejected", backend
+            self.compiled, DEFAULTS, self.root / "rejected", backend
         ).run()
-        self.assertEqual(state["status"], "budget_exhausted")
-        self.assertIn("max_cost_usd", state["error"])
-        self.assertEqual(state["cost_usd"], 1.2)
-        self.assertEqual(state["lead_turns"], 2)
+        self.assertEqual(state["status"], "blocked")
+        self.assertEqual(state["cost_usd"], 180.0)
+        self.assertEqual(state["lead_turns"], 3)
 
     async def test_run_without_reported_cost_is_not_charged(self):
         compiled = copy.deepcopy(self.compiled)
-        compiled["run"]["execution"]["max_cost_usd"] = 0.01
         backend = FakeTeamBackend([{
             "summary": "stop", "actions": [
                 {"type": "finish_delivery", "outcome": "blocked", "reason": "test boundary"},

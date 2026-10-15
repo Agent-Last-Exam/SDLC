@@ -51,16 +51,13 @@ def validate_run(run, path):
     if run.get("agent") != {"adapter": "claude_code"}:
         raise ValueError(f"Unsupported agent adapter in {path.name}")
     execution = run["execution"]
-    expected_execution = {"max_cost_usd"} | (
+    expected_execution = (
         set(HIERARCHICAL_BUDGETS) if mode == "hierarchical" else {"subagents"}
     )
     if set(execution) != expected_execution:
         raise ValueError(
             f"{path.name}: execution fields must be {sorted(expected_execution)}"
         )
-    cost = execution.get("max_cost_usd")
-    if type(cost) not in (int, float) or isinstance(cost, bool) or cost <= 0:
-        raise ValueError(f"{path.name}: max_cost_usd must be a positive number")
     if mode == "hierarchical":
         for key in HIERARCHICAL_BUDGETS:
             if type(execution.get(key)) is not int or execution[key] <= 0:

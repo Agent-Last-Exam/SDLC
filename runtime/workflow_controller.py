@@ -44,7 +44,6 @@ class Controller:
             raise ValueError("Only Single and Flat lifecycle execution are implemented")
         self.compiled, self.workspace = compiled, Path(workspace)
         self.directory, self.backend = Path(directory), backend
-        self.max_cost_usd = compiled["run"]["execution"]["max_cost_usd"]
         # The stage graph is the only source of QA rounds; a sprint added there
         # raises the count with no configuration to keep in step.
         self.qa_rounds = max(
@@ -73,14 +72,14 @@ class Controller:
         self.state = {"mode": compiled["mode"], "status": "running", "cursor": 0, "stages": [],
                       "model_called": not backend.synthetic, "synthetic": backend.synthetic,
                       "missing_output_policy": missing_output_policy, "delivery_complete": True,
-                      "max_cost_usd": self.max_cost_usd, "cost_usd": 0.0}
+                      "cost_usd": 0.0}
         if compiled["mode"] == "flat":
             self.state["principal_sessions"] = []
         self.accepted_prd = None
         self.baseline = {}
 
     def charge_stage(self, stage, stage_dir):
-        """Accumulate the Stage's reported spend; returns True when the budget is spent.
+        """Accumulate the Stage's reported spend for reporting only.
 
         Cost comes from the Agent's own result events. A Stage that reports nothing
         adds nothing, so a missing stream never fabricates spend or hides it.
@@ -88,7 +87,6 @@ class Controller:
         spent = stream_cost([stage_dir / "claude-code.jsonl"])
         if spent is not None:
             self.state["cost_usd"] = round(self.state["cost_usd"] + spent, 6)
-        return self.state["cost_usd"] >= self.max_cost_usd
 
     def freeze_baseline(self, stage, hashes):
         names = {"sprint1/prd": "prd.md", "sprint1/test-design": "test-cases.v1.csv"}
@@ -287,7 +285,7 @@ class Controller:
                     prd = sealed / "prd.md"
                     self.accepted_prd = prd if prd.is_file() and not prd.is_symlink() else None
                 self.state["cursor"] = index + 1
-                exhausted = self.charge_stage(stage, stage_dir)
+                self.charge_stage(stage, stage_dir)
                 stage_record["cost_usd"] = self.state["cost_usd"]
                 self.event("stage_accepted", stage=stage["stage_id"], hashes=hashes,
                            missing_outputs=missing_outputs, cost_usd=self.state["cost_usd"])
@@ -305,14 +303,6 @@ class Controller:
                         self.event("run_completed" if details["verdict"] == "pass" else "qa_rounds_exhausted",
                                    round=stage["round"], verdict=details["verdict"])
                         return self.state
-                # Checked last so a run that already reached its own end is not
-                # relabelled; the accepted Stage keeps its outputs either way.
-                if exhausted:
-                    self.state.update(status="budget_exhausted", delivery_complete=False)
-                    self.event("budget_exhausted", budget="max_cost_usd",
-                               cost_usd=self.state["cost_usd"], limit=self.max_cost_usd,
-                               stage=stage["stage_id"])
-                    return self.state
             self.state["status"] = "complete"
             self.event("run_completed")
             return self.state

@@ -151,25 +151,26 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
             '/workspace/artifacts/sprint1/tech-design/target-schema.graphql',
         ])
 
-    async def test_cost_budget_stops_before_the_next_stage(self):
-        config = copy.deepcopy(self.config)
-        config['run']['execution']['max_cost_usd'] = 1.0
-        # Each Stage reports 0.6; the second crosses the ceiling.
-        backend = LifecycleBackend(self.workspace, stage_cost=0.6)
-        state = await Controller(
-            config, self.workspace, self.root / 'cost', backend
-        ).run()
-        self.assertEqual(state['status'], 'budget_exhausted')
-        self.assertFalse(state['delivery_complete'])
-        self.assertEqual(state['cost_usd'], 1.2)
-        # Two Stages ran and both kept their accepted outputs.
-        self.assertEqual(len(state['stages']), 2)
-        self.assertTrue(all(s['status'] == 'accepted' for s in state['stages']))
-        self.assertEqual(state['cursor'], 2)
+    async def test_reported_cost_does_not_stop_single_or_flat(self):
+        for mode in ('single', 'flat'):
+            with self.subTest(mode=mode):
+                config = copy.deepcopy(self.config)
+                config['mode'] = mode
+                config['run']['mode'] = mode
+                backend = LifecycleBackend(
+                    self.workspace, stage_cost=60.0, new_session_per_call=(mode == 'flat')
+                )
+                state = await Controller(
+                    config, self.workspace, self.root / ('cost-' + mode), backend
+                ).run()
+                self.assertEqual(state['status'], 'complete')
+                self.assertTrue(state['delivery_complete'])
+                self.assertGreater(state['cost_usd'], 50.0)
+                self.assertEqual(state['cost_usd'], 60.0 * len(state['stages']))
+                self.assertTrue(all(s['status'] == 'accepted' for s in state['stages']))
+                self.assertNotIn('max_cost_usd', state)
 
     async def test_run_without_reported_cost_is_not_charged(self):
-        config = copy.deepcopy(self.config)
-        config['run']['execution']['max_cost_usd'] = 0.01
         state, _ = await self.run_case(scenario='pass')
         self.assertEqual(state['cost_usd'], 0.0)
         self.assertEqual(state['status'], 'complete')
